@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base href="treeofknowledge.ai">
+
+<meta charset="utf-8">
+<meta name="HandheldFriendly" content="true" />
+<meta name="author" content="Benedikt Kleppmann">
+<title>DS4DM - Data Search for Data Mining</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/font-awesome.min.css" rel="stylesheet">
+<link href="css/prettyPhoto.css" rel="stylesheet">
+<link href="css/main.css" rel="stylesheet">
+
+<link rel="shortcut icon" href="images/logo.png">
+<link rel="apple-touch-icon-precomposed" sizes="144x144"
+	href="images/ico/apple-touch-icon-144-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="114x114"
+	href="images/ico/apple-touch-icon-114-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="72x72"
+	href="images/ico/apple-touch-icon-72-precomposed.png">
+<link rel="apple-touch-icon-precomposed"
+	href="images/ico/apple-touch-icon-57-precomposed.png">
+	
+	<!-- added for submenu -->
+
+
+</head>
+<!--/head-->
+
+<body data-spy="scroll" data-target="#navbar" data-offset="0">
+	<header id="header" role="banner">
+		<div class="container">
+			<div id="navbar" class="navbar navbar-default">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse"
+						data-target=".navbar-collapse">
+						<span class="sr-only">Toggle navigation</span> <span
+							class="icon-bar"></span> <span class="icon-bar"></span> <span
+							class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="."></a>
+				</div>
+				<div class="collapse navbar-collapse navbar-ex1-collapse">
+					<ul class="nav navbar-nav">
+						<li class="active"><a href="#main-slider"><i
+								class="fa fa-home"></i></a></li>
+						<li><a href="#about">About</a></li>
+						<li><a href="#news">News</a></li>
+						<li><a href="#components">Components</a></li>
+						<li><a href="#evaluation">Evaluation</a></li>
+						<!--li><a href="#quickStart">Quick Start</a></li-->
+						<li><a href="#resources">Resources</a></li>
+						<li><a href="#publications">Publications</a></li>
+						<li><a href="#team">People</a></li>
+						<!--li><a href="#contact">Contact</a></li-->
+					</ul>
+					<!--  div style="padding-top: 15px;">
+				        <form class="navbar-form" role="search">
+					        <div class="input-group">
+					            <input type="text" class="form-control" placeholder="Search" name="srch-term" id="srch-term">
+					            <div class="input-group-btn" style="">
+					                <button class="btn btn-default" type="submit"><i class="fa fa-search"></i></button>
+					            </div>
+					        </div>
+				        </form>
+				    </div -->
+				</div>
+			</div>
+		</div>
+	</header>
+	<!--/#header-->
+
+	<section id="main-slider" class="carousel">
+		<div class="carousel-inner">
+			<div class="item active">
+				<div class="container">
+					<div class="carousel-content">
+						<h1>DS4DM</h1>
+						<p class="lead">Data Search For Data Mining</p>
+					</div>
+				</div>
+			</div>
+			<!--/.item-->
+			<div class="item">
+				<div class="container">
+					<div class="carousel-content">
+						<h1>DS4DM</h1>
+						<p class="lead">Search and Integrate Tabular Data</p>
+					</div>
+				</div>
+			</div>
+			<!--/.item-->
+		</div>
+		<!--/.carousel-inner-->
+		<a class="prev" href="#main-slider" data-slide="prev"><i
+			class="fa fa-chevron-left"></i></a> <a class="next" href="#main-slider"
+			data-slide="next"><i class="fa fa-chevron-right"></i></a>
+	</section>
+	<!--/#main-slider-->
+
+	<section id="about">
+		<div class="container">
+			<div class="box first">
+				<div class="center">
+					<h2>About</h2>
+					<p class="lead left-aligned">				
+						The <a href="https://www.bmbf.de/" target="_blank">BMBF</a>-funded research project <a href="http://ds4dm.de/">Data Search for Data Mining</a> (DS4DM) extends the data mining plattform <a href="https://rapidminer.com/">RapidMiner</a> with data search and data integration functionalities which enable analysts to find relevant data in large corpora of tabular data, and to semi-automatically integrate discovered data with existing local data. Specifically, the data search functionalities allow users to extend an existing local data table with additional attributes (=columns) of their choice. E.g. if you have a table with data about companies loaded into RapidMiner, you can ask the <a href="https://marketplace.rapidminer.com/UpdateServer/faces/product_details.xhtml?productId=rmx_data_search">DS4DM RapidMiner Data Search Operator</a> to extend your table with the additional column 'Headquarter location'. The operator will search the corpus of tabular data, that is loaded into the DS4DM backend, for relevant data, will add a new 'Headquarter location' column to the user's table, and will populate the column with values from the data corpus.
+						 
+						</br>
+			  </div>
+				<!--/.center-->
+			</div>
+		</div>
+	</section>
+	<!--/#about-->
+	
+	
+		<section id="news">
+		<div class="container">
+			<div class="box">
+				<div class="center">
+					<h2>News</h2>
+					<!-- p class="lead">Pellentesque habitant morbi tristique senectus et netus et<br>malesuada fames ac turpis egestas.</p -->
+				</div>
+				<!--<div class="gap"></div>-->
+				<div id="publication-items">
+					<div class="row"> 
+						<div class="col-sm-12">
+							<div class="left-aligned">
+															<div class="row">
+									<div class="col-sm-1 right-aligned">
+										 24th July 2018
+									</div>
+									<div class="col-sm-11">
+										Final release of the <a href="#components">DS4DM Backend Components</a>. This release includes some minor changes and bugfixes. The changes were made to the empty-string handling, the column name transformations, the parameter naming, the table fusion, the result-formatting. Also new parameters have be added for increased configurability of the data searches. The new version of the DS4DM can be downloaded from <a href="https://github.com/BenediktKleppmann/DS4DM-Backend">Github</a>.
+									</div>
+								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-1 right-aligned">
+										 8th July 2018
+									</div>
+									<div class="col-sm-11">
+										<a href="https://dws.informatik.uni-mannheim.de/fileadmin/lehrstuehle/ki/pub/KleppmannBizer-DensityAndCorrelationBasedTableExtension-LWDA2018.pdf">A paper on the unconstrained and correlation-based Table Extension</a> was accepted for the <a href="https://www.uni-mannheim.de/lwda-2018/">LWDA Conference 2018</a>.
+										The work will be presented there on the 22-24 August.
+									</div>
+								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-1 right-aligned">
+										 19th April 2018
+									</div>
+									<div class="col-sm-11">
+										5th release of the <a href="#components">DS4DM Backend Components</a>. The DS4DM backend has been extended with two new data search functions: <a href="#Unconstrained_Table_Extension">Unconstrained Table Extension</a> which adds all attributes to a query table which can be filled with data values so that a minimal density is reached; and <a href="#Correlation_based_Table_Extension">Correlation-based Table Extension</a> which adds all attributes to a query table which correlate with a specific attribute of the query tables. The new functions have been evaluated using the <a href="http://webdatacommons.org/webtables/goldstandardV2.html">T2D Gold Standard</a>. The extended DS4DM backend as well as the data that was used for the evaluation can be downloaded from <a href="https://github.com/BenediktKleppmann/DS4DM-Backend">Github</a>.
+									</div>
+								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-1 right-aligned">
+										 27th November 2017
+									</div>
+									<div class="col-sm-11">
+									    4th release of the <a href="#components">DS4DM Backend Components</a>. The new release provides improved versions of the keyword-based and correspondence-based data search methods as well as a detailed evaluation of the new methods using the <a href="http://webdatacommons.org/webtables/goldstandardV2.html">T2D Gold Standard</a>. The optimized DS4DM Backend Components as well as the data that was used for the evaluation can be downloaded from <a href="https://github.com/BenediktKleppmann/DS4DM-Backend">Github</a> . 									
+									</div>
+								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-1 right-aligned">
+										 20th September 2017
+									</div>
+									<div class="col-sm-11">
+									    Release of the third version of the <a href="#components">DS4DM Backend Components</a>. The new release allows the user to choose between different repositories/corpuses of tables and to create their own repositories using the newly introduced <a href="#components_DS4DMwebservice_UploadTable">UploadTable functionality</a>.  									
+									</div>
+								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-1 right-aligned">
+										 10th July 2017
+									</div>
+									<div class="col-sm-11">
+									    Release of the second version of the <a href="#components">DS4DM Backend Components</a>. The new release includes new functionality for <a href="#components_DS4DMwebservice">correspondence-based table search</a> as well as <a href="#components_PreProcCorrespondenceCreation">new backend components</a> for discovering instance- and schema-level correspondences between tables in pre-processing.										
+									</div>
+								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-1 right-aligned">
+										 11th August 2016
+									</div>
+									<div class="col-sm-11">
+										Set up of a <a href="http://web.informatik.uni-mannheim.de/ds4dm/">dedicated website</a> for the DS4DM backend technologies and release of initial <a href="https://github.com/AnLiGentile/DS4DM">prototype code</a>.
+									</div>
+								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-1 right-aligned">
+										 2nd June 2016
+									</div>
+									<div class="col-sm-11">
+										Our demonstration on <a href="http://ub-madoc.bib.uni-mannheim.de/40718/1/DataSearchDemo.pdf">Extending RapidMiner with Data Search and Integration Capabilities</a> 
+										won the best demo award at  <a href="http://2016.eswc-conferences.org">ESWC2016</a>, amongst the 19 demos accepted for presentation at the conference. More info on the <a href="http://dws.informatik.uni-mannheim.de/en/news/singleview/detail/News/rapidminer-data-search-extension-wins-eswc2016-best-demo-award/">Data and Web Science group news</a>.
+									</div>
+								</div>
+							
+							</div>
+						</div>
+
+					</div>
+				<!--</div>-->
+			</div>
+			<!--/.box-->
+		</div>
+		<!--/.container-->
+	
+	</section>
+	<!--/#news-->
+	
+
+	<section id="components">
+		<div class="container">
+			<div class="box first">
+				<div class="center">
+					<h2>DS4DM Backend Components</h2>
+														<!--img class="img-responsive"
+										src="images/DS4DMbackend.jpg" alt="DS4DM Backend Components"-->
+					<p class="lead left-aligned">
+						The University of Mannheim team within the <a href="http://ds4dm.de/">DS4DM project</a> is developing the backend  for the <a href="https://marketplace.rapidminer.com/UpdateServer/faces/product_details.xhtml?productId=rmx_data_search">DS4DM RapidMiner Data Search Extension</a>.
+						The backend consists of four components. <br>
+						The actual webservice: 
+					</p>
+					<ul class="lead left-aligned">
+					  <li><strong><a href="#WebService">DS4DM Webservice</a></strong>  <br>
+					    This webservice indexes and hosts a corpus of tabular data. Whenever the Rapidminer Data Search Extension requests a local table to be extended with an additional attribute, the webservice searches the corpus of tabular data for relevant tables (in our example: tables with company headquarter information) and returns these tables to the RapidMiner operator.</li>
+					</ul>
+					<p class="lead left-aligned">As well as three pre-processing components:</p>
+					<ul class="lead left-aligned">
+					  <li><strong><a href="#WebtableExtractor">WebtableExtractor</a></strong>  <br>
+				      This component extracts tables from html pages and adds them to the webservice's data corpus.</li><br>
+					  <li><strong><a href="#IndexCreator">IndexCreator</a></strong>  <br>
+					    This component indexes the data corpus. It relies on Lucene and allows the webservice to quickly search over the data corpus.</li><br>
+					  <li><strong><a href="#CorrespondenceCreator">CorrespondenceCreator</a></strong>  <br>
+					    This pre-processing component discovers instance- and schema-level correspondences between tables in the corpus. These pre-calculated correspondences allow the webservice to return more complete results.</li><br>
+					</ul>
+					<hr>
+				</div>
+			</div>
+		</div>
+	</section>	
+	<section id="components_DS4DMwebservice">	
+		<div class="container">
+			<div class="box first">
+				<div class="center">  
+
+					<h1 class="left-aligned"><a id="WebService"></a>DS4DM Webservice</h1>
+					<p class="lead left-aligned">
+					
+						The webservice offers data search as well as repository maintainance functionality via a REST API. <br>
+						The API specification is <a href="http://web.informatik.uni-mannheim.de/ds4dm/API-definition.html">here</a>.
+						The Javadoc for the API-methods is <a href="http://web.informatik.uni-mannheim.de/ds4dm/Javadoc/index.html">here</a>.
+						<br><br>
+						The most important methods are described in detail below:
+				  <ul class="lead left-aligned">
+						  <li><a href="#Constrained_Table_Extension">Constrained Table Extension</a> </li>
+						  <li><a href="#Unconstrained_Table_Extension">Unconstrained Table Extension</a></li>
+						  <li><a href="#Correlation_based_Table_Extension">Correlation-based Table Extension</a></li>
+						  <li><a href="#Upload">Upload table functionality</a></li>
+				  </ul>
+				<br>
+				</p>
+				  <section id="components_DS4DMwebservice_Search">
+					  <h3 class="left-aligned"><a id="Constrained_Table_Extension"></a>Constrained Table Extension</h3>
+						<p class="lead left-aligned">
+							The Constrained Table Expansion allows the user to extend a given table with an additional column. This is done by finding the data necessary for populating this additional column within a repository of data tables.<br>
+							<br>
+							There are two methods that can be used for finding the right data for populating the additional column: <a href="#Keyword-based">Keyword-based Search</a> and <a href="#Correspondence-based">Correspondence-based Search</a>.
+					  </p>    
+				  </section>
+					<br>
+					<br>
+					<section id="components_DS4DMwebservice_Search">
+					  <h4 class="left-aligned"><a id="Keyword-based"></a>Keyword-based Search</h4>
+					  <p style="text-align:left"><font size="3">(<a href="http://web.informatik.uni-mannheim.de/ds4dm/API-definition.html#operations-tag-search">API specification</a>, <a href="http://web.informatik.uni-mannheim.de/ds4dm/Javadoc/index_search.html">Javadoc</a>)<br></font></p>
+						<p class="lead left-aligned">
+							The keyword-based search method allows the user to extend a given table with an additional column. This is done by finding the data necessary for populating this additional column within a repository of data tables.<br>
+							<br>
+							Lets assume that a user has loaded a table describing countries into RapidMiner. The table has the two columns "country" and "GDP". The user now wants to have the additional column "population" added to the table and filled with data from the corpus - see step <font size="5" color="DimGray">&#9450;</font> in figure below.
+							In step <font size="5" color="DimGray">&#9312;</font>, the keyword-based search algorithm searches for tables in the repository, that have a column with a column name similar to "population". Afterwards (step <font size="5" color="DimGray">&#9313;</font>), the algorithm determines correspondences between instances (rows) in the found tables and rows the query table, by comparing the subject-column values of these two tables – in our case: comparing the names of the countries. For the comparison, the subject column values are normalized and compared using Fuzzy-Jaccard with a threshold of 0.75. The threshold can be changed in the config-file. The identification of the subject columns is done by a combination of the same string comparison on column headers and a subject-column-detection algorithm [1].
+					  </p>    
+						 <img class="img-responsive" src="./images/keyword-based search.png" alt="keyword-based search" height="1800" width="700" align="middle"  style="display: block; margin-left:auto; margin-right: auto;z-index: 1;">
+				  </section>
+					<br>
+					<br>
+					<section id="components_DS4DMwebservice_ExtendedSearch">
+						<h4 class="left-aligned"><a name="Correspondence-based" id="Correspondence-based"></a>Correspondence-based Search</h4>	
+						<p style="text-align:left"><font size="3">(<a href="http://web.informatik.uni-mannheim.de/ds4dm/API-definition.html#operations-tag-search">API specification</a>, <a href="http://web.informatik.uni-mannheim.de/ds4dm/Javadoc/index_extendedSearch.html">Javadoc</a>)<br></font></p>
+						<p class="lead left-aligned">     					
+							The correspondence-based search method performs the same task as the <a href="#components_DS4DMwebservice_Search">keyword-based search</a>:  find tables that are relevant for table expansion within a repository of tabular data. The correspondence-based search however aims at achieving complete results by employing pre-calculated correspondences between the tables in the repository - see <font size="5" color="DimGray">&#9450;</font> in the figure below. These schema- and instance- correspondences between tables in the repository are calculated during the creation of a repository. The method that is used to discover the correspondences is described <a href="#components_PreProcCorrespondenceCreation">below</a>.<br><br>
+							The correspondence-based search addresses the following limitation of the keyword-based search:
+							If you want extend your table with the additional column “population”, the keyword-based search will not return tables containing an &quot;inhabitants&quot; column as the name of this column is too different from the name  “population”. Nevertheless, the column &quot;inhabitants&quot; may contain data that is relevant for extending the query table.<br><br>
+							The correspondence-based search method deals with this problem by using pre-calculated correspondences to expand the query result and return a more complete set of relevant tables: Initially, the method employs the same approach as the keyword-based method to find an initial set of tables that contain a column having a name similar to &quot;population&quot;. Afterwards, the method searches the  pre-calculated schema correspondences for correspondences that connect the discovered population columns with population columns in additional tables which have not been identified based on the column name yet. For instance, as the method for generating the correspondences also considers data values and not only column names, a pre-calculated correspondence could connect an “2012 Estimate” column in another table with a population column in one of the discovered tables and the table containing the “2012 Estimate” column would consequently also be added to the set of relevant tables <font size="5" color="DimGray">&#9312;</font>.							The pre-calculated correspondences also come to play for finding instance correspondences. In addition to comparing subject column values using string similarity - as in the keyword-based search – the pre-calculated instance correspondences are used to identify rows in the additional tables that describe entities which also appear in the query table <font size="5" color="DimGray">&#9313;</font>. Again, as the instance correspondences are pre-calculated by not only comparing subject column values but also considering the values from other columns, the set of instance correspondences that is returned to RapidMiner is more complete than the set that results from only comparing subject column values. </p>
+						<img class="img-responsive" src="./images/correspondence-based search.png" alt="correspondence-based search" height="1600" width="470" align="middle"  style="display: block; margin-left:auto; margin-right: auto;z-index: 1;">
+					</section>
+					<br>
+					
+					<section id="components_DS4DMwebservice_Search">
+					  <h3 class="left-aligned"><a id="Unconstrained_Table_Extension"></a>Unconstrained Table Extension</h3>
+					  <p style="text-align:left"><font size="3">(<a href="http://web.informatik.uni-mannheim.de/ds4dm/API-definition.html#operations-tag-search">API specification</a>, <a href="http://web.informatik.uni-mannheim.de/ds4dm/Javadoc/index_unconstrainedSearch.html">Javadoc</a>)<br></font></p>
+						<p class="lead left-aligned">
+							The <a href="#Constrained_Table_Extension">Constrained Table Extension</a> extends a provided table with exactly one additional column. The Unconstrained Table Extension on the other hand extends the provided table with as many columns as possible.<br>There is the restriction that the new extension columns have to have a minimum density of 10%. Another difference between the Constrained Table Extension and the Unconstrained Table Extension is the following: For the Constrained Table Extension the Backend API functions search for the correct data and the correspondences needed for fusing the data/populating the extension column, the actual fusion and population however happens in the front-end. This allows the user greater control over the fusion process. For the Unconstrained Table Extension on the other hand the fusion and population is done in the backend, as there are just too many variables involved for a user to effectively manage the fusion process.<br><br> 
+							The Algorithm for Unconstrained Table Extension works in the following way:<br> (An illustration of the steps is in the figure below.)<br>
+							<div class="list_with_circled_numbers">
+							<ol class="lead left-aligned circled_numbers">
+								  <li>The subject column of the provided table is automatically detected. <br>First, the program checks whether one of the column headers matches one of the fifteen regex-patterns for subject columns headers (such as “.*name”). If no column header was identified as a subject column header, then the string-column with the biggest amount of distinct values is chosen as the subject column.</li><br>
+								  <li>The <a href="#IndexCreator_KeyColumnIndex">KeyColumnIndex</a> is used to find the tables in the repository with similar subject columns. <br>This Lucene index uses a tf-idf-like similarity score to calculate the amount of overlap between the values of the subject column of the provided table and the subject column of each of the tables in the repository.</li><br>
+								  <li>The instance matches between the provided table and the tables that were found in step<font size="5" color="DimGray">&#9313;</font> are determined. <br>For this a similarity is calculated for each instance pair. This similarity is made up of the similarity between the subject-column values (50%) and the maximal similarity of the non-subject-column values (50%). The similarities are calculated using datatype-specific similarity metrics (string-similarity, number-similarity and date-similarity).</li><br>
+								  <li>The schema correspondences between all of the tables (the provided table and the matching tables from the repository) are determined.  Schema correspondences are found by either<br> •	Label-based Schema Matching  - considers the similarity between column headers, or <br>•	Instance-based Schema Matching - considers the similarity of values for the matched entities.</li><br>
+								  <li>Grouping of Columns according to Schema correspondences. <br>Corresponding columns/schemas contain information about the same attribute. The columns of the tables are grouped, so that there is one group per attribute.</li><br>
+								  <li>For each group, the columns of that group are fused into one. <br>First, the instance correspondences are used to determine at which position of the fused column a value belongs. Next, if there are several values that belong at the same position, then one of them is chosen. This done with the following rules: <br>•	If available, then choose the value from the provided table<br>•	If not, then do similarity-based voting - the value with the greatest similarity to the other values is chosen.</li><br>
+						    </ol>
+							</div>
+							<img class="img-responsive" src="./images/unconstrained_table_extension.png" alt="unconstrained table extension" height="1600" width="470" align="middle"  style="display: block; margin-left:auto; margin-right: auto;z-index: 1;">
+					  </p>    
+					</section>
+					<br>
+					<section id="components_DS4DMwebservice_Search">
+					  <h3 class="left-aligned"><a id="Correlation_based_Table_Extension"></a>Correlation-based Table Extension</h3>
+						<p class="lead left-aligned">
+							The <a href="#Unconstrained_Table_Extension">Unconstrained Table Extension</a> can add over 100 columns to a provided table (when the used repository is large). This amount of columns can be overwhelming for the user. The Correlation-based Table Extension was developed in order to address this issue. Instead of extending a provided table with as many columns as possible, it extends the provided table only with those columns that correlate to a specified attribute in the provided table – the ‘correlation attribute’. <br><br>
+							In practice the Correlation-based Table Extension is implemented as an extension of the Unconstrained Table Extension. In the first step the Unconstrained Table Extension is used to add as many columns as possible to the provided table. In the second step ‘Correlation-based Filtering’ is applied to the extended table in order to only keep those columns that correlate with the correlation attribute.<br><br>
+							The Unconstrained Table Extension Algorithm is described <a href="#Unconstrained_Table_Extension">above</a>. The Correlation-based Filtering Algorithm goes through the following steps:<br>
+							<ol class="lead left-aligned">
+								  <li>Columns that should be numbers are converted to numbers. <br>
+										Often numeric columns are interpreted as strings, this is because of the following issues with the data: <br>
+										-	The values contain additional symbols and measurement units such as ‘%’, ‘€’, etc. <br>
+										-	Individual values are strings such as ‘not available’ or ‘-’<br>
+										-	The decimal separator might be a ‘.’ or a ‘,’ depending on where the data was captured.  (the thousands separator can be a ‘,’, ‘.’ or ‘ ’)<br>
+										There is a function that recognizes which of these issues appear in the columns of the extended table and converts them to numeric columns.</li><br>
+								  <li>Calculate Correlations<br>
+								  Only correlations between numeric columns are considered. These are calculated with Pearson correlation coefficient. The correlations between categorical variables or between a numeric and a categorical variable are not useful, as mainly surface forms are found as highly correlating variables. Only columns with a correlation bigger than 0.8 are kept.</li>
+						    </ol>
+
+					  </p>    
+					</section>
+					<br>
+					
+					<section id="components_DS4DMwebservice_UploadTable">
+						<h3 class="left-aligned"><a id="Upload"></a>Upload Table Functionality</h3>	
+						<p class="lead left-aligned">  
+							Many use cases not only require extending local tables with data from public webtables, but users would like to extend tables using their own data, for example internal data from within a compary. <br>
+							The UploadTable functionality allows users to create their own table repositories on the server and upload tables into these repositories.
+							The backend indexes the uploaded tables using the <a href="#components_PreProcIndexCreation">IndexCreator Component</a>. The backend also uses the <a href="#components_PreProcCorrespondenceCreation">CorrespondenceCreator Component</a> to discover instance- and schema-correspondences between uploaded tables and tables that are already contained in a repository. These correspondences are employed afterwards by the <a href="#components_DS4DMwebservice_ExtendedSearch">correspondence-based search</a>.
+						</p>
+					</section>
+					<br>
+
+				</div>
+			</div>
+		</div>
+	</section>
+	<section id="components_PreProcWebtableExtraction">
+		<div class="container">
+			<div class="box first">
+				<div class="center">  
+					<h1 class="left-aligned"><a id="WebtableExtractor"></a>Preprocessing - WebtableExtractor</h1>
+
+					<p class="lead left-aligned">
+						The WebtableExtractor extracts tables from HTML pages and transforms them into the representation that is used by the other components of the backend.
+					</p>
+					<p class="lead left-aligned">
+
+					The Extractor is currently implemented as a batch process. 
+					We assume that input data is stored locally, e.g. in the form of HTML pages. 
+								</p>
+
+									<img class="img-responsive"
+										src="images/preprocessing.png" alt="Preprocessing step">
+
+								
+					<p class="lead left-aligned">	
+						The <a href="https://github.com/AnLiGentile/DS4DM/blob/master/DS4DM_Preprocessing/src/main/java/de/mannheim/uni/ds4dm/preprocessing/html/LocalWebTableExtractorFromFolder.java">process</a> 
+						iterates over the locally stored pages, extracts useful tables and represent the output in a <a href="table_format">standardised format</a>.
+						</br>The extraction is performed with <a href="https://github.com/AnLiGentile/DS4DM/blob/master/DS4DM_Preprocessing/src/main/java/org/webdatacommons/webtables/extraction/BasicExtractionAlgorithm.java">BasicExtraction algorithm</a> 
+						which iterates through tables in the HTML page using the "table" tag.
+						Heuristics are used to discard noisy tables:
+					</p>
+
+					<ul class="lead left-aligned">
+					  <li>tables inside forms</li>
+					  <li>tables which contain sub-tables</li>
+					  <li>tables with less than a certain number of rows (this parameter is currently set to 3)</li>
+					  <li>tables with less than a certain number of columns (this parameter is currently set to 2)</li>
+					  <li>tables with "rowspan" or "colspan"</li>
+					  <li>tables that do not contain header cells ("th" element)</li>
+					</ul>
+
+
+
+					<p class="lead left-aligned">	
+						The remaining tables are classified as "layout" or "content" tables. 
+						The classification is done with the <a href="https://github.com/AnLiGentile/DS4DM/blob/master/DS4DM_Preprocessing/src/main/java/org/webdatacommons/webtables/extraction/TableClassification.java">classifyTable method</a>.
+						It uses two models (<a href="https://github.com/AnLiGentile/DS4DM/blob/master/DS4DM_Preprocessing/src/main/resources/SimpleCart_P1.mdl">SimpleCart_P1</a> and <a href="https://github.com/AnLiGentile/DS4DM/blob/master/DS4DM_Preprocessing/src/main/resources/SimpleCart_P2.mdl">SimpleCart_P2</a>). 
+						The first model identifies if the table is a LAYOUT table (only used for visualization formatting purposes). 
+						If this is not the case, then the second model is used to classify a table as:
+						<ul class="lead left-aligned">
+						  <li>RELATION (containing multiple entities and relations)</li>
+						  <li>ENTITY (describing a single entity)</li>
+						  <li>MATRIX</li>
+						  <li>OTHER (if no type can be decided)</li>
+						</ul>
+					</p>
+					<p class="lead left-aligned">	
+						For all retained tables, the method additionally identifies:
+						<ul class="lead left-aligned">
+						  <li> the key column</li>
+						  <li> the header row</li>
+						  <li> context information</li>
+						  </ul>					</p>
+					<p class="lead left-aligned">	
+
+					The <a href="https://github.com/AnLiGentile/DS4DM/blob/master/DS4DM_Preprocessing/src/main/java/org/webdatacommons/webtables/extraction/detection/KeyColumnDetection.java">key column detection</a> 
+					selects the column with the maximal number of unique values. In case of a tie, the left-most column is used.
+					</br>
+					The <a href="https://github.com/AnLiGentile/DS4DM/blob/master/DS4DM_Preprocessing/src/main/java/org/webdatacommons/webtables/extraction/detection/HeaderDetection.java">header detection</a> 
+					identifies a row which has a different content pattern for the majority of its cells,
+					with respect to the other rows. Currently this test is performed only on the first non-empty row of the table against the others. 
+					</br>
+					As context information for each table we select 200 characters before and 200 after the table itself.
+					</p>
+					<br>
+					<br>
+				</div>
+			</div>
+		</div>
+	</section>	
+	<section id="components_PreProcIndexCreation">
+		<div class="container">
+			<div class="box first">
+				<div class="center"> 
+					
+					
+<h1 class="left-aligned"><a id="IndexCreator"></a>Preprocessing - IndexCreator</h1>
+
+				<p class="lead left-aligned">
+					The DS4DM webservice has to be fast at identifying the correct tables to return to the DS4DM RapidMiner operator.
+					To achieve this speed despite the large corpus of data tables it has to search through, indexes are needed.
+					In total 3 lucene indexes are used; they contain information about the data tables in the webservice's corpus. 
+				</p>
+				<p class="lead left-aligned">
+					The IndexCreator  creates the following 3 Lucene indexes:<br>
+				</p>
+				<ul class="lead left-aligned">
+					<li><a id="IndexCreator_ColumnNameIndex"></a> ColumnNameIndex<br>
+					This index has an entry for each column of each table (in the corpus). <br>In every entry following information is saved: tableHeader (=table name), value (=column name), columnDataType, tableCardinality, columnDistinctValues, columnindex, columnOriginalHeader, fullTablePath (=folder in which the original table is located)</li>
+					<br>
+					<li><a id="IndexCreator_TableIndex"></a> TableIndex<br>
+					This index has an entry for each distinct value in each column of each table. <br>In every entry following information is saved: id (=the distinct-value-index for each column), tableHeader, columnHeader, columnDataType, tableCardinality, columnDistinctValues, valueMultiplicity (=how often the distinct value appears in this column), value (=the distinct value), fullTablePath, isPrimaryKey (=true if the column is the PK), originalValue</li>
+					<br>
+					<li><a id="IndexCreator_KeyColumnIndex"></a> KeyColumnIndex<br>
+					This index has an entry for each table. <br>In every entry following information is saved: tableHeader, columnHeader, keyColumnString (= a list of all the values in the table's key column concatenated into one long string), keyColumnIndex.<br>
+					This index is used for preprocessing, by the <a href="#components_PreProcCorrespondenceCreation">CorrespondenceCreator</a>, as well as the <a href="#Unconstrained_Table_Extension">Unconstrained-</a> and <a href="#Correlation_based_Table_Extension">Correlation-based-</a> Table Extension</li>
+				</ul>	
+				<br>
+				
+				</div>
+			</div>
+		</div>
+	</section>	
+	<section id="components_PreProcCorrespondenceCreation">
+		<div class="container">
+			<div class="box first">
+				<h1 class="left-aligned">Preprocessing - CorrespondenceCreator</h1>
+				<p class="lead left-aligned">
+					When a repository of data tables is created, the CorrespondenceCreator is automatically run. The CorrespondenceCreator finds correspondences between tables in the repository. These correspondences are later used by the <a href="#components_DS4DMwebservice_ExtendedSearch">Correspondence-based Search</a> to improve its search results.
+				</p>
+				<br>
+				<p class="lead left-aligned">
+					The following types of correspondences are generated:
+				</p>
+				<ul class="lead left-aligned">
+					<li> Schema Correspondences<br>A Schema Correspondence marks two columns from two different tables as containing the same attribute e.g. column1 from table1 and column4 from table3 both contain company sizes.</li>
+					<br>
+					<li> Instance Correspondences<br>An Instance Correspondence marks two rows from two different tables as referring to the same real-world-object e.g. row2 from table1 and row11 from table3 both contain information about the company Tesla.</li>
+				</ul>
+				<br>
+				<br>
+				<p class="lead left-aligned">
+					In order to find these correspondences the CorrespondenceCreator executes the following steps:
+				</p>
+				<ol class="lead left-aligned">
+					<li>Blocking<br>
+						Looking for correspondences between all tables would be too computationally expensive. In the blocking step, we therefore generate pairs of tables that are likely to have correspondences.<br>
+						For a given table the five tables with the most similar subject columns are chosen as likely corresponding tables. The <a href="#IndexCreator_KeyColumnIndex">KeyColumnIndex</a> is used for comparing the subject columns. 
+					</li>
+						<br>
+					  <li>Instance-matching<br>
+						The instance correspondences between two tables are found by comparing the values from a row in the first table to the values from a row in the second table. For comparing these values data-type-specific similarity metrics are used. Also, the similarity of the subject column values is given a weight of 0.5. While the remaining 0.5 weight points are equaliy divided over all other columns. Row combinations with an overall similarity score above 0.55 are considered instance matches. This threshold can be configured in the config file. 
+					</li><br>
+					<li>Schema-matching<br>
+						Here we find corresponding columns in the two tables, by comparing their column values and column headers. When comparing the column values the knowledge about the instance-matches helps us get a better accuracy. Here too, data type-specific similarity measures are used for comparing column values.
+					</li>
+				</ol>
+				<br>
+				<p class="lead left-aligned">
+				Steps 2. and 3. of the correspondence creation process are implemented using the <a href="https://github.com/olehmberg/winter">WInte.r Data Integration Framework</a>. </p>
+
+			  <!--/.center-->
+			</div>
+		</div>
+	</section>
+
+		</div>
+	</section-->
+	<!--/#components-->					
+					
+	<section id="evaluation">
+		<div class="container">
+			<div class="box first">
+				<div class="center">
+					<h2>Evaluation</h2>	
+
+					<p class="lead left-aligned">
+						In the following, we evaluate different aspects of the DS4DM backend components. First, the T2D Goldstandard is presented. This Goldstandard was used for many of the evaluations. Afterwards, the evaluations of the <a href="#Constrained_Table_Extension">Constrained-</a>, the <a href="#Unconstrained_Table_Extension">Unconstrained-</a> and the <a href="#Correlation_based_Table_Extension">Correlation-based-</a> Table Extension are presented. Finally, the Table Upload Functionality and the Preprocessing Components are evaluated.<br>
+						The data from all the evaluations can be downloaded <a href="https://github.com/BenediktKleppmann/DS4DM-Backend/tree/master/Evaluation%20tables">here</a>.
+					</p><br>
+					
+					<p class="lead left-aligned">
+						<strong>T2D Goldstandard</strong> <br>
+						For multiple of the evaluations, the <a href="http://webdatacommons.org/webtables/goldstandardV2.html">T2D Goldstandard V2</a> is used. This is a collection of 779 tables that were extracted from HTML pages and cover a wide range of topics - such as populated places, organizations, people, music, etc. The tables were manually mapped to the DBpedia knowledge base. For our evaluation, we derive schema- and instance-correspondences between the different tables of the goldstandard by looking for pairs of schemas/instances that both have been mapped to the same DBpedia entry. 
+					</p>
+					<br>
+					<p class="lead left-aligned">
+						<strong>Evaluation of the Constrained Table Extension</strong> <br>
+						The evaluation data can be downloaded from <a href="https://github.com/BenediktKleppmann/DS4DM-Backend/tree/master/Evaluation%20tables/1_Evaluation%20of%20the%20Table%20Search%20Methods">here</a>.<br>
+						We measure the density (completeness) of the attribute that is added to different query tables as well as the quality of the values of the newly added attribute. We use the <a href="http://webdatacommons.org/webtables/goldstandardV2.html">T2D Goldstandard V2</a> for the evaluation. 
+					</p>
+					<p class="lead left-aligned">
+						For evaluating the table search methods we use fifteen different query tables that each should be extended by one specific attribute. Using the correspondences of the <a href="http://webdatacommons.org/webtables/goldstandardV2.html">T2D Goldstandard</a>, we inferred the best possible population of this extension attribute for the fifteen tables. The evaluation results below where calculated by comparing the values of the extension attributes that were added to the tables by the two search algorithms with the optimal values of the attributes as derived from the goldstandard. The complete details about the evaluation including the 15 query tables as well as the content of the attributes that were added to the tables can be found <a href="https://docs.google.com/document/d/11CSH_BrnO3ZGOuLztXNgvPKSv93j3Plnb_eLqw2DFv0/edit?usp=sharing">here</a>.
+					</p>
+					<p class="lead left-aligned">																		 
+						<img class="img-responsive" src="./images/Evaluation_of_searches.png" alt="Evaluation tables for the Datasearch">
+					</p>
+					<p class="lead left-aligned"> The table on the left contains the results obtained using the keyword-based search method. You will notice, that in general the algorithm was able to populate the extension column with a high density and accuracy. There are two exceptions for which the algorithm as not able to populate the extension column properly: Mountain-MountainRange and Film-ReleaseDate.<br>
+					The table on the right shows the results of the correspondence-based search method. Especially for Film-ReleaseDate and Country-Code, due to the additionally found data, many more values in the extension column could be populated (“missing values filled” is high).<br>
+					In the special cases of Country-Currency and Game-Developer, some of the additionally found data was wrong. In this case, extension-column values which had previously been correctly populated, now were wrongly populated (negative “difference in correct values after fusion” values).
+					
+					<br>
+					<p class="lead left-aligned">
+						<strong>Evaluation of the Unconstrained Table Extension</strong> <br>
+						The evaluation data can be downloaded from <a href="https://github.com/BenediktKleppmann/DS4DM-Backend/tree/master/Evaluation%20tables/2_Evaluation%20of%20the%20Unconstrained%20Table%20Extension/Evaluation%20with%20T2D%20Goldstandard%20data">here</a>.<br>
+						For the evaluation of the Unconstrained Table Extension, 13 different tables with different types of entities (Airports, Currencies, Lakes, etc.) were extended using the tables from the T2D Goldstandard as repository. The resulting extended tables were compared with ideal solutions to calculate the Precision-, Recall- and F1- scores shown below.<br><br>
+						The ideal solutions were generated the following way:
+					<ol class="lead left-aligned">
+						<li>Identify the subject-columns of the tables in the T2D Goldstandard</li>
+						<li>Determine groups of corresponding subject columns, using the known schema correspondences of the T2D Goldstandard<br>
+						<li>Select the 13 largest groups. (This is how the 13 types of entities were determined - Airports, Currencies, Lakes, etc.)</li>
+						<li>For each group: Fuse the tables whose subject column is in this group, by using the known schema- and instance- correspondences between these tables. <br>When, for the fusion, several values are associated with one position, all of them are kept - in the evaluation all of them are counted as correct.</li>
+					</ol>
+					<p class="lead left-aligned">																		 
+						<br>
+						<img class="img-responsive" src="./images/evaluation_of_unconstrained_table_extensioin.png" alt="Evaluation of unconstrained table extensioin" height="530" width="480" align="middle"  style="display: block; margin-left:auto; margin-right: auto;z-index: 1;">
+					</p>
+					<p class="lead left-aligned">
+						Analysis of the results<br>
+						The Recall is better than the Precision for most of the examples. This is because the ideal solutions were generally not as well populated as the results of the Unconstrained Table Extension. The ideal solutions only contained values that have entity- and schema- correspondences to other tables, whereas the results used all values from the found tables.<br>
+						A lot of the other differences can be explained by the quality and the similarity of the underlying tables – for Lakes and Journals the underlying tables were very different; for Animals and Airlines they were very similar.<br>
+					</p>
+					<p class="lead left-aligned">
+						<i>Evaluation using Product Data from different E-Shops</i><br>
+						Another evaluation of the Unconstrained Table Extension was performed using product data that had extracted from thirteen e-shops using a focused crawler. The Evaluation was performed in much the same way as with the T2D_Goldstandard data (see above). 
+						The evaluation data as well as a detailed description of the evaluation setup is found <a href="https://github.com/BenediktKleppmann/DS4DM-Backend/tree/master/Evaluation%20tables/2_Evaluation%20of%20the%20Unconstrained%20Table%20Extension/Evaluation%20with%20Product%20data%20from%20Focused%20Crawler">here</a>.
+						<br>
+					</p>
+					<p class="lead left-aligned">																		 
+						<br>
+						<img class="img-responsive" src="./images/evaluation_of_unconstrained_table_extension2.png" alt="Evaluation of unconstrained table extension with product data scraped by the focussed crawler" height="250" width="410" align="middle"  style="display: block; margin-left:auto; margin-right: auto;z-index: 1;">
+					</p>
+					
+					<br>
+					<p class="lead left-aligned">
+						<strong>Evaluation of the Correlation-based Table Extension</strong> <br>
+						The evaluation data can be downloaded from <a href="https://github.com/BenediktKleppmann/DS4DM-Backend/tree/master/Evaluation%20tables/3_Evaluation%20of%20the%20Correlation-based%20Table%20Extension">here</a>.<br>
+						The Evaluation of Unconstrained Table Extension was done with 13 query tables. For the evaluation of the Correlation-based Table Extension, from these thirteen tables, the four were considered that have the most numerical columns.<br><br>
+						For these tables the additional columns found by the Correlation-based Table Extension were compared with the columns found when applying the Correlation-based Filtering to the ideal solutions. <br>
+						The following results were obtained:
+					</p>
+					<p class="lead left-aligned">																		 
+						<img class="img-responsive" src="./images/precision_and_recall_for_correlation_based_table_extension.png" alt="Precision and Recall for correlation based table extension" height="120" width="200" align="middle"  style="display: block; margin-left:auto; margin-right: auto;z-index: 1;">
+					</p>
+					<p class="lead left-aligned">
+						Analysis of the results<br>
+						The scores are not 100%, because the Unconstrained Table Extension doesn’t work perfectly. The recall is better, because the tables generated by the Unconstrained Table Extension generally have more columns. So, more of columns are found to be correlating. Other things that cause wrong correlations are: columns with very low density, values with different measurement units (e.g. km2 and m2) in the same column.<br>
+					</p>
+						
+						
+						
+					<p class="lead left-aligned">
+						<strong>Evaluation of the Table Upload Functionality </strong> <br>
+						The uploadTable functionality allows users to add individual tables to an existing corpus of tables.
+						The uploaded tables are indexes and correspondences are created between the newly uploaded table and the tables that are already in the repository. Uploading and indexing 1000 tables one by one takes approximately 2 hours (7.2 seconds per table). 
+						Alternatively, the bulkTableUpload functionality can be used for uploading larger amounts of tables. Processing the same 1000 tables using the bulkTableUpload only requires 10 minutes (0.6 seconds per table). 	
+						These times were measured using a machine with 13GB of RAM and four 2.6GHz processors.
+					</p>
+					
+					
+					<p class="lead left-aligned"><br>
+					 <strong>Evaluation of the Preprocessing Components</strong> <br>
+					</p>
+					<h4 class="lead left-aligned">Evaluation of the Correspondence Discovery</h4>
+					<p class="lead left-aligned"> 
+					  The evaluation data can be downloaded from <a href="https://github.com/BenediktKleppmann/DS4DM-Backend/tree/master/Evaluation%20tables/4_Evaluation%20of%20the%20Correspondence%20Discovery">here</a>.<br>
+					  We also use the <a href="http://webdatacommons.org/webtables/goldstandard.html"><a href="http://webdatacommons.org/webtables/goldstandardV2.html">T2D Goldstandard</a></a> for evaluating the quality of the instance- and schema-level correspondences between tables that are discovered by the <a href="#components_PreProcCorrespondenceCreation">CorrespondenceCreator</a>.
+						
+						The matching method that is employed by the <a href="#components_PreProcCorrespondenceCreation">CorrespondenceCreator</a> reaches the following F1 scores:
+						<ul class="lead left-aligned">
+							<li> Instance Matching<br>
+							F1 = 0.753 (Precision = 0.949; Recall = 0.624)</li>
+							<br>
+							<li> Schema Matching<br>
+							F1 = 0.755 (Precision = 0.803; Recall = 0.712)</li>
+						</ul>
+					</p>
+					<br>
+					
+					<h4 class="lead left-aligned">Evaluation of the Runtime Performance of the Correspondence Discovery</h4> 
+					<p class="lead left-aligned"> 
+						The Perfomance of the Backend components was evaluated using the <a href="http://websail-fe.cs.northwestern.edu/TabEL/">Wikitables dataset</a>. 
+						This dataset consists of 1.6 million tables out of which 541 thousand are relational tables with a subject column and a minimum size of 3x3. <br>
+						The IndexCreatior needs 2 hours to index these 541 thousand tables.
+						The CorrespondenceCreator needs 4 days to process theses tables. <br>
+						These times were measured using a machine with 8GB of RAM and a 3.1GHz processor. 
+					</p> <br>
+					
+					
+					<h4 class="lead left-aligned">Evaluation of Blocking Step</h4>
+					<p class="lead left-aligned"> 
+						The evaluation data can be downloaded from <a href="https://github.com/BenediktKleppmann/DS4DM-Backend/tree/master/Evaluation%20tables/5_Evaluation%20of%20the%20Blocking%20Step">here</a>.<br>
+						The  CorrespondenceCreator employs a blocking step to reduce the number of table comparisons that are needed for identifying correspondences.
+						The blocking technique clusters tables using a bag-of-words approach. When used to find likely matching pairs in the T2D Goldstandard, the blocking technique achieves a reduction ratio of 0.992 and a pair completenes of 0.701.
+						The harmonic mean of these two values is 0.822. 
+					</p><br>
+
+				</div>
+			</div>
+		</div>
+	</section>					
+					
+					
+	<section id="resources">
+		<div class="container">
+			<div class="box">
+				<div class="center">
+					<h2>Resources</h2>
+				</div>
+				<!--  /.center -->
+				<div class="row">
+					<div class="col-md-4 col-sm-6">
+						<div class="center">
+							<a href="http://ds4dm.de/" target="_blank"><i
+								class="fa fa-database icon-md icon-color2"></i></a>
+							<h4>Official Project Website</h4>
+							<p>The official general website for the DS4DM project.</p>
+						</div>
+					</div>
+
+					<div class="col-md-4 col-sm-6">
+						<div class="center">
+							<a href="https://github.com/BenediktKleppmann/DS4DM-Backend/tree/master" target="_blank"><i
+								class="fa fa-github icon-md icon-color3"></i></a>
+							<h4>DS4DM code</h4>
+							<p>The source code of DS4DM on GitHub. </br>The repository contains the server side components of the DS4DM project.</p>
+						</div>
+					</div>
+					<!--/.col-md-4-->
+					
+														<div class="col-md-4 col-sm-6">
+						<div class="center">
+							<a href="https://www.youtube.com/channel/UCJGPEKnsqlidfdWV8BN6e-w" target="_blank"><i
+								class="fa fa-youtube icon-md icon-color1"></i></a>
+							<h4>DS4DM videos</h4>
+							<p>The DS4DM YouTube channel.</p>
+						</div>
+					</div>
+					<!--/.col-md-4-->
+				</div>
+				<!--/.row-->
+				
+
+
+				
+
+			</div>
+			<!--/.box-->
+		</div>
+		<!--/.container-->
+	</section>
+	<!--/#services-->
+
+	<section id="publications">
+		<div class="container">
+			<div class="box">
+				<div class="center">
+					<h2>Publications</h2>
+					<!-- p class="lead">Pellentesque habitant morbi tristique senectus et netus et<br>malesuada fames ac turpis egestas.</p -->
+				</div>
+				<div class="gap"></div>
+				<div id="publication-items">
+				
+				<div class="row">
+						<div class="col-sm-12">
+							<div class="left-aligned">
+								<div class="row">
+									<div class="col-sm-1 right-aligned">
+										<a href="./bibtex/Gentile2016.bib"><i
+											class="fa fa-bold"></i></a> <a
+											href="http://ub-madoc.bib.uni-mannheim.de/40718/1/DataSearchDemo.pdf"
+											target="_blank"><i class="fa fa-file-text"></i></a>
+									</div>
+									<div class="col-sm-11">
+										Anna Lisa Gentile, Petar Ristoski, Steffen Eckel, Dominique Ritze, and Heiko Paulheim: 
+										<i><a href="https://openproceedings.org/2017/conf/edbt/paper-367.pdf" target="_blank">Entity Matching on Web Tables : A Table Embeddings Approach for Blocking</a></i>. 
+										In: 20th International Conference on Extending Database Technology (EDBT 2017), Venice, Italy, March 2017.
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>	
+					<div class="row">
+						<div class="col-sm-12">
+							<div class="left-aligned">
+								<div class="row">
+									<div class="col-sm-1 right-aligned">
+										<a href="./bibtex/Gentile2016.bib"><i
+											class="fa fa-bold"></i></a> <a
+											href="http://ub-madoc.bib.uni-mannheim.de/40718/1/DataSearchDemo.pdf"
+											target="_blank"><i class="fa fa-file-text"></i></a>
+									</div>
+									<div class="col-sm-11">
+										Dominique Ritze, Christian Bizer: <i><a href="https://openproceedings.org/2017/conf/edbt/paper-148.pdf" target="_blank">Matching Web Tables To DBpedia - A Feature Utility Study</a></i>. 
+										20th International Conference on Extending Database Technology (EDBT2017), Venice, Italy, March 2017.
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>	
+					<div class="row">
+						<div class="col-sm-12">
+							<div class="left-aligned">
+								<div class="row">
+									<div class="col-sm-1 right-aligned">
+										<a href="./bibtex/Gentile2016.bib"><i
+											class="fa fa-bold"></i></a> <a
+											href="http://ub-madoc.bib.uni-mannheim.de/40718/1/DataSearchDemo.pdf"
+											target="_blank"><i class="fa fa-file-text"></i></a>
+									</div>
+									<div class="col-sm-11">
+										Anna Lisa Gentile, Sabrina Kirstein, Heiko Paulheim and Christian Bizer: <a href="http://ub-madoc.bib.uni-mannheim.de/40718/1/DataSearchDemo.pdf" target="_blank">Extending RapidMiner with data search and integration capabilities</a>. 
+										In <i>The Semantic Web: ESWC 2016 - Satellite Events</i>. Springer, 2016.
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-12">
+							<div class="left-aligned">
+								<div class="row">
+									<div class="col-sm-1 right-aligned">
+										<a href="./bibtex/Gentile2016.bib"><i
+											class="fa fa-bold"></i></a> <a
+											href="http://ub-madoc.bib.uni-mannheim.de/40718/1/DataSearchDemo.pdf"
+											target="_blank"><i class="fa fa-file-text"></i></a>
+									</div>
+									<div class="col-sm-11">
+										Petar Petrovski, Anna Primpeli, Robert Meusel, Christian Bizer: 
+										<i><a href="http://webdatacommons.org/productcorpus/paper/WDC-EC_GS.pdf" target="_blank">The WDC Gold Standards for Product Feature Extraction and Product Matching</a></i>. 
+										17th International Conference on Electronic Commerce and Web Technologies (EC-Web 2016), Porto, Portugal, September, 2016. 
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-12">
+							<div class="left-aligned">
+								<div class="row">
+									<div class="col-sm-1 right-aligned">
+										<a href="./bibtex/Gentile2016.bib"><i
+											class="fa fa-bold"></i></a> <a
+											href="http://ub-madoc.bib.uni-mannheim.de/40718/1/DataSearchDemo.pdf"
+											target="_blank"><i class="fa fa-file-text"></i></a>
+									</div>
+									<div class="col-sm-11">Oliver Lehmberg, Dominique Ritze, Petar Ristoski, Robert Meusel, Heiko Paulheim, Christian Bizer: <a href="http://dx.doi.org/10.1016/j.websem.2015.05.001" target="_blank">The Mannheim Search Join Engine</a>. Journal of Web Semantics, 2015.</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--/.box-->
+		</div>
+		<!--/.container-->
+	</section>
+	<!--/#about-us-->
+
+	<section id="team">
+		<div class="container">
+			<div class="box">
+				<div class="center">
+					<h2>People</h2><br>
+					The following people work on the DS4DM project at the University of Mannheim:
+					<!-- p class="lead">Pellentesque habitant morbi tristique senectus et netus et<br>malesuada fames ac turpis egestas.</p -->
+				</div>
+				<div class="gap"></div>
+					<div id="team-items">
+						<div class="row">
+
+							<div class="col-md-4 col-sm-6">
+								<div class="member">
+									<p>
+									<a href="http://dws.informatik.uni-mannheim.de/en/people/researchers/benedikt-kleppmann/">
+										<img class="img-responsive img-thumbnail img-circle"
+											src="images/benedikt.jpg" alt=""></a>
+									</p>
+									<h3>
+										Benedikt Kleppmann<small class="designation">Data and
+											Web Science Group, University of Mannheim, Germany
+										</small>
+									</h3>
+								</div>
+							</div>
+							
+							
+							<div class="col-md-4 col-sm-6">
+								<div class="member">
+									<p>
+									<a href="http://dws.informatik.uni-mannheim.de/en/people/professors/dr-heiko-paulheim/">
+										<img class="img-responsive img-thumbnail img-circle"
+											src="images/heiko.jpg" alt=""></a>
+									</p>
+									<h3>
+										Heiko Paulheim<small class="designation">Data and
+											Web Science Group, University of Mannheim, Germany</small>
+									</h3>
+								</div>
+							</div>
+							
+							
+							<div class="col-md-4 col-sm-6">
+								<div class="member">
+									<p>
+									<a href="http://dws.informatik.uni-mannheim.de/en/people/professors/profdrchristianbizer/">
+										<img class="img-responsive img-thumbnail img-circle"
+											src="images/chris.jpg" alt=""></a>
+									</p>
+									<h3>
+										Chris Bizer<small class="designation">Data and
+											Web Science Group, University of Mannheim, Germany
+										</small>
+									</h3>
+								</div>
+							</div>
+			
+						</div>
+
+					</div>
+				</div>
+				<!--/#team-items-->
+			</div>
+			<!--/.box-->
+		</div>
+		<!--/.container-->
+	</section>
+	<!--/#about-us-->
+
+
+	<footer id="footer">
+		<div class="container">
+			<div class="row center">
+				<div class="col-sm-12">
+					<img src="images/cc-by.png" /> The data and software maintained by DS4DM are licensed under <a href="https://opensource.org/licenses/MIT">MIT Licence</a> 
+				</div>
+			</div>
+		</div>
+	</footer>
+	<!--/#footer-->
+
+	<script src="js/jquery.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/jquery.isotope.min.js"></script>
+	<script src="js/jquery.prettyPhoto.js"></script>
+	<script src="js/main.js"></script>
+	<script src="js/rash.js">
+
+</body>
+</html>
