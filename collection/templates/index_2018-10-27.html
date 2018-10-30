@@ -1,0 +1,18 @@
+{% load staticfiles %}
+<!doctype html>
+<html>
+<head>
+	<title>Tree of Knowledge</title>
+	<link rel="stylesheet" href="{% static 'css/style.css' %}" />
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+</head>
+<body>
+	<h1>Tree of Knowledge</h1>
+	<p>content</p>
+	<img src="{% static 'images/logo.jpg' %}" alt="" />
+	<i class="fas fa-ghost"></i> <!-- this icon's 1) style prefix == fas and 2) icon name == ghost -->
+	<i class="fa fa-chevron-left"></i>
+	<i class="fas fa-ghost"></i> <!-- using an <i> element to reference the icon -->
+	<span class="fas fa-ghost"></span> <!-- using a <span> element to reference the icon -->
+</body>
+<html>

@@ -1,13 +1,238 @@
 {% load staticfiles %}
 <!doctype html>
-<html>
+<html lang="en">
 <head>
+	<base href="treeofknowledge.ai">
+	<meta charset="utf-8">
+	<meta name="HandheldFriendly" content="true" />
+	<meta name="author" content="Benedikt Kleppmann">
 	<title>Tree of Knowledge</title>
-	<link rel="stylesheet" href="{% static 'css/style.css' %}" />
+	
+
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+	<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+	<link rel="stylesheet" href="{% static 'css/main.css' %}" />
+	
+	
+	<link rel="shortcut icon" href="images/logo.png">
+
+		
+		<!-- added for submenu -->
+
+
 </head>
-<body>
-	<h1>Tree of Knowledge</h1>
-	<p>content</p>
-	<img src="{% static 'images/logo.jpg' %}" alt="" />
+<!--/head-->
+
+<body data-spy="scroll" data-target="#navbar" data-offset="0">
+	<header id="header"> 
+	<div class="row">
+		<div class="col-sm-3"></div>
+		<div class="container col-sm-6">
+			<div id="navbar" class="navbar navbar-default">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse"
+						data-target=".navbar-collapse">
+						<span class="sr-only">Toggle navigation</span> 
+					</button>
+					<a class="navbar-brand" href="."></a>
+				</div>
+				<div class="collapse navbar-collapse navbar-ex1-collapse">
+					<ul class="nav navbar-nav">
+						<li class="active"><a href="#main-slider"><i class="fa fa-home"></i></a></li>
+						<li><a href="#about">About</a></li>
+						<li><a href="#news">News</a></li>
+						<li><a href="#resources">Resources</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-3"></div>
+	</div>
+	</header>
+	<!--/#header-->
+
+	
+	<section id="main-slider" class="carousel">
+	<h1 class="center">Tree of Knowledge</h1>
+		<div class="carousel-inner">
+			<div class="item active">
+				<div class="container">
+					<div class="carousel-content">
+						<p class="lead">advanced simulation modelling</p>
+					</div>
+				</div>
+			</div>
+			<!--/.item-->
+			<div class="item">
+				<div class="container">
+					<div class="carousel-content">
+						<p class="lead">universal knowledge repository</p>
+					</div>
+				</div>
+			</div>
+			<!--/.item-->
+		</div>
+		<!--/.carousel-inner-->
+		<!--
+		ARROWS FOR THE CAROUSEL
+		<a class="prev" href="#main-slider" data-slide="prev">
+			<i class="fa fa-chevron-left"></i>
+		</a> 
+		<a class="next" href="#main-slider" data-slide="next">
+			<i class="fa fa-chevron-right"></i>
+		</a>
+		-->
+	</section>
+	<!--/#main-slider-->
+
+	
+	<section id="introduction">
+		<div class="container">
+			<div class="box first">
+				<div class="center">
+					<p class="lead left-aligned">				
+					Create the most accurate and realistic models of the world to solve your problems!<br>
+					With Tree of Knowledge you can easily create an accurate simulation model of your system, by applying already simulated real-world behaviour.
+					The simulation models are optimized and verified with extensive real world data from an integrated, holistic knowledge-base.
+					The resulting models are <b>more accurate</b> and <b>more informative</b> than machine learning models, statistical models and simulation models.<br>
+					</br></br>
+					Join in modelling the world!
+			  </div>
+			</div>
+		</div>
+	</section>
+	<!--/#introduction-->
+	
+	<section id="about">
+		<div class="container">
+			<div class="box">
+				<div class="center">
+					<h2>About</h2>
+					<p class="lead left-aligned">				
+					Create the most accurate and realistic models of the world to solve your problems!<br>
+					With Tree of Knowledge you can easily create an accurate simulation model of your system, by applying already simulated real-world behaviour.
+					The simulation models are optimized and verified with extensive real world data from an integrated, holistic knowledge-base.
+					The resulting models are <b>more accurate</b> and <b>more informative</b> than machine learning models, statistical models and simulation models.<br>
+					</br></br>
+					Join in modelling the world!
+			  </div>
+			</div>
+		</div>
+	</section>
+	<!--/#about-->
+	
+	
+	<section id="news">
+		<div class="container">
+			<div class="box">
+				<div class="center">
+					<h2>News</h2>
+				</div>
+				<div id="publication-items">
+					<div class="row"> 
+						<div class="col-sm-12">
+							<div class="left-aligned">
+								<div class="row">
+									<div class="col-sm-3 right-aligned">
+										 29th October 2018
+									</div>
+									<div class="col-sm-9">
+										The landingpage goes live.
+									</div>
+								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-3 right-aligned">
+										 8th November 2018
+									</div>
+									<div class="col-sm-9">
+										Nothing yet.
+									</div>
+								</div>
+								<br>
+							</div>
+						</div>
+					</div>
+				<!--</div>-->
+			</div>
+			<!--/.box-->
+		</div>
+		<!--/.container-->
+	</section>
+	<!--/#news-->
+	
+					
+					
+	<section id="resources">
+		<div class="container">
+			<div class="box">
+				<div class="center">
+					<h2>Resources</h2>
+				</div>
+				<!--  /.center -->
+				<div class="row">
+					<div class="col-md-4">
+						<div class="center">
+							<a href="https://github.com/BenediktKleppmann/TreeOfKnowledge" target="_blank">
+								<i class="fab fa-github icon-md icon-color2"></i>
+							</a>
+							<h4>GitHub repository</h4>
+							<p>The official GitHub repository for this open source project.</p>
+						</div>
+					</div>
+					<!--/.col-md-4-->
+					
+					<div class="col-md-4">
+						<div class="center">
+							<a href="https://www.youtube.com" target="_blank">
+								<i class="fab fa-youtube icon-md icon-color1"></i>
+							</a>
+							<h4>Video tutorials</h4>
+							<p>None exist yet.</p>
+						</div>
+					</div>
+					<!--/.col-md-4-->
+					
+					<div class="col-md-4">
+						<div class="center">
+							<a href="https://www.linkedin.com/in/benedikt-kleppmann-95358466/" target="_blank">
+								<i class="fab fa-linkedin icon-md icon-color3"></i>
+								
+							</a>
+							<h4>About the creator</h4>
+							<p>Linkedin page of the main contributor.</p>
+						</div>
+					</div>
+					<!--/.col-md-4-->
+				</div>
+				<!--/.row-->
+			</div>
+			<!--/.box-->
+		</div>
+		<!--/.container-->
+	</section>
+	<!--/#services-->
+
+
+	<footer id="footer">
+		<div class="container">
+			<div class="row center">
+				<div class="col-sm-12">
+					<img src="images/cc-by.png" /> The data and software maintained by DS4DM are licensed under <a href="https://opensource.org/licenses/MIT">MIT Licence</a> 
+				</div>
+			</div>
+		</div>
+	</footer>
+	<!--/#footer-->
+
+	<script src="{% static 'js/jquery.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	 <script>
+	  $('.carousel').carousel({
+	   interval: 3000
+	  });
+	 </script>  
+	 
+
 </body>
-<html>
+</html>
