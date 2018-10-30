@@ -17,6 +17,10 @@ h6 {
   font-weight: 300;
 }
 
+.lead {
+	font-size: 20px;
+}
+
 dd{
 	margin-left: 20px;
 }
@@ -206,10 +210,10 @@ a:focus {
 .navbar-default .navbar-brand {
   margin-right: 0px;
   margin-left: 20px;
-  width: 78px;
+  width: 58px;
   height: 58px;
   background: url(../images/logo.jpg) no-repeat 0 50%;
-  background-size: 50%;
+  background-size: 75%;
 }
 .navbar-default .navbar-nav > li {
   margin-left: 1px;
