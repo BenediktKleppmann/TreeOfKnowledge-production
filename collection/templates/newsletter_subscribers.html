@@ -1,0 +1,22 @@
+{% load staticfiles %}
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Newsletter_subscribers</title>
+</head>
+
+<body>
+	<table style="width:100%">
+		<tr>
+			<th>Subscriber_email</th>
+			<th>Subscriber_first_name</th>
+		</tr>
+		{% for subscriber in newsletter_subscribers %}
+		<tr>
+			<td>{{  subscriber.email  }}</td>
+			<td>{{  subscriber.first_name  }}</td>
+		</tr>
+		{% endfor %}
+	</table> 
+<body>
+</html>

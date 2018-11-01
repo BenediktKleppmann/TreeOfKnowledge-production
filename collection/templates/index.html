@@ -25,9 +25,7 @@
 
 <body data-spy="scroll" data-target="#navbar" data-offset="0">
 	<header id="header"> 
-	<div class="row">
-		<div class="col-sm-3"></div>
-		<div class="container col-sm-6">
+		<div class="container">
 			<div id="navbar" class="navbar navbar-default">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle" data-toggle="collapse"
@@ -39,15 +37,15 @@
 				<div class="collapse navbar-collapse navbar-ex1-collapse">
 					<ul class="nav navbar-nav">
 						<li class="active"><a href="#main-slider"><i class="fa fa-home"></i></a></li>
-						<li><a href="#about">About</a></li>
-						<li><a href="#news">News</a></li>
+						<li><a href="#about_simulation_based_modelling">Simulations</a></li>
+						<li><a href="#about_tree_of_knowledge">About</a></li>
+						<li><a href="#our_philosophy">Philosopy</a></li>
+						<li><a href="#newsletter">Newsletter</a></li>
 						<li><a href="#resources">Resources</a></li>
 					</ul>
 				</div>
 			</div>
 		</div>
-		<div class="col-sm-3"></div>
-	</div>
 	</header>
 	<!--/#header-->
 
@@ -89,40 +87,127 @@
 	<section id="introduction">
 		<div class="container">
 			<div class="box first">
-				<div class="center">
-					<p class="lead left-aligned">				
-					Create the most accurate and realistic models of the world to solve your problems!<br>
-					With Tree of Knowledge you can easily create an accurate simulation model of your system, by applying already simulated real-world behaviour.
-					The simulation models are optimized and verified with extensive real world data from an integrated, holistic knowledge-base.
-					The resulting models are <b>more accurate</b> and <b>more informative</b> than machine learning models, statistical models and simulation models.<br>
-					</br></br>
-					Join in modelling the world!
+				<div class="lead left-aligned">
+					<p>Do you want to gain insights from data? <br></p>
+					<ul>
+						<li>Test theories about your system </li>
+						<li>See the system unfold in real time, understand the mechanisms and driving forces</li>
+						<li>Evaluate what-if scenarios</li>
+					</ul><br>
+					<p>Use the most accurate and powerful data analysis tool in the world!<br></p>
+					<ul>
+						<li>Build upon a vast range of existing, proven models</li>
+						<li>Models are automatically evaluated and optimized with millions of data points from a custom data portal</li>
+						<li>Collaborate with other people</li>
+					</ul>
 			  </div>
 			</div>
 		</div>
 	</section>
 	<!--/#introduction-->
 	
-	<section id="about">
+	<section id="about_simulation_based_modelling">
 		<div class="container">
 			<div class="box">
 				<div class="center">
-					<h2>About</h2>
-					<p class="lead left-aligned">				
-					Create the most accurate and realistic models of the world to solve your problems!<br>
-					With Tree of Knowledge you can easily create an accurate simulation model of your system, by applying already simulated real-world behaviour.
-					The simulation models are optimized and verified with extensive real world data from an integrated, holistic knowledge-base.
-					The resulting models are <b>more accurate</b> and <b>more informative</b> than machine learning models, statistical models and simulation models.<br>
-					</br></br>
-					Join in modelling the world!
+					<h2>About simulation-based modelling</h2>
+					<p class="lead left-aligned">	
+						We are in the age of machine learning. Machine learning models are changing the world. 
+						Their accurate predictions allow for the automation of many new tasks. <br><br>
+						You don't however want to automate decision making. Instead you’d want 
+						to inform decision making with insights gained from data. Due to their 
+						black-box nature, it is not possible to gain insight with machine learning models. 
+						Statistical models and traditional-AI models are also not ideal. <br><br>
+						Simulation models on the other hand are ideally suited for gaining insights from data. 
+						The goal here is to create a virtual twin of any real system. I.e. you create a simulation 
+						which behaves in the exact same way as the real world. These models are therefore very intuitive. 
+						You can watch the behavior of the system, understand the mechanisms and identify key components. 
+						You can also investigate what-if questions by re-running the simulation with some detail changed.
+					<a href="{% url 'subscribers' %}" target="_blank">Subscribers</a>
 			  </div>
 			</div>
 		</div>
 	</section>
-	<!--/#about-->
+	<!--/#about_simulation_based_modelling-->
+	
+	<section id="about_tree_of_knowledge">
+		<div class="container">
+			<div class="box">
+				<div class="lead left-aligned">
+					<h2>About Tree of Knowledge</h2><br>
+					There already exist a range of simulation modelling tools (
+						<a href="https://www.anylogic.com/" target="_blank">Anylogic</a>, 
+						<a href="https://www.simio.com/index.php" target="_blank">Simio</a>, 
+						<a href="https://en.wikipedia.org/wiki/List_of_computer_simulation_software" target="_blank">etc.</a>). 
+					They are commonly used for optimizing processes in a range of fields such as manufacturing plants, 
+					hospitals, etc. They haven’t however caught on in many other fields, I believe there are two reasons for this: <br>
+					<ul>
+						<li>the correctness of the models is not guaranteed, as they are often not thoroughly evaluated</li>
+						<li>it takes a long time to create a model</li>
+					</ul>
+					Tree of knowledge solves these problems. In fact, Tree of Knowledge’s ability to solve these problems increases over time….
+					<ul>
+						<li>data which is uploaded with a free account is added to an integrated data repository. This well 
+							documented data is then used to automatically evaluate simulation models, guaranteeing its correctness.</li>
+						<li>Objects’ behaviours that have been proven to apply in some model are remembered and tested in future models. 
+							Making it possible to only describe the objects in the system and having the objects’ behaviours automatically 
+							inferred, thereby drastically reducing the development time.</li>
+					</ul>
+					This is all possible due to the nature of Tree of Knowledge, which is not only a simulation tool, but also a universal 
+					knowledge repository. Over time it builds up a complete understanding of the objects in this world, their relations, 
+					behaviours and their states at different times in the past.<br><br>
+					Additionally, Tree of Knowledge allows for the easy use of fairly advanced functionality, such as: 
+					<ul>
+						<li>Optimizing systems to maximize KPIs</li>
+						<li>Learning model parameters with Bayesian inference</li>
+						<li>Flexible and powerful simulation visualization</li>
+						<li>Collaborative model creation</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</section>
+	<!--/#about_tree_of_knowledge-->
 	
 	
-	<section id="news">
+	
+	
+	<section id="our_philosophy">
+		<div class="container">
+			<div class="box">
+				<div class="center">
+					<h2>Our Philiosophy</h2>
+					<p class="lead left-aligned">
+						As mentioned, by being used, tree of knowledge automatically builds up an increasing knowledge of the objects in the world, 
+						their behavior and their past states. The long-term goal of Tree of Knowledge is to become a repository of the worlds’ knowledge. 
+						Making the knowledge accessible in a computer-readable and highly useable form. <br>
+						There will always be free public APIs for accessing its data and simulation rules.<br><br>
+						Tree of Knowledge is non-profit and is dedicated to improving the world as much as possible -  NGOs and well-meaning 
+						governments will always have free access. The access for harmful companies is restricted.
+					</p>	
+			  </div>
+			</div>
+		</div>
+	</section>
+	<!--/#our_philosophy-->
+	
+		
+	<section id="newsletter">
+		<div class="container">
+			<div class="box">
+				<div class="center">
+					<h2>Newsletter</h2>
+					<p class="lead left-aligned">
+						If you would like to learn more, consider subscribing to the newsletter. 
+					</p>	
+			  </div>
+			</div>
+		</div>
+	</section>
+	<!--/#our_philosophy-->
+	
+	
+<!--<section id="news">
 		<div class="container">
 			<div class="box">
 				<div class="center">
@@ -153,13 +238,9 @@
 							</div>
 						</div>
 					</div>
-				<!--</div>-->
 			</div>
-			<!--/.box-->
 		</div>
-		<!--/.container-->
-	</section>
-	<!--/#news-->
+	</section>-->
 	
 					
 					

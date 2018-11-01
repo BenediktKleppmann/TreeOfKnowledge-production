@@ -38,6 +38,10 @@ span.title{
 	text-align: right;
 }
 
+/*#introduction  .lead{
+	line-height: 180%;
+}*/
+
 #resources .box {
 	background-color: #f3f3f3;
 }
