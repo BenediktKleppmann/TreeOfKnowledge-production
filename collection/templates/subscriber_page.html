@@ -2,8 +2,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<base href="webservice-production.herokuapp.com">
-	<!--<base href="treeofknowledge.ai">-->
+	<base href="treeofknowledge.ai">
 	<meta charset="utf-8">
 	<meta name="HandheldFriendly" content="true" />
 	<meta name="author" content="Benedikt Kleppmann">
@@ -51,7 +50,7 @@
 	<!--/#header-->
 
 	
-	<section id="main-slider" class="carousel">
+	<section id="main-slider" class="carousel" script="background-image: url(../images/arches.png);">
 	<h1 class="center">Tree of Knowledge</h1>
 		<div class="carousel-inner">
 			<div class="item active">
@@ -101,7 +100,7 @@
 						<li>Build upon a vast range of existing, proven models</li>
 						<li>Models are automatically evaluated and optimized with millions of data points from a custom data portal</li>
 						<li>Collaborate with other people</li>
-					</ul>
+					</ul><br>
 			  </div>
 			</div>
 		</div>
@@ -113,80 +112,68 @@
 			<div class="box">
 				<div class="center">
 					<h2>About simulation-based modelling</h2>
-				</div>
-				<div class="row" style="display:flex; align-items:center;">
-					<div class="col-md-9">
-						<p class="lead left-aligned">	
-							We are in the age of machine learning. Machine learning models are changing the world. 
-							Their accurate predictions allow for the automation of many new tasks. <br><br>
-							You don't however want to automate decision making. Instead you’d want 
-							to inform decision making with insights gained from data. Due to their 
-							black-box nature, it is not possible to gain insight with machine learning models. 
-							Statistical models and traditional-AI models are also not ideal. <br><br>
-							Simulation models on the other hand are ideally suited for gaining insights from data. 
-							The goal here is to create a virtual twin of any real system. I.e. you create a simulation 
-							which behaves in the exact same way as the real world. These models are therefore very intuitive. 
-							You can watch the behavior of the system, understand the mechanisms and identify key components. 
-							You can also investigate what-if questions by re-running the simulation with some detail changed.
-						</p>
+					<div class="clearfix">
+					<p class="lead left-aligned">	
+						We are in the age of machine learning. Machine learning models are changing the world. 
+						Their accurate predictions allow for the automation of many new tasks. <br><br>
+						You don't however want to automate decision making. Instead you’d want 
+						to inform decision making with insights gained from data. Due to their 
+						black-box nature, it is not possible to gain insight with machine learning models. 
+						Statistical models and traditional-AI models are also not ideal. <br><br>
+						Simulation models on the other hand are ideally suited for gaining insights from data. 
+						The goal here is to create a virtual twin of any real system. I.e. you create a simulation 
+						which behaves in the exact same way as the real world. These models are therefore very intuitive. 
+						You can watch the behavior of the system, understand the mechanisms and identify key components. 
+						You can also investigate what-if questions by re-running the simulation with some detail changed.
+					<a href="{% url 'subscribers' %}" target="_blank">Subscribers</a>
+					<img src="{% static 'images/sim_city_small.jpg'%}" class="img-responsive float-right mr-2 img-thumbnail">
+					</p>
+					
 					</div>
-					<div class="col-md-3">
-						<a href="{% static 'images/simio1.png'%}"><img src="{% static 'images/simio1.png'%}" class="img-responsive mr-3 img-thumbnail"></a>
-						<a href="{% static 'images/sim_city1.png'%}"><img src="{% static 'images/sim_city1.jpg'%}" class="img-responsive mr-3 img-thumbnail"></a>
-						<div style="margin-left:10px">top: Simio<br>bottom: Simcity</div>
-					</div>
-				</div>
 			  </div>
 			</div>
 		</div>
 	</section>
 	<!--/#about_simulation_based_modelling-->
 	
-		
-	
 	<section id="about_tree_of_knowledge">
-		<div class="container h-100">
+		<div class="container">
+		
 			<div class="box">
 				<div class="center">
 					<h2 align="center">About Tree of Knowledge</h2><br>
 				</div>
-				<div class="row" style="display:flex; align-items:center;">
-					<div class="col-md-3">
-							<img src="{% static 'images/tree_of_knowledge_schematic.png'%}" class="img-responsive mr-2 img-thumbnail">
-							<div style="margin-left:10px; margin-right:10px">Uploaded data is integrated into a global schema and is used for model training & evaluation. The simulation models can build uppon each other.</div>
-					</div>
-					<div class="col-md-9">
-						<div class="lead left-aligned">
-							There already exist a range of simulation modelling tools (
-								<a href="https://www.anylogic.com/" target="_blank">Anylogic</a>, 
-								<a href="https://www.simio.com/index.php" target="_blank">Simio</a>, 
-								<a href="https://en.wikipedia.org/wiki/List_of_computer_simulation_software" target="_blank">etc.</a>). 
-							They are commonly used for optimizing processes in a range of fields such as manufacturing plants, 
-							hospitals, etc. They haven’t however caught on in many other fields, I believe there are two reasons for this: <br>
-							<ul>
-								<li>the correctness of the models is not guaranteed, as they are often not thoroughly evaluated</li>
-								<li>it takes a long time to create a model</li>
-							</ul><br>
-							Tree of knowledge solves these problems. In fact, Tree of Knowledge’s ability to solve these problems increases over time….
-							<ul>
-								<li>data which is uploaded with a free account is added to an integrated data repository. This well 
-									documented data is then used to automatically evaluate simulation models, guaranteeing its correctness.</li>
-								<li>Objects’ behaviours that have been proven to apply in some model are remembered and tested in future models. 
-									Making it possible to only describe the objects in the system and having the objects’ behaviours automatically 
-									inferred, thereby drastically reducing the development time.</li>
-							</ul><br>
-							This is all possible due to the nature of Tree of Knowledge, which is not only a simulation tool, but also a universal 
-							knowledge repository. Over time it builds up a complete understanding of the objects in this world, their relations, 
-							behaviours and their states at different times in the past.<br><br>
-							Additionally, Tree of Knowledge allows for the easy use of fairly advanced functionality, such as: 
-							<ul>
-								<li>Optimizing systems to maximize KPIs</li>
-								<li>Learning model parameters with Bayesian inference</li>
-								<li>Flexible and powerful simulation visualization</li>
-								<li>Collaborative model creation</li>
-							</ul>
-						</div>
-					</div>
+				<div class="lead left-aligned">
+					There already exist a range of simulation modelling tools (
+						<a href="https://www.anylogic.com/" target="_blank">Anylogic</a>, 
+						<a href="https://www.simio.com/index.php" target="_blank">Simio</a>, 
+						<a href="https://en.wikipedia.org/wiki/List_of_computer_simulation_software" target="_blank">etc.</a>). 
+					They are commonly used for optimizing processes in a range of fields such as manufacturing plants, 
+					hospitals, etc. They haven’t however caught on in many other fields, I believe there are two reasons for this: <br>
+					<ul>
+						<li>the correctness of the models is not guaranteed, as they are often not thoroughly evaluated</li>
+						<li>it takes a long time to create a model</li>
+					</ul>
+					Tree of knowledge solves these problems. In fact, Tree of Knowledge’s ability to solve these problems increases over time….
+					<ul>
+						<li>data which is uploaded with a free account is added to an integrated data repository. This well 
+							documented data is then used to automatically evaluate simulation models, guaranteeing its correctness.</li>
+						<li>Objects’ behaviours that have been proven to apply in some model are remembered and tested in future models. 
+							Making it possible to only describe the objects in the system and having the objects’ behaviours automatically 
+							inferred, thereby drastically reducing the development time.</li>
+					</ul>
+					This is all possible due to the nature of Tree of Knowledge, which is not only a simulation tool, but also a universal 
+					knowledge repository. Over time it builds up a complete understanding of the objects in this world, their relations, 
+					behaviours and their states at different times in the past.<br><br>
+					Additionally, Tree of Knowledge allows for the easy use of fairly advanced functionality, such as: 
+					<ul>
+						<li>Optimizing systems to maximize KPIs</li>
+						<li>Learning model parameters with Bayesian inference</li>
+						<li>Flexible and powerful simulation visualization</li>
+						<li>Collaborative model creation</li>
+					</ul><br>
+					<img src="{% static 'images/tree_of_knowledge_scematic.png'%}" class="img-responsive float-left mr-2 img-thumbnail">
+				</div>
 			</div>
 		</div>
 	</section>
@@ -207,7 +194,7 @@
 						There will always be free public APIs for accessing its data and simulation rules.<br><br>
 						Tree of Knowledge is non-profit and is dedicated to improving the world as much as possible -  NGOs and well-meaning 
 						governments will always have free access. The access for harmful companies is restricted.
-					</p>
+					</p><br>
 			  </div>
 			</div>
 		</div>
@@ -221,8 +208,7 @@
 				<div class="center">
 					<h2>Newsletter</h2>
 					<p class="lead left-aligned">
-						If you support this project and would like to occasionally hear about updates, please subscribe to the newsletter. <br>
-						<a href="{% url 'subscribers' %}" target="_blank">Subscribers</a>
+						If you support this project and would like to occasionally hear about updates, please subscribe to the newsletter. 
 					</p>	
 			  </div>
 			</div>
@@ -311,7 +297,6 @@
 					<!--/.col-md-4-->
 				</div>
 				<!--/.row-->
-				<br><br>
 			</div>
 			<!--/.box-->
 		</div>
