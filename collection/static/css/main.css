@@ -81,7 +81,7 @@ a:focus {
   z-index: 99999;
 }
 #main-slider {
-  background-image: url(../images/old_tree__dark.png);
+  background-image: url(../images/old_tree.png);
   background-attachment: fixed;
   background-size: cover;
   background-position: 50% 50%;
@@ -270,6 +270,7 @@ a:focus {
   border-radius: 100%;
   margin-bottom: 10px;
 }
+
 
 
 .icon-color0 {
