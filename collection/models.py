@@ -8,7 +8,7 @@ class Newsletter_subscriber(models.Model):
 	first_name = models.CharField(max_length=255)
 	is_templar = models.BooleanField(default=False)
 	is_alchemist = models.BooleanField(default=False)
-	is_archivist = models.BooleanField(default=False)
+	is_scholar = models.BooleanField(default=False)
 	created = models.DateTimeField(editable=False)
 	updated = models.DateTimeField(editable=False)
 
