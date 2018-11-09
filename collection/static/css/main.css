@@ -228,7 +228,7 @@ a:focus {
   margin-left: 20px;
   width: 58px;
   height: 58px;
-  background: url(../images/logo.jpg) no-repeat 0 50%;
+  background: url(../images/logo.png) no-repeat 0 50%;
   background-size: 75%;
 }
 .navbar-default .navbar-nav > li {
@@ -256,6 +256,21 @@ a:focus {
   background-color: #52b6ec;
   color: #fff;
 }
+
+.navbar-collapse > a {
+	font-size:19px;
+	margin-top:10px;
+	margin-left:12px;
+	margin-right:8px;
+	padding: 4px 16px;
+	border-color: #4CAF50;
+	border-width: 2px;
+}
+
+.navbar-collapse > a:hover {	
+	background:#ebf7d9;
+}
+
 
 .icon-md {
   font-size: 24px;

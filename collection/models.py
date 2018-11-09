@@ -1,5 +1,6 @@
 from django.db import models
 import datetime
+import hashlib
 
 
 class Newsletter_subscriber(models.Model):
@@ -13,7 +14,11 @@ class Newsletter_subscriber(models.Model):
 	updated = models.DateTimeField(editable=False)
 
 	def save(self):
-		self.userid = hash(self.email)
+
+		# set the userid to be the md5-hash of the email
+		email_string = self.email.encode('utf-8')
+		self.userid = int(hashlib.sha1(email_string).hexdigest(), 16) % (10 ** 8)
+
 		if not self.id:
 			self.created = datetime.datetime.today()
 		self.updated = datetime.datetime.today()

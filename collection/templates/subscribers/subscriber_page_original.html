@@ -6,7 +6,7 @@
 	<meta charset="utf-8">
 	<meta name="HandheldFriendly" content="true" />
 	<meta name="author" content="Benedikt Kleppmann">
-	<title>Tree of Knowledge - {{ subscriber.first_name|title }}</title>
+	<title>Tree of Knowledge</title>
 	
 
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
@@ -15,7 +15,7 @@
 	<link rel="stylesheet" href="{% static 'css/subscriber_page.css' %}" />
 	
 	
-	<link rel="shortcut icon" href="{% static 'images/logo.png'%}">
+	<link rel="shortcut icon" href="images/logo.png">
 
 		
 		<!-- added for submenu -->
@@ -70,12 +70,12 @@
 	</section>
 	<!--/#introduction-->
 	
-	<section id="specification">
-		<form role="form" action="" method="post"> 
-			{% csrf_token %}
-			<div class="container">
-				<div class="box"><br>
-					<div class="center">
+	<section>
+		<div class="container">
+			<div class="box"><br>
+				<div class="center">
+					<form role="form" action="" method="post"> 
+						{% csrf_token %}
 						 <div id="ck-button">
 						   <label>
 							  <input type="checkbox" name="is_scholar" value="1" {% if subscriber.is_scholar == True %}checked{% else %}{% endif %}  onchange="this.form.submit()">
@@ -87,12 +87,16 @@
 							As scholar you are the protector and curator of the foundation of the tree, its most valuable asset: the huge repository of data/knowledge.<br>
 							Scholars are usually purposeful and diligent. <br><br>
 						 </div> 
-					</div>
-				</div>
+					</form>
+					
+			  </div>
 			</div>
-			<div class="container">
-				<div class="box"><br>
-					<div class="center">
+		</div>
+		<div class="container">
+			<div class="box"><br>
+				<div class="center">
+					<form role="form" action="" method="post"> 
+						{% csrf_token %}
 						 <div id="ck-button">
 						   <label>
 							  <input type="checkbox" name="is_alchemist" value="1" {% if subscriber.is_alchemist == True %}checked{% else %}{% endif %}  onchange="this.form.submit()">
@@ -103,14 +107,16 @@
 							<h3>Alchemist</h3>
 							The Alchemists are the mad geniuses of the tree on knowledge. They build the most accurate models of the world to find solutions to the most important questions of our time.<br><br>
 						 </div> 
-					</div>
+					</form>
 				</div>
 			</div>
-			<div class="container">
-				<div class="box">
-				<br>
-					<div class="center">
-
+		</div>
+		<div class="container">
+			<div class="box">
+			<br>
+				<div class="center">
+					<form role="form" action="" method="post" id="specialisation"> 
+						{% csrf_token %}
 						<div id="ck-button">
 						   <label>
 							  <input type="checkbox" name="is_templar" value="1" {% if subscriber.is_templar == True %}checked{% else %}{% endif %}  onchange="this.form.submit()">
@@ -121,10 +127,10 @@
 							<h3>Templar</h3>
 							The Templars are the ambassadors for the Tree of Knowledge in the world. They promote fact-based reasoning in the world and share the insights gained by the Tree of Knowledge.<br><br><br>
 						 </div> 
-					</div>
+					</form>
 				</div>
 			</div>
-		</form>
+		</div>
 	</section>
 
  
@@ -132,14 +138,8 @@
 
 	<script src="{% static 'js/jquery.js' %}"></script>
 	<script src="{% static 'js/bootstrap.min.js' %}"></script>
-	<script>
-	{% if is_post_request == True %}
-		if (!document.location.hash){
-			document.location.hash = 'specification';
-		}
-	{% else %}{% endif %}
-	
-	$(document).ready(function() {
+	 <script>
+	 $(document).ready(function() {
 		$('#specialisation').on('change', function() {
 			document.forms[myFormName].submit();
 		});

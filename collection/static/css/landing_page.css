@@ -1,0 +1,133 @@
+ 
+ body {
+	background-color: rgb(51, 51, 51);
+	/*background-color: rgb(21, 21, 19);*/
+    /*background-color: rgb(33, 38, 41);*/
+    /*background-color: rgb(39, 40, 34);*/
+	/*background-color: rgb(68, 68, 65);*/
+	/*background-color: rgb(91, 93, 88);*/
+	background-color: black;
+	font-family: Calibri, Candara, Segoe, Segoe UI, Optima, Arial, sans-serif;
+	font-size: 19px;
+	  color: rgb(196, 189, 168);
+	  text-align:center;
+}
+
+h1 {
+	/*font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;*/
+	/*font-family: "BentonSans", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;*/
+	/*font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;*/
+	font-size:32px;
+	font-weight:300;
+	margin-bottom:15px;
+	color: rgb(226, 221, 204);
+}
+
+h2 {
+	margin-left:25px;
+	font-size:26px;
+	font-weight:600;
+	margin-bottom:7px;
+	color: rgb(226, 221, 204);
+}
+
+.container-fluid  > .teaser-text {
+	margin-left:8%;
+	margin-right:8%;
+}
+
+.col-sm-6 {
+	padding:0px;
+}
+
+
+.col-md-6 {
+	text-align:left;
+	padding-left:6%;
+	padding-right:6%;
+}
+
+.carousel-text-field {
+	height:550px;
+	text-align:center;
+	padding-top:150px;
+	padding-right: 25px;
+	padding-left: 25px;
+	font-size:21px;
+	font-weight:100;
+	color: rgb(226, 221, 204);
+}
+
+.carousel-text-field  h1{
+	font-family: Garamond, Baskerville, Baskerville Old Face, Hoefler Text, Times New Roman, serif;
+	font-weight:100;
+	font-size:48px;
+	margin-bottom:25px
+	 /*font-variant: small-caps*/
+}
+
+
+.navbar-default {
+	background-color: rgb(68, 64, 57);
+	color: rgb(234, 230, 222);
+	border-bottom-color:rgb(70, 70, 70);
+}
+
+.navbar-default .navbar-brand {
+  margin-right: 14px;
+  margin-left: 20px;
+  width: 50px;
+  height: 50px;
+  background: url(../images/logo.png) no-repeat 0 100%;
+  background-size: 90%;
+}
+
+.navbar-default .navbar-nav > li.active > a,
+.navbar-default .navbar-nav > li.active:focus > a,
+.navbar-default .navbar-nav > li.active:hover > a,
+.navbar-default .navbar-nav > li:hover > a,
+.navbar-default .navbar-nav > li:focus > a,
+.navbar-default .navbar-nav > li.active > a:focus,
+.navbar-default .navbar-nav > li.active:focus > a:focus,
+.navbar-default .navbar-nav > li.active:hover > a:focus,
+.navbar-default .navbar-nav > li:hover > a:focus,
+.navbar-default .navbar-nav > li:focus > a:focus {
+  background-color: rgb(58, 55, 49);
+  color: rgb(178, 174, 167);
+}
+
+
+.navbar-collapse .collapse{
+	height:55px;
+}
+
+.navbar-nav > li  > a {
+	padding-top:16px;
+	padding-bottom:16px;
+	padding-left:21px;
+	padding-right:21px;
+}
+
+.navbar > .navbar-nav > li  >a {
+	height:60px
+}
+
+.navbar-default .navbar-nav > li > a {
+		color: rgb(214, 214, 214);
+}
+.navbar-right {
+	margin-top:13px;
+}
+
+
+.navbar-right > .btn {
+	padding-top:5px;
+	font-family: Calibri, Candara, Segoe, Segoe UI, Optima, Arial, sans-serif;
+	font-size: 19px;
+	font-weight:500;
+	background-color:rgb(68, 64, 57);
+	color: rgb(234, 230, 222);
+	margin-top:-5px;
+	height:38px;	
+}
+
