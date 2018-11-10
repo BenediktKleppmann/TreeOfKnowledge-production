@@ -25,6 +25,35 @@
 <!--/head-->
 
 <body data-spy="scroll" data-target="#navbar" data-offset="0">
+
+
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <!--<span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>-->
+          </button>
+          <a class="navbar-brand" href="{% url 'landing_page' %}"></a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="{% url 'landing_page' %}">Home</a></li>
+            <li><a href="{% url 'about' %}">About</a></li>
+			<li><a href="{% url 'subscribe' %}">Info</a></li>
+            <li><a href="{% url 'contact' %}">Contact</a></li>
+          </ul>
+          <div class="nav navbar-right">
+			<span class="signup-text"><a href="http://google.com">Sign up</a> &nbsp;&nbsp;or&nbsp;&nbsp;&nbsp;</span>
+            <a href="http://google.com" class="btn btn-default pull-right">Log in</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+<!--
 	<header id="header"> 
 		<div class="container">
 			<div id="navbar" class="navbar navbar-default">
@@ -32,7 +61,7 @@
 					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
 						<span class="sr-only">Toggle navigation</span> 
 					</button>
-					<a class="navbar-brand" href="{% url 'home' %}"></a>
+					<a class="navbar-brand" href="{% url 'landing_page' %}"></a>
 				</div>
 				<div class="collapse navbar-collapse navbar-ex1-collapse pull-right">
 					<ul class="nav navbar-nav">
@@ -48,7 +77,7 @@
 			</div>
 		</div>
 	</header>
-	<!--/#header-->
+-->
 
 	
 	<section id="main-slider" class="carousel">
@@ -207,6 +236,7 @@
 						There will always be free public APIs for accessing its data and simulation rules.<br><br>
 						Tree of Knowledge is non-profit and is dedicated to improving the world as much as possible -  NGOs and well-meaning 
 						governments will always have free access. The access for harmful companies is restricted.
+						<br><br><br>
 					</p>
 			  </div>
 			</div>
@@ -215,123 +245,6 @@
 	<!--/#our_philosophy-->
 	
 		
-	<section id="newsletter">
-		<div class="container">
-			<div class="box">
-				<div class="center">
-					<h2>Newsletter</h2>
-					<p class="lead left-aligned">
-						If you support this project and would like to occasionally hear about updates, please subscribe to the newsletter. <br>
-						<a href="{% url 'subscribers' %}" target="_blank">Subscribers</a>
-					</p>	
-			  </div>
-			</div>
-		</div>
-	</section>
-	<!--/#our_philosophy-->
-	
-	
-<!--<section id="news">
-		<div class="container">
-			<div class="box">
-				<div class="center">
-					<h2>News</h2>
-				</div>
-				<div id="publication-items">
-					<div class="row"> 
-						<div class="col-sm-12">
-							<div class="left-aligned">
-								<div class="row">
-									<div class="col-sm-3 right-aligned">
-										 29th October 2018
-									</div>
-									<div class="col-sm-9">
-										The landingpage goes live.
-									</div>
-								</div>
-								<br>
-								<div class="row">
-									<div class="col-sm-3 right-aligned">
-										 8th November 2018
-									</div>
-									<div class="col-sm-9">
-										Nothing yet.
-									</div>
-								</div>
-								<br>
-							</div>
-						</div>
-					</div>
-			</div>
-		</div>
-	</section>-->
-	
-					
-					
-	<section id="resources">
-		<div class="container">
-			<div class="box">
-				<div class="center">
-					<h2>Resources</h2>
-				</div>
-				<!--  /.center -->
-				<div class="row">
-					<div class="col-md-4">
-						<div class="center">
-							<a href="https://github.com/BenediktKleppmann/TreeOfKnowledge" target="_blank">
-								<i class="fab fa-github icon-md icon-color2"></i>
-							</a>
-							<h4>GitHub repository</h4>
-							<p>The official GitHub repository for this open source project.</p>
-						</div>
-					</div>
-					<!--/.col-md-4-->
-					
-					<div class="col-md-4">
-						<div class="center">
-							<a href="https://www.youtube.com" target="_blank">
-								<i class="fab fa-youtube icon-md icon-color1"></i>
-							</a>
-							<h4>Video tutorials</h4>
-							<p>None exist yet.</p>
-						</div>
-					</div>
-					<!--/.col-md-4-->
-					
-					<div class="col-md-4">
-						<div class="center">
-							<a href="{% url 'contact' %}" target="_blank">
-							
-								<i class="icon-md icon-color3"><img src="{% static 'images/email_icon.png'%}" style="height:28px;width:28px; margin-bottom:4px"></i>
-								
-							</a>
-							<h4>Contact</h4>
-							<p>Contact details and impressum.</p>
-						</div>
-					</div>
-					<!--/.col-md-4-->
-				</div>
-				<!--/.row-->
-				<br><br>
-			</div>
-			<!--/.box-->
-		</div>
-		<!--/.container-->
-	</section>
-	<!--/#services-->
-
-
-	<footer id="footer">
-		<div class="container">
-			<div class="row center">
-				<div class="col-sm-12">
-					The software is licensed under a <a href="https://en.wikipedia.org/wiki/Affero_General_Public_License">AGPL Licence</a> 
-				</div>
-			</div>
-		</div>
-	</footer>
-	<!--/#footer-->
-
 	<script src="{% static 'js/jquery.js' %}"></script>
 	<script src="{% static 'js/bootstrap.min.js' %}"></script>
 	 <script>
