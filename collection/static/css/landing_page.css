@@ -7,7 +7,7 @@
 	/*background-color: rgb(68, 68, 65);*/
 	/*background-color: rgb(91, 93, 88);*/
 	/*background-color: black;*/
-	background-color: rgb(21, 21, 19);
+	background-color: rgb(21, 21, 21);
 	font-family: Calibri, Candara, Segoe, Segoe UI, Optima, Arial, sans-serif;
 	font-size: 19px;
 	  color: rgb(196, 189, 168);
@@ -73,9 +73,9 @@ h2 {
 
 
 .carousel-text-field {
-	height:550px;
 	text-align:center;
-	padding-top:150px;
+	margin-top:55px;
+	padding-top:7%;
 	padding-right: 25px;
 	padding-left: 25px;
 	font-size:21px;
@@ -192,3 +192,5 @@ h2 {
 .icon-color3 {
   background-color: #3498db;
 }
+
+@media (min-width: 768px) { .carousel-text-field { max-width: 750px; } }

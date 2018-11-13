@@ -13,10 +13,15 @@
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
 	<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
 	<link rel="stylesheet" href="{% static 'css/main.css' %}" />
+	<link rel="stylesheet" href="{% static 'css/landing_page.css' %}" />
 	
 	
 	<link rel="shortcut icon" href="{% static 'images/logo.png'%}">
-
+	<style>
+	.box {
+		background-color:rgb(39, 40, 34);
+	}
+	</style>
 		
 		<!-- added for submenu -->
 
@@ -40,14 +45,14 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="{% url 'landing_page' %}">Home</a></li>
-            <li><a href="{% url 'about' %}">About</a></li>
+            <li><a href="{% url 'landing_page' %}">Home</a></li>
+            <li class="active"><a href="{% url 'about' %}">About</a></li>
 			<li><a href="{% url 'subscribe' %}">Info</a></li>
             <li><a href="{% url 'contact' %}">Contact</a></li>
           </ul>
           <div class="nav navbar-right">
-			<span class="signup-text"><a href="http://google.com">Sign up</a> &nbsp;&nbsp;or&nbsp;&nbsp;&nbsp;</span>
-            <a href="http://google.com" class="btn btn-default pull-right">Log in</a>
+			<span class="signup-text"><a href="{% url 'registration_register' %}">Sign up</a> &nbsp;&nbsp;or&nbsp;&nbsp;&nbsp;</span>
+            <a href="{% url 'auth_login' %}" class="btn btn-default pull-right">Log in</a>
           </div>
         </div>
       </div>
@@ -79,9 +84,10 @@
 	</header>
 -->
 
+	<!-- !!!!! CAROUSEL WITH CHANGING TEXT  !!!!!!!!!!!
 	
 	<section id="main-slider" class="carousel">
-	<h1 class="center">Tree of Knowledge</h1>
+		<h1 class="center">Tree of Knowledge</h1>
 		<div class="carousel-inner">
 			<div class="item active">
 				<div class="container">
@@ -90,7 +96,7 @@
 					</div>
 				</div>
 			</div>
-			<!--/.item-->
+			
 			<div class="item">
 				<div class="container">
 					<div class="carousel-content">
@@ -98,9 +104,7 @@
 					</div>
 				</div>
 			</div>
-			<!--/.item-->
-		</div>
-		<!--/.carousel-inner-->
+		</div>-->
 		<!--
 		ARROWS FOR THE CAROUSEL
 		<a class="prev" href="#main-slider" data-slide="prev">
@@ -110,8 +114,19 @@
 			<i class="fa fa-chevron-right"></i>
 		</a>
 		-->
+	<!--</section>-->
+	
+	
+	<section id="background picture" class="carousel">
+		<div style="background-image: url(../static/images/old_tree.png);
+					background-attachment: fixed;
+					background-size: cover;
+					background-position: 50% 50%;
+					background-repeat: no-repeat;
+					padding: 200px 0;
+					margin-top:58px;">
+		</div>
 	</section>
-	<!--/#main-slider-->
 
 	
 	<section id="introduction">

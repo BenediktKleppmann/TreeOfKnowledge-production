@@ -2,9 +2,8 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import login
 
-from registration import signals
-from registration.views import RegistrationView as BaseRegistrationView
-from registration.users import UserModel
+from ... import signals
+from ...views import RegistrationView as BaseRegistrationView
 
 
 class RegistrationView(BaseRegistrationView):
@@ -15,18 +14,23 @@ class RegistrationView(BaseRegistrationView):
     up and logged in).
 
     """
-    def register(self, request, **cleaned_data):
-        username, email, password = cleaned_data['username'], cleaned_data['email'], cleaned_data['password1']
-        UserModel().objects.create_user(username, email, password)
+    success_url = 'registration_complete'
 
-        new_user = authenticate(username=username, password=password)
-        login(request, new_user)
+    def register(self, form):
+        new_user = form.save()
+        username_field = getattr(new_user, 'USERNAME_FIELD', 'username')
+        new_user = authenticate(
+            username=getattr(new_user, username_field),
+            password=form.cleaned_data['password1']
+        )
+
+        login(self.request, new_user)
         signals.user_registered.send(sender=self.__class__,
                                      user=new_user,
-                                     request=request)
+                                     request=self.request)
         return new_user
 
-    def registration_allowed(self, request):
+    def registration_allowed(self):
         """
         Indicate whether account registration is currently permitted,
         based on the value of the setting ``REGISTRATION_OPEN``. This
@@ -40,6 +44,3 @@ class RegistrationView(BaseRegistrationView):
 
         """
         return getattr(settings, 'REGISTRATION_OPEN', True)
-
-    def get_success_url(self, request, user):
-        return ('registration_complete', (), {})

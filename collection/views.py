@@ -15,6 +15,12 @@ def subscribe(request):
 def contact(request):
 	return render(request, 'contact.html')
 
+
+def main_menu(request):
+	return render(request, 'tree_of_knowledge_frontend/main_menu.html')
+
+
+
 def newsletter_subscribers(request):
 	newsletter_subscribers = Newsletter_subscriber.objects.all().order_by('email')
 	return render(request, 'newsletter_subscribers.html', {'newsletter_subscribers': newsletter_subscribers,})
