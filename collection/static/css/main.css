@@ -32,6 +32,7 @@ h6 {
 	font-weight: 100;
 }
 
+
 dd{
 	margin-left: 20px;
 }
@@ -280,6 +281,12 @@ a:focus {
 }
 
 
+.box.last {
+	border-bottom-style: none;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius:5px;
+}
+
 .icon-md {
   font-size: 24px;
   height: 68px;
@@ -405,3 +412,4 @@ a:focus {
 	
 	
 }
+

@@ -1,6 +1,13 @@
 from django.forms import ModelForm
 from collection.models import Newsletter_subscriber
 
+
+class Subscriber_registrationForm(ModelForm):
+	class Meta:
+		model = Newsletter_subscriber
+		fields = ('first_name', 'email', )
+		
+
 class Subscriber_preferencesForm(ModelForm):
 	class Meta:
 		model = Newsletter_subscriber
