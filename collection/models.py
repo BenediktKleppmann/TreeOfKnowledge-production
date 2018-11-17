@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 import datetime
 import hashlib
@@ -26,27 +27,30 @@ class Newsletter_subscriber(models.Model):
 
 
 
-class User(models.Model):
-	email = models.EmailField(unique=True)
-	username = models.CharField(max_length=255, unique=True)
-	password = models.CharField(max_length=255)
-	created = models.DateTimeField(editable=False)
-	updated = models.DateTimeField(editable=False)
-	def save(self):
-		if not self.id:
-			self.created = datetime.datetime.today()
-		self.updated = datetime.datetime.today()
-		super(Simulation_model, self).save()
+
+
+# class Profile(models.Model):
+# 	user = models.OneToOneField(User, on_delete=models.CASCADE)
+# 	email = models.EmailField(unique=True)
+# 	username = models.CharField(max_length=255, unique=True)
+# 	password = models.CharField(max_length=255)
+# 	created = models.DateTimeField(editable=False)
+# 	updated = models.DateTimeField(editable=False)
+# 	def save(self):
+# 		if not self.id:
+# 			self.created = datetime.datetime.today()
+# 		self.updated = datetime.datetime.today()
+# 		super(Simulation_model, self).save()
 
 
 class Simulation_model(models.Model):
 	name = models.CharField(max_length=255)
-	slug = models.SlugField(unique=True)
 	description = models.TextField()
-	specification = JSONField()
+	specification = models.TextField()
 	created = models.DateTimeField(editable=False)
 	updated = models.DateTimeField(editable=False)
 	user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
+	is_private  = models.BooleanField(default=False)
 	def save(self):
 		if not self.id:
 			self.created = datetime.datetime.today()
@@ -57,9 +61,10 @@ class Simulation_model(models.Model):
 
 class Uploaded_dataset(models.Model):
 	name = models.CharField(max_length=255)
+	# uploadid = models.AutoField(primary_key=True)
 	slug = models.SlugField(unique=True)
 	description = models.TextField()
-	specification = JSONField()
+	specification = models.TextField()
 	uploaded = models.DateTimeField(editable=False)
 	user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
 	def save(self):

@@ -11,10 +11,7 @@ class Newsletter_subscriberAdmin(admin.ModelAdmin):
 	list_display = ('email', 'userid', 'first_name','is_templar', 'is_alchemist', 'is_scholar', 'created', 'updated')
 	# prepopulated_fields = {'userid': ('email',), 'created': ('email',),'updated': ('email',),}
 
-class Simulation_modelAdmin(admin.ModelAdmin):
-	model = Simulation_model
-	list_display = ('name', 'description', 'slug', 'created', 'updated')
-	prepopulated_fields = {'slug': ('name',)}
+
 
 class Uploaded_datasetAdmin(admin.ModelAdmin):
 	model = Simulation_model
@@ -25,5 +22,5 @@ class Uploaded_datasetAdmin(admin.ModelAdmin):
 
 # register the models
 admin.site.register(Newsletter_subscriber, Newsletter_subscriberAdmin)
-admin.site.register(Simulation_model, Simulation_modelAdmin)
+admin.site.register(Simulation_model)
 admin.site.register(Uploaded_dataset, Uploaded_datasetAdmin)

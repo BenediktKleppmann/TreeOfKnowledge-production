@@ -1,0 +1,49 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}
+	Edit Simulation {{ model.name }}
+{% endblock %}
+
+{% block content %}
+	<br><br>
+	{% if user == model.user %}
+	<b>I am the owner of this simulation</b>
+	{% else %}
+	<b>I am NOT the owner of this simulation</b>
+	{% endif %}
+	<br><br>
+	
+	<form role="form" action="" method="post">
+		{% csrf_token %}
+		Name:<br>
+		<input type="text" name="name" value="{{ model.name }}" /><br><br>
+		Specification: <br>
+		<input type="text" name="specification" value="{{ model.specification }}" /><br><br>
+		<input type="submit" value="Submit" />
+	</form>
+	
+	<!--<b>From Form:</b>
+	<ul>
+		<li>{{ form.name.value|default_if_none:""  }}</li>
+		<li>{{ form.description.value|default_if_none:""  }}</li>
+		<li>{{ form.specification.value|default_if_none:""  }}</li>
+	</ul><br><br>
+	<b>From Model:</b>
+	<ul>
+		<li>{{ model.name }}</li>
+		<li>{{ model.description }}</li>
+		<li>{{ model.specification }}</li>
+	</ul><br><br>
+	
+
+
+	<form role="form" action="" method="post">
+		{% csrf_token %}
+		{{ form.as_p }}
+		<input type="submit" value="Submit" />
+	</form>-->
+{% endblock %}
+
+
+
+

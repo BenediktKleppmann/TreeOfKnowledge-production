@@ -6,11 +6,16 @@
 
 {% block content %}
 	<h1>Main menu</h1>
+	<!--<p>user: {{ user }}</p>-->
 	<p>Your options:
 		<ul>
 			<li>upload data</li>
-			<li>open existing model (yours or from others)</li>
-			<li>make new model</li>
+			<li><a href="{% url 'new_model' %}">make new model</a></li>
+			
+			{% for model in models %}
+				<li><a href="{% url 'edit_model' id=model.id %}">edit model {{ model.name }}</a></li>
+			{% endfor %}
+			
 		</ul>
 	</p>
 {% endblock %}
