@@ -1,11 +1,21 @@
-{% extends 'layouts/base.html' %}
+{% extends 'layouts/base_registration.html' %}
+
 
 {% block title %}
-	Registration Complete
+	Tree of Knowledge | Registration Complete
 {% endblock %}
 
-{% block content %}
-	<h1>Registration Complete</h1>
-	<p>You're account has been registered.</p>
+
+{% block navbar_right %}
+	<a href="{% url 'auth_login' %}" class="btn btn-default pull-right">Log in</a>
 {% endblock %}
+
+
+{% block message_box %}
+	<h1>Registration Complete</h1>
+	<p style="text-align:center;">You're account has been registered.</p>
+	<br><br>
+{% endblock %}
+
+
 

@@ -1,23 +1,17 @@
-{% extends 'layouts/base.html' %}
+{% extends 'layouts/base_tool.html' %}
 
 {% block title %}
-	Main menu
+	Edit Simulation {{ model.name }}
 {% endblock %}
 
 {% block content %}
-	<h1>Main menu</h1>
-	<!--<p>user: {{ user }}</p>-->
-	<p>Your options:
-		<ul>
-			<li>upload data</li>
-			<li><a href="{% url 'new_model' %}">make new model</a></li>
-			
-			{% for model in models %}
-				<li><a href="{% url 'edit_model' id=model.id %}">edit model {{ model.name }}</a></li>
-			{% endfor %}
-			
-		</ul>
-	</p>
+	<br><br>
+	<ul>
+		<li><a href="{% url 'new_model' %}">new model</a></li>
+		{% for model in models %}
+			<li><a href="{% url 'edit_model' id=model.id %}">edit model {{ model.name }}</a></li>
+		{% endfor %}
+	</ul>
+		
+
 {% endblock %}
-
-

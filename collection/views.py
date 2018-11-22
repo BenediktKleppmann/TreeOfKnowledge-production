@@ -62,6 +62,13 @@ def main_menu(request):
 	models = Simulation_model.objects.all().order_by('id') 
 	return render(request, 'tree_of_knowledge_frontend/main_menu.html', {'models': models})
 
+
+@login_required
+def main_menu2(request):
+	models = Simulation_model.objects.all().order_by('id') 
+	return render(request, 'tree_of_knowledge_frontend/main_menu2.html', {'models': models})
+
+
 @login_required
 def edit_model(request, id):
 	model = Simulation_model.objects.get(id=id)
@@ -98,10 +105,4 @@ def new_model(request):
 	form = form_class()
 	return render(request, 'tree_of_knowledge_frontend/edit_model.html', {'form': form,})
 
-
-
-
-
-def error(request):
-	return render(request, '404.html')
 

@@ -1,0 +1,82 @@
+{% load staticfiles %}
+
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="HandheldFriendly" content="true" />
+	<meta name="author" content="Benedikt Kleppmann">
+	<title>{% block title %}{% endblock %}</title>
+	
+
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+	<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+	<link rel="stylesheet" href="{% static 'css/tool.css' %}" />	
+	<link rel="shortcut icon" href="{% static 'images/logo_with_background.png'%}">
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+          </button>
+          <a class="navbar-brand" href="{% url 'landing_page' %}" ></a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+		<ul class="nav navbar-nav">
+			<li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> File <span class="caret" style="border-top-color:rgb(226,221,204);"></span></a>
+                <ul class="dropdown-menu">
+				  <li><a href="{% url 'new_model' %}">New Model</a></li>
+				  <li><a href="#">Open Model</a></li>
+				  
+				  <li class="dropdown-submenu">
+					<a tabindex="-1" href="#">Recent Models</a>
+					<ul class="dropdown-menu">
+						{% for model in models %}
+							<li><a href="{% url 'edit_model' id=model.id %}">edit model {{ model.name }}</a></li>
+						{% endfor %}
+					</ul>
+				  </li>
+				  <li role="separator" class="divider"></li>
+                  <li><a href="#">Upload Data</a></li>
+                </ul>
+              </li>
+            <li><a href="#">Edit</a></li>
+			<li><a href="#">Run</a></li>
+            <li><a href="#">Help</a></li>
+          </ul>
+		   <ul class="nav navbar-nav navbar-right">
+            <li><a href="{% url 'contact' %}"></a></li>
+			<li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user"></i> <span class="caret" style="border-top-color:rgb(226,221,204);"></span></a>
+                <ul class="dropdown-menu">
+				  <li><a href="#">Edit Profile</a></li>
+                  <li><a href="#">Change Password</a></li>
+				  <li role="separator" class="divider"></li>
+                  <li><a href="#">Logout</a></li>
+                  <li class="dropdown-header">Nav header</li>
+                  <li><a href="#">Separated link</a></li>
+                  <li><a href="#">One more separated link</a></li>
+                </ul>
+              </li>
+          </ul>
+        </div>
+    </nav>
+	
+	<div style="background-color:rgb(61, 40, 21); height:58px">
+	</div>
+	
+	
+	{% block content %}{% endblock %}
+	
+	<script src="{% static 'js/jquery.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+
+</body>
+</html>
+
+

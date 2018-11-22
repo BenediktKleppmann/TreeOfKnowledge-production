@@ -36,6 +36,7 @@ urlpatterns = [
 
 	# tool
 	url(r'^tool/main_menu/$', views.main_menu, name='main_menu'),
+	url(r'^tool/main_menu2/$', views.main_menu2, name='main_menu2'),
 	url(r'^tool/edit_model/$', views.new_model, name='new_model'),
 	url(r'^tool/edit_model/(?P<id>[-\d]+)/$', views.edit_model, name='edit_model'),
 	url(r'^main_menu/$', RedirectView.as_view(pattern_name='main_menu')),
@@ -48,7 +49,6 @@ urlpatterns = [
 
 	# admin pages
 	url(r'^subscribers/$', views.newsletter_subscribers, name='subscribers'),
-	url(r'^404/$', views.error, name='404'),
 	path('admin/', admin.site.urls),
 
 ]

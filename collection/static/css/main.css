@@ -171,7 +171,7 @@ a:focus {
 .box {
   padding: 0px 30px;
   background: #fff;
-  border-bottom: 1px solid rgb(68, 68, 65);;
+  border-bottom: 1px solid rgb(68, 68, 65);
   position: relative;
 }
 .box.first {
@@ -237,7 +237,7 @@ a:focus {
   margin-left: 20px;
   width: 58px;
   height: 58px;
-  background: url(../images/logo.png) no-repeat 0 50%;
+  background: url(../images/logo_only_background.png) no-repeat 0 50%;
   background-size: 75%;
 }
 .navbar-default .navbar-nav > li {
