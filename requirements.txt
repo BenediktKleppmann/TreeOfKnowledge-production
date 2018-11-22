@@ -1,6 +1,7 @@
 DateTime==4.3
 dj-database-url==0.5.0
 Django==2.0.8
+django-bootstrap3==11.0.0
 django-registration-redux==2.5
 hellowebapp-deploy==1.0.2
 psycopg2==2.7.5
