@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
+from decouple import config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -128,13 +129,20 @@ STATICFILES_DIRS = (
 	os.path.join(BASE_DIR, 'static'),
 )
 
+REGISTRATION_OPEN = True
 ACCOUNT_ACTIVATION_DAYS = 7
+# REGISTRATION_AUTO_LOGIN = True
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'benedikt@kleppmann.de'
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'Tree of Knowledge Team <noreply@treeofknowledge.ai>'
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'BenediktKleppmann'
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = False
-EMAIL_PORT = 1025
+# EMAIL_USE_SSL = True
+
 
 LOGIN_REDIRECT_URL = "main_menu"
+# LOGIN_URL = "accounts/login/"

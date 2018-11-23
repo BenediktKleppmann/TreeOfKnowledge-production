@@ -5,6 +5,7 @@ from collection.models import Newsletter_subscriber, Simulation_model
 from collection.forms import Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm
 from django.template.defaultfilters import slugify
 
+
 # ===== THE WEBSITE ===================================================================
 def landing_page(request):
 	return render(request, 'landing_page.html')
