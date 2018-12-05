@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from collection.models import Newsletter_subscriber, Simulation_model
 from collection.forms import Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm
 from django.template.defaultfilters import slugify
+from collection.functions import upload_data
 
 
 # ===== THE WEBSITE ===================================================================
@@ -77,7 +78,7 @@ def upload_data1(request):
         if form.is_valid():
             data_file = request.FILES['file']
             if data_file.name[-4:] ==".csv":
-                upload_id = handle_upload_data1()
+                upload_id = upload_data.handle_upload_data1()
                 return redirect('/tool/upload_data2/' + str(upload_id))
             else:
                 return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'form': form, 'error': 'The uploaded file must be a .csv-file'})

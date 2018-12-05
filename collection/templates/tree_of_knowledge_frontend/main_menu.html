@@ -7,6 +7,7 @@
 {% block content %}
 	<br><br>
 	<ul>
+		<li><a href="{% url 'upload_data1' %}">upload data</a></li>
 		<li><a href="{% url 'new_model' %}">new model</a></li>
 		{% for model in models %}
 			<li><a href="{% url 'edit_model' id=model.id %}">edit model {{ model.name }}</a></li>
