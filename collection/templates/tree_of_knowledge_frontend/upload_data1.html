@@ -5,20 +5,29 @@
 	Edit Simulation {{ model.name }}
 {% endblock %}
 
+{% block additionalcss %}{% endblock %}
+
 {% block content %}
+	<br><br>
+		{% for error in errors %}
+			{{ error }}<br>
+		{% endfor %}
 	<br><br>
 
 	<h1>Upload csv-file</h1>
-	<form role="form" action="" method="post" class="form">
+	<form role="form" action="" method="post" class="form" enctype="multipart/form-data">
 		{% csrf_token %}
-		{% bootstrap_form form %}
+		{% bootstrap_form form1 %}
 		{% buttons %}
 			<button type="submit" class="btn btn-primary">
-				{% bootstrap_icon "star" %} Submit
+				{% bootstrap_icon "star" %} Next
 			</button>
 		{% endbuttons %}
 	</form>	
 {% endblock %}
+
+
+
 
 
 

@@ -15,10 +15,10 @@ class Newsletter_subscriberAdmin(admin.ModelAdmin):
 
 class Uploaded_datasetAdmin(admin.ModelAdmin):
 	model = Simulation_model
-	list_display = ('name', 'description', 'slug', 'uploaded')
-	prepopulated_fields = {'slug': ('name',)}
-	
-	
+	list_display = ('name', 'content_specification', 'context_specification', 'created', 'updated', 'user')
+
+
+
 
 # register the models
 admin.site.register(Newsletter_subscriber, Newsletter_subscriberAdmin)

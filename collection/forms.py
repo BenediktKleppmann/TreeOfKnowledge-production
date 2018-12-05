@@ -1,5 +1,5 @@
 from django import forms
-from collection.models import Newsletter_subscriber, Simulation_model
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset
 
 
 class Subscriber_registrationForm(forms.ModelForm):
@@ -20,6 +20,18 @@ class Simulation_modelForm(forms.ModelForm):
 		model = Simulation_model
 		fields = ('name', 'specification', )
 
+
+
 class UploadFileForm(forms.Form):
-    title = forms.CharField(max_length=50)
     file = forms.FileField()
+
+class Uploaded_datasetForm2(forms.ModelForm):
+	class Meta:
+		model = Uploaded_dataset
+		fields = ('name', 'content_specification', )
+
+class Uploaded_datasetForm3(forms.ModelForm):
+	class Meta:
+		model = Uploaded_dataset
+		fields = ('name', 'context_specification', )
+
