@@ -5,6 +5,7 @@ django-bootstrap3==11.0.0
 django-registration-redux==2.5
 hellowebapp-deploy==1.0.2
 psycopg2==2.7.5
+python-decouple==3.1
 pytz==2018.6
 waitress==1.1.0
 whitenoise==3.3.1
