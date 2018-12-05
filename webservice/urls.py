@@ -1,5 +1,5 @@
-from registration.backends.simple.views import RegistrationView
-# from collection.backends import TOKRegistrationView
+# from registration.backends.simple.views import RegistrationView
+from collection.backends import TOKRegistrationView
 from django.contrib import admin
 from collection import views
 from django.views.generic import RedirectView
@@ -29,8 +29,8 @@ urlpatterns = [
 	url(r'^accounts/password/reset/done/$', password_reset_done, {'template_name': 'registration/password_reset_done.html'}, name='password_reset_done'),
 	url(r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', password_reset_confirm, {'template_name': 'registration/password_reset_confirm.html'}, name='password_reset_confirm'),
 	url(r'^accounts/password/done/$', password_reset_complete, {'template_name': 'registration/password_reset_complete.html'}, name='password_reset_complete'),
-	url(r'^accounts/register/$', RegistrationView.as_view(),name='registration_register'),
-	# url(r'^accounts/register/$', TOKRegistrationView.as_view(),name='registration_register'),
+	# url(r'^accounts/register/$', RegistrationView.as_view(),name='registration_register'),
+	url(r'^accounts/register/$', TOKRegistrationView.as_view(),name='registration_register'),
 	url(r'^accounts/register/complete/$', TemplateView.as_view(template_name='registration/registration_complete.html'), name='registration_complete'),
 	url(r'^accounts/', include('registration.backends.simple.urls')),
 	url(r'^', include('django.contrib.auth.urls')),
@@ -39,6 +39,8 @@ urlpatterns = [
 	# tool
 	url(r'^tool/main_menu/$', views.main_menu, name='main_menu'),
 	url(r'^tool/main_menu2/$', views.main_menu2, name='main_menu2'),
+	url(r'^tool/upload_data1/$', views.upload_data1, name='upload_data1'),
+    url(r'^tool/upload_data2/(?P<upload_id>[-\d]+)/$', views.upload_data2, name='upload_data2'),
 	url(r'^tool/edit_model/$', views.new_model, name='new_model'),
 	url(r'^tool/edit_model/(?P<id>[-\d]+)/$', views.edit_model, name='edit_model'),
 	url(r'^main_menu/$', RedirectView.as_view(pattern_name='main_menu')),

@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
 from collection.models import Newsletter_subscriber, Simulation_model
-from collection.forms import Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm
+from collection.forms import Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm
 from django.template.defaultfilters import slugify
 
 
@@ -68,6 +68,29 @@ def main_menu(request):
 def main_menu2(request):
 	models = Simulation_model.objects.all().order_by('id') 
 	return render(request, 'tree_of_knowledge_frontend/main_menu2.html', {'models': models})
+
+
+@login_required
+def upload_data1(request):
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            data_file = request.FILES['file']
+            if data_file.name[-4:] ==".csv":
+                upload_id = handle_upload_data1()
+                return redirect('/tool/upload_data2/' + str(upload_id))
+            else:
+                return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'form': form, 'error': 'The uploaded file must be a .csv-file'})
+    else:
+        form = UploadFileForm()
+    return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'form': form})
+
+
+@login_required
+def upload_data2(request, id):
+    upload = Upload_model.objects.get(id=id)
+    return render(request, 'tree_of_knowledge_frontend/upload_data2.html', {'upload': upload})
+
 
 
 @login_required
