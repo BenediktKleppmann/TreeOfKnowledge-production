@@ -23,7 +23,7 @@ def subscribe(request):
             form.save()
             email = form.cleaned_data['email']
             subscriber = Newsletter_subscriber.objects.get(email=email)
-            return redirect('/subscriber/' + str(subscriber.userid))
+            return redirect('subscriber_page', userid=subscriber.userid)
         else:
             return render(request, 'subscribe.html', {'error_occured': True,})
     else:
@@ -70,31 +70,20 @@ def main_menu(request):
 @login_required
 def upload_data1_new(request):
     errors = []
-    print("!!!!!!!!!Test 1")
     if request.method == 'POST':
-        print("!!!!!!!!!Test 2")
         form1 = UploadFileForm(request.POST, request.FILES)
-        print("!!!!!!!!!Test 3")
         if not form1.is_valid():
-            print("!!!!!!!!!Test 4")
             errors.append("Error: Form not valid.")
         else:
-            print("!!!!!!!!!Test 5")
             data_file = request.FILES['file']
-            print("!!!!!!!!!Test 6")
             if data_file.name[-4:] !=".csv":
-                print("!!!!!!!!!Test 7")
                 errors.append("Error: Uploaded file is not a csv-file.")
             else:
-                print("!!!!!!!!!Test 8")
                 upload_id = upload_data.save_data_and_suggestions(data_file, request.user)
-                print('/tool/upload_data2/' + str(upload_id))
-                return redirect('/tool/upload_data2/' + str(upload_id))
+                return redirect('upload_data2', upload_id=upload_id)
 
-        print("!!!!!!!!!Test 9")
         return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'form1': form1, 'errors': errors})
     else:
-        print("!!!!!!!!!Test 10")
         form1 = UploadFileForm()
         return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'form1': form1, 'errors': errors})
 
@@ -107,22 +96,22 @@ def upload_data2(request, upload_id):
     errors = []
     # if the upload_id was wrong, send the user back to the first page
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
+    print("2!!!!!!!!!!!!   %s   !!!!!!!!!!!!!!!!!" % str(uploaded_dataset.content_specification))
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
         form1 = UploadFileForm()
         return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'form1': form1, 'errors': errors})
 
-
-    form2 = Uploaded_datasetForm2(data=request.POST, instance=uploaded_dataset)
     if request.method == 'POST':        
+        form2 = Uploaded_datasetForm2(data=request.POST, instance=uploaded_dataset)
         if not form2.is_valid():
             errors.append('Error: the form is not valid.')
         else:
             form2.save()
-            return redirect('/tool/upload_data3/' + str(upload_id))
+            return redirect('upload_data3', upload_id=upload_id)
 
     
-    return render(request, 'tree_of_knowledge_frontend/upload_data2.html', {'form2': form2, 'errors': errors})
+    return render(request, 'tree_of_knowledge_frontend/upload_data2.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
 
@@ -136,16 +125,17 @@ def upload_data3(request, upload_id):
         form1 = UploadFileForm()
         return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'form1': form1, 'errors': errors})
 
-    form3 = Uploaded_datasetForm3(data=request.POST, instance=uploaded_dataset)
+    
     if request.method == 'POST':
+        form3 = Uploaded_datasetForm3(data=request.POST, instance=uploaded_dataset)
         if not form3.is_valid():
             errors.append('Error: the form is not valid.')
         else:
             form3.save()
-            return redirect('tool/main_menu/')
+            return redirect('main_menu')
 
     
-    return render(request, 'tree_of_knowledge_frontend/upload_data3.html', {'form3': form3, 'errors': errors})
+    return render(request, 'tree_of_knowledge_frontend/upload_data3.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
 
@@ -187,3 +177,6 @@ def new_model(request):
     return render(request, 'tree_of_knowledge_frontend/edit_model.html', {'form': form,})
 
 
+# =======================================================================================
+def test_page(request):
+    return render(request, 'tree_of_knowledge_frontend/test_page.html')

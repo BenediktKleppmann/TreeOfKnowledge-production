@@ -14,7 +14,7 @@
 		{% endfor %}
 	<br><br>
 
-	<h1>Upload csv-file</h1>
+<!--	<h1>Upload csv-file</h1>
 	<form role="form" action="" method="post" class="form">
 		{% csrf_token %}
 		{% bootstrap_form form3 %}
@@ -24,4 +24,24 @@
 			</button>
 		{% endbuttons %}
 	</form>	
+-->
+	
+	
+	
+	<h1>Upload csv-file</h1>
+	<form role="form" action="" method="post" class="form">
+		<input type='hidden' name='csrfmiddlewaretoken' value='NhNa4EVRLRWEixO6gWsmzV30lok58C2A6anawlg2SkUHpYdbLBrdn2wUOo0sLDtk' />
+		<div class="form-group has-error">
+			<label class="control-label" for="id_context_specification">Context specification</label>
+			<textarea name="context_specification" cols="40" rows="10" class="form-control" placeholder="Context specification" title="" required id="id_context_specification"></textarea>
+			<div class="help-block">This field is required.</div>
+		</div>
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary">
+				<span class="glyphicon glyphicon-star"></span> Done
+			</button>
+		</div>
+	</form>	
+
+	
 {% endblock %}

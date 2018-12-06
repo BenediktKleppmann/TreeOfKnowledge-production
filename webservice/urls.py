@@ -53,7 +53,9 @@ urlpatterns = [
 
     # admin pages
     url(r'^subscribers/$', views.newsletter_subscribers, name='subscribers'),
+    url(r'^test_page/$', views.test_page, name='test_page'),
     path('admin/', admin.site.urls),
+
 
 ]
 
