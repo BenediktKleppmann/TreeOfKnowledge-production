@@ -5,6 +5,8 @@ from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_
 from collection.forms import Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3
 from django.template.defaultfilters import slugify
 from collection.functions import upload_data
+from django.http import HttpResponse
+import json
 
 
 # ===== THE WEBSITE ===================================================================
@@ -96,7 +98,6 @@ def upload_data2(request, upload_id):
     errors = []
     # if the upload_id was wrong, send the user back to the first page
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
-    print("2!!!!!!!!!!!!   %s   !!!!!!!!!!!!!!!!!" % str(uploaded_dataset.content_specification))
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
         form1 = UploadFileForm()
@@ -138,6 +139,14 @@ def upload_data3(request, upload_id):
     return render(request, 'tree_of_knowledge_frontend/upload_data3.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
+
+@login_required
+def get_suggested_attributes(request):
+	print("upload_id = %s" % request.GET.get('upload_id', ''))
+	print("attributenumber = %s" % request.GET.get('attributenumber', ''))
+
+	returned_dict = {0: ['1st option', '2nd option', '3rd otpion'], 1: ['first option', 'second option'], 2: ['attr1', 'attr2', 'attr3']}
+	return HttpResponse(json.dumps(returned_dict))
 
 
 @login_required

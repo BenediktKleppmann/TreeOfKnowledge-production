@@ -41,6 +41,7 @@ urlpatterns = [
     url(r'^tool/upload_data1/$', views.upload_data1_new, name='upload_data1'),
     url(r'^tool/upload_data2/(?P<upload_id>[-\d]+)/$', views.upload_data2, name='upload_data2'),
     url(r'^tool/upload_data3/(?P<upload_id>[-\d]+)/$', views.upload_data3, name='upload_data3'),
+    url(r'^tool/get_suggested_attributes/$', views.get_suggested_attributes, name='get_suggested_attributes'),
     url(r'^tool/edit_model/$', views.new_model, name='new_model'),
     url(r'^tool/edit_model/(?P<id>[-\d]+)/$', views.edit_model, name='edit_model'),
     url(r'^main_menu/$', RedirectView.as_view(pattern_name='main_menu')),

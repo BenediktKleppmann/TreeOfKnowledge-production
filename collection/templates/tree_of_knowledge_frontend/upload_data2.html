@@ -5,78 +5,342 @@
 	Edit Simulation {{ model.name }}
 {% endblock %}
 
-{% block additionalcss %}{% endblock %}
+{% block additionalcss %}
+<style>
+
+
+		
+		/* --- Table box ----------------------------------------------------------- */
+		
+		.box {
+			/*position: absolute;*/
+			top: 40px;
+			left: 0;
+			height:450px;
+		
+		}
+		
+		.overflowing-content {
+		    height: 100%;
+			overflow: auto;
+		}
+		
+		.table-box {
+			width: max-content;
+			width: intrinsic;           /* Safari/WebKit uses a non-standard name */
+            width: -moz-max-content;    /* Firefox/Gecko */
+            width: -webkit-max-content; /* Chrome */
+		}
+		
+		/* --- Table format -------------------------------------------------------- */
+        .table {
+			width: 2705px;
+			overflow: auto;
+        }
+		
+
+        thead, tbody, tr, td, th { display: block; text-align:left; }
+
+        tr:after {
+            content: ' ';
+            display: block;
+            visibility: hidden;
+            clear: both;
+        }
+
+		
+        thead th {
+            height: max-content;
+			height: intrinsic;           /* Safari/WebKit uses a non-standard name */
+            height: -moz-max-content;    /* Firefox/Gecko */
+            height: -webkit-max-content; /* Chrome */
+        }
+		
+		
+		thead {
+			margin-left:20px;
+		}
+		
+		.table thead > tr > th {border-bottom: 0;}
+
+        tbody {
+            height: 300px;
+            overflow-y: auto;
+			direction: rtl;
+        }
+
+        tbody td, thead th {
+            width: 150px;
+            float: left;
+        }
+		
+		[contenteditable="true"]:focus {
+			background-color: rgb(242, 242, 241);
+		}
+		 /* --- Attribute Selections ----------------------------------------------------- */
+		
+		#attribute_selections {
+			margin-bottom:25px;
+		}
+		
+		#attribute_selections > .btn {
+			width:130px;
+			margin-left:10px;
+			margin-right:10px;
+			display: inline-block;
+			padding-left:8px;
+		}
+		
+		/* --- Additional Attributes Selection Menu ----------------------------------------------------- */
+				 
+		#attributeMenu-background {
+			position: fixed;
+			display: none;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background-color: rgba(0,0,0,0.5);
+			z-index: 2;
+			cursor: pointer;
+		}
+		
+</style>
+{% endblock %}
 
 {% block content %}
+
 	<br><br>
 		{% for error in errors %}
 			{{ error }}<br>
 		{% endfor %}
-	<br><br>
-
-	
+	<br>
+	<br>
 	<h1>2 - Specify the attribute- and entity- types</h1>
+	
+	
 	<form role="form" action="" method="post" class="form">
 		{% csrf_token %}
-		<div class="form-group has-error">
-			<label class="control-label" for="id_name">Name</label>
-			<input type="text" name="name" maxlength="255" class="form-control" placeholder="Name" title="" required id="id_name" />
-			<div class="help-block">This field is required.</div>
-		</div>
-		<div class="form-group has-error">
-			<label class="control-label" for="id_content_specification">Content specification</label>
-			<textarea name="content_specification" cols="40" rows="10" class="form-control" placeholder="Content specification" title="" required id="id_content_specification">{{ uploaded_dataset.content_specification }}</textarea>
-			<div class="help-block">This field is required.</div>
-		</div>
 		<div class="form-group">
+			<label class="control-label" for="id_name">Name</label>
+			<input type="text" name="name" maxlength="255" class="form-control" placeholder="Name" title="" required id="id_name" style="width:200px;"/>
+			<br>
+			<br>
+			<br>
+			<div class="box">
+				<div class="overflowing-content">			
+					<div class="table-box">
+						<div id="attribute_selections"></div>
+						<p id="uploaded_table"></p>
+					</div>
+				</div>
+			</div>
+			<br>
 			<button type="submit" class="btn btn-primary">
 				<span class="glyphicon glyphicon-star"></span> Next
 			</button>
 		</div>
 	</form>	
+	
 	<br>
 	<br>
-	<p id="uploaded_table"></p>
+	
+
+
+	<!-- Modal -->
+	<div class="modal fade" id="chooseAttribute" tabindex="-1" role="dialog" aria-labelledby="chooseAttributeTitle" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h5 class="modal-title" id="chooseAttributeTitle">Select Attribute type</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			  <span aria-hidden="true">&times;</span>
+			</button>
+		  </div>
+		  <div class="modal-body">
+			selecting attribute type for attribute <span id="modal-attributenumber"></span>
+		  <div class="input-group">
+				<button class="btn btn-outline-secondary" type="button">Option 1</button><br>
+				<button class="btn btn-outline-secondary" type="button">Option 2</button><br>
+				<button class="btn btn-outline-secondary" type="button">Option 3</button><br>
+			</div>
+			...
+		  </div>
+		  <div class="modal-footer">
+			Choice: <div id="attribute-choice" style="border: 1px solid black; width:150px">Option 2</div>
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-primary" onclick="saveAttributeSelection()" data-dismiss="modal">Save</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+
+	
 
 <script>
     function CreateTableFromJSON() {
 	
-		var content_specification = {{ uploaded_dataset.content_specification | safe }}
+		// THE DATA
+		var content_specification = {
+										"data": {"Date received": ["07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013"], "Product": ["Consumer Loan", "Bank account or service", "Bank account or service", "Mortgage", "Mortgage", "Bank account or service", "Mortgage", "Mortgage", "Mortgage", "Mortgage", "Debt collection", "Mortgage", "Credit card", "Mortgage", "Mortgage", "Mortgage", "Mortgage", "Debt collection", "Debt collection", "Mortgage", "Mortgage", "Mortgage", "Bank account or service", "Credit card", "Debt collection", "Credit card", "Mortgage", "Mortgage", "Credit reporting", "Student loan"], "Sub-product": ["Vehicle loan", "Checking account", "Checking account", "Conventional adjustable mortgage (ARM)", "Conventional fixed mortgage", "Checking account", "Conventional fixed mortgage", "Other mortgage", "Other mortgage", "Other mortgage", "Mortgage", "Other mortgage", NaN, "Other mortgage", "Other mortgage", "Other mortgage", "Other mortgage", "Credit card", "Credit card", "Conventional fixed mortgage", "Conventional adjustable mortgage (ARM)", "Conventional fixed mortgage", "(CD) Certificate of deposit", NaN, "Medical", NaN, "Conventional fixed mortgage", "Other mortgage", NaN, "Non-federal student loan"], "Issue": ["Managing the loan or lease", "Using a debit or ATM card", "Account opening, closing, or management", "Loan modification,collection,foreclosure", "Loan servicing, payments, escrow account", "Deposits and withdrawals", "Loan modification,collection,foreclosure", "Loan modification,collection,foreclosure", "Loan modification,collection,foreclosure", "Loan modification,collection,foreclosure", "Disclosure verification of debt", "Loan modification,collection,foreclosure", "Billing statement", "Loan modification,collection,foreclosure", "Loan servicing, payments, escrow account", "Loan servicing, payments, escrow account", "Loan modification,collection,foreclosure", "Communication tactics", "Communication tactics", "Loan modification,collection,foreclosure", "Loan modification,collection,foreclosure", "Loan servicing, payments, escrow account", "Account opening, closing, or management", "Closing/Cancelling account", "Disclosure verification of debt", "APR or interest rate", "Application, originator, mortgage broker", "Loan modification,collection,foreclosure", "Incorrect information on credit report", "Repaying your loan"], "Sub-issue": [NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, "Not given enough info to verify debt", NaN, NaN, NaN, NaN, NaN, NaN, "Frequent or repeated calls", "Frequent or repeated calls", NaN, NaN, NaN, NaN, NaN, "Right to dispute notice not received", NaN, NaN, NaN, "Public record", "Repaying your loan"], "Consumer complaint narrative": [NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN], "Company public response": [NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN], "Company": ["Wells Fargo & Company", "Wells Fargo & Company", "Santander Bank US", "Ocwen", "Franklin Credit Management", "Bank of America", "Ocwen", "Wells Fargo & Company", "USAA Savings", "Bank of America", "Nationstar Mortgage", "Bank of America", "Citibank", "New York Community Bank", "SunTrust Banks, Inc.", "Wells Fargo & Company", "Citibank", "Asset Management Professionals, LLC", "Wells Fargo & Company", "Ocwen", "Bank of America", "Citibank", "M&T Bank Corporation", "Capital One", "Expert Global Solutions, Inc.", "Synchrony Financial", "Wells Fargo & Company", "Ocwen", "Equifax", "Wells Fargo & Company"], "State": ["VA", "CA", "NY", "CA", "CT", "TX", "CA", "NY", "FL", "MI", "TX", "FL", "OH", "GA", "CO", "NV", "CA", "PA", "PA", "FL", "NJ", "NJ", "NY", "NJ", "MO", "WA", "NY", "NY", "CA", "OH"], "ZIP code": [24540, 95992, 10065, 92626, 6106, 75025, 94134, 11735, 32536, 49686, 77380, 33031, 45247, 30041, 80015, 89511, 95821, 19145, 19145, 33426, 8088, 7604, 13215, 8012, 65804, 98548, 10605, 14467, 91605, 45237], "Tags": [NaN, "Older American", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, "Older American", "Older American", NaN, NaN, NaN, NaN, "Older American", NaN, NaN, NaN, NaN, NaN, NaN], "Consumer consent provided?": [NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN], "Submitted via": ["Phone", "Web", "Fax", "Web", "Web", "Web", "Web", "Referral", "Referral", "Referral", "Referral", "Referral", "Referral", "Referral", "Referral", "Referral", "Referral", "Phone", "Phone", "Web", "Phone", "Web", "Referral", "Phone", "Phone", "Web", "Web", "Referral", "Web", "Web"], "Date sent to company": ["07/30/2013", "07/31/2013", "07/31/2013", "07/31/2013", "07/30/2013", "07/30/2013", "07/30/2013", "07/30/2013", "08/01/2013", "07/31/2013", "08/02/2013", "07/30/2013", "07/30/2013", "07/31/2013", "07/30/2013", "07/30/2013", "07/31/2013", "08/01/2013", "08/01/2013", "07/31/2013", "07/30/2013", "07/30/2013", "08/21/2013", "07/30/2013", "08/01/2013", "07/29/2013", "07/31/2013", "07/30/2013", "07/29/2013", "07/30/2013"], "Company response to consumer": ["Closed with explanation", "Closed with explanation", "Closed", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with non-monetary relief", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with non-monetary relief", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with monetary relief", "Closed with explanation", "Closed with monetary relief", "Closed with non-monetary relief", "Closed with explanation", "Closed with non-monetary relief", "Closed with explanation"], "Timely response?": ["Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"], "Consumer disputed?": ["No", "No", "No", "No", "No", "No", "Yes", "No", "No", "No", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", NaN, "No", "Yes", "No", "No", "No", "Yes", "No", "No", "No", "Yes", "No", "No"], "Complaint ID": [468882, 468889, 468879, 475101, 475823, 468981, 469003, 469013, 469299, 469022, 458638, 469024, 469026, 469029, 469034, 469035, 480488, 468904, 468905, 469060, 474852, 472236, 469616, 469087, 469103, 469131, 480173, 469360, 469201, 469207]},
+										"attribute_types": { "Date received": ["opt 1", "opt 2", "opt 3"], "Product": ["opt 3"], "Sub-product": [], "Issue": ["opt 2", "opt 3"], "Sub-issue": ["opt 1", "opt 2", "opt 3"], "Consumer complaint narrative": ["opt 1", "opt 2", "opt 3"], "Company public response": ["opt 1", "opt 2", "opt 3"], "Company": ["opt 1", "opt 2", "opt 3"], "State": ["opt 1", "opt 2", "opt 3"], "ZIP code": ["opt 1", "opt 2", "opt 3"], "Tags": ["opt 1", "opt 2", "opt 3"], "Consumer consent provided?": ["opt 1", "opt 2", "opt 3"], "Submitted via": ["opt 1", "opt 2", "opt 3"], "Date sent to company": ["opt 1", "opt 2", "opt 3"], "Company response to consumer": ["opt 1", "opt 2", "opt 3"], "Timely response?": ["opt 1", "opt 2", "opt 3"], "Consumer disputed?": ["opt 1", "opt 2", "opt 3"], "Complaint ID": ["opt 1", "opt 2", "opt 3"]}
+									}
         var myTable = content_specification["data"]
 		
-		 // CREATE DYNAMIC TABLE.
-        var table = document.createElement("table");
-	
 		// GET HEADER VALUES
 		var column_headers = Object.keys(myTable)
 		
+	
+		
+		// MAKE TABLE.
+        var table = document.createElement("table");
+		var att_class = document.createAttribute("class");  
+		att_class.value = "table table-sm table-condensed";    
+		table.setAttributeNode(att_class);   
+		var att_style = document.createAttribute("style");  
+		att_style.value = "width: " + 152*column_headers.length + "px;";    
+		table.setAttributeNode(att_style);  
+		
 		// MAKE TABLE HEADER
-		var tr = table.insertRow(-1);                   // TABLE ROW.
+		var theader = table.createTHead();
+		var tr = theader.insertRow(-1);                   // TABLE ROW.
 
         for (var i = 0; i < column_headers.length; i++) {
             var th = document.createElement("th");      // TABLE HEADER.
+			var att_scope = document.createAttribute("scope");  //ATTRIBUTE: class="col"
+			att_scope.value = "col";    
+			th.setAttributeNode(att_scope);   
+			var att_editable = document.createAttribute("contenteditable");  //ATTRIBUTE: contenteditable="true"
+			att_editable.value = "true";    
+			th.setAttributeNode(att_editable);   
+	
             th.innerHTML = column_headers[i];
             tr.appendChild(th);
         }
 		
 		// MAKE TABLE ROWS
+		var tbody = document.createElement('tbody')
 		for (var i = 0; i < myTable[column_headers[0]].length; i++) {
-            tr = table.insertRow(-1);
+            tr = tbody.insertRow(-1);
 
             for (var j = 0; j < column_headers.length; j++) {
                 var tabCell = tr.insertCell(-1);
                 tabCell.innerHTML = myTable[column_headers[j]][i];
+				var att_editable = document.createAttribute("contenteditable");  //ATTRIBUTE: contenteditable="true"
+				att_editable.value = "true";    
+				tabCell.setAttributeNode(att_editable);  
             }
         }
+		table.appendChild(tbody)
 
-        // FINALLY ADD THE NEWLY CREATED TABLE WITH JSON DATA TO A CONTAINER.
+        // ADD THE NEWLY CREATED TABLE WITH JSON DATA TO A CONTAINER.
         var divContainer = document.getElementById("uploaded_table");
         divContainer.innerHTML = "";
         divContainer.appendChild(table);
+		
+		
+		//================================================================================
+		//MAKE THE "Choose Attribute" Buttons
+		
+		var attSelectionBlock = document.getElementById("attribute_selections");
+		attSelectionBlock.innerHTML = "";
+			
+		for (var i = 0; i < column_headers.length; i++) {
+			var button = document.createElement("button");                     // Create <button id="attribute-button1" type="button" class="btn btn-primary" data-toggle="modal" data-target="#chooseAttribute" data-attributenumber="1">Choose Attribute</button>
+			var att_id = document.createAttribute("id");                       // id="attribute-button1"
+			att_id.value = "attribute-button" + i;    
+			button.setAttributeNode(att_id); 
+			var att_type = document.createAttribute("type");                   // type="button"
+			att_type.value = "button"    
+			button.setAttributeNode(att_type);  
+			var att_class = document.createAttribute("class");                 // class="btn btn-primary"
+			att_class.value = "btn btn-primary"    
+			button.setAttributeNode(att_class);  
+			var att_toggle = document.createAttribute("data-toggle");          // data-toggle="modal" 
+			att_toggle.value = "modal"    
+			button.setAttributeNode(att_toggle);  
+			var att_target = document.createAttribute("data-target");          // data-target="#chooseAttribute" 
+			att_target.value = "#chooseAttribute"    
+			button.setAttributeNode(att_target);  
+			var att_att_nb = document.createAttribute("data-attributenumber"); // data-attributenumber="1"
+			att_att_nb.value = i    
+			button.setAttributeNode(att_att_nb);  
+			button.innerHTML = "Choose Attribute"                              // Choose Attribute
+				
+			attSelectionBlock.appendChild(button);	
+		}
+		
     }
+	
+	function saveAttributeSelection() {
 
+		var attributenumber = $("#modal-attributenumber").html();
+		var attributechoice = $("#attribute-choice").html();
+		
+		$("#attribute-button" + attributenumber).html(attributechoice);
+		$("#attribute-button" + attributenumber).attr("class", "btn btn-light");
+
+	}
+
+	
+
+
+	/*========================================================================*/
+	/*========================================================================*/
+	/*========================================================================*/
+	
+	
+	
 	window.onload = function() {
-	  CreateTableFromJSON();
+		/*====  Create Table    ========================================== */
+		CreateTableFromJSON();
+	  
+	  
+		/*====  WHEN CLICKED, LOAD the AttributeSelection Modal    ======= */
+		var ATTRIBUTES = ['attributenumber'];
+	  	$('[data-toggle="modal"]').on('click', function (e) {
+		
+		  //PART 1: copy the value from the data-attributenumber-attribute on the button to the innerHTML of <span id="modal-attributenumber"></span> in the modal
+		  // convert target (e.g. the button) to jquery object
+		  var $target = $(e.target);
+		  // modal targeted by the button
+		  var modalSelector = $target.data('target');
+		  
+		  // iterate over each possible data-* attribute
+		  ATTRIBUTES.forEach(function (attributeName) {
+			// retrieve the dom element corresponding to current attribute
+			var $modalAttribute = $(modalSelector + ' #modal-' + attributeName);
+			var dataValue = $target.data(attributeName);
+			
+			// if the attribute value is empty, $target.data() will return undefined.
+			// In JS boolean expressions return operands and are not coerced into
+			// booleans. That way is dataValue is undefined, the left part of the following
+			// Boolean expression evaluate to false and the empty string will be returned
+			$modalAttribute.text(dataValue || '');
+		  });
+		
+		
+			//PART 2: load the suggestions into the modal
+			//part 2.1 make an ajax request to the backend
+			
+			var attributenumber = $target.data('attributenumber');
+			var url_components = window.location.href.split("/");
+			var upload_id = url_components[url_components.length - 2]
+			
+			var xhttp = new XMLHttpRequest();       
+			  xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+				  alert(this.responseText);
+				}
+			  };
+		
+
+			  xhttp.open("GET", "/tool/get_suggested_attributes?upload_id=" + upload_id + "&attributenumber=" + attributenumber , true);
+			  xhttp.send();
+		  });
+
 	};
 </script>
 	

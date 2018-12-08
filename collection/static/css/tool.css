@@ -65,3 +65,10 @@
 	.navbar-default .navbar-nav > .dropdown > a .caret	{
 		color: rgb(226, 221, 204)
 	}
+	
+	
+	.content {
+		padding-left: 25px;
+		padding-right: 25px;
+	}
+	
