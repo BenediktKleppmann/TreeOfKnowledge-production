@@ -5,6 +5,7 @@ from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_
 from collection.forms import Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3
 from django.template.defaultfilters import slugify
 from collection.functions import upload_data
+from collection.functions import get_from_db
 from django.http import HttpResponse
 import json
 
@@ -111,10 +112,10 @@ def upload_data2(request, upload_id):
             form2.save()
             return redirect('upload_data3', upload_id=upload_id)
 
-    
-    return render(request, 'tree_of_knowledge_frontend/upload_data2.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+    object_hierachy_tree = get_from_db.get_object_hierachy_tree()
+    return render(request, 'tree_of_knowledge_frontend/upload_data2.html', {'uploaded_dataset': uploaded_dataset, 'object_hierachy_tree':object_hierachy_tree, 'errors': errors})
 
-
+                
 
 @login_required
 def upload_data3(request, upload_id):
@@ -142,11 +143,16 @@ def upload_data3(request, upload_id):
 
 @login_required
 def get_suggested_attributes(request):
-	print("upload_id = %s" % request.GET.get('upload_id', ''))
-	print("attributenumber = %s" % request.GET.get('attributenumber', ''))
+    print("upload_id = %s" % request.GET.get('upload_id', ''))
+    print("attributenumber = %s" % request.GET.get('attributenumber', ''))
 
-	returned_dict = {0: ['1st option', '2nd option', '3rd otpion'], 1: ['first option', 'second option'], 2: ['attr1', 'attr2', 'attr3']}
-	return HttpResponse(json.dumps(returned_dict))
+    returned_dict = [    {'attribute_name':'option 1', 'number_of_conflicting_values':0, 'conflicting_rows':[], 'description':'this is the best option! :)', "format": { "type": "string", "min_length": 3, "max_length": 11, "max_nulls": 0 }},
+                        {'attribute_name':'option 2', 'number_of_conflicting_values':1, 'conflicting_rows':[5], 'description':'this is a great option!', "format": { "type": "date", "min": "1954-04-26 00:00:00", "max": "2009-12-17 00:00:00", "max_nulls": 0 }},
+                        {'attribute_name':'option 3', 'number_of_conflicting_values':4, 'conflicting_rows':[2,5,9,24], 'description':'this is a good option! ', "format": { "type": "string", "min_length": 7, "max_length": 8, "max_nulls": 0, "allowed_values": [ "sleeping", "working" ] }},
+                        {'attribute_name':'option 4', 'number_of_conflicting_values':7, 'conflicting_rows':[1,5,9,12,27, 28, 29], 'description':'this is an ok option.', "format": { "type": "string", "min_length": 4, "max_length": 52, "max_nulls": 0 }},
+                        {'attribute_name':'option 5', 'number_of_conflicting_values':9, 'conflicting_rows':[3,5,6,18,23,25,29,30,31], 'description':'this is a bad option.', "format": { "type": "int", "min": 1995, "max": 2011, "sign": "positive", "max_nulls": 0 }},
+                        {'attribute_name':'option 6', 'number_of_conflicting_values':15, 'conflicting_rows':[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], 'description':'this is a option...', "format": { "type": "int", "min": 0, "max": 45559, "sign": "non-negative", "max_nulls": 0 }}]
+    return HttpResponse(json.dumps(returned_dict))
 
 
 @login_required

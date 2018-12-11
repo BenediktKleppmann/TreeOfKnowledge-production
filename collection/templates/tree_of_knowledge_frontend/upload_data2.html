@@ -6,8 +6,15 @@
 {% endblock %}
 
 {% block additionalcss %}
-<style>
 
+
+<style>
+		
+		#object-type-spec-box {
+			border: solid 1px grey;
+			width:100%;
+			height: 250px;
+		}
 
 		
 		/* --- Table box ----------------------------------------------------------- */
@@ -91,38 +98,61 @@
 			padding-left:8px;
 		}
 		
-		/* --- Additional Attributes Selection Menu ----------------------------------------------------- */
-				 
-		#attributeMenu-background {
-			position: fixed;
-			display: none;
-			width: 100%;
-			height: 100%;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			background-color: rgba(0,0,0,0.5);
-			z-index: 2;
-			cursor: pointer;
+		/* --- Attributes Selection Menu ----------------------------------------------------- */
+		.modal-dialog {
+			width:700px;
+		}	
+		
+		.modal-header {		
+			margin-right: 0px;
+			margin-left: 0px;
+			padding-right: 0px;
+			padding-left: 0px;
 		}
+
+		#chooseAttributeTitle {
+			font-size:22px;
+		}
+		
+		#selection-options-frame {
+			/*border: solid 1px grey; */
+			height: 290px; 
+			width: 250px; 
+			overflow-y:auto;
+			margin-bottom:10px;
+		}
+		
+		#selection-options {
+			padding-left: 5px;
+		}
+		
+		#selection-options > .btn {
+			margin-top:5px; 
+			width: 220px;
+			text-align: left;
+		}
+
 		
 </style>
 {% endblock %}
 
 {% block content %}
 
-	<br><br>
+	<br>
+	<h1>2 - Specify the attribute- and entity- types</h1>
+	<br>
 		{% for error in errors %}
 			{{ error }}<br>
 		{% endfor %}
-	<br>
-	<br>
-	<h1>2 - Specify the attribute- and entity- types</h1>
+
 	
 	
-	<form role="form" action="" method="post" class="form">
-		{% csrf_token %}
+	
+	
+	<div class="form">
+		<div id="object-type-spec-box">
+			<div id="container-for-object-tree"></div>
+		</div>
 		<div class="form-group">
 			<label class="control-label" for="id_name">Name</label>
 			<input type="text" name="name" maxlength="255" class="form-control" placeholder="Name" title="" required id="id_name" style="width:200px;"/>
@@ -142,7 +172,7 @@
 				<span class="glyphicon glyphicon-star"></span> Next
 			</button>
 		</div>
-	</form>	
+	</div>	
 	
 	<br>
 	<br>
@@ -153,23 +183,31 @@
 	<div class="modal fade" id="chooseAttribute" tabindex="-1" role="dialog" aria-labelledby="chooseAttributeTitle" aria-hidden="true">
 	  <div class="modal-dialog" role="document">
 		<div class="modal-content">
-		  <div class="modal-header">
-			<h5 class="modal-title" id="chooseAttributeTitle">Select Attribute type</h5>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			  <span aria-hidden="true">&times;</span>
+		  <div class="modal-header row">
+			<h5 class="modal-title col-md-11" id="chooseAttributeTitle">Select Attribute type ....</h5>
+			<button type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:2px; margin-right:19px;font-size:29px">
+			  <span aria-hidden="true" >&times;</span>
 			</button>
 		  </div>
 		  <div class="modal-body">
-			selecting attribute type for attribute <span id="modal-attributenumber"></span>
-		  <div class="input-group">
-				<button class="btn btn-outline-secondary" type="button">Option 1</button><br>
-				<button class="btn btn-outline-secondary" type="button">Option 2</button><br>
-				<button class="btn btn-outline-secondary" type="button">Option 3</button><br>
-			</div>
-			...
+			  <div class="container-fluid">
+				<div class="row">
+				  <div class="col-md-5">
+					<span id="modal-attributenumber" style="visibility:hidden;"></span>
+					<div id="selection-options-frame">
+						<div class="input-group" id="selection-options" ></div>
+					</div>
+					<button type="button" class="btn btn-info" data-toggle="modal" data-target="#createAttribute" data-attributenumber="1" style="width:220px;">Create attribute type</button>
+				  </div>
+				  <div class="col-md-7 ml-auto">
+					<div class="form">
+						<div id="attribute-details"></div>
+					</div>	
+				  </div>
+				</div>
+			  </div>
 		  </div>
 		  <div class="modal-footer">
-			Choice: <div id="attribute-choice" style="border: 1px solid black; width:150px">Option 2</div>
 			<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
 			<button type="button" class="btn btn-primary" onclick="saveAttributeSelection()" data-dismiss="modal">Save</button>
 		  </div>
@@ -177,6 +215,10 @@
 	  </div>
 	</div>
 
+	<div id="useful-things" style="visibility:hidden;">
+		<div id="attribute-options"></div>
+		<div id="object_hierachy_tree">{{ object_hierachy_tree }}</div>
+	</div>
 	
 
 <script>
@@ -209,13 +251,8 @@
 
         for (var i = 0; i < column_headers.length; i++) {
             var th = document.createElement("th");      // TABLE HEADER.
-			var att_scope = document.createAttribute("scope");  //ATTRIBUTE: class="col"
-			att_scope.value = "col";    
-			th.setAttributeNode(att_scope);   
-			var att_editable = document.createAttribute("contenteditable");  //ATTRIBUTE: contenteditable="true"
-			att_editable.value = "true";    
-			th.setAttributeNode(att_editable);   
-	
+			th.setAttribute("scope", "col");
+			th.setAttribute("contenteditable", "true");	
             th.innerHTML = column_headers[i];
             tr.appendChild(th);
         }
@@ -228,9 +265,7 @@
             for (var j = 0; j < column_headers.length; j++) {
                 var tabCell = tr.insertCell(-1);
                 tabCell.innerHTML = myTable[column_headers[j]][i];
-				var att_editable = document.createAttribute("contenteditable");  //ATTRIBUTE: contenteditable="true"
-				att_editable.value = "true";    
-				tabCell.setAttributeNode(att_editable);  
+				tabCell.setAttribute("contenteditable", "true"); //ATTRIBUTE: contenteditable="true"
             }
         }
 		table.appendChild(tbody)
@@ -249,26 +284,13 @@
 			
 		for (var i = 0; i < column_headers.length; i++) {
 			var button = document.createElement("button");                     // Create <button id="attribute-button1" type="button" class="btn btn-primary" data-toggle="modal" data-target="#chooseAttribute" data-attributenumber="1">Choose Attribute</button>
-			var att_id = document.createAttribute("id");                       // id="attribute-button1"
-			att_id.value = "attribute-button" + i;    
-			button.setAttributeNode(att_id); 
-			var att_type = document.createAttribute("type");                   // type="button"
-			att_type.value = "button"    
-			button.setAttributeNode(att_type);  
-			var att_class = document.createAttribute("class");                 // class="btn btn-primary"
-			att_class.value = "btn btn-primary"    
-			button.setAttributeNode(att_class);  
-			var att_toggle = document.createAttribute("data-toggle");          // data-toggle="modal" 
-			att_toggle.value = "modal"    
-			button.setAttributeNode(att_toggle);  
-			var att_target = document.createAttribute("data-target");          // data-target="#chooseAttribute" 
-			att_target.value = "#chooseAttribute"    
-			button.setAttributeNode(att_target);  
-			var att_att_nb = document.createAttribute("data-attributenumber"); // data-attributenumber="1"
-			att_att_nb.value = i    
-			button.setAttributeNode(att_att_nb);  
-			button.innerHTML = "Choose Attribute"                              // Choose Attribute
-				
+			button.setAttribute("id", "attribute-button" + i);
+			button.setAttribute("type", "button");
+			button.setAttribute("class", "btn btn-primary");
+			button.setAttribute("data-toggle", "modal");
+			button.setAttribute("data-target", "#chooseAttribute");
+			button.setAttribute("data-attributenumber", i);
+			button.innerHTML = "Choose Attribute"      
 			attSelectionBlock.appendChild(button);	
 		}
 		
@@ -284,7 +306,99 @@
 
 	}
 
-	
+			  
+	function inspectAttribute(i) {
+		// ADD IN THE ATTRIBUTE DETAILS INTO THE ATTRIBUTE SELECTION MENU
+		var attribute_details = JSON.parse($("#attribute-options").html())
+		var attribute_detail = attribute_details[i]
+		
+		
+		var attributeDetailsBlock = document.getElementById("attribute-details");
+		attributeDetailsBlock.innerHTML = "";
+		
+		var h_three = document.createElement("h3");         // <h3 id="attribute-choice">Option 2</h3>
+		h_three.setAttribute("id", "attribute-choice");
+		h_three.innerHTML = attribute_detail['attribute_name']
+		attributeDetailsBlock.appendChild(h_three);	
+		
+		var div_form_group1 = document.createElement("div");         // <div class="form-group">
+		div_form_group1.setAttribute("class", "form-group");
+		
+		var label1 = document.createElement("label");         // <label class="control-label" for="attribute-description">Description</label>
+		label1.setAttribute("class", "control-label");		
+		label1.setAttribute("for", "attribute-description");	
+		label1.innerHTML = "Description"
+		div_form_group1.appendChild(label1);	
+		
+		var textarea = document.createElement("textarea");         // <textarea cols="20" rows="3" class="form-control" id="attribute-description"></textarea>
+		textarea.setAttribute("cols", "20");		
+		textarea.setAttribute("rows", "3");	
+		textarea.setAttribute("class", "form-control");	
+		textarea.setAttribute("id", "attribute-description");	
+		textarea.innerHTML = attribute_detail['description']
+		div_form_group1.appendChild(textarea);	
+		attributeDetailsBlock.appendChild(div_form_group1);	
+		
+		var hr = document.createElement("hr");         // <hr />
+		attributeDetailsBlock.appendChild(hr);	
+		
+		
+		var format_specifications = Object.keys(attribute_detail['format'])
+			
+		for (var j = 0; j < format_specifications.length; j++) {
+			
+			var form_group_div = document.createElement("div");         // <div class="form-group row">           ]
+			form_group_div.setAttribute("class", "form-group row");
+			
+			var label = document.createElement("label");   // <label for="form-element" class="col-sm-8 col-form-label">Number of conflicting values</label>
+			label.setAttribute("for", "form-element" + j );
+			label.setAttribute("class", "col-sm-4 col-form-label");
+			label.innerHTML = format_specifications[j];
+			form_group_div.appendChild(label);	
+			
+			var div_col = document.createElement("div");   // <div class="col-sm-4">
+			div_col.setAttribute("class", "col-sm-8");
+			
+			var input = document.createElement("input");  // <input type="text" readonly class="form-control-plaintext" id="form-element" value="">
+			input.setAttribute("type", "text");
+			input.setAttribute("readonly", "");
+			input.setAttribute("class", "form-control-plaintext");
+			input.setAttribute("id", "form-element" + j );
+			input.setAttribute("value", attribute_detail['format'][format_specifications[j]]);
+			div_col.appendChild(input);	
+			form_group_div.appendChild(div_col);	
+					
+			attributeDetailsBlock.appendChild(form_group_div);	
+		}
+		
+		
+		var hr = document.createElement("hr");         // <hr />
+		attributeDetailsBlock.appendChild(hr);	
+		
+		var div_form_group2 = document.createElement("div");         // <div class="form-group row">
+		div_form_group2.setAttribute("class", "form-group row");
+		
+		var label2 = document.createElement("label");         // <label for="number_of_conflicting_values" class="col-sm-8 col-form-label">Number of conflicting values</label>
+		label2.setAttribute("for", "number_of_conflicting_values");
+		label2.setAttribute("class", "col-sm-8 col-form-label");		
+		label2.innerHTML = "Number of conflicting values"
+		div_form_group2.appendChild(label2);	
+		
+		var div_col2 = document.createElement("div");   // <div class="col-sm-4">
+		div_col2.setAttribute("class", "col-sm-4");
+		
+		var input2 = document.createElement("input");  // <input type="text" readonly class="form-control-plaintext" id="number_of_conflicting_values" value="10" style="width:80px;">
+		input2.setAttribute("type", "text");
+		input2.setAttribute("readonly", "");
+		input2.setAttribute("class", "form-control-plaintext");
+		input2.setAttribute("id", "number_of_conflicting_values" );
+		input2.setAttribute("value", attribute_detail['number_of_conflicting_values']);
+		input2.setAttribute("style", "width:40px;" );
+		div_col2.appendChild(input2);	
+		div_form_group2.appendChild(div_col2);	
+		attributeDetailsBlock.appendChild(div_form_group2);	
+		
+	}
 
 
 	/*========================================================================*/
@@ -294,6 +408,22 @@
 	
 	
 	window.onload = function() {
+	
+		$('#container-for-object-tree').jstree({
+		'core' : {
+			'data' : [
+				{ "text" : "Root node", "children" : [
+					{ "text" : "Child node 1" },
+					{ "text" : "Child node 2" }
+					]
+					},
+				]
+			}
+		});
+		//var object_hierachy_tree = $("#object_hierachy_tree").html()
+		//$('#container-for-object-tree').jstree(object_hierachy_tree);
+		
+	
 		/*====  Create Table    ========================================== */
 		CreateTableFromJSON();
 	  
@@ -301,12 +431,14 @@
 		/*====  WHEN CLICKED, LOAD the AttributeSelection Modal    ======= */
 		var ATTRIBUTES = ['attributenumber'];
 	  	$('[data-toggle="modal"]').on('click', function (e) {
-		
+		   //PART 0: clear the attribute details-section
+		  var attributeDetailsBlock = document.getElementById("attribute-details");
+		  attributeDetailsBlock.innerHTML = "";
+		  
+		  
 		  //PART 1: copy the value from the data-attributenumber-attribute on the button to the innerHTML of <span id="modal-attributenumber"></span> in the modal
-		  // convert target (e.g. the button) to jquery object
-		  var $target = $(e.target);
-		  // modal targeted by the button
-		  var modalSelector = $target.data('target');
+		  var $target = $(e.target); // convert target (e.g. the button) to jquery object
+		  var modalSelector = $target.data('target'); // modal targeted by the button
 		  
 		  // iterate over each possible data-* attribute
 		  ATTRIBUTES.forEach(function (attributeName) {
@@ -314,10 +446,7 @@
 			var $modalAttribute = $(modalSelector + ' #modal-' + attributeName);
 			var dataValue = $target.data(attributeName);
 			
-			// if the attribute value is empty, $target.data() will return undefined.
-			// In JS boolean expressions return operands and are not coerced into
-			// booleans. That way is dataValue is undefined, the left part of the following
-			// Boolean expression evaluate to false and the empty string will be returned
+			// if the attribute value is empty, $target.data() will return undefined. In JS boolean expressions return operands and are not coerced into booleans. That way is dataValue is undefined, the left part of the following Boolean expression evaluate to false and the empty string will be returned
 			$modalAttribute.text(dataValue || '');
 		  });
 		
@@ -332,7 +461,26 @@
 			var xhttp = new XMLHttpRequest();       
 			  xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
-				  alert(this.responseText);
+				
+				  $("#attribute-options").html(this.responseText);
+				
+				  $("#selection-options").html("");
+				  var selectionsOptionsDiv = document.getElementById("selection-options");
+				  var attribute_options = JSON.parse(this.responseText);
+				  for (var i = 0; i < attribute_options.length; i++) {
+						var button = document.createElement("button");                     // Create <button class="btn btn-outline-secondary" type="button" onclick="inspectAttribute()">Attribute Name</button>
+						button.setAttribute("class", "btn btn-outline-secondary");
+						button.setAttribute("type", "button");
+						button.setAttribute("onclick", "inspectAttribute(" + i + ")");
+						button.setAttribute("scope", "col");
+						button.innerHTML = attribute_options[i]["attribute_name"]          // Attribute Name
+						selectionsOptionsDiv.appendChild(button);	
+						
+						var br = document.createElement("br"); 
+						selectionsOptionsDiv.appendChild(br);	
+					}
+
+
 				}
 			  };
 		
@@ -343,5 +491,7 @@
 
 	};
 </script>
+
+
 	
 {% endblock %}
