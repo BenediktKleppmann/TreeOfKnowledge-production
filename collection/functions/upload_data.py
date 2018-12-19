@@ -2,7 +2,6 @@ import json
 import traceback
 import pandas as pd
 from collection.models import Uploaded_dataset
-import simplejson
 from django.utils.safestring import mark_safe
 import os
 

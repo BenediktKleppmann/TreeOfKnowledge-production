@@ -25,6 +25,42 @@
 			font-size:1.1em;
 		}
 
+		#jstree-result {
+			padding:0;
+		}
+		
+		h3 {
+			text-align:center
+		}
+		
+		.list-group-row {
+			padding:0;
+			margin:0; 
+			border: 1px solid #ddd;
+			border-radius: 4px;
+		}
+		
+		.list-group-right-column {
+			padding:0;
+		}
+		
+		.list-group-left-column {
+			padding:0;
+			text-align:center;
+		}
+		
+		.list-group-left-column > span {
+			vertical-align: middle; 
+			display: inline-block;
+			line-height:normal;
+			transform: rotate(270deg);
+		}
+		
+		.list-group {
+			margin-bottom:0;
+		}
+		
+		
 		/* ---  Modal -------------------------------------------- */
 		.modal-dialog {
 			width:700px;
@@ -60,6 +96,7 @@
 				<div class="form">
 					<input type="text" value="" id="search-box" placeholder="Search" />
 					<br>
+					<br>
 					<div id="object-type-spec-box">
 						<div id="container-for-object-tree" ></div>
 					</div>
@@ -73,27 +110,7 @@
 					</div>
 				</div>
 			</div>
-			<div id="jstree-result" class="col-sm-5">
-				<table class="table table-bordered">
-				  <tbody>
-					<tr>
-					  <td rowspan="2">Mark</td>
-					  <td>Otto</td>
-					  <td>@mdo</td>
-					</tr>
-					<tr>
-					  
-					  <td>Thornton</td>
-					  <td>@fat</td>
-					</tr>
-					<tr>
-					  <td>Jacob</td>
-					  <td>Larry the Bird</td>
-					  <td>@twitter</td>
-					</tr>
-				  </tbody>
-				</table>
-			</div>
+			<div id="jstree-result" class="col-sm-5"></div>
 		</div>
 	  </div>
 	
@@ -220,9 +237,46 @@
 	};
 
 	
-	function draw_tree(object_hierachy_tree) {
+	function get_objectInfoHTMLString(data, node_id) {
 		
 	
+		var objectInfoHTMLString = 	'<div class="row list-group-row">' + 
+										'<div class="col-sm-1 list-group-left-column" id="left_col_' + node_id + '"><span>' + data.instance.get_node(node_id).text + '</span></div>' + 
+										'<div class="col-sm-11 list-group-right-column">' + 
+											'<ul class="list-group">'; 
+										
+		var known_attribute_values_dict = data.instance.get_node(node_id).li_attr["known_attribute_values"]
+		for(var key in known_attribute_values_dict) {
+			objectInfoHTMLString +=         	'<li class="list-group-item">' + key + ' = ' + known_attribute_values_dict[key] + '</li>';
+		} 
+		
+		var known_attribute_ranges_dict = data.instance.get_node(node_id).li_attr["known_attribute_ranges"]
+		for(var key in known_attribute_ranges_dict) {
+			objectInfoHTMLString +=         	'<li class="list-group-item">' + key + ' <i>in_range</i> ' + known_attribute_ranges_dict[key] + '</li>';
+		} 
+		
+		objectInfoHTMLString += 			'</ul>' + 
+										'</div>' + 
+									'</div>'; 
+													
+		return objectInfoHTMLString;	
+	}
+	
+	function get_numberOfListEntries(data, node_id) {
+	
+		var entries_count = 0
+		
+		var known_attribute_values_dict = data.instance.get_node(node_id).li_attr["known_attribute_values"]
+		if (known_attribute_values_dict) {
+			entries_count += Object.keys(known_attribute_values_dict).length
+		}
+		
+		var known_attribute_ranges_dict = data.instance.get_node(node_id).li_attr["known_attribute_ranges"]
+		if (known_attribute_ranges_dict) {
+			entries_count += Object.keys(known_attribute_ranges_dict).length
+		}
+		
+		return entries_count
 		
 	}
 	
@@ -267,60 +321,46 @@
 
 								
 
-								
-
-		
-		
-/*
-		$('#container-for-object-tree')
-		  .on('select_node.jstree', function (e, data) {
-		  
-	
-			var selected_node_id = data.node.id;
-			var current_node_element = $("#" + selected_node_id);
-			
-			var number_of_parent_nodes = data.node.parents.length;
-			for (var ln = 0; ln <= number_of_parent_nodes -1 ; ln++) {
-				var current_node_element = current_node_element.parent().parent();
-				if (current_node_element.children()[1] != undefined) {	
-					console.log(current_node_element.children()[1].text);
-				}
-			}	
-		  });
-	*/
 		
 		// if an element of tree is selected, display it's information on the right
 		$('#container-for-object-tree')
 		  .on('select_node.jstree', function (e, data) {
+		  
+			var node_id = data.selected[0];
+			
+			
+			var parent_nodes = [data.selected[0]];
+			var current_node = data.selected;
+			var test3 = data.instance.get_parent(current_node);
+			while (data.instance.get_parent(current_node) !== "#") {
+				current_node = data.instance.get_parent(current_node);
+				parent_nodes.unshift(current_node);
+			}
+			
+			var entire_objectInfoHTMLString = '<h3>' + data.instance.get_node(node_id).text + '</h3>';
+			var all_entry_counts = {};
+			for (var i = 0; i < parent_nodes.length; i++) {
+				var node_id = parent_nodes[i];
+				
+				var entries_count = get_numberOfListEntries(data, node_id);
+				if (entries_count > 0) {
+					all_entry_counts[node_id] = entries_count;
+					entire_objectInfoHTMLString += get_objectInfoHTMLString(data, node_id);
+				}
+				
+				
+			}
+
+		  
+		  	$('#jstree-result').html(entire_objectInfoHTMLString);
+			
+			
+			for(var key in all_entry_counts) {
+				$("#left_col_" + key ).css("line-height", 40 * all_entry_counts[key] + "px");
+			} 
 		
-			var objectInfoHTMLString = '<h3 id="entity-choice">' + data.instance.get_node(data.selected).text + '</h3> '	+
-										'<table class="table table-bordered">' + 
-											'<tbody>';
-											
-			var known_attribute_values_dict = data.instance.get_node(data.selected).li_attr["known_attribute_values"]
-			for(var key in known_attribute_values_dict) {
-				objectInfoHTMLString +=         '<tr>' + 
-													'<td>' + data.instance.get_node(data.selected).text + '</td>' + 
-													'<td>' + key + '</td>' + 
-													'<td>' + known_attribute_values_dict[key] + '</td>' + 
-												'</tr>';
-			} 
 			
-			var known_attribute_ranges_dict = data.instance.get_node(data.selected).li_attr["known_attribute_ranges"]
-			for(var key in known_attribute_ranges_dict) {
-				objectInfoHTMLString +=         '<tr>' + 
-													'<td>' + data.instance.get_node(data.selected).text + '</td>' + 
-													'<td>' + key + '</td>' + 
-													'<td>' + known_attribute_ranges_dict[key] + '</td>' + 
-												'</tr>';
-			} 
-			
-			objectInfoHTMLString += 		'</tbody>' + 
-										'</table>';
-							
-										
-			$('#jstree-result').html(objectInfoHTMLString);
-			
+		  
 		  });
 		
 	
