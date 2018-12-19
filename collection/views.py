@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
 from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset
-from collection.forms import Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3
+from collection.forms import Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5
 from django.template.defaultfilters import slugify
 from collection.functions import upload_data
 from collection.functions import get_from_db
@@ -67,7 +67,16 @@ def main_menu(request):
 
 
 
-# ==============================================================
+ # ===============================================================
+ #   _    _       _                 _       _       _        
+ #  | |  | |     | |               | |     | |     | |       
+ #  | |  | |_ __ | | ___   __ _  __| |   __| | __ _| |_ __ _ 
+ #  | |  | | '_ \| |/ _ \ / _` |/ _` |  / _` |/ _` | __/ _` |
+ #  | |__| | |_) | | (_) | (_| | (_| | | (_| | (_| | || (_| |
+ #   \____/| .__/|_|\___/ \__,_|\__,_|  \__,_|\__,_|\__\__,_|
+ #         | |                                               
+ #         |_|         
+ # ===============================================================
 
 
 @login_required
@@ -82,14 +91,45 @@ def upload_data1_new(request):
             if data_file.name[-4:] !=".csv":
                 errors.append("Error: Uploaded file is not a csv-file.")
             else:
-                upload_id = upload_data.save_data_and_suggestions(data_file, request.user)
-                return redirect('upload_data2', upload_id=upload_id)
+                (upload_id, upload_error, new_errors) = upload_data.save_new_upload_details(request)
+                if upload_error:
+                    errors.extend(new_errors)
+                    return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_error':upload_error, 'errors': errors})
+                else:
+                    return redirect('upload_data1', upload_id=upload_id)
 
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'form1': form1, 'errors': errors})
+        # return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+        return redirect('upload_data1', upload_id=upload_id, errors=errors)
     else:
-        form1 = UploadFileForm()
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'form1': form1, 'errors': errors})
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
 
+
+
+@login_required
+def upload_data1(request, upload_id, errors=[]):
+    # if the upload_id was wrong, send the user back to the first page
+    uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
+    if uploaded_dataset is None:
+        errors.append('Error: %s is not a valid upload_id' % str(upload_id))
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+
+    if request.method == 'POST':
+        form1 = UploadFileForm(request.POST, request.FILES)
+        if not form1.is_valid():
+            errors.append("Error: Form not valid.")
+        else:
+            data_file = request.FILES['file']
+            if data_file.name[-4:] !=".csv":
+                errors.append("Error: Uploaded file is not a csv-file.")
+            else:
+                (upload_error, new_errors) = upload_data.save_existing_upload_details(upload_id, request)
+                if upload_error:
+                    errors.extend(new_errors)
+                    return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_error':upload_error, 'errors': errors, 'uploaded_dataset':uploaded_dataset})
+                else:
+                    return redirect('upload_data1', upload_id=upload_id)
+
+    return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
 
@@ -101,10 +141,9 @@ def upload_data2(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        form1 = UploadFileForm()
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'form1': form1, 'errors': errors})
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
 
-    if request.method == 'POST':        
+    if request.method == 'POST':
         form2 = Uploaded_datasetForm2(data=request.POST, instance=uploaded_dataset)
         if not form2.is_valid():
             errors.append('Error: the form is not valid.')
@@ -112,10 +151,9 @@ def upload_data2(request, upload_id):
             form2.save()
             return redirect('upload_data3', upload_id=upload_id)
 
-    object_hierachy_tree = get_from_db.get_object_hierachy_tree()
-    return render(request, 'tree_of_knowledge_frontend/upload_data2.html', {'uploaded_dataset': uploaded_dataset, 'object_hierachy_tree':object_hierachy_tree, 'errors': errors})
+    known_data_sources = get_from_db.get_known_data_sources()
+    return render(request, 'tree_of_knowledge_frontend/upload_data2.html', {'uploaded_dataset': uploaded_dataset, 'known_data_sources': known_data_sources, 'errors': errors})
 
-                
 
 @login_required
 def upload_data3(request, upload_id):
@@ -124,8 +162,7 @@ def upload_data3(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        form1 = UploadFileForm()
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'form1': form1, 'errors': errors})
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
 
     
     if request.method == 'POST':
@@ -134,10 +171,54 @@ def upload_data3(request, upload_id):
             errors.append('Error: the form is not valid.')
         else:
             form3.save()
-            return redirect('main_menu')
+            return redirect('upload_data4', upload_id=upload_id)
+
+    object_hierachy_tree = get_from_db.get_object_hierachy_tree()
+    return render(request, 'tree_of_knowledge_frontend/upload_data3.html', {'uploaded_dataset': uploaded_dataset, 'object_hierachy_tree':object_hierachy_tree, 'errors': errors})
+
+
+
+@login_required
+def upload_data4(request, upload_id):
+    errors = []
+    # if the upload_id was wrong, send the user back to the first page
+    uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
+    if uploaded_dataset is None:
+        errors.append('Error: %s is not a valid upload_id' % str(upload_id))
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
 
     
-    return render(request, 'tree_of_knowledge_frontend/upload_data3.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+    if request.method == 'POST':
+        form4 = Uploaded_datasetForm4(data=request.POST, instance=uploaded_dataset)
+        if not form4.is_valid():
+            errors.append('Error: the form is not valid.')
+        else:
+            form4.save()
+            return redirect('upload_data5', upload_id=upload_id)
+ 
+    return render(request, 'tree_of_knowledge_frontend/upload_data4.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+
+
+
+@login_required
+def upload_data5(request, upload_id):
+    errors = []
+    # if the upload_id was wrong, send the user back to the first page
+    uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
+    if uploaded_dataset is None:
+        errors.append('Error: %s is not a valid upload_id' % str(upload_id))
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+
+    
+    if request.method == 'POST':
+        form5 = Uploaded_datasetForm5(data=request.POST, instance=uploaded_dataset)
+        if not form5.is_valid():
+            errors.append('Error: the form is not valid.')
+        else:
+            form5.save()
+            return redirect('main_menu')
+   
+    return render(request, 'tree_of_knowledge_frontend/upload_data4.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
 
@@ -194,4 +275,9 @@ def new_model(request):
 
 # =======================================================================================
 def test_page(request):
-    return render(request, 'tree_of_knowledge_frontend/test_page.html')
+    # ds_names = ['3 Round Stones, Inc.', '48 Factoring Inc.', '5PSolutions', 'Abt Associates', 'Accela', 'Accenture', 'AccuWeather', 'Acxiom', 'Adaptive', 'Adobe Digital Government', 'Aidin', 'Alarm.com', 'Allianz', 'Allied Van Lines', 'Alltuition', 'Altova', 'Amazon Web Services', 'American Red Ball Movers', 'Amida Technology Solutions', 'Analytica', 'Apextech LLC', 'Appallicious', 'Aquicore', 'Archimedes Inc.', 'AreaVibes Inc.', 'Arpin Van Lines', 'Arrive Labs', 'ASC Partners', 'Asset4', 'Atlas Van Lines', 'AtSite', 'Aunt Bertha, Inc.', 'Aureus Sciences (*Now part of Elsevier)', 'AutoGrid Systems', 'Avalara', 'Avvo', 'Ayasdi', 'Azavea', 'BaleFire Global', 'Barchart', 'Be Informed', 'Bekins', 'Berkery Noyes MandASoft', 'Berkshire Hathaway', 'BetterLesson', 'BillGuard', 'Bing', 'Biovia', 'BizVizz', 'BlackRock', 'Bloomberg', 'Booz Allen Hamilton', 'Boston Consulting Group', 'Boundless', 'Bridgewater', 'Brightscope', 'BuildFax', 'Buildingeye', 'BuildZoom', 'Business and Legal Resources', 'Business Monitor International', 'Calcbench, Inc.', 'Cambridge Information Group', 'Cambridge Semantics', 'CAN Capital', 'Canon', 'Capital Cube', 'Cappex', 'Captricity', 'CareSet Systems', 'Careset.com', 'CARFAX', 'Caspio', 'Castle Biosciences', 'CB Insights', 'Ceiba Solutions', 'Center for Responsive Politics', 'Cerner', 'Certara', 'CGI', 'Charles River Associates', 'Charles Schwab Corp.', 'Chemical Abstracts Service', 'Child Care Desk', 'Chubb', 'Citigroup', 'CityScan', 'CitySourced', 'Civic Impulse LLC', 'Civic Insight', 'Civinomics', 'Civis Analytics', 'Clean Power Finance', 'ClearHealthCosts', 'ClearStory Data', 'Climate Corporation', 'CliniCast', 'Cloudmade', 'Cloudspyre', 'Code for America', 'Code-N', 'Collective IP', 'College Abacus, an ECMC initiative', 'College Board', 'Communitech', 'Compared Care', 'Compendia Bioscience Life Technologies', 'Compliance and Risks', 'Computer Packages Inc', 'CONNECT-DOT LLC.', 'ConnectEDU', 'Connotate', 'Construction Monitor LLC', 'Consumer Reports', 'CoolClimate', 'Copyright Clearance Center', 'CoreLogic', 'CostQuest', 'Credit Karma', 'Credit Sesame', 'CrowdANALYTIX', 'Dabo Health', 'DataLogix', 'DataMade', 'DataMarket', 'Datamyne', 'DataWeave', 'Deloitte', 'DemystData', 'Department of Better Technology', 'Development Seed', 'Docket Alarm, Inc.', 'Dow Jones & Co.', 'Dun & Bradstreet', 'Earth Networks', 'EarthObserver App', 'Earthquake Alert!', 'Eat Shop Sleep', 'Ecodesk', 'eInstitutional', 'Embark', 'EMC', 'Energy Points, Inc.', 'Energy Solutions Forum', 'Enervee Corporation', 'Enigma.io', 'Ensco', 'Environmental Data Resources', 'Epsilon', 'Equal Pay for Women', 'Equifax', 'Equilar', 'Ernst & Young LLP', 'eScholar LLC.', 'Esri', 'Estately', 'Everyday Health', 'Evidera', 'Experian', 'Expert Health Data Programming, Inc.', 'Exversion', 'Ez-XBRL', 'Factset', 'Factual', 'Farmers', 'FarmLogs', 'Fastcase', 'Fidelity Investments', 'FindTheBest.com', 'First Fuel Software', 'FirstPoint, Inc.', 'Fitch', 'FlightAware', 'FlightStats', 'FlightView', 'Food+Tech Connect', 'Forrester Research', 'Foursquare', 'Fujitsu', 'Funding Circle', 'FutureAdvisor', 'Fuzion Apps, Inc.', 'Gallup', 'Galorath Incorporated', 'Garmin', 'Genability', 'GenoSpace', 'Geofeedia', 'Geolytics', 'Geoscape', 'GetRaised', 'GitHub', 'Glassy Media', 'Golden Helix', 'GoodGuide', 'Google Maps', 'Google Public Data Explorer', 'Government Transaction Services', 'Govini', 'GovTribe', 'Govzilla, Inc.', 'gRadiant Research LLC', 'Graebel Van Lines', 'Graematter, Inc.', 'Granicus', 'GreatSchools', 'GuideStar', 'H3 Biomedicine', 'Harris Corporation', 'HDScores, Inc', 'Headlight', 'Healthgrades', 'Healthline', 'HealthMap', 'HealthPocket, Inc.', 'HelloWallet', 'HERE', 'Honest Buildings', 'HopStop', 'Housefax', "How's My Offer?", 'IBM', 'ideas42', 'iFactor Consulting', 'IFI CLAIMS Patent Services', 'iMedicare', 'Impact Forecasting (Aon)', 'Impaq International', 'Import.io', 'IMS Health', 'InCadence', 'indoo.rs', 'InfoCommerce Group', 'Informatica', 'InnoCentive', 'Innography', 'Innovest Systems', 'Inovalon', 'Inrix Traffic', 'Intelius', 'Intermap Technologies', 'Investormill', 'Iodine', 'IPHIX', 'iRecycle', 'iTriage', 'IVES Group Inc', 'IW Financial', 'JJ Keller', 'J.P. Morgan Chase', 'Junar, Inc.', 'Junyo', 'Kaiser Permanante', 'karmadata', 'Keychain Logistics Corp.', 'KidAdmit, Inc.', 'Kimono Labs', 'KLD Research', 'Knoema', 'Knoema Corporation', 'Knowledge Agency', 'KPMG', 'Kroll Bond Ratings Agency', 'Kyruus', 'Lawdragon', 'Legal Science Partners', '(Leg)Cyte', 'LegiNation, Inc.', 'LegiStorm', 'Lenddo', 'Lending Club', 'Level One Technologies', 'LexisNexis', 'Liberty Mutual Insurance Cos.', 'Lilly Open Innovation Drug Discovery', 'Liquid Robotics', 'Locavore', 'LOGIXDATA, LLC', 'LoopNet', 'Loqate, Inc.', 'LoseIt.com', 'LOVELAND Technologies', 'Lucid', 'Lumesis, Inc.', 'Mango Transit', 'Mapbox', 'Maponics', 'MapQuest', 'Marinexplore, Inc.', 'MarketSense', 'Marlin & Associates', 'Marlin Alter and Associates', 'McGraw Hill Financial', 'McKinsey', 'MedWatcher', 'Mercaris', 'Merrill Corp.', 'Merrill Lynch', 'MetLife', 'mHealthCoach', 'MicroBilt Corporation', 'Microsoft Windows Azure Marketplace', 'Mint', "Moody's", 'Morgan Stanley', 'Morningstar, Inc.', 'Mozio', 'MuckRock.com', 'Munetrix', 'Municode', 'National Van Lines', 'Nationwide Mutual Insurance Company', 'Nautilytics', 'Navico', 'NERA Economic Consulting', 'NerdWallet', 'New Media Parents', 'Next Step Living', 'NextBus', 'nGAP Incorporated', 'Nielsen', 'Noesis', 'NonprofitMetrics', 'North American Van Lines', 'Noveda Technologies', 'NuCivic', 'Numedii', 'Oliver Wyman', 'OnDeck', 'OnStar', 'Ontodia, Inc', 'Onvia', 'Open Data Nation', 'OpenCounter', 'OpenGov', 'OpenPlans', 'OpportunitySpace, Inc.', 'Optensity', 'optiGov', 'OptumInsight', 'Orlin Research', 'OSIsoft', 'OTC Markets', 'Outline', 'Oversight Systems', 'Overture Technologies', 'Owler', 'Palantir Technologies', 'Panjiva', 'Parsons Brinckerhoff', 'Patently-O', 'PatientsLikeMe', 'Pave', 'Paxata', 'PayScale, Inc.', 'PeerJ', 'People Power', 'Persint', 'Personal Democracy Media', 'Personal, Inc.', 'Personalis', "Peterson's", 'PEV4me.com', 'PIXIA Corp', 'PlaceILive.com', 'PlanetEcosystems', 'PlotWatt', 'Plus-U', 'PolicyMap', 'Politify', 'Poncho App', 'POPVOX', 'Porch', 'PossibilityU', 'PowerAdvocate', 'Practice Fusion', 'Predilytics', 'PricewaterhouseCoopers (PWC)', 'ProgrammableWeb', 'Progressive Insurance Group', 'Propeller Health', 'ProPublica', 'PublicEngines', 'PYA Analytics', 'Qado Energy, Inc.', 'Quandl', 'Quertle', 'Quid', 'R R Donnelley', 'RAND Corporation', 'Rand McNally', 'Rank and Filed', 'Ranku', 'Rapid Cycle Solutions', 'realtor.com', 'Recargo', 'ReciPal', 'Redfin', 'RedLaser', 'Reed Elsevier', 'REI Systems', 'Relationship Science', 'Remi', 'Rentlogic', 'Retroficiency', 'Revaluate', 'Revelstone', 'Rezolve Group', 'Rivet Software', 'Roadify Transit', 'Robinson + Yu', 'Russell Investments', 'Sage Bionetworks', 'SAP', 'SAS', 'Scale Unlimited', 'Science Exchange', 'Seabourne', 'SeeClickFix', 'SigFig', 'Simple Energy', 'SimpleTuition', 'SlashDB', 'Smart Utility Systems', 'SmartAsset', 'SmartProcure', 'Smartronix', 'SnapSense', 'Social Explorer', 'Social Health Insights', 'SocialEffort Inc', 'Socrata', 'Solar Census', 'SolarList', 'Sophic Systems Alliance', 'S&P Capital IQ', 'SpaceCurve', 'SpeSo Health', 'Spikes Cavell Analytic Inc', 'Splunk', 'Spokeo', 'SpotCrime', 'SpotHero.com', 'Stamen Design', "Standard and Poor's", 'State Farm Insurance', 'Sterling Infosystems', 'Stevens Worldwide Van Lines', 'STILLWATER SUPERCOMPUTING INC', 'StockSmart', 'Stormpulse', 'StreamLink Software', 'StreetCred Software, Inc', 'StreetEasy', 'Suddath', 'Symcat', 'Synthicity', 'T. Rowe Price', 'Tableau Software', 'TagniFi', 'Telenav', 'Tendril', 'Teradata', 'The Advisory Board Company', 'The Bridgespan Group', 'The DocGraph Journal', 'The Govtech Fund', 'The Schork Report', 'The Vanguard Group', 'Think Computer Corporation', 'Thinknum', 'Thomson Reuters', 'TopCoder', 'TowerData', 'TransparaGov', 'TransUnion', 'TrialTrove', 'TrialX', 'Trintech', 'TrueCar', 'Trulia', 'TrustedID', 'TuvaLabs', 'Uber', 'Unigo LLC', 'United Mayflower', 'Urban Airship', 'Urban Mapping, Inc', 'US Green Data', 'U.S. News Schools', 'USAA Group', 'USSearch', 'Verdafero', 'Vimo', 'VisualDoD, LLC', 'Vital Axiom | Niinja', 'VitalChek', 'Vitals', 'Vizzuality', 'Votizen', 'Walk Score', 'WaterSmart Software', 'WattzOn', 'Way Better Patents', 'Weather Channel', 'Weather Decision Technologies', 'Weather Underground', 'WebFilings', 'Webitects', 'WebMD', 'Weight Watchers', 'WeMakeItSafer', 'Wheaton World Wide Moving', 'Whitby Group', 'Wolfram Research', 'Wolters Kluwer', 'Workhands', 'Xatori', 'Xcential', 'xDayta', 'Xignite', 'Yahoo', 'Zebu Compliance Solutions', 'Yelp', 'YourMapper', 'Zillow', 'ZocDoc', 'Zonability', 'Zoner', 'Zurich Insurance (Risk Room)']
+    # for ds_name in ds_names:
+    #     datasource = Datasource(name=ds_name)
+    #     datasource.save()
+    form = Uploaded_datasetForm2()
+    return render(request, 'tree_of_knowledge_frontend/test_page.html', {'form':form})

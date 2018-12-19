@@ -38,9 +38,11 @@ urlpatterns = [
 
     # tool
     url(r'^tool/main_menu/$', views.main_menu, name='main_menu'),
-    url(r'^tool/upload_data1/$', views.upload_data1_new, name='upload_data1'),
+    url(r'^tool/upload_data1/$', views.upload_data1_new, name='upload_data1_new'),
+    url(r'^tool/upload_data1/(?P<upload_id>[-\d]+)/$', views.upload_data1, name='upload_data1'),
     url(r'^tool/upload_data2/(?P<upload_id>[-\d]+)/$', views.upload_data2, name='upload_data2'),
     url(r'^tool/upload_data3/(?P<upload_id>[-\d]+)/$', views.upload_data3, name='upload_data3'),
+    url(r'^tool/upload_data4/(?P<upload_id>[-\d]+)/$', views.upload_data4, name='upload_data4'),
     url(r'^tool/get_suggested_attributes/$', views.get_suggested_attributes, name='get_suggested_attributes'),
     url(r'^tool/edit_model/$', views.new_model, name='new_model'),
     url(r'^tool/edit_model/(?P<id>[-\d]+)/$', views.edit_model, name='edit_model'),

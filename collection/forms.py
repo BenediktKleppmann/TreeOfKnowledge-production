@@ -24,14 +24,27 @@ class Simulation_modelForm(forms.ModelForm):
 
 class UploadFileForm(forms.Form):
     file = forms.FileField()
+ 
+
+
 
 class Uploaded_datasetForm2(forms.ModelForm):
 	class Meta:
 		model = Uploaded_dataset
-		fields = ('name', 'content_specification', )
+		fields = ('data_source', 'data_generation_date', 'correctness_of_data', )
 
 class Uploaded_datasetForm3(forms.ModelForm):
 	class Meta:
 		model = Uploaded_dataset
-		fields = ('name', 'context_specification', )
+		fields = ('file_name', 'context_specification', )
 
+class Uploaded_datasetForm4(forms.ModelForm):
+	class Meta:
+		model = Uploaded_dataset
+		fields = ('file_name', 'context_specification', )
+
+
+class Uploaded_datasetForm5(forms.ModelForm):
+	class Meta:
+		model = Uploaded_dataset
+		fields = ('file_name', 'context_specification', )

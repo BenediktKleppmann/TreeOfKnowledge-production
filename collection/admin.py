@@ -5,6 +5,7 @@ from collection.models import Newsletter_subscriber
 from collection.models import Simulation_model
 from collection.models import Uploaded_dataset
 
+
 # automated email_hash creation for Newsletter subscribers
 class Newsletter_subscriberAdmin(admin.ModelAdmin):
 	model = Newsletter_subscriber
@@ -15,7 +16,7 @@ class Newsletter_subscriberAdmin(admin.ModelAdmin):
 
 class Uploaded_datasetAdmin(admin.ModelAdmin):
 	model = Simulation_model
-	list_display = ('name', 'content_specification', 'context_specification', 'created', 'updated', 'user')
+	list_display = ('file_name', 'file_path', 'sep', 'encoding', 'quotechar', 'escapechar', 'na_values', 'skiprows', 'header', 'created', 'updated', 'user')
 
 
 

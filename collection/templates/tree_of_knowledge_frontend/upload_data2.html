@@ -10,126 +10,42 @@
 
 <style>
 		
-		#object-type-spec-box {
-			border: solid 1px grey;
-			height: 250px;
-		}
 
-		
-		/* --- Table box ----------------------------------------------------------- */
-		
-		.box {
-			/*position: absolute;*/
-			top: 40px;
-			left: 0;
-			height:450px;
-		
-		}
-		
-		.overflowing-content {
-		    height: 100%;
-			overflow: auto;
-		}
-		
-		.table-box {
-			width: max-content;
-			width: intrinsic;           /* Safari/WebKit uses a non-standard name */
-            width: -moz-max-content;    /* Firefox/Gecko */
-            width: -webkit-max-content; /* Chrome */
-		}
-		
-		/* --- Table format -------------------------------------------------------- */
-        .table {
-			width: 2705px;
-			overflow: auto;
-        }
-		
+	.rate {
+		float: left;
+		height: 46px;
+	}
+	.rate:not(:checked) > input {
+		position:absolute;
+		top:-9999px;
+	}
+	.rate:not(:checked) > label {
+		float:right;
+		width:1em;
+		overflow:hidden;
+		white-space:nowrap;
+		cursor:pointer;
+		font-size:30px;
+		color:#ccc;
+	}
+	.rate:not(:checked) > label:before {
+		content: '★ ';
+	}
+	.rate > input:checked ~ label {
+		color: #ffc700;    
+	}
+	.rate:not(:checked) > label:hover,
+	.rate:not(:checked) > label:hover ~ label {
+		color: #deb217;  
+	}
+	.rate > input:checked + label:hover,
+	.rate > input:checked + label:hover ~ label,
+	.rate > input:checked ~ label:hover,
+	.rate > input:checked ~ label:hover ~ label,
+	.rate > label:hover ~ input:checked ~ label {
+		color: #c59b08;
+	}
 
-        thead, tbody, tr, td, th { display: block; text-align:left; }
-
-        tr:after {
-            content: ' ';
-            display: block;
-            visibility: hidden;
-            clear: both;
-        }
-
-		
-        thead th {
-            height: max-content;
-			height: intrinsic;           /* Safari/WebKit uses a non-standard name */
-            height: -moz-max-content;    /* Firefox/Gecko */
-            height: -webkit-max-content; /* Chrome */
-        }
-		
-		
-		thead {
-			margin-left:20px;
-		}
-		
-		.table thead > tr > th {border-bottom: 0;}
-
-        tbody {
-            height: 300px;
-            overflow-y: auto;
-			direction: rtl;
-        }
-
-        tbody td, thead th {
-            width: 150px;
-            float: left;
-        }
-		
-		[contenteditable="true"]:focus {
-			background-color: rgb(242, 242, 241);
-		}
-		 /* --- Attribute Selections ----------------------------------------------------- */
-		
-		#attribute_selections {
-			margin-bottom:25px;
-		}
-		
-		#attribute_selections > .btn {
-			width:130px;
-			margin-left:10px;
-			margin-right:10px;
-			display: inline-block;
-			padding-left:8px;
-		}
-		
-		/* --- Attributes Selection Menu ----------------------------------------------------- */
-		.modal-dialog {
-			width:700px;
-		}	
-		
-		.modal-header {		
-			margin-right: 0px;
-			margin-left: 0px;
-			padding-right: 0px;
-			padding-left: 0px;
-		}
-
-		#chooseAttributeTitle {
-			font-size:22px;
-		}
-		
-		#selection-options-frame {
-			/*border: solid 1px grey; */
-			height: 290px; 
-			width: 250px; 
-			overflow-y:auto;
-			margin-bottom:10px;
-		}
-		
-		#selection-options {
-			padding-left: 5px;
-		}
-		
-		#selection-options > .btn {
-			margin-top:5px; 
-			width: 220px;
-			text-align: left;
-		}
 
 		
 </style>
@@ -137,428 +53,83 @@
 
 {% block content %}
 
+	{% for error in errors %}
+		<div class="error">{{ error }}</div><br>
+	{% endfor %}
 	<br>
-	<h1>2 - Specify the attribute- and entity- types</h1>
+	
+	<h1>2 - Info about the data source...</h1>
 	<br>
-		{% for error in errors %}
-			{{ error }}<br>
-		{% endfor %}
-
-	
-	
-	
-	
-	<div class="form">
-		<div class="row">
-			<div id="object-type-spec-box" class="col-sm-7">
-				<div id="container-for-object-tree" ></div>
+	<form role="form" action="" method="post" class="form" enctype="multipart/form-data">
+		{% csrf_token %}
+		<div class="form-group row">  
+			<label for="data_source" class="col-sm-4 col-form-label">Institution that generated the data</label>
+			<div class="col-sm-8">
+				<input type="text" list="data-source-list" class="form-control-plaintext" id="data_source" name="data_source">
+				<datalist id="data-source-list"></datalist>
+				<div class="help-block">If the instution isn't in the suggestions, just write its full name.</div>
 			</div>
-			<div id="jstree-result" class="col-sm-5">
+		</div> 
+		<div class="form-group row">  
+			<label for="data_generation_date" class="col-sm-4 col-form-label">Time the data was generated</label>
+			<div class="col-sm-8">
+				<input type="date" id="data_generation_date"  class="form-control-plaintext" value="2017-01-01" name="data_generation_date">
+			</div>
+		</div> 
 
-				<h3 id="entity-choice">Root node</h3>
-				<div class="form-group">
-					<label class="control-label" for="attribute-description">Description</label>
-					<textarea cols="40" rows="3" class="form-control" id="attribute-description">this is the object type for speaking cratures in medi</textarea>
+		<div class="form-group row">  
+			<label class="col-sm-4 col-form-label">Correctness of the data</label>
+			<div class="col-sm-8">
+				<div class="rate">
+					<input type="radio" id="star5" name="correctness_of_data" value=5 />
+					<label for="star5" title="text">5 stars</label>
+					<input type="radio" id="star4" name="correctness_of_data" value=4 />
+					<label for="star4" title="text">4 stars</label>
+					<input type="radio" id="star3" name="correctness_of_data" value=3 />
+					<label for="star3" title="text">3 stars</label>
+					<input type="radio" id="star2" name="correctness_of_data" value=2 />
+					<label for="star2" title="text">2 stars</label>
+					<input type="radio" id="star1" name="correctness_of_data" value=1 />
+					<label for="star1" title="text">1 star</label>
 				</div>
-				<div class="form-group row">           
-					<label for="form-element" class="col-sm-3 col-form-label">Examples</label>
-					<div class="col-sm-9">
-						<input type="text" readonly class="form-control-plaintext" id="form-element" value="['Donald Duck', 'Pluto']">
-					</div>
-				</div>
-				<div class="form-group row">           
-					<label for="form-element" class="col-sm-3 col-form-label">Existing_datapoints</label>
-					<div class="col-sm-9">
-						<input type="text" readonly class="form-control-plaintext" id="form-element" value="42">
-					</div>
-				</div>
-			</div> 
-		</div>
+			</div>
+		</div> 
+
 		<div class="form-group">
-			<label class="control-label" for="id_name">Name</label>
-			<input type="text" name="name" maxlength="255" class="form-control" placeholder="Name" title="" required id="id_name" style="width:200px;"/>
-			<br>
-			<br>
-			<br>
-			<div class="box">
-				<div class="overflowing-content">			
-					<div class="table-box">
-						<div id="attribute_selections"></div>
-						<p id="uploaded_table"></p>
-					</div>
-				</div>
-			</div>
-			<br>
 			<button type="submit" class="btn btn-primary">
 				<span class="glyphicon glyphicon-star"></span> Next
 			</button>
 		</div>
-	</div>	
-	
-	<br>
-	<br>
+	</form>	
+
 	
 
-
-	<!-- Modal -->
-	<div class="modal fade" id="chooseAttribute" tabindex="-1" role="dialog" aria-labelledby="chooseAttributeTitle" aria-hidden="true">
-	  <div class="modal-dialog" role="document">
-		<div class="modal-content">
-		  <div class="modal-header row">
-			<h5 class="modal-title col-md-11" id="chooseAttributeTitle">Select Attribute type ....</h5>
-			<button type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:2px; margin-right:19px;font-size:29px">
-			  <span aria-hidden="true" >&times;</span>
-			</button>
-		  </div>
-		  <div class="modal-body">
-			  <div class="container-fluid">
-				<div class="row">
-				  <div class="col-md-5">
-					<span id="modal-attributenumber" style="visibility:hidden;"></span>
-					<div id="selection-options-frame">
-						<div class="input-group" id="selection-options" ></div>
-					</div>
-					<button type="button" class="btn btn-info" data-toggle="modal" data-target="#createAttribute" data-attributenumber="1" style="width:220px;">Create attribute type</button>
-				  </div>
-				  <div class="col-md-7 ml-auto">
-					<div class="form">
-						<div id="attribute-details"></div>
-					</div>	
-				  </div>
-				</div>
-			  </div>
-		  </div>
-		  <div class="modal-footer">
-			<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-			<button type="button" class="btn btn-primary" onclick="saveAttributeSelection()" data-dismiss="modal">Save</button>
-		  </div>
-		</div>
-	  </div>
-	</div>
-
-	<div id="useful-things" style="visibility:hidden;">
-		<div id="attribute-options"></div>
-		<div id="object_hierachy_tree">{{ object_hierachy_tree }}</div>
-	</div>
+	<script>
 	
-
-<script>
-    function CreateTableFromJSON() {
-	
-		// THE DATA
-		var content_specification = {
-										"data": {"Date received": ["07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013", "07/29/2013"], "Product": ["Consumer Loan", "Bank account or service", "Bank account or service", "Mortgage", "Mortgage", "Bank account or service", "Mortgage", "Mortgage", "Mortgage", "Mortgage", "Debt collection", "Mortgage", "Credit card", "Mortgage", "Mortgage", "Mortgage", "Mortgage", "Debt collection", "Debt collection", "Mortgage", "Mortgage", "Mortgage", "Bank account or service", "Credit card", "Debt collection", "Credit card", "Mortgage", "Mortgage", "Credit reporting", "Student loan"], "Sub-product": ["Vehicle loan", "Checking account", "Checking account", "Conventional adjustable mortgage (ARM)", "Conventional fixed mortgage", "Checking account", "Conventional fixed mortgage", "Other mortgage", "Other mortgage", "Other mortgage", "Mortgage", "Other mortgage", NaN, "Other mortgage", "Other mortgage", "Other mortgage", "Other mortgage", "Credit card", "Credit card", "Conventional fixed mortgage", "Conventional adjustable mortgage (ARM)", "Conventional fixed mortgage", "(CD) Certificate of deposit", NaN, "Medical", NaN, "Conventional fixed mortgage", "Other mortgage", NaN, "Non-federal student loan"], "Issue": ["Managing the loan or lease", "Using a debit or ATM card", "Account opening, closing, or management", "Loan modification,collection,foreclosure", "Loan servicing, payments, escrow account", "Deposits and withdrawals", "Loan modification,collection,foreclosure", "Loan modification,collection,foreclosure", "Loan modification,collection,foreclosure", "Loan modification,collection,foreclosure", "Disclosure verification of debt", "Loan modification,collection,foreclosure", "Billing statement", "Loan modification,collection,foreclosure", "Loan servicing, payments, escrow account", "Loan servicing, payments, escrow account", "Loan modification,collection,foreclosure", "Communication tactics", "Communication tactics", "Loan modification,collection,foreclosure", "Loan modification,collection,foreclosure", "Loan servicing, payments, escrow account", "Account opening, closing, or management", "Closing/Cancelling account", "Disclosure verification of debt", "APR or interest rate", "Application, originator, mortgage broker", "Loan modification,collection,foreclosure", "Incorrect information on credit report", "Repaying your loan"], "Sub-issue": [NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, "Not given enough info to verify debt", NaN, NaN, NaN, NaN, NaN, NaN, "Frequent or repeated calls", "Frequent or repeated calls", NaN, NaN, NaN, NaN, NaN, "Right to dispute notice not received", NaN, NaN, NaN, "Public record", "Repaying your loan"], "Consumer complaint narrative": [NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN], "Company public response": [NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN], "Company": ["Wells Fargo & Company", "Wells Fargo & Company", "Santander Bank US", "Ocwen", "Franklin Credit Management", "Bank of America", "Ocwen", "Wells Fargo & Company", "USAA Savings", "Bank of America", "Nationstar Mortgage", "Bank of America", "Citibank", "New York Community Bank", "SunTrust Banks, Inc.", "Wells Fargo & Company", "Citibank", "Asset Management Professionals, LLC", "Wells Fargo & Company", "Ocwen", "Bank of America", "Citibank", "M&T Bank Corporation", "Capital One", "Expert Global Solutions, Inc.", "Synchrony Financial", "Wells Fargo & Company", "Ocwen", "Equifax", "Wells Fargo & Company"], "State": ["VA", "CA", "NY", "CA", "CT", "TX", "CA", "NY", "FL", "MI", "TX", "FL", "OH", "GA", "CO", "NV", "CA", "PA", "PA", "FL", "NJ", "NJ", "NY", "NJ", "MO", "WA", "NY", "NY", "CA", "OH"], "ZIP code": [24540, 95992, 10065, 92626, 6106, 75025, 94134, 11735, 32536, 49686, 77380, 33031, 45247, 30041, 80015, 89511, 95821, 19145, 19145, 33426, 8088, 7604, 13215, 8012, 65804, 98548, 10605, 14467, 91605, 45237], "Tags": [NaN, "Older American", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, "Older American", "Older American", NaN, NaN, NaN, NaN, "Older American", NaN, NaN, NaN, NaN, NaN, NaN], "Consumer consent provided?": [NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN], "Submitted via": ["Phone", "Web", "Fax", "Web", "Web", "Web", "Web", "Referral", "Referral", "Referral", "Referral", "Referral", "Referral", "Referral", "Referral", "Referral", "Referral", "Phone", "Phone", "Web", "Phone", "Web", "Referral", "Phone", "Phone", "Web", "Web", "Referral", "Web", "Web"], "Date sent to company": ["07/30/2013", "07/31/2013", "07/31/2013", "07/31/2013", "07/30/2013", "07/30/2013", "07/30/2013", "07/30/2013", "08/01/2013", "07/31/2013", "08/02/2013", "07/30/2013", "07/30/2013", "07/31/2013", "07/30/2013", "07/30/2013", "07/31/2013", "08/01/2013", "08/01/2013", "07/31/2013", "07/30/2013", "07/30/2013", "08/21/2013", "07/30/2013", "08/01/2013", "07/29/2013", "07/31/2013", "07/30/2013", "07/29/2013", "07/30/2013"], "Company response to consumer": ["Closed with explanation", "Closed with explanation", "Closed", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with non-monetary relief", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with non-monetary relief", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with explanation", "Closed with monetary relief", "Closed with explanation", "Closed with monetary relief", "Closed with non-monetary relief", "Closed with explanation", "Closed with non-monetary relief", "Closed with explanation"], "Timely response?": ["Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"], "Consumer disputed?": ["No", "No", "No", "No", "No", "No", "Yes", "No", "No", "No", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", NaN, "No", "Yes", "No", "No", "No", "Yes", "No", "No", "No", "Yes", "No", "No"], "Complaint ID": [468882, 468889, 468879, 475101, 475823, 468981, 469003, 469013, 469299, 469022, 458638, 469024, 469026, 469029, 469034, 469035, 480488, 468904, 468905, 469060, 474852, 472236, 469616, 469087, 469103, 469131, 480173, 469360, 469201, 469207]},
-										"attribute_types": { "Date received": ["opt 1", "opt 2", "opt 3"], "Product": ["opt 3"], "Sub-product": [], "Issue": ["opt 2", "opt 3"], "Sub-issue": ["opt 1", "opt 2", "opt 3"], "Consumer complaint narrative": ["opt 1", "opt 2", "opt 3"], "Company public response": ["opt 1", "opt 2", "opt 3"], "Company": ["opt 1", "opt 2", "opt 3"], "State": ["opt 1", "opt 2", "opt 3"], "ZIP code": ["opt 1", "opt 2", "opt 3"], "Tags": ["opt 1", "opt 2", "opt 3"], "Consumer consent provided?": ["opt 1", "opt 2", "opt 3"], "Submitted via": ["opt 1", "opt 2", "opt 3"], "Date sent to company": ["opt 1", "opt 2", "opt 3"], "Company response to consumer": ["opt 1", "opt 2", "opt 3"], "Timely response?": ["opt 1", "opt 2", "opt 3"], "Consumer disputed?": ["opt 1", "opt 2", "opt 3"], "Complaint ID": ["opt 1", "opt 2", "opt 3"]}
-									}
-        var myTable = content_specification["data"]
-		
-		// GET HEADER VALUES
-		var column_headers = Object.keys(myTable)
-		
-	
-		
-		// MAKE TABLE.
-        var table = document.createElement("table");
-		var att_class = document.createAttribute("class");  
-		att_class.value = "table table-sm table-condensed";    
-		table.setAttributeNode(att_class);   
-		var att_style = document.createAttribute("style");  
-		att_style.value = "width: " + 152*column_headers.length + "px;";    
-		table.setAttributeNode(att_style);  
-		
-		// MAKE TABLE HEADER
-		var theader = table.createTHead();
-		var tr = theader.insertRow(-1);                   // TABLE ROW.
-
-        for (var i = 0; i < column_headers.length; i++) {
-            var th = document.createElement("th");      // TABLE HEADER.
-			th.setAttribute("scope", "col");
-			th.setAttribute("contenteditable", "true");	
-            th.innerHTML = column_headers[i];
-            tr.appendChild(th);
-        }
-		
-		// MAKE TABLE ROWS
-		var tbody = document.createElement('tbody')
-		for (var i = 0; i < myTable[column_headers[0]].length; i++) {
-            tr = tbody.insertRow(-1);
-
-            for (var j = 0; j < column_headers.length; j++) {
-                var tabCell = tr.insertCell(-1);
-                tabCell.innerHTML = myTable[column_headers[j]][i];
-				tabCell.setAttribute("contenteditable", "true"); //ATTRIBUTE: contenteditable="true"
-            }
-        }
-		table.appendChild(tbody)
-
-        // ADD THE NEWLY CREATED TABLE WITH JSON DATA TO A CONTAINER.
-        var divContainer = document.getElementById("uploaded_table");
-        divContainer.innerHTML = "";
-        divContainer.appendChild(table);
-		
-		
-		//================================================================================
-		//MAKE THE "Choose Attribute" Buttons
-		
-		var attSelectionBlock = document.getElementById("attribute_selections");
-		attSelectionBlock.innerHTML = "";
+		function CreateDataSourceAutocompleteOptions() {
+			var known_data_sources = {{ known_data_sources | safe }}
 			
-		for (var i = 0; i < column_headers.length; i++) {
-			var button = document.createElement("button");                     // Create <button id="attribute-button1" type="button" class="btn btn-primary" data-toggle="modal" data-target="#chooseAttribute" data-attributenumber="1">Choose Attribute</button>
-			button.setAttribute("id", "attribute-button" + i);
-			button.setAttribute("type", "button");
-			button.setAttribute("class", "btn btn-primary");
-			button.setAttribute("data-toggle", "modal");
-			button.setAttribute("data-target", "#chooseAttribute");
-			button.setAttribute("data-attributenumber", i);
-			button.innerHTML = "Choose Attribute"      
-			attSelectionBlock.appendChild(button);	
-		}
-		
-    }
-	
-	function saveAttributeSelection() {
-
-		var attributenumber = $("#modal-attributenumber").html();
-		var attributechoice = $("#attribute-choice").html();
-		
-		$("#attribute-button" + attributenumber).html(attributechoice);
-		$("#attribute-button" + attributenumber).attr("class", "btn btn-light");
-
-	}
-
-			  
-	function inspectAttribute(i) {
-		// ADD IN THE ATTRIBUTE DETAILS INTO THE ATTRIBUTE SELECTION MENU
-		var attribute_details = JSON.parse($("#attribute-options").html())
-		var attribute_detail = attribute_details[i]
-		
-		
-		var attributeDetailsBlock = document.getElementById("attribute-details");
-		attributeDetailsBlock.innerHTML = "";
-		
-		var h_three = document.createElement("h3");         // <h3 id="attribute-choice">Option 2</h3>
-		h_three.setAttribute("id", "attribute-choice");
-		h_three.innerHTML = attribute_detail['attribute_name']
-		attributeDetailsBlock.appendChild(h_three);	
-		
-		var div_form_group1 = document.createElement("div");         // <div class="form-group">
-		div_form_group1.setAttribute("class", "form-group");
-		
-		var label1 = document.createElement("label");         // <label class="control-label" for="attribute-description">Description</label>
-		label1.setAttribute("class", "control-label");		
-		label1.setAttribute("for", "attribute-description");	
-		label1.innerHTML = "Description"
-		div_form_group1.appendChild(label1);	
-		
-		var textarea = document.createElement("textarea");         // <textarea cols="20" rows="3" class="form-control" id="attribute-description"></textarea>
-		textarea.setAttribute("cols", "20");		
-		textarea.setAttribute("rows", "3");	
-		textarea.setAttribute("class", "form-control");	
-		textarea.setAttribute("id", "attribute-description");	
-		textarea.innerHTML = attribute_detail['description']
-		div_form_group1.appendChild(textarea);	
-		attributeDetailsBlock.appendChild(div_form_group1);	
-		
-		var hr = document.createElement("hr");         // <hr />
-		attributeDetailsBlock.appendChild(hr);	
-		
-		
-		var format_specifications = Object.keys(attribute_detail['format'])
+			var dataSourceList = document.getElementById('data-source-list');
 			
-		for (var j = 0; j < format_specifications.length; j++) {
-			
-			var form_group_div = document.createElement("div");         // <div class="form-group row">           ]
-			form_group_div.setAttribute("class", "form-group row");
-			
-			var label = document.createElement("label");   // <label for="form-element" class="col-sm-8 col-form-label">Number of conflicting values</label>
-			label.setAttribute("for", "form-element" + j );
-			label.setAttribute("class", "col-sm-4 col-form-label");
-			label.innerHTML = format_specifications[j];
-			form_group_div.appendChild(label);	
-			
-			var div_col = document.createElement("div");   // <div class="col-sm-4">
-			div_col.setAttribute("class", "col-sm-8");
-			
-			var input = document.createElement("input");  // <input type="text" readonly class="form-control-plaintext" id="form-element" value="">
-			input.setAttribute("type", "text");
-			input.setAttribute("readonly", "");
-			input.setAttribute("class", "form-control-plaintext");
-			input.setAttribute("id", "form-element" + j );
-			input.setAttribute("value", attribute_detail['format'][format_specifications[j]]);
-			div_col.appendChild(input);	
-			form_group_div.appendChild(div_col);	
-					
-			attributeDetailsBlock.appendChild(form_group_div);	
-		}
-		
-		
-		var hr = document.createElement("hr");         // <hr />
-		attributeDetailsBlock.appendChild(hr);	
-		
-		var div_form_group2 = document.createElement("div");         // <div class="form-group row">
-		div_form_group2.setAttribute("class", "form-group row");
-		
-		var label2 = document.createElement("label");         // <label for="number_of_conflicting_values" class="col-sm-8 col-form-label">Number of conflicting values</label>
-		label2.setAttribute("for", "number_of_conflicting_values");
-		label2.setAttribute("class", "col-sm-8 col-form-label");		
-		label2.innerHTML = "Number of conflicting values"
-		div_form_group2.appendChild(label2);	
-		
-		var div_col2 = document.createElement("div");   // <div class="col-sm-4">
-		div_col2.setAttribute("class", "col-sm-4");
-		
-		var input2 = document.createElement("input");  // <input type="text" readonly class="form-control-plaintext" id="number_of_conflicting_values" value="10" style="width:80px;">
-		input2.setAttribute("type", "text");
-		input2.setAttribute("readonly", "");
-		input2.setAttribute("class", "form-control-plaintext");
-		input2.setAttribute("id", "number_of_conflicting_values" );
-		input2.setAttribute("value", attribute_detail['number_of_conflicting_values']);
-		input2.setAttribute("style", "width:40px;" );
-		div_col2.appendChild(input2);	
-		div_form_group2.appendChild(div_col2);	
-		attributeDetailsBlock.appendChild(div_form_group2);	
-		
-	}
-
-
-	/*========================================================================*/
-	/*========================================================================*/
-	/*========================================================================*/
-
-	
-	
-	window.onload = function() {
-		
-		/*====  jsTree    ========================================== */
-		
-		$('#container-for-object-tree').jstree({
-		'core' : {
-			'data' : [
-					{ "text" : "Root node", "li_attr": {"description": "this is the object type for speaking cratures in media", "examples":["Donald Duck", "Pluto"], "existing_datapoints":35}, "children" : [
-						{ "text" : "Child node 1" , "li_attr": {"description": "this is the object type for ficticious dogs in media", "examples":["Pluto","Bello"], "existing_datapoints":0}},
-						{ "text" : "Child node 2" , "li_attr": {"description": "this is the object type for ficticious bears in media", "examples":["gummybears","Winnie the Po"], "existing_datapoints":24}, "children":[
-							{"text": "second generation1", "li_attr": {"description": "this is the object type for gummy bears", "examples":["dunno","other"], "existing_datapoints":17}, "children": [
-								{"text": "third generation1", "li_attr": {"description": "this is the object type for good gummy bears", "examples":["dunno"], "existing_datapoints":9} },
-								{"text": "third generation1", "li_attr": {"description": "this is the object type for bad gummy bears", "examples":["other"], "existing_datapoints":8} }]}, 
-							{"text": "second generation2", "additional_info": "anything", "li_attr": {"description": "this is the object type for other bears Poo", "examples":["Winnie the Po"], "existing_datapoints":7} , "children": [
-								{"text": "third generation2", "li_attr": {"description": "this is the object type for teletubbies", "examples":["Tinkewincky","Lala","Po"], "existing_datapoints":7} }]}]},
-						{ "text" : "Child node 3", "li_attr": {"description": "this is the object type for ficticious ducks in medai", "examples":["Donnald Duck"], "existing_datapoints":11} }]},
-				]
+			for (var i = 0; i < known_data_sources.length; i++) {
+				var option = document.createElement('option');
+				option.value = known_data_sources[i];
+				dataSourceList.appendChild(option);
 			}
-		});
-		/* "state":{"selected":true},*/
+		}
 		
-	
+		
+		/*========================================================================*/
+		/*========================================================================*/
+		/*========================================================================*/
 
-		
-		//var object_hierachy_tree = $("#object_hierachy_tree").html()
-		//$('#container-for-object-tree').jstree(object_hierachy_tree);
-		
-		$('#container-for-object-tree')
-		  .on('changed.jstree', function (e, data) {
-			
-			var objNode = data.instance.get_node(data.selected);
-			alert(data.instance.get_node(data.selected).text);
-			var nodeName = data.instance.get_node(data.selected).text
-	
-	
-			alert(data.instance.get_node(data.selected).li_attr["description"]);
-			alert(data.instance.get_node(data.selected).li_attr["existing_datapoints"]);
-			alert(data.instance.get_node(data.selected).li_attr["examples"]);
-			/* + '   ' + */
-			/*+ '   ' + data.instance.get_node(data.selected).li_attr["examples"].join(", ")*/
-			
-			
-			$('#jstree-result').html('<h3 id="entity-choice">' + data.instance.get_node(data.selected).text + '</h3> '	+
-										'<div class="form-group">'  + 
-											'<label class="control-label" for="attribute-description">Description</label>' +
-											'<textarea cols="40" rows="3" class="form-control" id="attribute-description">' + data.instance.get_node(data.selected).li_attr["description"] + '</textarea>' +
-										'</div>' +
-										'<div class="form-group row">  ' +
-											'<label for="form-element" class="col-sm-4 col-form-label">Examples</label>' +
-											'<div class="col-sm-8">' +
-												'<input type="text" readonly class="form-control-plaintext" id="form-element" value="' + data.instance.get_node(data.selected).li_attr["examples"].join(", ") + '">' +
-											'</div>' +
-										'</div>' + 
-										'<div class="form-group row">           ' +
-											'<label for="form-element" class="col-sm-4 col-form-label">Existing_datapoints</label>' +
-											'<div class="col-sm-8">' +
-												'<input type="text" readonly class="form-control-plaintext" id="form-element" value="' + data.instance.get_node(data.selected).li_attr["existing_datapoints"] + '">' +
-											'</div>' +
-										'</div>');
-			
-		  });
-		
-	
-		/*====  Create Table    ========================================== */
-		CreateTableFromJSON();
-	  
-	  
-		/*====  WHEN CLICKED, LOAD the AttributeSelection Modal    ======= */
-		var ATTRIBUTES = ['attributenumber'];
-	  	$('[data-toggle="modal"]').on('click', function (e) {
-		   //PART 0: clear the attribute details-section
-		  var attributeDetailsBlock = document.getElementById("attribute-details");
-		  attributeDetailsBlock.innerHTML = "";
+		window.onload = function() {
+
+			CreateDataSourceAutocompleteOptions();
 		  
-		  
-		  //PART 1: copy the value from the data-attributenumber-attribute on the button to the innerHTML of <span id="modal-attributenumber"></span> in the modal
-		  var $target = $(e.target); // convert target (e.g. the button) to jquery object
-		  var modalSelector = $target.data('target'); // modal targeted by the button
-		  
-		  // iterate over each possible data-* attribute
-		  ATTRIBUTES.forEach(function (attributeName) {
-			// retrieve the dom element corresponding to current attribute
-			var $modalAttribute = $(modalSelector + ' #modal-' + attributeName);
-			var dataValue = $target.data(attributeName);
-			
-			// if the attribute value is empty, $target.data() will return undefined. In JS boolean expressions return operands and are not coerced into booleans. That way is dataValue is undefined, the left part of the following Boolean expression evaluate to false and the empty string will be returned
-			$modalAttribute.text(dataValue || '');
-		  });
-		
-		
-			//PART 2: load the suggestions into the modal
-			//part 2.1 make an ajax request to the backend
-			
-			var attributenumber = $target.data('attributenumber');
-			var url_components = window.location.href.split("/");
-			var upload_id = url_components[url_components.length - 2]
-			
-			var xhttp = new XMLHttpRequest();       
-			  xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200) {
-				
-				  $("#attribute-options").html(this.responseText);
-				
-				  $("#selection-options").html("");
-				  var selectionsOptionsDiv = document.getElementById("selection-options");
-				  var attribute_options = JSON.parse(this.responseText);
-				  for (var i = 0; i < attribute_options.length; i++) {
-						var button = document.createElement("button");                     // Create <button class="btn btn-outline-secondary" type="button" onclick="inspectAttribute()">Attribute Name</button>
-						button.setAttribute("class", "btn btn-outline-secondary");
-						button.setAttribute("type", "button");
-						button.setAttribute("onclick", "inspectAttribute(" + i + ")");
-						button.setAttribute("scope", "col");
-						button.innerHTML = attribute_options[i]["attribute_name"]          // Attribute Name
-						selectionsOptionsDiv.appendChild(button);	
-						
-						var br = document.createElement("br"); 
-						selectionsOptionsDiv.appendChild(br);	
-					}
+		};
 
-
-				}
-			  };
-		
-
-			  xhttp.open("GET", "/tool/get_suggested_attributes?upload_id=" + upload_id + "&attributenumber=" + attributenumber , true);
-			  xhttp.send();
-		  });
-
-	};
-</script>
-
+	</script>
 
 	
 {% endblock %}

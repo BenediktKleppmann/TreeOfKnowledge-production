@@ -59,9 +59,21 @@ class Simulation_model(models.Model):
 
 
 
+
 class Uploaded_dataset(models.Model):
-    name = models.CharField(max_length=255)
-    content_specification = models.TextField()
+    file_name = models.CharField(max_length=255)
+    file_path = models.TextField()
+    sep = models.CharField(max_length=3, blank=True, null=True)
+    encoding = models.CharField(max_length=10, blank=True, null=True)
+    quotechar = models.CharField(max_length=1, blank=True, null=True)
+    escapechar = models.CharField(max_length=1, blank=True, null=True)
+    na_values = models.TextField(blank=True, null=True)
+    skiprows = models.CharField(max_length=20, blank=True, null=True)
+    header = models.CharField(max_length=10, blank=True, null=True)
+    data_table_json = models.TextField()
+    data_source = models.TextField(null=True)
+    data_generation_date = models.DateField(null=True)
+    correctness_of_data = models.IntegerField(null=True)
     context_specification = models.TextField()
     created = models.DateTimeField(editable=False)
     updated = models.DateTimeField(editable=False)

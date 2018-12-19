@@ -5,43 +5,336 @@
 	Edit Simulation {{ model.name }}
 {% endblock %}
 
-{% block additionalcss %}{% endblock %}
+{% block additionalcss %}
+
+
+<style>
+		
+		#object-type-spec-box {
+			border: solid 1px grey;
+			height: 250px;
+		}
+		
+		#search-box {
+			box-shadow:inset 0 0 4px #eee; 
+			width:120px; 
+			margin:0; 
+			padding:6px 12px; 
+			border-radius:4px; 
+			border:1px solid silver; 
+			font-size:1.1em;
+		}
+
+		/* ---  Modal -------------------------------------------- */
+		.modal-dialog {
+			width:700px;
+		}	
+		
+		.modal-header {		
+			margin-right: 0px;
+			margin-left: 0px;
+			padding-right: 0px;
+			padding-left: 0px;
+		}
+		
+		#modal-title {
+			font-size:22px;
+		}
+		
+</style>
+{% endblock %}
 
 {% block content %}
-	<br><br>
-		{% for error in errors %}
-			{{ error }}<br>
-		{% endfor %}
-	<br><br>
 
-<!--	<h1>Upload csv-file</h1>
-	<form role="form" action="" method="post" class="form">
-		{% csrf_token %}
-		{% bootstrap_form form3 %}
-		{% buttons %}
-			<button type="submit" class="btn btn-primary">
-				{% bootstrap_icon "star" %} Done
-			</button>
-		{% endbuttons %}
-	</form>	
--->
+	<br>
+	<h1>3 - What objects are described by the table?</h1>
+	<br>
+		{% for error in errors %}
+			<div class="error">{{ error }}</div><br>
+		{% endfor %}
+
 	
-	
-	
-	<h1>Upload csv-file</h1>
-	<form role="form" action="" method="post" class="form">
-		<input type='hidden' name='csrfmiddlewaretoken' value='NhNa4EVRLRWEixO6gWsmzV30lok58C2A6anawlg2SkUHpYdbLBrdn2wUOo0sLDtk' />
-		<div class="form-group has-error">
-			<label class="control-label" for="id_context_specification">Context specification</label>
-			<textarea name="context_specification" cols="40" rows="10" class="form-control" placeholder="Context specification" title="" required id="id_context_specification"></textarea>
-			<div class="help-block">This field is required.</div>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-sm-7">
+				<div class="form">
+					<input type="text" value="" id="search-box" placeholder="Search" />
+					<br>
+					<div id="object-type-spec-box">
+						<div id="container-for-object-tree" ></div>
+					</div>
+					<br>	
+					<button id="create-object-type" type="button" class="btn btn-primary" data-toggle="modal" data-target="#createObjectType">Create new Object Type</button>
+					<br>
+					<div class="row">
+							<button type="button" class="btn btn-success btn-sm" onclick="demo_create();"><i class="glyphicon glyphicon-asterisk"></i> Create</button>
+							<button type="button" class="btn btn-warning btn-sm" onclick="demo_rename();"><i class="glyphicon glyphicon-pencil"></i> Rename</button>
+							<button type="button" class="btn btn-danger btn-sm" onclick="demo_delete();"><i class="glyphicon glyphicon-remove"></i> Delete</button>
+					</div>
+				</div>
+			</div>
+			<div id="jstree-result" class="col-sm-5">
+				<table class="table table-bordered">
+				  <tbody>
+					<tr>
+					  <td rowspan="2">Mark</td>
+					  <td>Otto</td>
+					  <td>@mdo</td>
+					</tr>
+					<tr>
+					  
+					  <td>Thornton</td>
+					  <td>@fat</td>
+					</tr>
+					<tr>
+					  <td>Jacob</td>
+					  <td>Larry the Bird</td>
+					  <td>@twitter</td>
+					</tr>
+				  </tbody>
+				</table>
+			</div>
 		</div>
-		<div class="form-group">
-			<button type="submit" class="btn btn-primary">
-				<span class="glyphicon glyphicon-star"></span> Done
+	  </div>
+	
+
+	
+	<button type="submit" class="btn btn-primary pull-right">
+		<span class="glyphicon glyphicon-star"></span> Next
+	</button>
+	
+	
+	
+	<!-- Modal -->
+	<div class="modal fade" id="createObjectType" tabindex="-1" role="dialog" aria-labelledby="chooseAttributeTitle" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+		<div class="modal-content">
+		  <div class="modal-header row">
+			<h5 class="modal-title col-md-11" id="modal-title">Create Object type.</h5>
+			<button type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:2px; margin-right:19px;font-size:29px">
+			  <span aria-hidden="true" >&times;</span>
 			</button>
+		  </div>
+		  <div class="modal-body">
+			  <div class="container-fluid">
+				<div class="row">
+					<div class="col-md-7">
+						left column <br>
+						left column <br>
+						left column <br>
+						left column <br>
+						left column <br>
+						left column <br>
+						left column <br>
+					</div>
+					<div class="col-md-7">
+						right column <br>
+						right column <br>
+						right column <br>
+						right column <br>
+						right column <br>
+						right column <br>
+						right column <br>
+					</div>
+				</div>
+			  </div>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-primary" onclick="saveAttributeSelection()" data-dismiss="modal">Save</button>
+		  </div>
 		</div>
-	</form>	
+	  </div>
+	</div>
+	
+	
+
+<script>
+	
+	 var object_hierachy_tree = [{"id":"n1", "text" : "Thing", "li_attr": {"intersting_attributes": ["Name"]}, "parent":"#"},
+							{"id":"n2", "text" : "Object" , "li_attr": {"intersting_attributes": ["Position", "Weight", "Height"]}, "parent":"n1"},
+							{"id":"n3", "text": "Living thing", "li_attr": {"intersting_attributes": ["Age", "Preferred environment"]}, "parent":"n2"},
+							{"id":"n4", "text": "Plant", "li_attr": {"known_attribute_values": {"Kingdom":"Plantae", "Does photosynthesis":true}, "intersting_attributes": ["CO2 production per day"]}, "a_attr":{"scientific":["Plantae"]}, "parent":"n3"},
+							{"id":"n5", "text": "Tree", "li_attr": {"known_attribute_values": {"Has woody tissue":true}, "known_attribute_ranges": {"Age":"0-7000"}, "intersting_attributes": ["Genus", "Leaf coverage"]},  "parent":"n4"},
+							{"id":"n6", "text": "Oak", "li_attr": {"known_attribute_values": {"Produces nuts":true, "Has leaves": true}, "known_attribute_ranges": {"Age": "0-700", "Height": "0-100", "Weight": "0-9000"}, "intersting_attributes": ["Species"]}, "a_attr":{"synonyms": ["oak tree"], "scientific": ["Quercus"]}, "parent":"n5"},
+							{"id":"n7", "text": "Chestnut", "li_attr": {"known_attribute_values": {"Produces nuts":true, "Produces berries": false}, "known_attribute_ranges": {"Age": "0-400", "Height": "0-130", "Weight": "0-10000"}, "intersting_attributes": ["Species", "Edible"]}, "a_attr":{"scientific": ["Castanea"]}, "parent":"n5"},
+							{"id":"n8", "text": "Flower", "li_attr": {"known_attribute_values": {"Has petals": true}, "intersting_attributes": ["Petal color"]}, "parent":"n4"},
+							{"id":"n9", "text": "Lily", "li_attr": {"known_attribute_values": {"Petal color":"yellow"}}, "parent":"n8"},
+							{"id":"n10", "text": "Animal", "li_attr": {"known_attribute_values": {"Kingdom":"Animalia"}, "known_attribute_ranges": {}, "intersting_attributes": ["Number of Limbs", "Preferred diet", "Phylum"]}, "a_attr":{"synonyms": ["Creature"], "scientific": ["Animalia"]}, "parent":"n2"}
+						]
+								
+								
+/*		
+	var object_hierachy_tree = [{ "text" : "Thing", "li_attr": {"intersting_attributes": ["Name"]}, "children" : [
+								{ "text" : "Object" , "li_attr": {"intersting_attributes": ["Position", "Weight", "Height"]}, "children":[
+									{"text": "Living thing", "li_attr": {"intersting_attributes": ["Age", "Preferred environment"]}, "children": [
+										{"text": "Plant", "li_attr": {"known_attribute_values": {"Kingdom":"Plantae", "Does photosynthesis":true}, "intersting_attributes": ["CO2 production per day"]}, "a_attr":{"scientific":["Plantae"]}, "children": [
+											{"text": "Tree", "li_attr": {"known_attribute_values": {"Has woody tissue":true}, "known_attribute_ranges": {"Age":"0-7000"}, "intersting_attributes": ["Genus", "Leaf coverage"]},  "children": [
+												{"text": "Oak", "li_attr": {"known_attribute_values": {"Produces nuts":true, "Has leaves": true}, "known_attribute_ranges": {"Age": "0-700", "Height": "0-100", "Weight": "0-9000"}, "intersting_attributes": ["Species"]}, "a_attr":{"synonyms": ["oak tree"], "scientific": ["Quercus"]} },
+												{"text": "Chestnut", "li_attr": {"known_attribute_values": {"Produces nuts":true, "Produces berries": false}, "known_attribute_ranges": {"Age": "0-400", "Height": "0-130", "Weight": "0-10000"}, "intersting_attributes": ["Species", "Edible"]}, "a_attr":{"scientific": ["Castanea"]} }]
+											},
+											{"text": "Flower", "li_attr": {"known_attribute_values": {"Has petals": true}, "intersting_attributes": ["Petal color"]}, "children": [
+												{"text": "Lily", "li_attr": {"known_attribute_values": {"Petal color":"yellow"}}} ]
+											}]
+										},
+										{"text": "Animal", "li_attr": {"known_attribute_values": {"Kingdom":"Animalia"}, "known_attribute_ranges": {}, "intersting_attributes": ["Number of Limbs", "Preferred diet", "Phylum"]}, "a_attr":{"synonyms": ["Creature"], "scientific": ["Animalia"]}}]
+									}]
+								}]
+							}
+						]
+*/						
+						
+	function demo_create() {
+		var ref = $('#container-for-object-tree').jstree(true),
+			sel = ref.get_selected();
+		if(!sel.length) { return false; }
+		var selected_node_id = sel[0]
+		object_hierachy_tree.push({"id":"waa", "text": "Waaaaaah", "li_attr": {"known_attribute_values": {"Has woody tissue":true}, "known_attribute_ranges": {"Age":"0-7000"}, "intersting_attributes": ["Genus", "Leaf coverage"]},  "parent":selected_node_id});
+		ref.settings.core.data = object_hierachy_tree;
+		ref.refresh();
+	};
+	
+	function demo_create_old() {
+		var ref = $('#container-for-object-tree').jstree(true),
+			sel = ref.get_selected();
+		if(!sel.length) { return false; }
+		sel = sel[0];
+		sel = ref.create_node(sel, {"type":"file"});
+		if(sel) {
+			ref.edit(sel);
+		}
+	};
+	
+	function demo_rename() {
+		var ref = $('#container-for-object-tree').jstree(true),
+			sel = ref.get_selected();
+		if(!sel.length) { return false; }
+		sel = sel[0];
+		ref.edit(sel);
+	};
+	function demo_delete() {
+		var ref = $('#container-for-object-tree').jstree(true),
+			sel = ref.get_selected();
+		if(!sel.length) { return false; }
+		ref.delete_node(sel);
+	};
+
+	
+	function draw_tree(object_hierachy_tree) {
+		
+	
+		
+	}
+	
+	
+	/*========================================================================*/
+	/*========================================================================*/
+	/*========================================================================*/
+
+	
+	
+	window.onload = function() {
+		
+		/*====  JSTREE    ========================================== */
+		
+		// search box
+		var to = false;
+		$('#search-box').keyup(function () {
+			if(to) { clearTimeout(to); }
+			to = setTimeout(function () {
+				var v = $('#search-box').val();
+				$('#container-for-object-tree').jstree(true).search(v);
+			}, 250);
+		});
+		
+		
+		$('#container-for-object-tree').jstree({
+			'core' : {
+				"animation" : 0,
+				"check_callback" : true,
+				'force_text' : true,
+				"themes" : { "stripes" : false },	
+				'data' : object_hierachy_tree
+			},
+            "types" : {
+                "#" : { "max_children" : 1, "max_depth" : 4, "valid_children" : ["root"] },
+                "root" : { "icon" : "/static/3.3.7/assets/images/tree_icon.png", "valid_children" : ["default"] },
+                "default" : { "valid_children" : ["default","file"] },
+                "file" : { "icon" : "glyphicon glyphicon-file", "valid_children" : [] }
+            },
+            "plugins" : [ "contextmenu", "dnd", "search", "state", "types", "wholerow" ]
+        });	
+
+								
+
+								
+
+		
+		
+/*
+		$('#container-for-object-tree')
+		  .on('select_node.jstree', function (e, data) {
+		  
+	
+			var selected_node_id = data.node.id;
+			var current_node_element = $("#" + selected_node_id);
+			
+			var number_of_parent_nodes = data.node.parents.length;
+			for (var ln = 0; ln <= number_of_parent_nodes -1 ; ln++) {
+				var current_node_element = current_node_element.parent().parent();
+				if (current_node_element.children()[1] != undefined) {	
+					console.log(current_node_element.children()[1].text);
+				}
+			}	
+		  });
+	*/
+		
+		// if an element of tree is selected, display it's information on the right
+		$('#container-for-object-tree')
+		  .on('select_node.jstree', function (e, data) {
+		
+			var objectInfoHTMLString = '<h3 id="entity-choice">' + data.instance.get_node(data.selected).text + '</h3> '	+
+										'<table class="table table-bordered">' + 
+											'<tbody>';
+											
+			var known_attribute_values_dict = data.instance.get_node(data.selected).li_attr["known_attribute_values"]
+			for(var key in known_attribute_values_dict) {
+				objectInfoHTMLString +=         '<tr>' + 
+													'<td>' + data.instance.get_node(data.selected).text + '</td>' + 
+													'<td>' + key + '</td>' + 
+													'<td>' + known_attribute_values_dict[key] + '</td>' + 
+												'</tr>';
+			} 
+			
+			var known_attribute_ranges_dict = data.instance.get_node(data.selected).li_attr["known_attribute_ranges"]
+			for(var key in known_attribute_ranges_dict) {
+				objectInfoHTMLString +=         '<tr>' + 
+													'<td>' + data.instance.get_node(data.selected).text + '</td>' + 
+													'<td>' + key + '</td>' + 
+													'<td>' + known_attribute_ranges_dict[key] + '</td>' + 
+												'</tr>';
+			} 
+			
+			objectInfoHTMLString += 		'</tbody>' + 
+										'</table>';
+							
+										
+			$('#jstree-result').html(objectInfoHTMLString);
+			
+		  });
+		
+	
+		
+		/*====  CREATE-NEW-OBJECT-TYPE MODAL    ========================================== */
+		
+		//when modal is opened
+		$('[data-toggle="modal"]').on('click', function (e) {
+		
+		});
+
+	};
+</script>
+
 
 	
 {% endblock %}
