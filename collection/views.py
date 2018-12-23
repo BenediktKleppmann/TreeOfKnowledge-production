@@ -221,6 +221,11 @@ def upload_data5(request, upload_id):
     return render(request, 'tree_of_knowledge_frontend/upload_data4.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
+@login_required
+def get_possible_attributes(request):
+	print("object_type = %s" % request.GET.get('object_type', ''))
+	possible_attributes = [{"name":"Name", "points":39}, {"name":"Position", "points":62}, {"name":"Weight", "points":96}, {"name":"Height", "points":63}, {"name":"Age", "points":61}, {"name":"Preferred environment", "points":21}, {"name":"CO2 production per day", "points":2}, {"name":"Genus", "points":24}, {"name":"Leaf coverage", "points":24}, {"name":"Species", "points":36}, {"name":"Edible", "points":65}]
+	return HttpResponse(json.dumps(possible_attributes))
 
 @login_required
 def get_suggested_attributes(request):
@@ -234,6 +239,8 @@ def get_suggested_attributes(request):
                         {'attribute_name':'option 5', 'number_of_conflicting_values':9, 'conflicting_rows':[3,5,6,18,23,25,29,30,31], 'description':'this is a bad option.', "format": { "type": "int", "min": 1995, "max": 2011, "sign": "positive", "max_nulls": 0 }},
                         {'attribute_name':'option 6', 'number_of_conflicting_values':15, 'conflicting_rows':[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], 'description':'this is a option...', "format": { "type": "int", "min": 0, "max": 45559, "sign": "non-negative", "max_nulls": 0 }}]
     return HttpResponse(json.dumps(returned_dict))
+
+
 
 
 @login_required

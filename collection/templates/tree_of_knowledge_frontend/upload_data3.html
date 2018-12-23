@@ -1,5 +1,6 @@
 {% extends 'layouts/base_tool.html' %}
 {% load bootstrap3 %}
+{% load staticfiles %}
 
 {% block title %}
 	Edit Simulation {{ model.name }}
@@ -10,14 +11,14 @@
 
 <style>
 		
-		#object-type-spec-box {
+		.object-type-spec-box {
 			border: solid 1px grey;
 			height: 250px;
 		}
 		
-		#search-box {
+		#search-box, #search-box2, #object_name { 
 			box-shadow:inset 0 0 4px #eee; 
-			width:120px; 
+			width:150px; 
 			margin:0; 
 			padding:6px 12px; 
 			border-radius:4px; 
@@ -25,9 +26,19 @@
 			font-size:1.1em;
 		}
 
-		#jstree-result {
-			padding:0;
+		/* ---  Object type info (on the right) -------------------------------------------- */
+		
+		.info-panel {
+			padding-right:10px;
+			margin-top:-10px;
 		}
+		
+		
+		#jstree-result {
+			max-height: 420px;
+			//border: 1px solid #ddd;	
+		}
+		
 		
 		h3 {
 			text-align:center
@@ -58,12 +69,60 @@
 		
 		.list-group {
 			margin-bottom:0;
+
+		}
+		
+		.narrow {
+			padding-top:4px;
+			padding-bottom:4px;
+		}
+		
+		.btn-outline-dark {
+			border-color: rgb(185, 185, 185);
+			color: rgb(85, 85, 85);
+			background-color: rgb(225, 225, 225);
+			padding-top:5px;
+			padding-bottom:5px;
+	
+		}
+		
+		/* --- Additional Attribute Drop Down -------------------------------------------- */
+		.dropdown-menu {
+			padding:0;
+		}
+		
+		.search {
+			height:40px;
+			border-radius:4px;
+			border: 1px solid #999;
+		}
+		
+		div.inline { 
+			float:left; 
+			margin-right: 5px;
+		}
+		
+		.broad {
+			padding-top: 5px;
+			padding-bottom: 5px;
+			height:48.23px;
+		}
+		
+		.dropdown-item {
+			padding: 6px 10px;
+			border-radius:2px;
+			width:150px
 		}
 		
 		
 		/* ---  Modal -------------------------------------------- */
+		.modal-body {
+			padding-top:5px;
+			padding-bottom:0px;
+		}
+		
 		.modal-dialog {
-			width:700px;
+			width:90%;
 		}	
 		
 		.modal-header {		
@@ -75,6 +134,24 @@
 		
 		#modal-title {
 			font-size:22px;
+		}
+		
+		#search-box2 {
+			margin-top:15px;
+		}
+		
+		#object_name {
+			border-color:#222;  
+			margin-bottom:15px;
+		}
+		
+		#object_name::placeholder { 
+			color:#222;
+		}
+		
+		#save_object_type_button {
+			margin-top:20px;
+			display:none;
 		}
 		
 </style>
@@ -97,28 +174,93 @@
 					<input type="text" value="" id="search-box" placeholder="Search" />
 					<br>
 					<br>
-					<div id="object-type-spec-box">
+					<div class="object-type-spec-box">
 						<div id="container-for-object-tree" ></div>
 					</div>
 					<br>	
-					<button id="create-object-type" type="button" class="btn btn-primary" data-toggle="modal" data-target="#createObjectType">Create new Object Type</button>
-					<br>
-					<div class="row">
-							<button type="button" class="btn btn-success btn-sm" onclick="demo_create();"><i class="glyphicon glyphicon-asterisk"></i> Create</button>
-							<button type="button" class="btn btn-warning btn-sm" onclick="demo_rename();"><i class="glyphicon glyphicon-pencil"></i> Rename</button>
-							<button type="button" class="btn btn-danger btn-sm" onclick="demo_delete();"><i class="glyphicon glyphicon-remove"></i> Delete</button>
-					</div>
+					<button id="create-object-type" type="button" class="btn btn-primary" data-toggle="modal" data-target="#createObjectType">Create/Edit object type</button>
 				</div>
 			</div>
-			<div id="jstree-result" class="col-sm-5"></div>
+			<div class="col-sm-5">
+				<form class="info-panel">
+					<div id="jstree-result">
+					</div>
+					<div class="row list-group-row" id="additional_facts" style="display:none">  
+						<div class="col-sm-1 list-group-left-column" id="additional_facts" style="line-height:135px;"><span style="margin-left:-30px">additional&nbsp;facts on the objects</span></div>
+						<div class="col-sm-11 list-group-right-column">  
+							<ul class="list-group" id="additional_facts_list"> 
+								<li class="list-group-item broad" > <!-- Additional Attribute 1 -->
+									<div>
+										<div class="dropdown inline">
+											<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+											<div class="dropdown-menu" aria-labelledby="attributeMenu1">
+												<div id="attributeList1">
+													<input class="search" placeholder=" Search" />
+													<ul class="list list-group"></ul>
+												</div>
+											</div>
+										</div>
+										<input type="hidden" id="attribute1" name="attribute1" value="">
+										<div class="form-group inline">
+											<select class="form-control form-control-lg" id="operator1" name="operator1">
+												<option value="=" selected>=</option>
+												<option value=">">></option>
+												<option value="<"><</option>
+											</select>
+										</div> 
+										<div class="form-group inline">
+											<input type="text" class="form-control" id="value1" name="value1" size="15">
+										</div>
+									</div>
+								</li>
+								<li class="list-group-item broad" > <!-- Additional Attribute 2 -->
+									<div style="position:absolute">
+										<div class="dropdown inline" >
+											<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+											<div class="dropdown-menu" aria-labelledby="attributeMenu2">
+												<div id="attributeList2">
+													<input class="search" placeholder=" Search" />
+													<ul class="list list-group"></ul>
+												</div>
+											</div>
+										</div>
+										<input type="hidden" id="attribute2" name="attribute2" value="">
+										<div class="form-group inline">
+											<select class="form-control form-control-lg" id="operator2" name="operator2">
+												<option value="=" selected>=</option>
+												<option value=">">></option>
+												<option value="<"><</option>
+											</select>
+										</div> 
+										<div class="form-group inline">
+											<input type="text" class="form-control" id="value2" name="value2" size="15">
+										</div>
+									</div>
+								</li>
+								<li class="list-group-item narrow" id="create-new-fact-button">  	<button type="button" class="btn btn-outline-dark" onclick="newAdditionalFactInput();" ><i class="fas fa-plus"></i></button> </li>
+							</ul>  
+						</div>  
+					</div> 
+					<br>
+					<button type="submit" class="btn btn-primary pull-right">
+						<span class="glyphicon glyphicon-star"></span> Next
+					</button>
+				</form> 
+			</div>
+			
 		</div>
 	  </div>
 	
 
 	
-	<button type="submit" class="btn btn-primary pull-right">
-		<span class="glyphicon glyphicon-star"></span> Next
-	</button>
+
+	
+	
+	
+
+
+
+
 	
 	
 	
@@ -127,7 +269,7 @@
 	  <div class="modal-dialog" role="document">
 		<div class="modal-content">
 		  <div class="modal-header row">
-			<h5 class="modal-title col-md-11" id="modal-title">Create Object type.</h5>
+			<h5 class="modal-title col-md-11" id="modal-title">Create Object type</h5>
 			<button type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:2px; margin-right:19px;font-size:29px">
 			  <span aria-hidden="true" >&times;</span>
 			</button>
@@ -135,113 +277,124 @@
 		  <div class="modal-body">
 			  <div class="container-fluid">
 				<div class="row">
-					<div class="col-md-7">
-						left column <br>
-						left column <br>
-						left column <br>
-						left column <br>
-						left column <br>
-						left column <br>
-						left column <br>
+					<div class="col-md-6">
+						<div class="form">
+							<input type="text" value="" id="search-box2" placeholder="Search" />
+							<br>
+							<br>
+							<div class="object-type-spec-box2">
+								<div id="container-for-object-tree2" ></div>
+							</div>
+							<br>	
+							<div class="row">
+									<button type="button" class="btn btn-success btn-sm" onclick="create_object_type();"><i class="glyphicon glyphicon-asterisk"></i> Create Child of Selection</button>
+									<button type="button" class="btn btn-warning btn-sm" onclick="edit_object_type();"><i class="glyphicon glyphicon-pencil"></i> Edit Selection</button>
+							</div>
+						</div>
 					</div>
-					<div class="col-md-7">
-						right column <br>
-						right column <br>
-						right column <br>
-						right column <br>
-						right column <br>
-						right column <br>
-						right column <br>
+					<div class="col-md-6">
+						<div class=" form info-panel">
+							<div id="jstree-result2">
+							</div>
+							<div class="row list-group-row" id="new_object_facts_box" style="display:none">  
+								<div class="col-sm-1 list-group-left-column" id="new_object_facts" style="line-height:135px;"><span style="margin-left:-47px; width:130px">facts about the<br>new object type</span></div>
+								<div class="col-sm-11 list-group-right-column">  
+									<ul class="list-group" id="new_object_facts_list"> 
+										<li class="list-group-item broad" > <!-- Object Attribute 101 -->
+											<div>
+												<div class="dropdown inline">
+													<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu101" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+													<div class="dropdown-menu" aria-labelledby="attributeMenu101">
+														<div id="attributeList101">
+															<input class="search" placeholder=" Search" />
+															<ul class="list list-group"></ul>
+														</div>
+													</div>
+												</div>
+												<div class="form-group inline">
+													<select class="form-control form-control-lg" id="operator101" name="operator101">
+														<option value="=" selected>=</option>
+														<option value=">">></option>
+														<option value="<"><</option>
+													</select>
+												</div> 
+												<div class="form-group inline">
+													<input type="text" class="form-control" id="value101" name="value101" size="15">
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item broad" > <!-- Object Attribute 102 -->
+											<div style="position:absolute">
+												<div class="dropdown inline" >
+													<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu102" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+													<div class="dropdown-menu" aria-labelledby="attributeMenu102">
+														<div id="attributeList102">
+															<input class="search" placeholder=" Search" />
+															<ul class="list list-group"></ul>
+														</div>
+													</div>
+												</div>
+												<input type="hidden" id="attribute102" name="attribute102" value="">
+												<div class="form-group inline">
+													<select class="form-control form-control-lg" id="operator102" name="operator102">
+														<option value="=" selected>=</option>
+														<option value=">">></option>
+														<option value="<"><</option>
+													</select>
+												</div> 
+												<div class="form-group inline">
+													<input type="text" class="form-control" id="value102" name="value102" size="15">
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item narrow" id="create-new-fact-button">  	<button type="button" class="btn btn-outline-dark" onclick="newAdditionalFactInput();" ><i class="fas fa-plus"></i></button> </li>
+									</ul>  
+								</div>  
+							</div> 
+							<button type="button" id="save_object_type_button" class="btn btn-primary pull-right" onclick="createObjectType()" data-dismiss="modal">Save</button>
+						</form>
 					</div>
 				</div>
 			  </div>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-			<button type="button" class="btn btn-primary" onclick="saveAttributeSelection()" data-dismiss="modal">Save</button>
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			
 		  </div>
 		</div>
 	  </div>
 	</div>
 	
-	
+	<script src="{% static 'js/list.min.js' %}"></script>
 
 <script>
-	
-	 var object_hierachy_tree = [{"id":"n1", "text" : "Thing", "li_attr": {"intersting_attributes": ["Name"]}, "parent":"#"},
-							{"id":"n2", "text" : "Object" , "li_attr": {"intersting_attributes": ["Position", "Weight", "Height"]}, "parent":"n1"},
-							{"id":"n3", "text": "Living thing", "li_attr": {"intersting_attributes": ["Age", "Preferred environment"]}, "parent":"n2"},
-							{"id":"n4", "text": "Plant", "li_attr": {"known_attribute_values": {"Kingdom":"Plantae", "Does photosynthesis":true}, "intersting_attributes": ["CO2 production per day"]}, "a_attr":{"scientific":["Plantae"]}, "parent":"n3"},
-							{"id":"n5", "text": "Tree", "li_attr": {"known_attribute_values": {"Has woody tissue":true}, "known_attribute_ranges": {"Age":"0-7000"}, "intersting_attributes": ["Genus", "Leaf coverage"]},  "parent":"n4"},
-							{"id":"n6", "text": "Oak", "li_attr": {"known_attribute_values": {"Produces nuts":true, "Has leaves": true}, "known_attribute_ranges": {"Age": "0-700", "Height": "0-100", "Weight": "0-9000"}, "intersting_attributes": ["Species"]}, "a_attr":{"synonyms": ["oak tree"], "scientific": ["Quercus"]}, "parent":"n5"},
-							{"id":"n7", "text": "Chestnut", "li_attr": {"known_attribute_values": {"Produces nuts":true, "Produces berries": false}, "known_attribute_ranges": {"Age": "0-400", "Height": "0-130", "Weight": "0-10000"}, "intersting_attributes": ["Species", "Edible"]}, "a_attr":{"scientific": ["Castanea"]}, "parent":"n5"},
-							{"id":"n8", "text": "Flower", "li_attr": {"known_attribute_values": {"Has petals": true}, "intersting_attributes": ["Petal color"]}, "parent":"n4"},
-							{"id":"n9", "text": "Lily", "li_attr": {"known_attribute_values": {"Petal color":"yellow"}}, "parent":"n8"},
-							{"id":"n10", "text": "Animal", "li_attr": {"known_attribute_values": {"Kingdom":"Animalia"}, "known_attribute_ranges": {}, "intersting_attributes": ["Number of Limbs", "Preferred diet", "Phylum"]}, "a_attr":{"synonyms": ["Creature"], "scientific": ["Animalia"]}, "parent":"n2"}
-						]
-								
-								
-/*		
-	var object_hierachy_tree = [{ "text" : "Thing", "li_attr": {"intersting_attributes": ["Name"]}, "children" : [
-								{ "text" : "Object" , "li_attr": {"intersting_attributes": ["Position", "Weight", "Height"]}, "children":[
-									{"text": "Living thing", "li_attr": {"intersting_attributes": ["Age", "Preferred environment"]}, "children": [
-										{"text": "Plant", "li_attr": {"known_attribute_values": {"Kingdom":"Plantae", "Does photosynthesis":true}, "intersting_attributes": ["CO2 production per day"]}, "a_attr":{"scientific":["Plantae"]}, "children": [
-											{"text": "Tree", "li_attr": {"known_attribute_values": {"Has woody tissue":true}, "known_attribute_ranges": {"Age":"0-7000"}, "intersting_attributes": ["Genus", "Leaf coverage"]},  "children": [
-												{"text": "Oak", "li_attr": {"known_attribute_values": {"Produces nuts":true, "Has leaves": true}, "known_attribute_ranges": {"Age": "0-700", "Height": "0-100", "Weight": "0-9000"}, "intersting_attributes": ["Species"]}, "a_attr":{"synonyms": ["oak tree"], "scientific": ["Quercus"]} },
-												{"text": "Chestnut", "li_attr": {"known_attribute_values": {"Produces nuts":true, "Produces berries": false}, "known_attribute_ranges": {"Age": "0-400", "Height": "0-130", "Weight": "0-10000"}, "intersting_attributes": ["Species", "Edible"]}, "a_attr":{"scientific": ["Castanea"]} }]
-											},
-											{"text": "Flower", "li_attr": {"known_attribute_values": {"Has petals": true}, "intersting_attributes": ["Petal color"]}, "children": [
-												{"text": "Lily", "li_attr": {"known_attribute_values": {"Petal color":"yellow"}}} ]
-											}]
-										},
-										{"text": "Animal", "li_attr": {"known_attribute_values": {"Kingdom":"Animalia"}, "known_attribute_ranges": {}, "intersting_attributes": ["Number of Limbs", "Preferred diet", "Phylum"]}, "a_attr":{"synonyms": ["Creature"], "scientific": ["Animalia"]}}]
-									}]
-								}]
-							}
-						]
-*/						
-						
-	function demo_create() {
-		var ref = $('#container-for-object-tree').jstree(true),
-			sel = ref.get_selected();
-		if(!sel.length) { return false; }
-		var selected_node_id = sel[0]
-		object_hierachy_tree.push({"id":"waa", "text": "Waaaaaah", "li_attr": {"known_attribute_values": {"Has woody tissue":true}, "known_attribute_ranges": {"Age":"0-7000"}, "intersting_attributes": ["Genus", "Leaf coverage"]},  "parent":selected_node_id});
-		ref.settings.core.data = object_hierachy_tree;
-		ref.refresh();
-	};
-	
-	function demo_create_old() {
-		var ref = $('#container-for-object-tree').jstree(true),
-			sel = ref.get_selected();
-		if(!sel.length) { return false; }
-		sel = sel[0];
-		sel = ref.create_node(sel, {"type":"file"});
-		if(sel) {
-			ref.edit(sel);
-		}
-	};
-	
-	function demo_rename() {
-		var ref = $('#container-for-object-tree').jstree(true),
-			sel = ref.get_selected();
-		if(!sel.length) { return false; }
-		sel = sel[0];
-		ref.edit(sel);
-	};
-	function demo_delete() {
-		var ref = $('#container-for-object-tree').jstree(true),
-			sel = ref.get_selected();
-		if(!sel.length) { return false; }
-		ref.delete_node(sel);
-	};
 
+	// GLOBAL VARIABLES:
+	var object_hierachy_tree = [{"id":"n1", "text" : "Thing", "li_attr": {}, "parent":"#"},
+							{"id":"n2", "text" : "Object" , "li_attr": {}, "parent":"n1"},
+							{"id":"n3", "text": "Living thing", "li_attr": {}, "parent":"n2"},
+							{"id":"n4", "text": "Plant", "li_attr": {"known_attribute_values": {"Kingdom":"Plantae", "Does photosynthesis":true}}, "a_attr":{"scientific":["Plantae"]}, "parent":"n3"},
+							{"id":"n5", "text": "Tree", "li_attr": {"known_attribute_values": {"Has woody tissue":true}, "known_attribute_ranges": {"Age":"0-7000"}},  "parent":"n4"},
+							{"id":"n6", "text": "Oak", "li_attr": {"known_attribute_values": {"Produces nuts":true, "Has leaves": true}, "known_attribute_ranges": {"Age": "0-700", "Height": "0-100", "Weight": "0-9000"}}, "a_attr":{"synonyms": ["oak tree"], "scientific": ["Quercus"]}, "parent":"n5"},
+							{"id":"n7", "text": "Chestnut", "li_attr": {"known_attribute_values": {"Produces nuts":true, "Produces berries": false}, "known_attribute_ranges": {"Age": "0-400", "Height": "0-130", "Weight": "0-10000"}}, "a_attr":{"scientific": ["Castanea"]}, "parent":"n5"},
+							{"id":"n8", "text": "Flower", "li_attr": {"known_attribute_values": {"Has petals": true}}, "parent":"n4"},
+							{"id":"n9", "text": "Lily", "li_attr": {"known_attribute_values": {"Petal color":"yellow"}}, "parent":"n8"},
+							{"id":"n10", "text": "Animal", "li_attr": {"known_attribute_values": {"Kingdom":"Animalia"}, "known_attribute_ranges": {}}, "a_attr":{"synonyms": ["Creature"], "scientific": ["Animalia"]}, "parent":"n2"}
+						]
 	
-	function get_objectInfoHTMLString(data, node_id) {
+	
+					
+
+	/*========================================================================*/
+	/*=====================    MAIN FUNCTIONS      ===========================*/
+	/*========================================================================*/
+	
+
+	/*=============  MAKE HTML STRING FOR OBJECT-INFO (on the right)  ========================================================= */
+	function get_objectInfoHTMLString(data, node_id, prefix) {
 		
-	
 		var objectInfoHTMLString = 	'<div class="row list-group-row">' + 
-										'<div class="col-sm-1 list-group-left-column" id="left_col_' + node_id + '"><span>' + data.instance.get_node(node_id).text + '</span></div>' + 
+										'<div class="col-sm-1 list-group-left-column" id="' + prefix + 'left_col_' + node_id + '"><span>' + data.instance.get_node(node_id).text + '</span></div>' + 
 										'<div class="col-sm-11 list-group-right-column">' + 
 											'<ul class="list-group">'; 
 										
@@ -254,13 +407,12 @@
 		for(var key in known_attribute_ranges_dict) {
 			objectInfoHTMLString +=         	'<li class="list-group-item">' + key + ' <i>in_range</i> ' + known_attribute_ranges_dict[key] + '</li>';
 		} 
-		
 		objectInfoHTMLString += 			'</ul>' + 
 										'</div>' + 
-									'</div>'; 
-													
+									'</div>'; 		
 		return objectInfoHTMLString;	
 	}
+	
 	
 	function get_numberOfListEntries(data, node_id) {
 	
@@ -275,21 +427,166 @@
 		if (known_attribute_ranges_dict) {
 			entries_count += Object.keys(known_attribute_ranges_dict).length
 		}
-		
 		return entries_count
-		
 	}
 	
 	
+	
+	/*=============  MAKE NEW ADDITIONAL FACT LIST ITEM  ================================================================ */
+	var number_of_additional_facts = 2
+	
+	function newAdditionalFactInput() {
+		number_of_additional_facts += 1;
+		
+		
+		var additionalFactHTMLString = 	'<li class="list-group-item broad" >' +
+											'<div style="position:absolute">' + 
+												'<div class="dropdown inline" >' + 
+													'<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu' + number_of_additional_facts + '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>' + 
+													'<div class="dropdown-menu" aria-labelledby="attributeMenu' + number_of_additional_facts + '">' + 
+														'<div id="attributeList' + number_of_additional_facts + '">' + 
+															'<input class="search" placeholder=" Search" />' + 
+															'<ul class="list list-group"></ul>' + 
+														'</div>' + 
+													'</div>' + 
+												'</div>' + 
+												'<input type="hidden" id="attribute' + number_of_additional_facts + '" name="attribute' + number_of_additional_facts + '" value="">' + 
+												'<div class="form-group inline">' + 
+													'<select class="form-control form-control-lg" id="operator' + number_of_additional_facts + '" name="operator' + number_of_additional_facts + '">' + 
+														'<option value="=" selected>=</option>' + 
+														'<option value=">">></option>' + 
+														'<option value="<"><</option>' + 
+													'</select>' + 
+												'</div> ' + 
+												'<div class="form-group inline">' + 
+													'<input type="text" class="form-control" id="value' + number_of_additional_facts + '" name="value' + number_of_additional_facts + '" size="15">' + 
+												'</div>' + 
+											'</div>' +
+										'</li>';
+										
+		$(additionalFactHTMLString).insertBefore("#create-new-fact-button");
+
+			}
+	
+	
+		/*=============  POPULATE AdditionalAttribute-DROPDOWNS  ================================================================ */
+	
+	function makeObjectsAdditionalAttributesDropdown(object_type, attribute_number){
+	
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+
+				//the data
+				var options = {
+				  valueNames: [ 'name', 'points' ],
+				  item: '<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(' + attribute_number + ', this.innerHTML)"></button></li>'
+				};
+				var possible_attributes = JSON.parse(this.responseText);
+				
+				//create list with possible_attributes in drop down and sort it 
+				var userList = new List('attributeList' + attribute_number, options, possible_attributes);
+				userList.sort("points", {order: "desc"});
+				
+			}
+		};
+
+		xhttp.open("GET", "/tool/get_possible_attributes?object_type=" + object_type , true);
+		xhttp.send();
+	}
+
+
+	/*=============  SELECT DROPDOWN OPTION  ================================================================ */
+	function selectAdditionalAttribute(attribute_number , attribute_name) {
+		$('#attributeMenu' + attribute_number).html(attribute_name + ' &nbsp;<i class="fas fa-caret-down fa-sm"></i>');
+		$('#attribute' + attribute_number).attr('value', attribute_name);									
+	}
+	
+	
+	
+	
 	/*========================================================================*/
+	/*=====================    MODAL FUNCTIONS      ===========================*/
 	/*========================================================================*/
-	/*========================================================================*/
+
+	var number_of_additional_object_facts = 2;
+	
+	function create_object_type() {
+	
+		var ref = $('#container-for-object-tree2').jstree(true),
+			sel = ref.get_selected();
+		if(!sel.length) { return false; }
+		var parents_object_type = sel[0];
+							
+		$("#info-panel-head").html('<br><input type="text" class="form-control-plaintext" id="object_name" name="object_name" placeholder="New Object Name" value=""><br>');
+		
+
+		
+		$("#new_object_facts_box").attr("style", "display:block");
+		$("#save_object_type_button").attr("style", "display:block");
+		
+		//For all Attribute-dropdowns: load a list of possible_attributes (for the selected object_type)
+		
+		for (var i = 1; i <= number_of_additional_object_facts; i++) {
+			makeObjectsAdditionalAttributesDropdown( parents_object_type , 100 + i);
+		}
+
+		/*============= MODAL - WRITE THE NEW OBJECT NAME AT THE BOTTOM   ================================================================================== */
+		$('#object_name').change(function() {
+			$('#new_object_facts').html('<span>' + $(this).val() + '</span>');
+		});
+		
+	
+		
+	};
+	
+	function demo_create() {
+		var ref = $('#container-for-object-tree2').jstree(true),
+			sel = ref.get_selected();
+		if(!sel.length) { return false; }
+		var selected_node_id = sel[0]
+		object_hierachy_tree.push({"id":"waa", "text": "Waaaaaah", "li_attr": {"known_attribute_values": {"Has woody tissue":true}, "known_attribute_ranges": {"Age":"0-7000"}, "intersting_attributes": ["Genus", "Leaf coverage"]},  "parent":selected_node_id});
+		ref.settings.core.data = object_hierachy_tree;
+		ref.refresh();
+	};
+	
+	function demo_create_old() {
+		var ref = $('#container-for-object-tree2').jstree(true),
+			sel = ref.get_selected();
+		if(!sel.length) { return false; }
+		sel = sel[0];
+		sel = ref.create_node(sel, {"type":"file"});
+		if(sel) {
+			ref.edit(sel);
+		}
+	};
+	
+	function demo_rename() {
+		var ref = $('#container-for-object-tree2').jstree(true),
+			sel = ref.get_selected();
+		if(!sel.length) { return false; }
+		sel = sel[0];
+		ref.edit(sel);
+	};
+	function demo_delete() {
+		var ref = $('#container-for-object-tree2').jstree(true),
+			sel = ref.get_selected();
+		if(!sel.length) { return false; }
+		ref.delete_node(sel);
+	};
+
+
 
 	
 	
 	window.onload = function() {
+	
+	/*========================================================================*/
+	/*=========================      MAIN      ===============================*/
+	/*========================================================================*/
+	
 		
-		/*====  JSTREE    ========================================== */
+		/*============= CREATE JSTREE    ================================================================================== */
 		
 		// search box
 		var to = false;
@@ -302,6 +599,8 @@
 		});
 		
 		
+		
+
 		$('#container-for-object-tree').jstree({
 			'core' : {
 				"animation" : 0,
@@ -318,26 +617,32 @@
             },
             "plugins" : [ "contextmenu", "dnd", "search", "state", "types", "wholerow" ]
         });	
+		
+		
+		
 
-								
 
+				
+				
+		/*============= JSTREE - SELECT ELEMENT   ================================================================================== */
 		
 		// if an element of tree is selected, display it's information on the right
 		$('#container-for-object-tree')
 		  .on('select_node.jstree', function (e, data) {
 		  
+			/*=====  PART 1: display the object-info on the right  ============*/
+		
+			//make a list of parent nodes
 			var node_id = data.selected[0];
-			
-			
 			var parent_nodes = [data.selected[0]];
 			var current_node = data.selected;
-			var test3 = data.instance.get_parent(current_node);
 			while (data.instance.get_parent(current_node) !== "#") {
 				current_node = data.instance.get_parent(current_node);
 				parent_nodes.unshift(current_node);
 			}
 			
-			var entire_objectInfoHTMLString = '<h3>' + data.instance.get_node(node_id).text + '</h3>';
+			//loop through the parent nodes and add the info about the known_attribute_values and known_attribute_ranges
+			var entire_objectInfoHTMLString = '<h3>' + data.instance.get_node(node_id).text + '</h3><input type="hidden" id="object_type" name="object_type" value="' + data.instance.get_node(node_id).text + '">';
 			var all_entry_counts = {};
 			for (var i = 0; i < parent_nodes.length; i++) {
 				var node_id = parent_nodes[i];
@@ -345,32 +650,137 @@
 				var entries_count = get_numberOfListEntries(data, node_id);
 				if (entries_count > 0) {
 					all_entry_counts[node_id] = entries_count;
-					entire_objectInfoHTMLString += get_objectInfoHTMLString(data, node_id);
+					entire_objectInfoHTMLString += get_objectInfoHTMLString(data, node_id, '');
 				}
-				
-				
 			}
 
-		  
-		  	$('#jstree-result').html(entire_objectInfoHTMLString);
+		  	$('#jstree-result').html(entire_objectInfoHTMLString);  //<- most important line
 			
 			
+			//set the line-heights so that the object-type labels are at the right height in the left_cols
 			for(var key in all_entry_counts) {
 				$("#left_col_" + key ).css("line-height", 40 * all_entry_counts[key] + "px");
 			} 
 		
+		
+			/*=====  PART 2: display the "additional facts on the objects" section   ====================*/
+			$("#additional_facts").css("display", "block");
+			
+			//For all Attribute-dropdowns: load a list of possible_attributes (for the selected object_type)
+			for (var i = 1; i <= number_of_additional_facts; i++) {
+				makeObjectsAdditionalAttributesDropdown( data.instance.get_node(node_id).text , i);
+			}
 			
 		  
 		  });
 		
 	
 		
-		/*====  CREATE-NEW-OBJECT-TYPE MODAL    ========================================== */
+		/*========================================================================*/
+		/*========================      MODAL      ===============================*/
+		/*========================================================================*/
 		
 		//when modal is opened
 		$('[data-toggle="modal"]').on('click', function (e) {
 		
+			/*============= CREATE JSTREE    ================================================================================== */
+		
+			// search box
+			var to = false;
+			$('#search-box2').keyup(function () {
+				if(to) { clearTimeout(to); }
+				to = setTimeout(function () {
+					var v = $('#search-box2').val();
+					$('#container-for-object-tree2').jstree(true).search(v);
+				}, 250);
+			});
+			
+			
+			$('#container-for-object-tree2').jstree({
+				'core' : {
+					"animation" : 0,
+					"check_callback" : true,
+					'force_text' : true,
+					"themes" : { "stripes" : false },	
+					'data' : object_hierachy_tree
+				},
+				"types" : {
+					"#" : { "max_children" : 1, "max_depth" : 4, "valid_children" : ["root"] },
+					"root" : { "icon" : "/static/3.3.7/assets/images/tree_icon.png", "valid_children" : ["default"] },
+					"default" : { "valid_children" : ["default","file"] },
+					"file" : { "icon" : "glyphicon glyphicon-file", "valid_children" : [] }
+				},
+				"plugins" : [ "contextmenu", "dnd", "search", "state", "types", "wholerow" ]
+			});	
+			
+			/*SELECT THE SELECTED NODE */
+			var ref = $('#container-for-object-tree2').jstree(true),
+				sel = ref.get_selected();
+			if(sel.length) {
+				sel = sel[0];
+				$('#container-for-object-tree2').jstree(true).deselect_all();
+				$('#container-for-object-tree2').jstree('select_node', sel);
+			}
+		
 		});
+		
+		
+		/*============= JSTREE - SELECT ELEMENT   ================================================================================== */
+		
+		// if an element of tree is selected, display it's information on the right
+		$('#container-for-object-tree2')
+		  .on('select_node.jstree', function (e, data) {
+		  
+			/*=====  PART 1: display the object-info on the right  ============*/
+		
+			//make a list of parent nodes
+			var node_id = data.selected[0];
+			var parent_nodes = [data.selected[0]];
+			var current_node = data.selected;
+			while (data.instance.get_parent(current_node) !== "#") {
+				current_node = data.instance.get_parent(current_node);
+				parent_nodes.unshift(current_node);
+			}
+			
+			//loop through the parent nodes and add the info about the known_attribute_values and known_attribute_ranges
+			var entire_objectInfoHTMLString = '<div id="info-panel-head"><h3 id="object_type_name">' + data.instance.get_node(node_id).text + '</h3></div>';
+			var all_entry_counts = {};
+			for (var i = 0; i < parent_nodes.length; i++) {
+				var node_id = parent_nodes[i];
+				
+				var entries_count = get_numberOfListEntries(data, node_id);
+				if (entries_count > 0) {
+					all_entry_counts[node_id] = entries_count;
+					entire_objectInfoHTMLString += get_objectInfoHTMLString(data, node_id, 'object_');
+				}
+			}
+
+		  	$('#jstree-result2').html(entire_objectInfoHTMLString);  //<- most important line
+			
+			
+			//set the line-heights so that the object-type labels are at the right height in the left_cols
+			for(var key in all_entry_counts) {
+				$("#object_left_col_" + key ).css("line-height", 40 * all_entry_counts[key] + "px");
+			} 
+		
+		
+			/*=====  PART 2: display the "additional facts on the objects" section   ====================
+			$("#additional_facts").css("display", "block");
+			
+			//For all Attribute-dropdowns: load a list of possible_attributes (for the selected object_type)
+			for (var i = 1; i <= number_of_additional_facts; i++) {
+				makeObjectsAdditionalAttributesDropdown( data.instance.get_node(node_id).text , i);
+			}
+			*/
+		  
+		  });
+		
+		
+		
+
+		
+		
+
 
 	};
 </script>
