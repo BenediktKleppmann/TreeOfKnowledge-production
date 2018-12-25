@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history
 from collection.forms import Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5
 from django.template.defaultfilters import slugify
 from collection.functions import upload_data
@@ -241,6 +241,10 @@ def get_suggested_attributes(request):
     return HttpResponse(json.dumps(returned_dict))
 
 
+@login_required
+def save_new_object_hierachy_tree(request):
+	new_entry = Object_hierachy_tree_history(object_hierachy_tree=request.body, user=request.user)
+	new_entry.save()
 
 
 @login_required

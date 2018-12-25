@@ -209,7 +209,7 @@
 											</select>
 										</div> 
 										<div class="form-group inline">
-											<input type="text" class="form-control" id="value1" name="value1" size="15">
+											<input type="text" class="form-control" id="value1" name="value1" value="" size="15">
 										</div>
 									</div>
 								</li>
@@ -233,11 +233,11 @@
 											</select>
 										</div> 
 										<div class="form-group inline">
-											<input type="text" class="form-control" id="value2" name="value2" size="15">
+											<input type="text" class="form-control" id="value2" name="value2" value="" size="15">
 										</div>
 									</div>
 								</li>
-								<li class="list-group-item narrow" id="create-new-fact-button">  	<button type="button" class="btn btn-outline-dark" onclick="newAdditionalFactInput();" ><i class="fas fa-plus"></i></button> </li>
+								<li class="list-group-item narrow" id="create-new-fact-button">  	<button type="button" class="btn btn-outline-dark" onclick="newAdditionalFactInput('additional_fact');" ><i class="fas fa-plus"></i></button> </li>
 							</ul>  
 						</div>  
 					</div> 
@@ -319,7 +319,7 @@
 													</select>
 												</div> 
 												<div class="form-group inline">
-													<input type="text" class="form-control" id="value101" name="value101" size="15">
+													<input type="text" class="form-control" id="value101" name="value101" value="" size="15">
 												</div>
 											</div>
 										</li>
@@ -343,22 +343,24 @@
 													</select>
 												</div> 
 												<div class="form-group inline">
-													<input type="text" class="form-control" id="value102" name="value102" size="15">
+													<input type="text" class="form-control" id="value102" name="value102" value="" size="15">
 												</div>
 											</div>
 										</li>
-										<li class="list-group-item narrow" id="create-new-fact-button">  	<button type="button" class="btn btn-outline-dark" onclick="newAdditionalFactInput();" ><i class="fas fa-plus"></i></button> </li>
+										<li class="list-group-item narrow" id="create-new-object-fact-button">  	<button type="button" class="btn btn-outline-dark" onclick="newAdditionalFactInput('object_fact');" ><i class="fas fa-plus"></i></button> </li>
 									</ul>  
 								</div>  
 							</div> 
-							<button type="button" id="save_object_type_button" class="btn btn-primary pull-right" onclick="createObjectType()" data-dismiss="modal">Save</button>
+							<button type="button" id="save_object_type_button" class="btn btn-primary pull-right" onclick="addObjectType()" >Add</button>
 						</form>
 					</div>
 				</div>
 			  </div>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-secondary" data-dismiss="modal" >Cancel</button>
+			<button type="button" class="btn btn-primary" onclick="closeModalAndSave()" data-dismiss="modal">Save</button>
+			
 			
 		  </div>
 		</div>
@@ -373,13 +375,13 @@
 	var object_hierachy_tree = [{"id":"n1", "text" : "Thing", "li_attr": {}, "parent":"#"},
 							{"id":"n2", "text" : "Object" , "li_attr": {}, "parent":"n1"},
 							{"id":"n3", "text": "Living thing", "li_attr": {}, "parent":"n2"},
-							{"id":"n4", "text": "Plant", "li_attr": {"known_attribute_values": {"Kingdom":"Plantae", "Does photosynthesis":true}}, "a_attr":{"scientific":["Plantae"]}, "parent":"n3"},
-							{"id":"n5", "text": "Tree", "li_attr": {"known_attribute_values": {"Has woody tissue":true}, "known_attribute_ranges": {"Age":"0-7000"}},  "parent":"n4"},
-							{"id":"n6", "text": "Oak", "li_attr": {"known_attribute_values": {"Produces nuts":true, "Has leaves": true}, "known_attribute_ranges": {"Age": "0-700", "Height": "0-100", "Weight": "0-9000"}}, "a_attr":{"synonyms": ["oak tree"], "scientific": ["Quercus"]}, "parent":"n5"},
-							{"id":"n7", "text": "Chestnut", "li_attr": {"known_attribute_values": {"Produces nuts":true, "Produces berries": false}, "known_attribute_ranges": {"Age": "0-400", "Height": "0-130", "Weight": "0-10000"}}, "a_attr":{"scientific": ["Castanea"]}, "parent":"n5"},
-							{"id":"n8", "text": "Flower", "li_attr": {"known_attribute_values": {"Has petals": true}}, "parent":"n4"},
-							{"id":"n9", "text": "Lily", "li_attr": {"known_attribute_values": {"Petal color":"yellow"}}, "parent":"n8"},
-							{"id":"n10", "text": "Animal", "li_attr": {"known_attribute_values": {"Kingdom":"Animalia"}, "known_attribute_ranges": {}}, "a_attr":{"synonyms": ["Creature"], "scientific": ["Animalia"]}, "parent":"n2"}
+							{"id":"n4", "text": "Plant", "li_attr": {"attribute_values": [{"attribute":"Kingdom", "operation":"=", "value":"Plantae"}, {"attribute":"Does photosynthesis", "operation": "=", "value":true}]}, "a_attr":{"scientific":["Plantae"]}, "parent":"n3"},
+							{"id":"n5", "text": "Tree", "li_attr": {"attribute_values": [{"attribute":"Has woody tissue", "operation": "=", "value":true},{"attribute":"Age", "operation": "<", "value":"7000"}]},  "parent":"n4"},
+							{"id":"n6", "text": "Oak", "li_attr": {"attribute_values": [{"attribute":"Produces nuts", "operation": "=", "value":true}, {"attribute":"Has leaves", "operation": "=", "value":true}, {"attribute":"Age", "operation": "<", "value":"700"}, {"attribute":"Age", "operation": "<", "value":"100"}, {"attribute":"Weight", "operation": "<", "value":"9000"}]}, "a_attr":{"synonyms": ["oak tree"], "scientific": ["Quercus"]}, "parent":"n5"},
+							{"id":"n7", "text": "Chestnut", "li_attr": {"attribute_values": [{"attribute":"Produces nuts", "operation": "=", "value":true}, {"attribute":"Produces berries", "operation": "=", "value":false}, {"attribute":"Age", "operation": "<", "value":"400"}, {"attribute":"Height", "operation": "<", "value":"130"}, {"attribute":"Weight", "operation": "<", "value":"10000"}]}, "a_attr":{"scientific": ["Castanea"]}, "parent":"n5"},
+							{"id":"n8", "text": "Flower", "li_attr": {"attribute_values": [{"attribute":"Has petals", "operation": "=", "value":true}]}, "parent":"n4"},
+							{"id":"n9", "text": "Lily", "li_attr": {"attribute_values": [{"attribute":"Petal color", "operation": "=", "value":"yellow"}]}, "parent":"n8"},
+							{"id":"n10", "text": "Animal", "li_attr": {"attribute_values": [{"attribute":"Kingdom", "operation": "=", "value":"Animalia"}]}, "a_attr":{"synonyms": ["Creature"], "scientific": ["Animalia"]}, "parent":"n2"}
 						]
 	
 	
@@ -389,6 +391,7 @@
 	/*=====================    MAIN FUNCTIONS      ===========================*/
 	/*========================================================================*/
 	
+		
 
 	/*=============  MAKE HTML STRING FOR OBJECT-INFO (on the right)  ========================================================= */
 	function get_objectInfoHTMLString(data, node_id, prefix) {
@@ -398,15 +401,11 @@
 										'<div class="col-sm-11 list-group-right-column">' + 
 											'<ul class="list-group">'; 
 										
-		var known_attribute_values_dict = data.instance.get_node(node_id).li_attr["known_attribute_values"]
-		for(var key in known_attribute_values_dict) {
-			objectInfoHTMLString +=         	'<li class="list-group-item">' + key + ' = ' + known_attribute_values_dict[key] + '</li>';
+		var attribute_values = data.instance.get_node(node_id).li_attr["attribute_values"]
+		for(var i = 0; i < attribute_values.length; i++) {
+			objectInfoHTMLString +=         	'<li class="list-group-item">' + ' ' + attribute_values[i]['attribute'] + ' '+ attribute_values[i]['operation'] + ' <i>'+ attribute_values[i]['value'] + '</i></li>';
 		} 
 		
-		var known_attribute_ranges_dict = data.instance.get_node(node_id).li_attr["known_attribute_ranges"]
-		for(var key in known_attribute_ranges_dict) {
-			objectInfoHTMLString +=         	'<li class="list-group-item">' + key + ' <i>in_range</i> ' + known_attribute_ranges_dict[key] + '</li>';
-		} 
 		objectInfoHTMLString += 			'</ul>' + 
 										'</div>' + 
 									'</div>'; 		
@@ -418,15 +417,11 @@
 	
 		var entries_count = 0
 		
-		var known_attribute_values_dict = data.instance.get_node(node_id).li_attr["known_attribute_values"]
-		if (known_attribute_values_dict) {
-			entries_count += Object.keys(known_attribute_values_dict).length
+		var attribute_values = data.instance.get_node(node_id).li_attr["attribute_values"]
+		if (attribute_values) {
+			entries_count += attribute_values.length
 		}
 		
-		var known_attribute_ranges_dict = data.instance.get_node(node_id).li_attr["known_attribute_ranges"]
-		if (known_attribute_ranges_dict) {
-			entries_count += Object.keys(known_attribute_ranges_dict).length
-		}
 		return entries_count
 	}
 	
@@ -434,39 +429,47 @@
 	
 	/*=============  MAKE NEW ADDITIONAL FACT LIST ITEM  ================================================================ */
 	var number_of_additional_facts = 2
+	var number_of_additional_object_facts = 2;
 	
-	function newAdditionalFactInput() {
-		number_of_additional_facts += 1;
-		
+	function newAdditionalFactInput(fact_type) { 
+	
+		if (fact_type =="object_fact") {
+			number_of_additional_object_facts += 1;
+			fact_number = 100 + number_of_additional_object_facts
+			var insert_before = '#create-new-object-fact-button'
+		} else {
+			number_of_additional_facts += 1;
+			fact_number = number_of_additional_facts
+			var insert_before = '#create-new-fact-button'
+		}
 		
 		var additionalFactHTMLString = 	'<li class="list-group-item broad" >' +
 											'<div style="position:absolute">' + 
 												'<div class="dropdown inline" >' + 
-													'<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu' + number_of_additional_facts + '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>' + 
-													'<div class="dropdown-menu" aria-labelledby="attributeMenu' + number_of_additional_facts + '">' + 
-														'<div id="attributeList' + number_of_additional_facts + '">' + 
+													'<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu' + fact_number + '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>' + 
+													'<div class="dropdown-menu" aria-labelledby="attributeMenu' + fact_number + '">' + 
+														'<div id="attributeList' + fact_number + '">' + 
 															'<input class="search" placeholder=" Search" />' + 
 															'<ul class="list list-group"></ul>' + 
 														'</div>' + 
 													'</div>' + 
 												'</div>' + 
-												'<input type="hidden" id="attribute' + number_of_additional_facts + '" name="attribute' + number_of_additional_facts + '" value="">' + 
+												'<input type="hidden" id="attribute' + fact_number + '" name="attribute' + fact_number + '" value="">' + 
 												'<div class="form-group inline">' + 
-													'<select class="form-control form-control-lg" id="operator' + number_of_additional_facts + '" name="operator' + number_of_additional_facts + '">' + 
+													'<select class="form-control form-control-lg" id="operator' + fact_number + '" name="operator' + fact_number + '">' + 
 														'<option value="=" selected>=</option>' + 
 														'<option value=">">></option>' + 
 														'<option value="<"><</option>' + 
 													'</select>' + 
 												'</div> ' + 
 												'<div class="form-group inline">' + 
-													'<input type="text" class="form-control" id="value' + number_of_additional_facts + '" name="value' + number_of_additional_facts + '" size="15">' + 
+													'<input type="text" class="form-control" id="value' + fact_number + '" name="value' + fact_number + '" size="15">' + 
 												'</div>' + 
 											'</div>' +
 										'</li>';
 										
-		$(additionalFactHTMLString).insertBefore("#create-new-fact-button");
-
-			}
+		$(additionalFactHTMLString).insertBefore(insert_before);
+	}
 	
 	
 		/*=============  POPULATE AdditionalAttribute-DROPDOWNS  ================================================================ */
@@ -506,11 +509,11 @@
 	
 	
 	/*========================================================================*/
-	/*=====================    MODAL FUNCTIONS      ===========================*/
+	/*=====================    MODAL FUNCTIONS      ==========================*/
 	/*========================================================================*/
 
-	var number_of_additional_object_facts = 2;
 	
+	/*=============  AFTER PRESSING THE 'Create Child of Selection'-BUTTON  ================================================================ */
 	function create_object_type() {
 	
 		var ref = $('#container-for-object-tree2').jstree(true),
@@ -531,15 +534,107 @@
 			makeObjectsAdditionalAttributesDropdown( parents_object_type , 100 + i);
 		}
 
-		/*============= MODAL - WRITE THE NEW OBJECT NAME AT THE BOTTOM   ================================================================================== */
+		/* WRITE THE NEW OBJECT NAME AT THE BOTTOM  */
 		$('#object_name').change(function() {
 			$('#new_object_facts').html('<span>' + $(this).val() + '</span>');
-		});
-		
-	
-		
+		});	
 	};
 	
+	
+	
+	
+	/*=============  AFTER PRESSING THE 'Save'-BUTTON  ================================================================ */
+	function addObjectType() {
+	
+		// make new_object_dict
+		var new_object_dict = {}
+		new_object_dict['text'] = $('#object_name').val(); // <-- 'text'
+		
+		attribute_values_list = []  // <-- 'li_attr'
+		
+		
+		for (var i = 1; i <= number_of_additional_object_facts; i++) {
+			
+			new_fact = {}
+			fact_number = 100 + i
+			new_fact['attribute'] = $("#attribute" + fact_number).val()
+			new_fact['operator'] = $("#operator" + fact_number).val()
+			new_fact['value'] = $("#value" + fact_number).val()
+			
+			if (new_fact['attribute'] != "" && new_fact['value'] != "") {
+				attribute_values_list.push(new_fact)
+			}
+		}
+		var attribute_values_dict = {}
+		attribute_values_dict['attribute_values'] = attribute_values_list
+		new_object_dict['li_attr'] = attribute_values_dict
+		
+		var parent_id = $('#parent_node_id').val(); // <-- 'parent'
+		
+		
+		$('#container-for-object-tree2').jstree(true).create_node(parent_id, new_object_dict);
+		$('#container-for-object-tree').jstree(true).create_node(parent_id, new_object_dict);
+
+
+		
+		for (var i = 1; i <= number_of_additional_object_facts; i++) {
+			fact_number = 100 + i
+			$("#attributeMenu" + fact_number).html('Attribute &nbsp;');
+			$("#value" + fact_number).val("");
+		}
+		
+		$("#new_object_facts_box").attr("style", "display:none");
+		$("#save_object_type_button").attr("style", "display:none");
+		$("#new_object_facts").html('<span style="margin-left:-47px; width:130px">facts about the<br>new object type</span>');
+	
+	}
+	
+	/*=============  WHEN CLOSING THE MODAL  ================================================================ */
+	function closeModalAndSave() {
+	
+	
+		object_hierachy_tree = $('#container-for-object-tree2').jstree(true).get_json('#', {flat:true});
+		
+		//redraw JSTree wit new object_hierachy_tree
+		$('#container-for-object-tree').jstree({
+			'core' : {
+				"animation" : 0,
+				"check_callback" : true,
+				'force_text' : true,
+				"themes" : { "stripes" : false },	
+				'data' : object_hierachy_tree
+			},
+			"types" : {
+				"root" : { "icon" : "/static/3.3.7/assets/images/tree_icon.png", "valid_children" : ["default"] },
+				"default" : { "valid_children" : ["default","file"] },
+				"file" : { "icon" : "glyphicon glyphicon-file", "valid_children" : [] }
+			},
+			"plugins" : [ "contextmenu", "dnd", "search", "state", "types", "wholerow" ]
+		});	
+		
+		//select the node that was selected in the modal
+		var ref = $('#container-for-object-tree2').jstree(true),
+			sel = ref.get_selected();
+		if(sel.length) {
+			sel = sel[0];
+			$('#container-for-object-tree').jstree(true).deselect_all();
+			$('#container-for-object-tree').jstree('select_node', sel);
+		}
+		
+		//send the new object_hierachy_tree to the backend
+		var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance 
+		xmlhttp.open("POST", "/tool/save_new_object_hierachy_tree/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.send(JSON.stringify(new_object_dict));
+		
+	}
+	
+	
+
+										
+										
+	
+/*	
 	function demo_create() {
 		var ref = $('#container-for-object-tree2').jstree(true),
 			sel = ref.get_selected();
@@ -550,31 +645,13 @@
 		ref.refresh();
 	};
 	
-	function demo_create_old() {
-		var ref = $('#container-for-object-tree2').jstree(true),
-			sel = ref.get_selected();
-		if(!sel.length) { return false; }
-		sel = sel[0];
-		sel = ref.create_node(sel, {"type":"file"});
-		if(sel) {
-			ref.edit(sel);
-		}
-	};
-	
-	function demo_rename() {
-		var ref = $('#container-for-object-tree2').jstree(true),
-			sel = ref.get_selected();
-		if(!sel.length) { return false; }
-		sel = sel[0];
-		ref.edit(sel);
-	};
 	function demo_delete() {
 		var ref = $('#container-for-object-tree2').jstree(true),
 			sel = ref.get_selected();
 		if(!sel.length) { return false; }
 		ref.delete_node(sel);
 	};
-
+*/
 
 
 	
@@ -587,7 +664,7 @@
 	
 		
 		/*============= CREATE JSTREE    ================================================================================== */
-		
+				
 		// search box
 		var to = false;
 		$('#search-box').keyup(function () {
@@ -598,8 +675,6 @@
 			}, 250);
 		});
 		
-		
-		
 
 		$('#container-for-object-tree').jstree({
 			'core' : {
@@ -609,19 +684,14 @@
 				"themes" : { "stripes" : false },	
 				'data' : object_hierachy_tree
 			},
-            "types" : {
-                "#" : { "max_children" : 1, "max_depth" : 4, "valid_children" : ["root"] },
-                "root" : { "icon" : "/static/3.3.7/assets/images/tree_icon.png", "valid_children" : ["default"] },
-                "default" : { "valid_children" : ["default","file"] },
-                "file" : { "icon" : "glyphicon glyphicon-file", "valid_children" : [] }
-            },
-            "plugins" : [ "contextmenu", "dnd", "search", "state", "types", "wholerow" ]
-        });	
-		
-		
-		
-
-
+			"types" : {
+				"root" : { "icon" : "/static/3.3.7/assets/images/tree_icon.png", "valid_children" : ["default"] },
+				"default" : { "valid_children" : ["default","file"] },
+				"file" : { "icon" : "glyphicon glyphicon-file", "valid_children" : [] }
+			},
+			"plugins" : [ "contextmenu", "dnd", "search", "state", "types", "wholerow" ]
+		});	
+	
 				
 				
 		/*============= JSTREE - SELECT ELEMENT   ================================================================================== */
@@ -683,8 +753,7 @@
 		//when modal is opened
 		$('[data-toggle="modal"]').on('click', function (e) {
 		
-			/*============= CREATE JSTREE    ================================================================================== */
-		
+			/*============= CREATE JSTREE2    ================================================================================== */
 			// search box
 			var to = false;
 			$('#search-box2').keyup(function () {
@@ -705,7 +774,6 @@
 					'data' : object_hierachy_tree
 				},
 				"types" : {
-					"#" : { "max_children" : 1, "max_depth" : 4, "valid_children" : ["root"] },
 					"root" : { "icon" : "/static/3.3.7/assets/images/tree_icon.png", "valid_children" : ["default"] },
 					"default" : { "valid_children" : ["default","file"] },
 					"file" : { "icon" : "glyphicon glyphicon-file", "valid_children" : [] }
@@ -714,7 +782,7 @@
 			});	
 			
 			/*SELECT THE SELECTED NODE */
-			var ref = $('#container-for-object-tree2').jstree(true),
+			var ref = $('#container-for-object-tree').jstree(true),
 				sel = ref.get_selected();
 			if(sel.length) {
 				sel = sel[0];
@@ -725,11 +793,11 @@
 		});
 		
 		
+		
 		/*============= JSTREE - SELECT ELEMENT   ================================================================================== */
 		
 		// if an element of tree is selected, display it's information on the right
-		$('#container-for-object-tree2')
-		  .on('select_node.jstree', function (e, data) {
+		$('#container-for-object-tree2').on('select_node.jstree', function (e, data) {
 		  
 			/*=====  PART 1: display the object-info on the right  ============*/
 		
@@ -737,13 +805,13 @@
 			var node_id = data.selected[0];
 			var parent_nodes = [data.selected[0]];
 			var current_node = data.selected;
-			while (data.instance.get_parent(current_node) !== "#") {
+			while (data.instance.get_parent(current_node) != "#") {
 				current_node = data.instance.get_parent(current_node);
 				parent_nodes.unshift(current_node);
 			}
 			
 			//loop through the parent nodes and add the info about the known_attribute_values and known_attribute_ranges
-			var entire_objectInfoHTMLString = '<div id="info-panel-head"><h3 id="object_type_name">' + data.instance.get_node(node_id).text + '</h3></div>';
+			var entire_objectInfoHTMLString = '<div id="info-panel-head"><h3 id="object_type_name">' + data.instance.get_node(node_id).text + '</h3></div><input type="hidden" id="parent_node_id" value="' + node_id + '">';
 			var all_entry_counts = {};
 			for (var i = 0; i < parent_nodes.length; i++) {
 				var node_id = parent_nodes[i];
@@ -764,14 +832,14 @@
 			} 
 		
 		
-			/*=====  PART 2: display the "additional facts on the objects" section   ====================
+			/*=====  PART 2: display the "additional facts on the objects" section   ====================*/
 			$("#additional_facts").css("display", "block");
 			
 			//For all Attribute-dropdowns: load a list of possible_attributes (for the selected object_type)
 			for (var i = 1; i <= number_of_additional_facts; i++) {
 				makeObjectsAdditionalAttributesDropdown( data.instance.get_node(node_id).text , i);
 			}
-			*/
+		
 		  
 		  });
 		

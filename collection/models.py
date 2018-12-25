@@ -85,5 +85,8 @@ class Uploaded_dataset(models.Model):
         super(Uploaded_dataset, self).save()
 
 
-
+class Object_hierachy_tree_history(models.Model):
+	object_hierachy_tree = models.TextField()
+	user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
+	timestamp = models.DateTimeField(editable=False)
 
