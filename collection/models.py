@@ -86,7 +86,10 @@ class Uploaded_dataset(models.Model):
 
 
 class Object_hierachy_tree_history(models.Model):
-	object_hierachy_tree = models.TextField()
-	user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
-	timestamp = models.DateTimeField(editable=False)
+    object_hierachy_tree = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
+    timestamp = models.DateTimeField(editable=False)
+    def save(self):
+        self.timestamp = datetime.datetime.today()
+        super(Object_hierachy_tree_history, self).save()
 
