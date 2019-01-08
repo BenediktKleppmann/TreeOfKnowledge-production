@@ -50,7 +50,7 @@ class Simulation_model(models.Model):
     created = models.DateTimeField(editable=False)
     updated = models.DateTimeField(editable=False)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
-    is_private  = models.BooleanField(default=False)
+    # is_private  = models.BooleanField(default=False)
     def save(self):
         if not self.id:
             self.created = datetime.datetime.today()
