@@ -62,7 +62,10 @@ def newsletter_subscribers(request):
 # ===== THE TOOL ===================================================================
 @login_required
 def main_menu(request):
+	print("!!!!!!!!!   MAIN MENU IS CALLED  !!!!!!!!!")
     models = Simulation_model.objects.all().order_by('id') 
+    print("!!!!!!!!!   EXISTING MODELS WERE FOUND  !!!!!!!!!")
+    print("!!!!!!!!!   NUMBER OF EXISTING MODELS: %s  !!!!!!!!!" % len(models))
     return render(request, 'tree_of_knowledge_frontend/main_menu.html', {'models': models})
 
 

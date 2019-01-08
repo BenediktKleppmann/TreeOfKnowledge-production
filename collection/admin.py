@@ -15,7 +15,7 @@ class Newsletter_subscriberAdmin(admin.ModelAdmin):
 
 
 class Uploaded_datasetAdmin(admin.ModelAdmin):
-	model = Simulation_model
+	model = Uploaded_dataset
 	list_display = ('file_name', 'file_path', 'sep', 'encoding', 'quotechar', 'escapechar', 'na_values', 'skiprows', 'header', 'created', 'updated', 'user')
 
 

@@ -1,100 +1,100 @@
-2019-01-08T09:57:22.709582+00:00 app[web.1]: return self.model.objects.filter(session_key=session_key).exists()
-2019-01-08T09:57:22.709584+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/models/query.py", line 715, in exists
-2019-01-08T09:57:22.709585+00:00 app[web.1]: return self.query.has_results(using=self.db)
-2019-01-08T09:57:22.709587+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/models/sql/query.py", line 509, in has_results
-2019-01-08T09:57:22.709588+00:00 app[web.1]: return compiler.has_results()
-2019-01-08T09:57:22.709590+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/models/sql/compiler.py", line 1037, in has_results
-2019-01-08T09:57:22.709592+00:00 app[web.1]: return bool(self.execute_sql(SINGLE))
-2019-01-08T09:57:22.709594+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/models/sql/compiler.py", line 1068, in execute_sql
-2019-01-08T09:57:22.709596+00:00 app[web.1]: cursor.execute(sql, params)
-2019-01-08T09:57:22.709598+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 68, in execute
-2019-01-08T09:57:22.709601+00:00 app[web.1]: return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
-2019-01-08T09:57:22.709611+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 77, in _execute_with_wrappers
-2019-01-08T09:57:22.709613+00:00 app[web.1]: return executor(sql, params, many, context)
-2019-01-08T09:57:22.709615+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 85, in _execute
-2019-01-08T09:57:22.709617+00:00 app[web.1]: return self.cursor.execute(sql, params)
-2019-01-08T09:57:22.709619+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/utils.py", line 89, in __exit__
-2019-01-08T09:57:22.709621+00:00 app[web.1]: raise dj_exc_value.with_traceback(traceback) from exc_value
-2019-01-08T09:57:22.709623+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 85, in _execute
-2019-01-08T09:57:22.709625+00:00 app[web.1]: return self.cursor.execute(sql, params)
-2019-01-08T09:57:22.709627+00:00 app[web.1]: django.db.utils.ProgrammingError: relation "django_session" does not exist
-2019-01-08T09:57:22.709629+00:00 app[web.1]: LINE 1: SELECT (1) AS "a" FROM "django_session" WHERE "django_sessio...
-2019-01-08T09:57:22.709631+00:00 app[web.1]: ^
-2019-01-08T09:57:22.709633+00:00 app[web.1]: 
-2019-01-08T09:57:34.822309+00:00 heroku[router]: at=info method=GET path="/" host=www.treeofknowledge.ai request_id=81764c68-26bc-48f5-9766-37197c7bc746 fwd="79.197.108.131" dyno=web.1 connect=1ms service=7ms status=200 bytes=10320 protocol=http
-2019-01-08T09:57:47.170804+00:00 heroku[router]: at=info method=GET path="/static/images/dawn.png" host=www.treeofknowledge.ai request_id=a1b38bf7-d318-4af7-9621-8c1245007a33 fwd="79.197.108.131" dyno=web.1 connect=1ms service=45ms status=200 bytes=761715 protocol=http
-2019-01-08T09:57:49.018900+00:00 heroku[router]: at=info method=GET path="/contact/" host=www.treeofknowledge.ai request_id=1e9106ed-cf13-43a0-aa71-1b5e31a69527 fwd="79.197.108.131" dyno=web.1 connect=1ms service=8ms status=200 bytes=4634 protocol=http
-2019-01-08T09:57:49.781482+00:00 heroku[router]: at=info method=GET path="/static/images/deer_large.jpg" host=www.treeofknowledge.ai request_id=86e014fd-c80b-4d5a-aa42-0a1c34f760de fwd="79.197.108.131" dyno=web.1 connect=1ms service=23ms status=200 bytes=401160 protocol=http
-2019-01-08T09:57:53.475293+00:00 heroku[router]: at=info method=GET path="/accounts/login/" host=www.treeofknowledge.ai request_id=c8725303-06a4-4a6d-8197-66b8286a6acd fwd="79.197.108.131" dyno=web.1 connect=0ms service=22ms status=200 bytes=3282 protocol=http
-2019-01-08T09:58:04.334242+00:00 heroku[router]: at=info method=POST path="/accounts/login/" host=www.treeofknowledge.ai request_id=1afe0b0e-66fc-48df-85ac-daf426dd59ef fwd="79.197.108.131" dyno=web.1 connect=0ms service=210ms status=200 bytes=3600 protocol=http
-2019-01-08T09:58:11.737738+00:00 heroku[router]: at=info method=GET path="/accounts/login/" host=www.treeofknowledge.ai request_id=b5d3b836-cb30-465d-a90b-ab2eab80a83f fwd="79.197.108.131" dyno=web.1 connect=0ms service=16ms status=200 bytes=3282 protocol=http
-2019-01-08T09:58:59.443735+00:00 app[web.1]: ERROR:django.request:Internal Server Error: /accounts/register/
-2019-01-08T09:58:59.443746+00:00 app[web.1]: Traceback (most recent call last):
-2019-01-08T09:58:59.443749+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 85, in _execute
-2019-01-08T09:58:59.443751+00:00 app[web.1]: return self.cursor.execute(sql, params)
-2019-01-08T09:58:59.443752+00:00 app[web.1]: psycopg2.ProgrammingError: relation "django_session" does not exist
-2019-01-08T09:58:59.443754+00:00 app[web.1]: LINE 1: SELECT (1) AS "a" FROM "django_session" WHERE "django_sessio...
-2019-01-08T09:58:59.443756+00:00 app[web.1]: ^
-2019-01-08T09:58:59.443758+00:00 app[web.1]: 
-2019-01-08T09:58:59.443759+00:00 app[web.1]: 
-2019-01-08T09:58:59.443761+00:00 app[web.1]: The above exception was the direct cause of the following exception:
-2019-01-08T09:58:59.443762+00:00 app[web.1]: 
-2019-01-08T09:58:59.443764+00:00 app[web.1]: Traceback (most recent call last):
-2019-01-08T09:58:59.443766+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/core/handlers/exception.py", line 35, in inner
-2019-01-08T09:58:59.443767+00:00 app[web.1]: response = get_response(request)
-2019-01-08T09:58:59.443769+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/core/handlers/base.py", line 128, in _get_response
-2019-01-08T09:58:59.443771+00:00 app[web.1]: response = self.process_exception_by_middleware(e, request)
-2019-01-08T09:58:59.443773+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/core/handlers/base.py", line 126, in _get_response
-2019-01-08T09:58:59.443775+00:00 app[web.1]: response = wrapped_callback(request, *callback_args, **callback_kwargs)
-2019-01-08T09:58:59.443776+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/views/generic/base.py", line 69, in view
-2019-01-08T09:58:59.443778+00:00 app[web.1]: return self.dispatch(request, *args, **kwargs)
-2019-01-08T09:58:59.443780+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/utils/decorators.py", line 62, in _wrapper
-2019-01-08T09:58:59.443781+00:00 app[web.1]: return bound_func(*args, **kwargs)
-2019-01-08T09:58:59.443784+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/views/decorators/debug.py", line 76, in sensitive_post_parameters_wrapper
-2019-01-08T09:58:59.443785+00:00 app[web.1]: return view(request, *args, **kwargs)
-2019-01-08T09:58:59.443787+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/utils/decorators.py", line 58, in bound_func
-2019-01-08T09:58:59.443789+00:00 app[web.1]: return func.__get__(self, type(self))(*args2, **kwargs2)
-2019-01-08T09:58:59.443790+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/registration/views.py", line 53, in dispatch
-2019-01-08T09:58:59.443792+00:00 app[web.1]: return super(RegistrationView, self).dispatch(request, *args, **kwargs)
-2019-01-08T09:58:59.443793+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/views/generic/base.py", line 89, in dispatch
-2019-01-08T09:58:59.443795+00:00 app[web.1]: return handler(request, *args, **kwargs)
-2019-01-08T09:58:59.443797+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/views/generic/edit.py", line 142, in post
-2019-01-08T09:58:59.443798+00:00 app[web.1]: return self.form_valid(form)
-2019-01-08T09:58:59.443800+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/registration/views.py", line 56, in form_valid
-2019-01-08T09:58:59.443802+00:00 app[web.1]: new_user = self.register(form)
-2019-01-08T09:58:59.443804+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/registration/backends/simple/views.py", line 27, in register
-2019-01-08T09:58:59.443805+00:00 app[web.1]: login(self.request, new_user)
-2019-01-08T09:58:59.443807+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/contrib/auth/__init__.py", line 140, in login
-2019-01-08T09:58:59.443809+00:00 app[web.1]: request.session.cycle_key()
-2019-01-08T09:58:59.443811+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/contrib/sessions/backends/base.py", line 300, in cycle_key
-2019-01-08T09:58:59.443813+00:00 app[web.1]: self.create()
-2019-01-08T09:58:59.443814+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/contrib/sessions/backends/db.py", line 49, in create
-2019-01-08T09:58:59.443816+00:00 app[web.1]: self._session_key = self._get_new_session_key()
-2019-01-08T09:58:59.443818+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/contrib/sessions/backends/base.py", line 153, in _get_new_session_key
-2019-01-08T09:58:59.443819+00:00 app[web.1]: if not self.exists(session_key):
-2019-01-08T09:58:59.443821+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/contrib/sessions/backends/db.py", line 45, in exists
-2019-01-08T09:58:59.443823+00:00 app[web.1]: return self.model.objects.filter(session_key=session_key).exists()
-2019-01-08T09:58:59.443824+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/models/query.py", line 715, in exists
-2019-01-08T09:58:59.443826+00:00 app[web.1]: return self.query.has_results(using=self.db)
-2019-01-08T09:58:59.443828+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/models/sql/query.py", line 509, in has_results
-2019-01-08T09:58:59.443830+00:00 app[web.1]: return compiler.has_results()
-2019-01-08T09:58:59.443831+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/models/sql/compiler.py", line 1037, in has_results
-2019-01-08T09:58:59.443833+00:00 app[web.1]: return bool(self.execute_sql(SINGLE))
-2019-01-08T09:58:59.443835+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/models/sql/compiler.py", line 1068, in execute_sql
-2019-01-08T09:58:59.443836+00:00 app[web.1]: cursor.execute(sql, params)
-2019-01-08T09:58:59.443838+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 68, in execute
-2019-01-08T09:58:59.443840+00:00 app[web.1]: return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
-2019-01-08T09:58:59.443849+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 77, in _execute_with_wrappers
-2019-01-08T09:58:59.443851+00:00 app[web.1]: return executor(sql, params, many, context)
-2019-01-08T09:58:59.443853+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 85, in _execute
-2019-01-08T09:58:59.443855+00:00 app[web.1]: return self.cursor.execute(sql, params)
-2019-01-08T09:58:59.443856+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/utils.py", line 89, in __exit__
-2019-01-08T09:58:59.443858+00:00 app[web.1]: raise dj_exc_value.with_traceback(traceback) from exc_value
-2019-01-08T09:58:59.443860+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 85, in _execute
-2019-01-08T09:58:59.443862+00:00 app[web.1]: return self.cursor.execute(sql, params)
-2019-01-08T09:58:59.443863+00:00 app[web.1]: django.db.utils.ProgrammingError: relation "django_session" does not exist
-2019-01-08T09:58:59.443865+00:00 app[web.1]: LINE 1: SELECT (1) AS "a" FROM "django_session" WHERE "django_sessio...
-2019-01-08T09:58:59.443866+00:00 app[web.1]: ^
-2019-01-08T09:58:59.443935+00:00 app[web.1]: 
-2019-01-08T09:59:00.096126+00:00 heroku[router]: at=info method=GET path="/accounts/static/images/biever.jpg" host=www.treeofknowledge.ai request_id=ed6bfc6d-ecef-4ecb-89aa-3f5b474a401d fwd="79.197.108.131" dyno=web.1 connect=1ms service=42ms status=404 bytes=3007 protocol=http
-2019-01-08T09:59:00.092564+00:00 app[web.1]: WARNING:django.request:Not Found: /accounts/static/images/biever.jpg
+2019-01-08T12:45:08.424212+00:00 app[web.1]: return self.cursor.execute(sql, params)
+2019-01-08T12:45:08.424214+00:00 app[web.1]: django.db.utils.ProgrammingError: column collection_simulation_model.is_private does not exist
+2019-01-08T12:45:08.424216+00:00 app[web.1]: LINE 1: ...pdated", "collection_simulation_model"."user_id", "collectio...
+2019-01-08T12:45:08.424217+00:00 app[web.1]: ^
+2019-01-08T12:45:08.424326+00:00 app[web.1]: 
+2019-01-08T12:45:08.966567+00:00 heroku[router]: at=info method=GET path="/tool/static/images/biever.jpg" host=www.treeofknowledge.ai request_id=d38d18bc-7f93-40a6-9773-8aabcd192067 fwd="79.197.108.131" dyno=web.1 connect=0ms service=10ms status=404 bytes=3007 protocol=http
+2019-01-08T12:45:08.964469+00:00 app[web.1]: WARNING:django.request:Not Found: /tool/static/images/biever.jpg
+2019-01-08T13:18:57.158037+00:00 heroku[web.1]: Stopping all processes with SIGTERM
+2019-01-08T13:18:57.366351+00:00 heroku[web.1]: Process exited with status 143
+2019-01-08T13:21:46.833639+00:00 heroku[run.3120]: Awaiting client
+2019-01-08T13:21:46.855865+00:00 heroku[run.3120]: Starting process with command `python manage.py makemigrations`
+2019-01-08T13:21:47.076312+00:00 heroku[run.3120]: State changed from starting to up
+2019-01-08T13:21:36.907578+00:00 app[api]: Starting process with command `python manage.py makemigrations` by user benedikt@kleppmann.de
+2019-01-08T13:22:01.279088+00:00 app[api]: Starting process with command `python manage.py migrate` by user benedikt@kleppmann.de
+2019-01-08T13:22:14.484693+00:00 heroku[run.9511]: Awaiting client
+2019-01-08T13:22:14.541589+00:00 heroku[run.9511]: Starting process with command `python manage.py migrate`
+2019-01-08T13:22:14.562618+00:00 heroku[run.9511]: State changed from starting to up
+2019-01-08T13:22:31.296445+00:00 heroku[web.1]: Unidling
+2019-01-08T13:22:31.297145+00:00 heroku[web.1]: State changed from down to starting
+2019-01-08T13:22:44.262620+00:00 heroku[web.1]: Starting process with command `waitress-serve --port=38716 webservice.wsgi:application`
+2019-01-08T13:22:47.623981+00:00 app[web.1]: /app/.heroku/python/lib/python3.6/site-packages/psycopg2/__init__.py:144: UserWarning: The psycopg2 wheel package will be renamed from release 2.8; in order to keep installing from binary please use "pip install psycopg2-binary" instead. For details see: <http://initd.org/psycopg/docs/install.html#binary-install-from-pypi>.
+2019-01-08T13:22:47.624002+00:00 app[web.1]: """)
+2019-01-08T13:22:48.530090+00:00 app[web.1]: Serving on http://0.0.0.0:38716
+2019-01-08T13:22:48.803254+00:00 heroku[web.1]: State changed from starting to up
+2019-01-08T13:22:52.204415+00:00 heroku[router]: at=info method=GET path="/tool/main_menu/" host=www.treeofknowledge.ai request_id=a0f388aa-ea37-458c-ad97-5a716a0bc711 fwd="79.197.108.131" dyno=web.1 connect=1ms service=2799ms status=500 bytes=3008 protocol=http
+2019-01-08T13:22:52.195221+00:00 app[web.1]: ERROR:django.request:Internal Server Error: /tool/main_menu/
+2019-01-08T13:22:52.195233+00:00 app[web.1]: Traceback (most recent call last):
+2019-01-08T13:22:52.195235+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 85, in _execute
+2019-01-08T13:22:52.195237+00:00 app[web.1]: return self.cursor.execute(sql, params)
+2019-01-08T13:22:52.195239+00:00 app[web.1]: psycopg2.ProgrammingError: column collection_simulation_model.is_private does not exist
+2019-01-08T13:22:52.195241+00:00 app[web.1]: LINE 1: ...pdated", "collection_simulation_model"."user_id", "collectio...
+2019-01-08T13:22:52.195243+00:00 app[web.1]: ^
+2019-01-08T13:22:52.195245+00:00 app[web.1]: 
+2019-01-08T13:22:52.195246+00:00 app[web.1]: 
+2019-01-08T13:22:52.195248+00:00 app[web.1]: The above exception was the direct cause of the following exception:
+2019-01-08T13:22:52.195249+00:00 app[web.1]: 
+2019-01-08T13:22:52.195251+00:00 app[web.1]: Traceback (most recent call last):
+2019-01-08T13:22:52.195253+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/core/handlers/exception.py", line 35, in inner
+2019-01-08T13:22:52.195254+00:00 app[web.1]: response = get_response(request)
+2019-01-08T13:22:52.195256+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/core/handlers/base.py", line 128, in _get_response
+2019-01-08T13:22:52.195258+00:00 app[web.1]: response = self.process_exception_by_middleware(e, request)
+2019-01-08T13:22:52.195260+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/core/handlers/base.py", line 126, in _get_response
+2019-01-08T13:22:52.195261+00:00 app[web.1]: response = wrapped_callback(request, *callback_args, **callback_kwargs)
+2019-01-08T13:22:52.195263+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/contrib/auth/decorators.py", line 21, in _wrapped_view
+2019-01-08T13:22:52.195265+00:00 app[web.1]: return view_func(request, *args, **kwargs)
+2019-01-08T13:22:52.195266+00:00 app[web.1]: File "/app/collection/views.py", line 66, in main_menu
+2019-01-08T13:22:52.195268+00:00 app[web.1]: return render(request, 'tree_of_knowledge_frontend/main_menu.html', {'models': models})
+2019-01-08T13:22:52.195270+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/shortcuts.py", line 36, in render
+2019-01-08T13:22:52.195271+00:00 app[web.1]: content = loader.render_to_string(template_name, context, request, using=using)
+2019-01-08T13:22:52.195273+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/template/loader.py", line 62, in render_to_string
+2019-01-08T13:22:52.195275+00:00 app[web.1]: return template.render(context, request)
+2019-01-08T13:22:52.195276+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/template/backends/django.py", line 61, in render
+2019-01-08T13:22:52.195278+00:00 app[web.1]: return self.template.render(context)
+2019-01-08T13:22:52.195280+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/template/base.py", line 175, in render
+2019-01-08T13:22:52.195281+00:00 app[web.1]: return self._render(context)
+2019-01-08T13:22:52.195283+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/template/base.py", line 167, in _render
+2019-01-08T13:22:52.195285+00:00 app[web.1]: return self.nodelist.render(context)
+2019-01-08T13:22:52.195287+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/template/base.py", line 943, in render
+2019-01-08T13:22:52.195288+00:00 app[web.1]: bit = node.render_annotated(context)
+2019-01-08T13:22:52.195290+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/template/base.py", line 910, in render_annotated
+2019-01-08T13:22:52.195292+00:00 app[web.1]: return self.render(context)
+2019-01-08T13:22:52.195294+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/template/loader_tags.py", line 155, in render
+2019-01-08T13:22:52.195295+00:00 app[web.1]: return compiled_parent._render(context)
+2019-01-08T13:22:52.195297+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/template/base.py", line 167, in _render
+2019-01-08T13:22:52.195299+00:00 app[web.1]: return self.nodelist.render(context)
+2019-01-08T13:22:52.195300+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/template/base.py", line 943, in render
+2019-01-08T13:22:52.195302+00:00 app[web.1]: bit = node.render_annotated(context)
+2019-01-08T13:22:52.195303+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/template/base.py", line 910, in render_annotated
+2019-01-08T13:22:52.195305+00:00 app[web.1]: return self.render(context)
+2019-01-08T13:22:52.195307+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/template/defaulttags.py", line 168, in render
+2019-01-08T13:22:52.195308+00:00 app[web.1]: len_values = len(values)
+2019-01-08T13:22:52.195310+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/models/query.py", line 254, in __len__
+2019-01-08T13:22:52.195311+00:00 app[web.1]: self._fetch_all()
+2019-01-08T13:22:52.195313+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/models/query.py", line 1179, in _fetch_all
+2019-01-08T13:22:52.195314+00:00 app[web.1]: self._result_cache = list(self._iterable_class(self))
+2019-01-08T13:22:52.195316+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/models/query.py", line 53, in __iter__
+2019-01-08T13:22:52.195317+00:00 app[web.1]: results = compiler.execute_sql(chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size)
+2019-01-08T13:22:52.195319+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/models/sql/compiler.py", line 1068, in execute_sql
+2019-01-08T13:22:52.195321+00:00 app[web.1]: cursor.execute(sql, params)
+2019-01-08T13:22:52.195322+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 68, in execute
+2019-01-08T13:22:52.195324+00:00 app[web.1]: return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+2019-01-08T13:22:52.195331+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 77, in _execute_with_wrappers
+2019-01-08T13:22:52.195333+00:00 app[web.1]: return executor(sql, params, many, context)
+2019-01-08T13:22:52.195335+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 85, in _execute
+2019-01-08T13:22:52.195336+00:00 app[web.1]: return self.cursor.execute(sql, params)
+2019-01-08T13:22:52.195339+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/utils.py", line 89, in __exit__
+2019-01-08T13:22:52.195341+00:00 app[web.1]: raise dj_exc_value.with_traceback(traceback) from exc_value
+2019-01-08T13:22:52.195342+00:00 app[web.1]: File "/app/.heroku/python/lib/python3.6/site-packages/django/db/backends/utils.py", line 85, in _execute
+2019-01-08T13:22:52.195344+00:00 app[web.1]: return self.cursor.execute(sql, params)
+2019-01-08T13:22:52.195346+00:00 app[web.1]: django.db.utils.ProgrammingError: column collection_simulation_model.is_private does not exist
+2019-01-08T13:22:52.195347+00:00 app[web.1]: LINE 1: ...pdated", "collection_simulation_model"."user_id", "collectio...
+2019-01-08T13:22:52.195349+00:00 app[web.1]: ^
+2019-01-08T13:22:52.195417+00:00 app[web.1]: 
+2019-01-08T13:22:52.673131+00:00 heroku[router]: at=info method=GET path="/static/css/bootstrap.min.f883b698de5f.css" host=www.treeofknowledge.ai request_id=91dfb96d-cea4-4ea9-a8ba-207befbc6e86 fwd="79.197.108.131" dyno=web.1 connect=1ms service=5ms status=200 bytes=15209 protocol=http
+2019-01-08T13:22:52.933982+00:00 heroku[router]: at=info method=GET path="/static/css/landing_page.59d4ed3d022c.css" host=www.treeofknowledge.ai request_id=9fe84e5a-196b-4c7e-9d13-c4c6837297d5 fwd="79.197.108.131" dyno=web.1 connect=1ms service=11ms status=304 bytes=212 protocol=http
+2019-01-08T13:22:52.936519+00:00 heroku[router]: at=info method=GET path="/static/js/jquery.63716e8774d6.js" host=www.treeofknowledge.ai request_id=f713c2aa-6017-4b6d-9aef-2aa45541132a fwd="79.197.108.131" dyno=web.1 connect=0ms service=12ms status=200 bytes=39926 protocol=http
+2019-01-08T13:22:52.942861+00:00 heroku[router]: at=info method=GET path="/static/js/bootstrap.min.adbacb24d8f8.js" host=www.treeofknowledge.ai request_id=510ab632-d576-4718-b64f-15897e94e42c fwd="79.197.108.131" dyno=web.1 connect=1ms service=3ms status=200 bytes=11138 protocol=http
+2019-01-08T13:22:53.887622+00:00 heroku[router]: at=info method=GET path="/static/images/logo_only_background.c11218cab626.png" host=www.treeofknowledge.ai request_id=ba24294b-40e7-4a44-836f-1348a9b1b075 fwd="79.197.108.131" dyno=web.1 connect=1ms service=3ms status=304 bytes=189 protocol=http
+2019-01-08T13:22:53.923530+00:00 heroku[router]: at=info method=GET path="/tool/static/images/biever.jpg" host=www.treeofknowledge.ai request_id=b012e3a6-afea-4d1f-b382-fe24350c31e2 fwd="79.197.108.131" dyno=web.1 connect=0ms service=7ms status=404 bytes=3007 protocol=http
+2019-01-08T13:22:53.921880+00:00 app[web.1]: WARNING:django.request:Not Found: /tool/static/images/biever.jpg
