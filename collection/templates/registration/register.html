@@ -1,0 +1,20 @@
+{% extends 'layouts/base_tool.html' %}
+
+{% block title %}
+	Edit Simulation {{ model.name }}
+{% endblock %}
+
+{% block additionalcss %}{% endblock %}
+
+{% block content %}
+	<br><br>
+	<ul>
+		<li><a href="{% url 'upload_data1_new' %}">upload data</a></li>
+		<li><a href="{% url 'new_model' %}">new model</a></li>
+	</ul>
+		
+
+{% endblock %}
+
+
+
