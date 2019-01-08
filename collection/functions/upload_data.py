@@ -46,7 +46,7 @@ def save_new_upload_details(request):
 
     except Exception as error: 
         traceback.print_exc()
-        errors = [str(error)]
+        errors = [str(error) + "||||||" + file_path]
         upload_error = True
 
     return (upload_id, upload_error, errors)
