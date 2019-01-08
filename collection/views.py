@@ -62,7 +62,7 @@ def newsletter_subscribers(request):
 # ===== THE TOOL ===================================================================
 @login_required
 def main_menu(request):
-	print("!!!!!!!!!   MAIN MENU IS CALLED  !!!!!!!!!")
+    print("!!!!!!!!!   MAIN MENU IS CALLED  !!!!!!!!!")
     models = Simulation_model.objects.all().order_by('id') 
     print("!!!!!!!!!   EXISTING MODELS WERE FOUND  !!!!!!!!!")
     print("!!!!!!!!!   NUMBER OF EXISTING MODELS: %s  !!!!!!!!!" % len(models))
@@ -226,9 +226,9 @@ def upload_data5(request, upload_id):
 
 @login_required
 def get_possible_attributes(request):
-	print("object_type = %s" % request.GET.get('object_type', ''))
-	possible_attributes = [{"name":"Name", "points":39}, {"name":"Position", "points":62}, {"name":"Weight", "points":96}, {"name":"Height", "points":63}, {"name":"Age", "points":61}, {"name":"Preferred environment", "points":21}, {"name":"CO2 production per day", "points":2}, {"name":"Genus", "points":24}, {"name":"Leaf coverage", "points":24}, {"name":"Species", "points":36}, {"name":"Edible", "points":65}]
-	return HttpResponse(json.dumps(possible_attributes))
+    print("object_type = %s" % request.GET.get('object_type', ''))
+    possible_attributes = [{"name":"Name", "points":39}, {"name":"Position", "points":62}, {"name":"Weight", "points":96}, {"name":"Height", "points":63}, {"name":"Age", "points":61}, {"name":"Preferred environment", "points":21}, {"name":"CO2 production per day", "points":2}, {"name":"Genus", "points":24}, {"name":"Leaf coverage", "points":24}, {"name":"Species", "points":36}, {"name":"Edible", "points":65}]
+    return HttpResponse(json.dumps(possible_attributes))
 
 @login_required
 def get_suggested_attributes(request):
@@ -246,8 +246,8 @@ def get_suggested_attributes(request):
 
 @login_required
 def save_new_object_hierachy_tree(request):
-	new_entry = Object_hierachy_tree_history(object_hierachy_tree=request.body, user=request.user)
-	new_entry.save()
+    new_entry = Object_hierachy_tree_history(object_hierachy_tree=request.body, user=request.user)
+    new_entry.save()
 
 
 @login_required
