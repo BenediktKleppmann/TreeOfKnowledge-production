@@ -13,7 +13,8 @@ def save_new_upload_details(request):
     try:
         user = request.user
         file_path = request.FILES['file'].name
-        file_name = os.path.basename(file_path)
+        file_name = request.FILES['file'].name
+        # file_name = os.path.basename(file_path)
         
         sep = request.POST.get('sep', ',')
         encoding =  request.POST.get('encoding')
