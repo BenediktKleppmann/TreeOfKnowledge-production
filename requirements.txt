@@ -11,6 +11,7 @@ python-dateutil==2.7.5
 python-decouple==3.1
 pytz==2018.6
 six==1.11.0
+tdda==1.0.13
 waitress==1.1.0
 whitenoise==3.3.1
 zope.interface==4.6.0
