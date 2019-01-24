@@ -6,7 +6,7 @@
 		height: 100%;
 	}
 
-	.navbar {
+	#navbar-main {
 		background-color: rgb(61, 40, 21); /*rgb(79, 25, 0);*/
 		border-bottom-style: none;
 	}
@@ -115,4 +115,11 @@
 		text-align: center;
 		background-color: #FFBABA;
 		color: #6A0E0E;
+	}
+	
+	.btn-dark-secondary {
+		background-color:#6c757d;
+		border-color:#6c757d;
+		/*background-color:rgb(108, 117, 125);
+		border-color:rgb(108, 117, 125);*/
 	}

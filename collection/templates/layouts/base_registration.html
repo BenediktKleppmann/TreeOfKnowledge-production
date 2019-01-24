@@ -58,7 +58,11 @@
 	
 	<script src="{% static 'js/jquery.js' %}"></script>
 	<script src="{% static 'js/bootstrap.min.js' %}"></script>
-
+	<script>
+		window.onload = function() {
+			$(".has-error").find("div").first().attr("class","form-error");
+		}
+	</script>
 
 </body>
 </html>

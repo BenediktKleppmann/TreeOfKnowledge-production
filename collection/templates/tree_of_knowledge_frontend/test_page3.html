@@ -1,0 +1,51 @@
+{% extends 'layouts/base_tool.html' %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
+{% block title %}
+	Edit Simulation {{ model.name }}
+{% endblock %}
+
+{% block additionalcss %}
+
+<style>
+	.table-condensed thead tr:nth-child(2),
+	.table-condensed tbody {
+	  display: none
+	}
+</style>
+
+
+{% endblock %}
+
+{% block content %}
+<script src="https://code.jquery.com/jquery.min.js"></script>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/2.9.0/moment.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/1/daterangepicker.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/1/daterangepicker-bs3.css" />
+
+
+	<div class="input-group input-daterange" id="month-range">
+		<input class="valid-date-selector form-control" value="01/01/2012">
+		<div class="input-group-addon">to</div>
+		<input class="valid-date-selector form-control" value="01/01/2013">
+	</div>
+
+<script type="text/javascript">
+
+	$('.valid-date-selector').daterangepicker({
+	  singleDatePicker: true,
+	  showDropdowns: true,
+	  minDate: '06/01/2013',
+	  maxDate: '06/30/2015',      
+	  format: 'DD/MM/YYYY'
+	}).on('hide.daterangepicker', function (ev, picker) {
+	  $('.table-condensed tbody tr:nth-child(2) td').click();
+	  console.log(picker.startDate.format('MM/YYYY'));
+	});
+
+</script>
+
+{% endblock %}

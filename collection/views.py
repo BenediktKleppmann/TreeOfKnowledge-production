@@ -2,13 +2,15 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
 from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history
-from collection.forms import Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5
+from collection.forms import Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6
 from django.template.defaultfilters import slugify
-from collection.functions import upload_data
-from collection.functions import get_from_db
+from collection.functions import upload_data, get_from_db, populate_db
 from django.http import HttpResponse
 import json
-
+import traceback
+from tdda.constraints.pd.constraints import discover_df, PandasConstraintVerifier, PandasDetection
+from tdda.constraints.base import DatasetConstraints
+import pandas as pd
 
 # ===== THE WEBSITE ===================================================================
 def landing_page(request):
@@ -62,10 +64,7 @@ def newsletter_subscribers(request):
 # ===== THE TOOL ===================================================================
 @login_required
 def main_menu(request):
-    print("!!!!!!!!!   MAIN MENU IS CALLED  !!!!!!!!!")
     models = Simulation_model.objects.all().order_by('id') 
-    print("!!!!!!!!!   EXISTING MODELS WERE FOUND  !!!!!!!!!")
-    print("!!!!!!!!!   NUMBER OF EXISTING MODELS: %s  !!!!!!!!!" % len(models))
     return render(request, 'tree_of_knowledge_frontend/main_menu.html', {'models': models})
 
 
@@ -169,6 +168,9 @@ def upload_data3(request, upload_id):
 
     
     if request.method == 'POST':
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(request.POST)
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         form3 = Uploaded_datasetForm3(data=request.POST, instance=uploaded_dataset)
         if not form3.is_valid():
             errors.append('Error: the form is not valid.')
@@ -178,7 +180,6 @@ def upload_data3(request, upload_id):
 
     object_hierachy_tree = get_from_db.get_object_hierachy_tree()
     return render(request, 'tree_of_knowledge_frontend/upload_data3.html', {'uploaded_dataset': uploaded_dataset, 'object_hierachy_tree':object_hierachy_tree, 'errors': errors})
-
 
 
 @login_required
@@ -192,14 +193,22 @@ def upload_data4(request, upload_id):
 
     
     if request.method == 'POST':
+        request.POST = request.POST.copy()
+        for fact_number in range(1,19):
+            if 'attribute' + str(fact_number) in request.POST.keys():
+                if request.POST['attribute' + str(fact_number)] == '':
+                    request.POST.pop('attribute' + str(fact_number))
+                    request.POST.pop('operator' + str(fact_number))
+                    request.POST.pop('value' + str(fact_number))
         form4 = Uploaded_datasetForm4(data=request.POST, instance=uploaded_dataset)
         if not form4.is_valid():
             errors.append('Error: the form is not valid.')
         else:
             form4.save()
             return redirect('upload_data5', upload_id=upload_id)
- 
+
     return render(request, 'tree_of_knowledge_frontend/upload_data4.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+
 
 
 
@@ -219,9 +228,102 @@ def upload_data5(request, upload_id):
             errors.append('Error: the form is not valid.')
         else:
             form5.save()
+            return redirect('upload_data6', upload_id=upload_id)
+ 
+    return render(request, 'tree_of_knowledge_frontend/upload_data5.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+
+
+
+@login_required
+def upload_data5__edit_column(request): 
+    request_body = json.loads(request.body)
+
+    transformation = request_body['transformation']
+    transformation = transformation.replace('"','')
+
+    column = request_body['edited_column']
+    # column = column.replace('"','')
+
+    edited_column = column
+    errors = []
+
+    try:
+        entire_code = "edited_column = [" + transformation + " for value in " + str(column) + "]"
+        execution_results = {}
+        exec(entire_code, globals(), execution_results)
+        
+        edited_column = execution_results['edited_column']
+    except Exception as error:
+        traceback.print_exc()
+        errors.append(str(error))
+
+    response = {}
+    response['errors'] = errors
+    response['edited_column'] = edited_column
+    return HttpResponse(json.dumps(response))
+
+
+
+@login_required
+def upload_data5__get_columns_format_violations(request):
+    request_body = json.loads(request.body)
+    attribute_name = request_body['attribute_name']
+
+    constraint_dict = get_from_db.get_attribute_constraints(attribute_name)
+    column_values = request_body['column_values']
+    print("===============================================")
+    print("column_values = " + str(column_values))
+    print("===============================================")
+    df = pd.DataFrame({'column':column_values})
+    pdv = PandasConstraintVerifier(df, epsilon=None, type_checking=None)
+
+    constraints = DatasetConstraints()
+    constraints.initialize_from_dict(constraint_dict)
+
+    pdv.repair_field_types(constraints)
+    detection = pdv.detect(constraints, VerificationClass=PandasDetection, outpath=None, write_all=False, per_constraint=False, output_fields=None, index=False, in_place=False, rownumber_is_index=True, boolean_ints=False, report='records') 
+    violation_df = detection.detected()
+    violation_columns = [int(col_nb) for col_nb in list(violation_df.index.values)]
+
+    response_string = json.dumps(violation_columns)
+    print("===============================================")
+    print("violation_columns = " + str(violation_columns))
+    print(type(violation_columns))
+    print(response_string)
+    print("===============================================")
+    return HttpResponse(json.dumps(violation_columns))
+
+
+
+@login_required
+def upload_data5__suggest_attribute_format(request): 
+    request_body = json.loads(request.body)
+    df = pd.DataFrame(request_body)
+    # constraints = discover_df(df, df_path=path)
+    constraints = discover_df(df, inc_rex=False)
+    return HttpResponse(json.dumps(constraints.to_dict()))
+
+
+
+@login_required
+def upload_data6(request, upload_id):
+    errors = []
+    # if the upload_id was wrong, send the user back to the first page
+    uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
+    if uploaded_dataset is None:
+        errors.append('Error: %s is not a valid upload_id' % str(upload_id))
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+
+    
+    if request.method == 'POST':
+        form6 = Uploaded_datasetForm6(data=request.POST, instance=uploaded_dataset)
+        if not form6.is_valid():
+            errors.append('Error: the form is not valid.')
+        else:
+            form5.save()
             return redirect('main_menu')
    
-    return render(request, 'tree_of_knowledge_frontend/upload_data4.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
 @login_required
@@ -235,12 +337,12 @@ def get_suggested_attributes(request):
     print("upload_id = %s" % request.GET.get('upload_id', ''))
     print("attributenumber = %s" % request.GET.get('attributenumber', ''))
 
-    returned_dict = [    {'attribute_name':'option 1', 'number_of_conflicting_values':0, 'conflicting_rows':[], 'description':'this is the best option! :)', "format": { "type": "string", "min_length": 3, "max_length": 11, "max_nulls": 0 }},
-                        {'attribute_name':'option 2', 'number_of_conflicting_values':1, 'conflicting_rows':[5], 'description':'this is a great option!', "format": { "type": "date", "min": "1954-04-26 00:00:00", "max": "2009-12-17 00:00:00", "max_nulls": 0 }},
-                        {'attribute_name':'option 3', 'number_of_conflicting_values':4, 'conflicting_rows':[2,5,9,24], 'description':'this is a good option! ', "format": { "type": "string", "min_length": 7, "max_length": 8, "max_nulls": 0, "allowed_values": [ "sleeping", "working" ] }},
-                        {'attribute_name':'option 4', 'number_of_conflicting_values':7, 'conflicting_rows':[1,5,9,12,27, 28, 29], 'description':'this is an ok option.', "format": { "type": "string", "min_length": 4, "max_length": 52, "max_nulls": 0 }},
-                        {'attribute_name':'option 5', 'number_of_conflicting_values':9, 'conflicting_rows':[3,5,6,18,23,25,29,30,31], 'description':'this is a bad option.', "format": { "type": "int", "min": 1995, "max": 2011, "sign": "positive", "max_nulls": 0 }},
-                        {'attribute_name':'option 6', 'number_of_conflicting_values':15, 'conflicting_rows':[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], 'description':'this is a option...', "format": { "type": "int", "min": 0, "max": 45559, "sign": "non-negative", "max_nulls": 0 }}]
+    returned_dict = [    {'attribute_name':'Country', 'description':'this is the best option! :)', "format": { "type": "string", "min_length": 4, "max_length": 52 }},
+                        {'attribute_name':'Year', 'description':'this is a great option!', "format": { "type": "int", "min": 1995, "max": 2011, "sign": "positive" }},
+                        {'attribute_name':'Count', 'description':'this is a good option! ', "format": { "type": "int", "min": 0, "max": 45559, "sign": "non-negative" }},
+                        {'attribute_name':'Rate', 'description':'this is an ok option.', "format": { "type": "real", "min": 0.0, "max": 139.1, "sign": "non-negative" }},
+                        {'attribute_name':'Source', 'description':'this is a bad option.', "format": { "type": "string", "min_length": 3, "max_length": 28 }},
+                        {'attribute_name':'Source Type', 'description':'this is a option...', "format": { "type": "string", "min_length": 2, "max_length": 2, "allowed_values": [ "CJ", "PH" ] }}]
     return HttpResponse(json.dumps(returned_dict))
 
 
@@ -287,11 +389,39 @@ def new_model(request):
     return render(request, 'tree_of_knowledge_frontend/edit_model.html', {'form': form,})
 
 
-# =======================================================================================
-def test_page(request):
-    # ds_names = ['3 Round Stones, Inc.', '48 Factoring Inc.', '5PSolutions', 'Abt Associates', 'Accela', 'Accenture', 'AccuWeather', 'Acxiom', 'Adaptive', 'Adobe Digital Government', 'Aidin', 'Alarm.com', 'Allianz', 'Allied Van Lines', 'Alltuition', 'Altova', 'Amazon Web Services', 'American Red Ball Movers', 'Amida Technology Solutions', 'Analytica', 'Apextech LLC', 'Appallicious', 'Aquicore', 'Archimedes Inc.', 'AreaVibes Inc.', 'Arpin Van Lines', 'Arrive Labs', 'ASC Partners', 'Asset4', 'Atlas Van Lines', 'AtSite', 'Aunt Bertha, Inc.', 'Aureus Sciences (*Now part of Elsevier)', 'AutoGrid Systems', 'Avalara', 'Avvo', 'Ayasdi', 'Azavea', 'BaleFire Global', 'Barchart', 'Be Informed', 'Bekins', 'Berkery Noyes MandASoft', 'Berkshire Hathaway', 'BetterLesson', 'BillGuard', 'Bing', 'Biovia', 'BizVizz', 'BlackRock', 'Bloomberg', 'Booz Allen Hamilton', 'Boston Consulting Group', 'Boundless', 'Bridgewater', 'Brightscope', 'BuildFax', 'Buildingeye', 'BuildZoom', 'Business and Legal Resources', 'Business Monitor International', 'Calcbench, Inc.', 'Cambridge Information Group', 'Cambridge Semantics', 'CAN Capital', 'Canon', 'Capital Cube', 'Cappex', 'Captricity', 'CareSet Systems', 'Careset.com', 'CARFAX', 'Caspio', 'Castle Biosciences', 'CB Insights', 'Ceiba Solutions', 'Center for Responsive Politics', 'Cerner', 'Certara', 'CGI', 'Charles River Associates', 'Charles Schwab Corp.', 'Chemical Abstracts Service', 'Child Care Desk', 'Chubb', 'Citigroup', 'CityScan', 'CitySourced', 'Civic Impulse LLC', 'Civic Insight', 'Civinomics', 'Civis Analytics', 'Clean Power Finance', 'ClearHealthCosts', 'ClearStory Data', 'Climate Corporation', 'CliniCast', 'Cloudmade', 'Cloudspyre', 'Code for America', 'Code-N', 'Collective IP', 'College Abacus, an ECMC initiative', 'College Board', 'Communitech', 'Compared Care', 'Compendia Bioscience Life Technologies', 'Compliance and Risks', 'Computer Packages Inc', 'CONNECT-DOT LLC.', 'ConnectEDU', 'Connotate', 'Construction Monitor LLC', 'Consumer Reports', 'CoolClimate', 'Copyright Clearance Center', 'CoreLogic', 'CostQuest', 'Credit Karma', 'Credit Sesame', 'CrowdANALYTIX', 'Dabo Health', 'DataLogix', 'DataMade', 'DataMarket', 'Datamyne', 'DataWeave', 'Deloitte', 'DemystData', 'Department of Better Technology', 'Development Seed', 'Docket Alarm, Inc.', 'Dow Jones & Co.', 'Dun & Bradstreet', 'Earth Networks', 'EarthObserver App', 'Earthquake Alert!', 'Eat Shop Sleep', 'Ecodesk', 'eInstitutional', 'Embark', 'EMC', 'Energy Points, Inc.', 'Energy Solutions Forum', 'Enervee Corporation', 'Enigma.io', 'Ensco', 'Environmental Data Resources', 'Epsilon', 'Equal Pay for Women', 'Equifax', 'Equilar', 'Ernst & Young LLP', 'eScholar LLC.', 'Esri', 'Estately', 'Everyday Health', 'Evidera', 'Experian', 'Expert Health Data Programming, Inc.', 'Exversion', 'Ez-XBRL', 'Factset', 'Factual', 'Farmers', 'FarmLogs', 'Fastcase', 'Fidelity Investments', 'FindTheBest.com', 'First Fuel Software', 'FirstPoint, Inc.', 'Fitch', 'FlightAware', 'FlightStats', 'FlightView', 'Food+Tech Connect', 'Forrester Research', 'Foursquare', 'Fujitsu', 'Funding Circle', 'FutureAdvisor', 'Fuzion Apps, Inc.', 'Gallup', 'Galorath Incorporated', 'Garmin', 'Genability', 'GenoSpace', 'Geofeedia', 'Geolytics', 'Geoscape', 'GetRaised', 'GitHub', 'Glassy Media', 'Golden Helix', 'GoodGuide', 'Google Maps', 'Google Public Data Explorer', 'Government Transaction Services', 'Govini', 'GovTribe', 'Govzilla, Inc.', 'gRadiant Research LLC', 'Graebel Van Lines', 'Graematter, Inc.', 'Granicus', 'GreatSchools', 'GuideStar', 'H3 Biomedicine', 'Harris Corporation', 'HDScores, Inc', 'Headlight', 'Healthgrades', 'Healthline', 'HealthMap', 'HealthPocket, Inc.', 'HelloWallet', 'HERE', 'Honest Buildings', 'HopStop', 'Housefax', "How's My Offer?", 'IBM', 'ideas42', 'iFactor Consulting', 'IFI CLAIMS Patent Services', 'iMedicare', 'Impact Forecasting (Aon)', 'Impaq International', 'Import.io', 'IMS Health', 'InCadence', 'indoo.rs', 'InfoCommerce Group', 'Informatica', 'InnoCentive', 'Innography', 'Innovest Systems', 'Inovalon', 'Inrix Traffic', 'Intelius', 'Intermap Technologies', 'Investormill', 'Iodine', 'IPHIX', 'iRecycle', 'iTriage', 'IVES Group Inc', 'IW Financial', 'JJ Keller', 'J.P. Morgan Chase', 'Junar, Inc.', 'Junyo', 'Kaiser Permanante', 'karmadata', 'Keychain Logistics Corp.', 'KidAdmit, Inc.', 'Kimono Labs', 'KLD Research', 'Knoema', 'Knoema Corporation', 'Knowledge Agency', 'KPMG', 'Kroll Bond Ratings Agency', 'Kyruus', 'Lawdragon', 'Legal Science Partners', '(Leg)Cyte', 'LegiNation, Inc.', 'LegiStorm', 'Lenddo', 'Lending Club', 'Level One Technologies', 'LexisNexis', 'Liberty Mutual Insurance Cos.', 'Lilly Open Innovation Drug Discovery', 'Liquid Robotics', 'Locavore', 'LOGIXDATA, LLC', 'LoopNet', 'Loqate, Inc.', 'LoseIt.com', 'LOVELAND Technologies', 'Lucid', 'Lumesis, Inc.', 'Mango Transit', 'Mapbox', 'Maponics', 'MapQuest', 'Marinexplore, Inc.', 'MarketSense', 'Marlin & Associates', 'Marlin Alter and Associates', 'McGraw Hill Financial', 'McKinsey', 'MedWatcher', 'Mercaris', 'Merrill Corp.', 'Merrill Lynch', 'MetLife', 'mHealthCoach', 'MicroBilt Corporation', 'Microsoft Windows Azure Marketplace', 'Mint', "Moody's", 'Morgan Stanley', 'Morningstar, Inc.', 'Mozio', 'MuckRock.com', 'Munetrix', 'Municode', 'National Van Lines', 'Nationwide Mutual Insurance Company', 'Nautilytics', 'Navico', 'NERA Economic Consulting', 'NerdWallet', 'New Media Parents', 'Next Step Living', 'NextBus', 'nGAP Incorporated', 'Nielsen', 'Noesis', 'NonprofitMetrics', 'North American Van Lines', 'Noveda Technologies', 'NuCivic', 'Numedii', 'Oliver Wyman', 'OnDeck', 'OnStar', 'Ontodia, Inc', 'Onvia', 'Open Data Nation', 'OpenCounter', 'OpenGov', 'OpenPlans', 'OpportunitySpace, Inc.', 'Optensity', 'optiGov', 'OptumInsight', 'Orlin Research', 'OSIsoft', 'OTC Markets', 'Outline', 'Oversight Systems', 'Overture Technologies', 'Owler', 'Palantir Technologies', 'Panjiva', 'Parsons Brinckerhoff', 'Patently-O', 'PatientsLikeMe', 'Pave', 'Paxata', 'PayScale, Inc.', 'PeerJ', 'People Power', 'Persint', 'Personal Democracy Media', 'Personal, Inc.', 'Personalis', "Peterson's", 'PEV4me.com', 'PIXIA Corp', 'PlaceILive.com', 'PlanetEcosystems', 'PlotWatt', 'Plus-U', 'PolicyMap', 'Politify', 'Poncho App', 'POPVOX', 'Porch', 'PossibilityU', 'PowerAdvocate', 'Practice Fusion', 'Predilytics', 'PricewaterhouseCoopers (PWC)', 'ProgrammableWeb', 'Progressive Insurance Group', 'Propeller Health', 'ProPublica', 'PublicEngines', 'PYA Analytics', 'Qado Energy, Inc.', 'Quandl', 'Quertle', 'Quid', 'R R Donnelley', 'RAND Corporation', 'Rand McNally', 'Rank and Filed', 'Ranku', 'Rapid Cycle Solutions', 'realtor.com', 'Recargo', 'ReciPal', 'Redfin', 'RedLaser', 'Reed Elsevier', 'REI Systems', 'Relationship Science', 'Remi', 'Rentlogic', 'Retroficiency', 'Revaluate', 'Revelstone', 'Rezolve Group', 'Rivet Software', 'Roadify Transit', 'Robinson + Yu', 'Russell Investments', 'Sage Bionetworks', 'SAP', 'SAS', 'Scale Unlimited', 'Science Exchange', 'Seabourne', 'SeeClickFix', 'SigFig', 'Simple Energy', 'SimpleTuition', 'SlashDB', 'Smart Utility Systems', 'SmartAsset', 'SmartProcure', 'Smartronix', 'SnapSense', 'Social Explorer', 'Social Health Insights', 'SocialEffort Inc', 'Socrata', 'Solar Census', 'SolarList', 'Sophic Systems Alliance', 'S&P Capital IQ', 'SpaceCurve', 'SpeSo Health', 'Spikes Cavell Analytic Inc', 'Splunk', 'Spokeo', 'SpotCrime', 'SpotHero.com', 'Stamen Design', "Standard and Poor's", 'State Farm Insurance', 'Sterling Infosystems', 'Stevens Worldwide Van Lines', 'STILLWATER SUPERCOMPUTING INC', 'StockSmart', 'Stormpulse', 'StreamLink Software', 'StreetCred Software, Inc', 'StreetEasy', 'Suddath', 'Symcat', 'Synthicity', 'T. Rowe Price', 'Tableau Software', 'TagniFi', 'Telenav', 'Tendril', 'Teradata', 'The Advisory Board Company', 'The Bridgespan Group', 'The DocGraph Journal', 'The Govtech Fund', 'The Schork Report', 'The Vanguard Group', 'Think Computer Corporation', 'Thinknum', 'Thomson Reuters', 'TopCoder', 'TowerData', 'TransparaGov', 'TransUnion', 'TrialTrove', 'TrialX', 'Trintech', 'TrueCar', 'Trulia', 'TrustedID', 'TuvaLabs', 'Uber', 'Unigo LLC', 'United Mayflower', 'Urban Airship', 'Urban Mapping, Inc', 'US Green Data', 'U.S. News Schools', 'USAA Group', 'USSearch', 'Verdafero', 'Vimo', 'VisualDoD, LLC', 'Vital Axiom | Niinja', 'VitalChek', 'Vitals', 'Vizzuality', 'Votizen', 'Walk Score', 'WaterSmart Software', 'WattzOn', 'Way Better Patents', 'Weather Channel', 'Weather Decision Technologies', 'Weather Underground', 'WebFilings', 'Webitects', 'WebMD', 'Weight Watchers', 'WeMakeItSafer', 'Wheaton World Wide Moving', 'Whitby Group', 'Wolfram Research', 'Wolters Kluwer', 'Workhands', 'Xatori', 'Xcential', 'xDayta', 'Xignite', 'Yahoo', 'Zebu Compliance Solutions', 'Yelp', 'YourMapper', 'Zillow', 'ZocDoc', 'Zonability', 'Zoner', 'Zurich Insurance (Risk Room)']
-    # for ds_name in ds_names:
-    #     datasource = Datasource(name=ds_name)
-    #     datasource.save()
-    form = Uploaded_datasetForm2()
-    return render(request, 'tree_of_knowledge_frontend/test_page.html', {'form':form})
+
+
+
+
+ # ==========================================================================
+ #
+ #              _           _         _____                      
+ #     /\      | |         (_)       |  __ \                     
+ #    /  \   __| |_ __ ___  _ _ __   | |__) |_ _  __ _  ___  ___ 
+ #   / /\ \ / _` | '_ ` _ \| | '_ \  |  ___/ _` |/ _` |/ _ \/ __|
+ #  / ____ \ (_| | | | | | | | | | | | |  | (_| | (_| |  __/\__ \
+ # /_/    \_\__,_|_| |_| |_|_|_| |_| |_|   \__,_|\__, |\___||___/
+ #                                                __/ |          
+ #                                               |___/    
+ # 
+ # ==========================================================================
+
+
+
+def populate_database(request):
+    populate_db.empty_object_hierachy_tree()
+    populate_db.populate_object_hierachy_tree()
+    return HttpResponse('done')
+
+
+
+def test_page1(request):
+    return render(request, 'tree_of_knowledge_frontend/test_page1.html')
+
+def test_page2(request):
+    return render(request, 'tree_of_knowledge_frontend/test_page2.html')
+
+def test_page3(request):
+    return render(request, 'tree_of_knowledge_frontend/test_page3.html')
+
+

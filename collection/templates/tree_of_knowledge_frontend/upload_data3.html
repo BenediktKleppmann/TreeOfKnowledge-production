@@ -13,7 +13,7 @@
 		
 		.object-type-spec-box {
 			border: solid 1px grey;
-			height: 250px;
+			height: calc(100vh - 315px);
 		}
 		
 		#search-box, #search-box2, #object_name { 
@@ -26,22 +26,34 @@
 			font-size:1.1em;
 		}
 
+		
 		/* ---  Object type info (on the right) -------------------------------------------- */
 		
+		.broad-col {
+			padding-left:0px;
+			padding-right:5px;
+		}
+		
 		.info-panel {
-			padding-right:10px;
-			margin-top:-10px;
+			padding:10px;
+			border-radius: 5px;
+			background-color: rgb(234, 239, 242);
+			border:1px solid rgb(201, 216, 224); 
 		}
-		
-		
-		#jstree-result {
-			max-height: 420px;
-			//border: 1px solid #ddd;	
-		}
-		
 		
 		h3 {
+			margin-top:5px;
+			margin-bottom:10px;
 			text-align:center
+		}
+		
+		#jstree-result {
+			
+		}
+		
+		#object-info {
+			height:calc(100vh - 320px);
+			overflow:auto;
 		}
 		
 		.list-group-row {
@@ -84,6 +96,10 @@
 			padding-top:5px;
 			padding-bottom:5px;
 	
+		}
+		
+		.choose-button {
+			margin-top: 25px;
 		}
 		
 		/* --- Additional Attribute Drop Down -------------------------------------------- */
@@ -142,12 +158,17 @@
 		
 		#object_name {
 			border-color:#222;  
-			margin-bottom:15px;
+			/*margin-bottom:15px;*/
+			 display: block;
+			margin-right: auto;
+			margin-left: auto;
 		}
 		
 		#object_name::placeholder { 
 			color:#222;
 		}
+		
+
 		
 		#save_object_type_button {
 			margin-top:20px;
@@ -177,73 +198,21 @@
 					<div class="object-type-spec-box">
 						<div id="container-for-object-tree" ></div>
 					</div>
-					<br>	
-					<button id="create-object-type" type="button" class="btn btn-primary" data-toggle="modal" data-target="#createObjectType">Create/Edit object type</button>
+					<div style="margin-top:7px;margin-left:7px;">
+						Object Type not listed? &nbsp;<button id="create-object-type" type="button" class="btn btn-default" data-toggle="modal" data-target="#createObjectType">Create new Object Type</button>
+					</div>
 				</div>
 			</div>
-			<div class="col-sm-5">
-				<form class="info-panel">
-					<div id="jstree-result">
+			<div class="col-sm-5 broad-col" >
+				<form role="form" action="" method="post" class="form" enctype="multipart/form-data">
+				{% csrf_token %}
+					<div class="info-panel">
+						<div id="jstree-result"></div>
 					</div>
-					<div class="row list-group-row" id="additional_facts" style="display:none">  
-						<div class="col-sm-1 list-group-left-column" id="additional_facts" style="line-height:135px;"><span style="margin-left:-30px">additional&nbsp;facts on the objects</span></div>
-						<div class="col-sm-11 list-group-right-column">  
-							<ul class="list-group" id="additional_facts_list"> 
-								<li class="list-group-item broad" > <!-- Additional Attribute 1 -->
-									<div>
-										<div class="dropdown inline">
-											<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
-											<div class="dropdown-menu" aria-labelledby="attributeMenu1">
-												<div id="attributeList1">
-													<input class="search" placeholder=" Search" />
-													<ul class="list list-group"></ul>
-												</div>
-											</div>
-										</div>
-										<input type="hidden" id="attribute1" name="attribute1" value="">
-										<div class="form-group inline">
-											<select class="form-control form-control-lg" id="operator1" name="operator1">
-												<option value="=" selected>=</option>
-												<option value=">">></option>
-												<option value="<"><</option>
-											</select>
-										</div> 
-										<div class="form-group inline">
-											<input type="text" class="form-control" id="value1" name="value1" value="" size="15">
-										</div>
-									</div>
-								</li>
-								<li class="list-group-item broad" > <!-- Additional Attribute 2 -->
-									<div style="position:absolute">
-										<div class="dropdown inline" >
-											<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
-											<div class="dropdown-menu" aria-labelledby="attributeMenu2">
-												<div id="attributeList2">
-													<input class="search" placeholder=" Search" />
-													<ul class="list list-group"></ul>
-												</div>
-											</div>
-										</div>
-										<input type="hidden" id="attribute2" name="attribute2" value="">
-										<div class="form-group inline">
-											<select class="form-control form-control-lg" id="operator2" name="operator2">
-												<option value="=" selected>=</option>
-												<option value=">">></option>
-												<option value="<"><</option>
-											</select>
-										</div> 
-										<div class="form-group inline">
-											<input type="text" class="form-control" id="value2" name="value2" value="" size="15">
-										</div>
-									</div>
-								</li>
-								<li class="list-group-item narrow" id="create-new-fact-button">  	<button type="button" class="btn btn-outline-dark" onclick="newAdditionalFactInput('additional_fact');" ><i class="fas fa-plus"></i></button> </li>
-							</ul>  
-						</div>  
-					</div> 
-					<br>
-					<button type="submit" class="btn btn-primary pull-right">
-						<span class="glyphicon glyphicon-star"></span> Next
+					<input type="hidden" id="entire_objectInfoHTMLString" name="entire_objectInfoHTMLString" value="">
+					<input type="hidden" id="all_entry_counts" name="all_entry_counts" value="">
+					<button type="submit" class="btn btn-primary pull-right choose-button">
+						<span class="glyphicon glyphicon-star"></span> Choose >
 					</button>
 				</form> 
 			</div>
@@ -293,66 +262,69 @@
 						</div>
 					</div>
 					<div class="col-md-6">
-						<div class=" form info-panel">
-							<div id="jstree-result2">
+						<div class="form">
+							<div class="info-panel">
+								<div id="jstree-result2">
+								</div>
+								<div class="row list-group-row" id="new_object_facts_box" style="display:none">  
+									<div class="col-sm-1 list-group-left-column" id="new_object_facts" style="line-height:135px;"><span style="margin-left:-47px; width:130px">facts about the<br>new object type</span></div>
+									<div class="col-sm-11 list-group-right-column">  
+										<ul class="list-group" id="new_object_facts_list"> 
+											<li class="list-group-item broad" > <!-- Object Attribute 101 -->
+												<div>
+													<div class="dropdown inline">
+														<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu101" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+														<div class="dropdown-menu" aria-labelledby="attributeMenu101">
+															<div id="attributeList101">
+																<input class="search" placeholder=" Search" />
+																<ul class="list list-group"></ul>
+															</div>
+														</div>
+													</div>
+													<input type="hidden" id="attribute101" name="attribute101" value="">
+													<div class="form-group inline">
+														<select class="form-control form-control-lg" id="operator101" name="operator101">
+															<option value="=" selected>=</option>
+															<option value=">">></option>
+															<option value="<"><</option>
+														</select>
+													</div> 
+													<div class="form-group inline">
+														<input type="text" class="form-control" id="value101" name="value101" value="" size="15">
+													</div>
+												</div>
+											</li>
+											<li class="list-group-item broad" > <!-- Object Attribute 102 -->
+												<div style="position:absolute">
+													<div class="dropdown inline" >
+														<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu102" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+														<div class="dropdown-menu" aria-labelledby="attributeMenu102">
+															<div id="attributeList102">
+																<input class="search" placeholder=" Search" />
+																<ul class="list list-group"></ul>
+															</div>
+														</div>
+													</div>
+													<input type="hidden" id="attribute102" name="attribute102" value="">
+													<div class="form-group inline">
+														<select class="form-control form-control-lg" id="operator102" name="operator102">
+															<option value="=" selected>=</option>
+															<option value=">">></option>
+															<option value="<"><</option>
+														</select>
+													</div> 
+													<div class="form-group inline">
+														<input type="text" class="form-control" id="value102" name="value102" value="" size="15">
+													</div>
+												</div>
+											</li>
+											<li class="list-group-item narrow" id="create-new-object-fact-button">  	<button id="make-new-additional-fact-button" type="button" class="btn btn-outline-dark" onclick="newAdditionalFactInput('all');" ><i class="fas fa-plus"></i></button> </li>
+										</ul>  
+									</div>  
+								</div> 
+								<button type="button" id="save_object_type_button" class="btn btn-primary pull-right" onclick="addObjectType()" >Add</button>
 							</div>
-							<div class="row list-group-row" id="new_object_facts_box" style="display:none">  
-								<div class="col-sm-1 list-group-left-column" id="new_object_facts" style="line-height:135px;"><span style="margin-left:-47px; width:130px">facts about the<br>new object type</span></div>
-								<div class="col-sm-11 list-group-right-column">  
-									<ul class="list-group" id="new_object_facts_list"> 
-										<li class="list-group-item broad" > <!-- Object Attribute 101 -->
-											<div>
-												<div class="dropdown inline">
-													<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu101" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
-													<div class="dropdown-menu" aria-labelledby="attributeMenu101">
-														<div id="attributeList101">
-															<input class="search" placeholder=" Search" />
-															<ul class="list list-group"></ul>
-														</div>
-													</div>
-												</div>
-												<div class="form-group inline">
-													<select class="form-control form-control-lg" id="operator101" name="operator101">
-														<option value="=" selected>=</option>
-														<option value=">">></option>
-														<option value="<"><</option>
-													</select>
-												</div> 
-												<div class="form-group inline">
-													<input type="text" class="form-control" id="value101" name="value101" value="" size="15">
-												</div>
-											</div>
-										</li>
-										<li class="list-group-item broad" > <!-- Object Attribute 102 -->
-											<div style="position:absolute">
-												<div class="dropdown inline" >
-													<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu102" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
-													<div class="dropdown-menu" aria-labelledby="attributeMenu102">
-														<div id="attributeList102">
-															<input class="search" placeholder=" Search" />
-															<ul class="list list-group"></ul>
-														</div>
-													</div>
-												</div>
-												<input type="hidden" id="attribute102" name="attribute102" value="">
-												<div class="form-group inline">
-													<select class="form-control form-control-lg" id="operator102" name="operator102">
-														<option value="=" selected>=</option>
-														<option value=">">></option>
-														<option value="<"><</option>
-													</select>
-												</div> 
-												<div class="form-group inline">
-													<input type="text" class="form-control" id="value102" name="value102" value="" size="15">
-												</div>
-											</div>
-										</li>
-										<li class="list-group-item narrow" id="create-new-object-fact-button">  	<button type="button" class="btn btn-outline-dark" onclick="newAdditionalFactInput('object_fact');" ><i class="fas fa-plus"></i></button> </li>
-									</ul>  
-								</div>  
-							</div> 
-							<button type="button" id="save_object_type_button" class="btn btn-primary pull-right" onclick="addObjectType()" >Add</button>
-						</form>
+						</div>
 					</div>
 				</div>
 			  </div>
@@ -367,7 +339,7 @@
 	  </div>
 	</div>
 	
-	<script src="{% static 'js/list.min.js' %}"></script>
+<script src="{% static 'js/list.min.js' %}"></script>
 
 <script>
 
@@ -384,7 +356,7 @@
 							{"id":"n10", "text": "Animal", "li_attr": {"attribute_values": [{"attribute":"Kingdom", "operation": "=", "value":"Animalia"}]}, "a_attr":{"synonyms": ["Creature"], "scientific": ["Animalia"]}, "parent":"n2"}
 						]
 	
-	
+	var object_hierachy_tree2 = {{ object_hierachy_tree|safe }}
 					
 
 	/*========================================================================*/
@@ -396,7 +368,7 @@
 	/*=============  MAKE HTML STRING FOR OBJECT-INFO (on the right)  ========================================================= */
 	function get_objectInfoHTMLString(data, node_id, prefix) {
 		
-		var objectInfoHTMLString = 	'<div class="row list-group-row">' + 
+		var objectInfoHTMLString = 	'<div class="row list-group-row row-eq-height">' + 
 										'<div class="col-sm-1 list-group-left-column" id="' + prefix + 'left_col_' + node_id + '"><span>' + data.instance.get_node(node_id).text + '</span></div>' + 
 										'<div class="col-sm-11 list-group-right-column">' + 
 											'<ul class="list-group">'; 
@@ -431,17 +403,13 @@
 	var number_of_additional_facts = 2
 	var number_of_additional_object_facts = 2;
 	
-	function newAdditionalFactInput(fact_type) { 
+	function newAdditionalFactInput(object_type) { 
 	
-		if (fact_type =="object_fact") {
-			number_of_additional_object_facts += 1;
-			fact_number = 100 + number_of_additional_object_facts
-			var insert_before = '#create-new-object-fact-button'
-		} else {
-			number_of_additional_facts += 1;
-			fact_number = number_of_additional_facts
-			var insert_before = '#create-new-fact-button'
-		}
+
+		number_of_additional_object_facts += 1;
+		fact_number = 100 + number_of_additional_object_facts;
+		var insert_before = '#create-new-object-fact-button';
+
 		
 		var additionalFactHTMLString = 	'<li class="list-group-item broad" >' +
 											'<div style="position:absolute">' + 
@@ -469,6 +437,9 @@
 										'</li>';
 										
 		$(additionalFactHTMLString).insertBefore(insert_before);
+		
+		makeObjectsAdditionalAttributesDropdown(object_type, fact_number);
+		
 	}
 	
 	
@@ -488,8 +459,8 @@
 				var possible_attributes = JSON.parse(this.responseText);
 				
 				//create list with possible_attributes in drop down and sort it 
-				var userList = new List('attributeList' + attribute_number, options, possible_attributes);
-				userList.sort("points", {order: "desc"});
+				var attributeList = new List('attributeList' + attribute_number, options, possible_attributes);
+				attributeList.sort('points', {order: "desc"});
 				
 			}
 		};
@@ -521,7 +492,7 @@
 		if(!sel.length) { return false; }
 		var parents_object_type = sel[0];
 							
-		$("#info-panel-head").html('<br><input type="text" class="form-control-plaintext" id="object_name" name="object_name" placeholder="New Object Name" value=""><br>');
+		$("#info-panel-head").html('<br><input type="text" class="form-control-plaintext centered" id="object_name" name="object_name" placeholder="New Object Name" value=""><br>');
 		
 
 		
@@ -529,10 +500,12 @@
 		$("#save_object_type_button").attr("style", "display:block");
 		
 		//For all Attribute-dropdowns: load a list of possible_attributes (for the selected object_type)
-		
 		for (var i = 1; i <= number_of_additional_object_facts; i++) {
 			makeObjectsAdditionalAttributesDropdown( parents_object_type , 100 + i);
 		}
+		
+		//for the "+"-button change it so that the new attribute-drop-downs will list the object-types attributes
+		$("#make-new-additional-fact-button").attr("onclick", "newAdditionalFactInput('" + parents_object_type + "');")
 
 		/* WRITE THE NEW OBJECT NAME AT THE BOTTOM  */
 		$('#object_name').change(function() {
@@ -552,14 +525,14 @@
 		
 		attribute_values_list = []  // <-- 'li_attr'
 		
-		
+		//for every attribute-specification, get the attribute, operator and value and save to the object_dict
 		for (var i = 1; i <= number_of_additional_object_facts; i++) {
 			
 			new_fact = {}
 			fact_number = 100 + i
-			new_fact['attribute'] = $("#attribute" + fact_number).val()
-			new_fact['operator'] = $("#operator" + fact_number).val()
-			new_fact['value'] = $("#value" + fact_number).val()
+			new_fact['attribute'] = $("#attribute" + fact_number).val();
+			new_fact['operation'] = $("#operator" + fact_number).val();
+			new_fact['value'] = $("#value" + fact_number).val();
 			
 			if (new_fact['attribute'] != "" && new_fact['value'] != "") {
 				attribute_values_list.push(new_fact)
@@ -576,7 +549,7 @@
 		$('#container-for-object-tree').jstree(true).create_node(parent_id, new_object_dict);
 
 
-		
+		//reset the dropdown fields for the next new object type
 		for (var i = 1; i <= number_of_additional_object_facts; i++) {
 			fact_number = 100 + i
 			$("#attributeMenu" + fact_number).html('Attribute &nbsp;');
@@ -625,6 +598,7 @@
 		var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance 
 		xmlhttp.open("POST", "/tool/save_new_object_hierachy_tree/");
 		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send(JSON.stringify(new_object_dict));
 		
 	}
@@ -655,15 +629,15 @@
 
 
 	
-	
+
 	window.onload = function() {
 	
-	/*========================================================================*/
-	/*=========================      MAIN      ===============================*/
-	/*========================================================================*/
+	//========================================================================
+	//=========================      MAIN      ===============================
+	//========================================================================
 	
 		
-		/*============= CREATE JSTREE    ================================================================================== */
+		//============= CREATE JSTREE    ================================================================================== 
 				
 		// search box
 		var to = false;
@@ -689,18 +663,19 @@
 				"default" : { "valid_children" : ["default","file"] },
 				"file" : { "icon" : "glyphicon glyphicon-file", "valid_children" : [] }
 			},
+			"themes":{"icons":false},
 			"plugins" : [ "contextmenu", "dnd", "search", "state", "types", "wholerow" ]
 		});	
 	
+		
 				
-				
-		/*============= JSTREE - SELECT ELEMENT   ================================================================================== */
+		//============= JSTREE - SELECT ELEMENT   ================================================================================== 
 		
 		// if an element of tree is selected, display it's information on the right
 		$('#container-for-object-tree')
 		  .on('select_node.jstree', function (e, data) {
 		  
-			/*=====  PART 1: display the object-info on the right  ============*/
+			//=====  PART 1: display the object-info on the right  ============
 		
 			//make a list of parent nodes
 			var node_id = data.selected[0];
@@ -712,7 +687,7 @@
 			}
 			
 			//loop through the parent nodes and add the info about the known_attribute_values and known_attribute_ranges
-			var entire_objectInfoHTMLString = '<h3>' + data.instance.get_node(node_id).text + '</h3><input type="hidden" id="object_type" name="object_type" value="' + data.instance.get_node(node_id).text + '">';
+			var entire_objectInfoHTMLString = '<h3>' + data.instance.get_node(node_id).text + '</h3><input type="hidden" id="object_type" name="object_type" value="' + data.instance.get_node(node_id).text + '"><div id="object-info">';
 			var all_entry_counts = {};
 			for (var i = 0; i < parent_nodes.length; i++) {
 				var node_id = parent_nodes[i];
@@ -723,37 +698,44 @@
 					entire_objectInfoHTMLString += get_objectInfoHTMLString(data, node_id, '');
 				}
 			}
-
-		  	$('#jstree-result').html(entire_objectInfoHTMLString);  //<- most important line
 			
+			entire_objectInfoHTMLString += '</div>'
+			
+		  	$('#jstree-result').html(entire_objectInfoHTMLString);                         //<- most important line
+			$('#entire_objectInfoHTMLString').attr('value', entire_objectInfoHTMLString);   //<- other most important lines (for sending the info with the form)
+			$('#all_entry_counts').attr('value', JSON.stringify(all_entry_counts));              //<- other most important lines (for sending the info with the form)
 			
 			//set the line-heights so that the object-type labels are at the right height in the left_cols
 			for(var key in all_entry_counts) {
 				$("#left_col_" + key ).css("line-height", 40 * all_entry_counts[key] + "px");
 			} 
+			
+			//scroll the object-info box to the bottom
+			var objectInfoBox = document.getElementById("object-info");
+			objectInfoBox.scrollTop = objectInfoBox.scrollHeight;
 		
-		
-			/*=====  PART 2: display the "additional facts on the objects" section   ====================*/
+		/*
+			//=====  PART 2: display the "additional facts on the objects" section   ====================
 			$("#additional_facts").css("display", "block");
 			
 			//For all Attribute-dropdowns: load a list of possible_attributes (for the selected object_type)
 			for (var i = 1; i <= number_of_additional_facts; i++) {
 				makeObjectsAdditionalAttributesDropdown( data.instance.get_node(node_id).text , i);
 			}
-			
+		*/
 		  
 		  });
 		
 	
 		
-		/*========================================================================*/
-		/*========================      MODAL      ===============================*/
-		/*========================================================================*/
+		//========================================================================
+		//========================      MODAL      ===============================
+		//========================================================================
 		
 		//when modal is opened
 		$('[data-toggle="modal"]').on('click', function (e) {
 		
-			/*============= CREATE JSTREE2    ================================================================================== */
+			//============= CREATE JSTREE2    ================================================================================== 
 			// search box
 			var to = false;
 			$('#search-box2').keyup(function () {
@@ -781,7 +763,7 @@
 				"plugins" : [ "contextmenu", "dnd", "search", "state", "types", "wholerow" ]
 			});	
 			
-			/*SELECT THE SELECTED NODE */
+			//SELECT THE SELECTED NODE 
 			var ref = $('#container-for-object-tree').jstree(true),
 				sel = ref.get_selected();
 			if(sel.length) {
@@ -794,12 +776,12 @@
 		
 		
 		
-		/*============= JSTREE - SELECT ELEMENT   ================================================================================== */
+		//============= JSTREE - SELECT ELEMENT   ================================================================================== 
 		
 		// if an element of tree is selected, display it's information on the right
 		$('#container-for-object-tree2').on('select_node.jstree', function (e, data) {
 		  
-			/*=====  PART 1: display the object-info on the right  ============*/
+			//=====  PART 1: display the object-info on the right  ============
 		
 			//make a list of parent nodes
 			var node_id = data.selected[0];
@@ -832,7 +814,7 @@
 			} 
 		
 		
-			/*=====  PART 2: display the "additional facts on the objects" section   ====================*/
+			//=====  PART 2: display the "additional facts on the objects" section   ====================
 			$("#additional_facts").css("display", "block");
 			
 			//For all Attribute-dropdowns: load a list of possible_attributes (for the selected object_type)
@@ -844,13 +826,11 @@
 		  });
 		
 		
-		
-
-		
-		
 
 
 	};
+	
+
 </script>
 
 

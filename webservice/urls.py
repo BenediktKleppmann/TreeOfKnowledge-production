@@ -43,8 +43,14 @@ urlpatterns = [
     url(r'^tool/upload_data2/(?P<upload_id>[-\d]+)/$', views.upload_data2, name='upload_data2'),
     url(r'^tool/upload_data3/(?P<upload_id>[-\d]+)/$', views.upload_data3, name='upload_data3'),
     url(r'^tool/upload_data4/(?P<upload_id>[-\d]+)/$', views.upload_data4, name='upload_data4'),
+    url(r'^tool/upload_data5/(?P<upload_id>[-\d]+)/$', views.upload_data5, name='upload_data5'),
+    url(r'^tool/upload_data5__edit_column/$', views.upload_data5__edit_column, name='upload_data5__edit_column'),
+    url(r'^tool/upload_data5__get_columns_format_violations/$', views.upload_data5__get_columns_format_violations, name='upload_data5__get_columns_format_violations'),
+    url(r'^tool/upload_data5__suggest_attribute_format/$', views.upload_data5__suggest_attribute_format, name='upload_data5__suggest_attribute_format'),
+    url(r'^tool/upload_data6/(?P<upload_id>[-\d]+)/$', views.upload_data6, name='upload_data6'),
     url(r'^tool/get_possible_attributes/$', views.get_possible_attributes, name='get_possible_attributes'),
     url(r'^tool/get_suggested_attributes/$', views.get_suggested_attributes, name='get_suggested_attributes'),
+    url(r'^tool/save_new_object_hierachy_tree/$', views.save_new_object_hierachy_tree, name='save_new_object_hierachy_tree'),
     url(r'^tool/edit_model/$', views.new_model, name='new_model'),
     url(r'^tool/edit_model/(?P<id>[-\d]+)/$', views.edit_model, name='edit_model'),
     url(r'^main_menu/$', RedirectView.as_view(pattern_name='main_menu')),
@@ -57,7 +63,10 @@ urlpatterns = [
 
     # admin pages
     url(r'^subscribers/$', views.newsletter_subscribers, name='subscribers'),
-    url(r'^test_page/$', views.test_page, name='test_page'),
+    url(r'^test_page1/$', views.test_page1, name='test_page1'),
+    url(r'^test_page2/$', views.test_page2, name='test_page2'),
+    url(r'^test_page3/$', views.test_page3, name='test_page3'),
+    url(r'^populate_database/$', views.populate_database, name='populate_database'),
     path('admin/', admin.site.urls),
 
 

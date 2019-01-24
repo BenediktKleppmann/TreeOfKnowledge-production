@@ -1,3 +1,2 @@
 .env
 db.sqlite3
-webservice/collection/migrations/0002_remove_simulation_model_is_private.py
