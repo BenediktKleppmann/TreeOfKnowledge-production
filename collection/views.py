@@ -1,18 +1,25 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history#, Attribute
 from collection.forms import Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6
 from django.template.defaultfilters import slugify
-from collection.functions import upload_data, get_from_db, populate_db
+from collection.functions import upload_data, get_from_db, populate_db, tdda_functions
 from django.http import HttpResponse
 import json
 import traceback
-from tdda.constraints.pd.constraints import discover_df, PandasConstraintVerifier, PandasDetection
-from tdda.constraints.base import DatasetConstraints
-import pandas as pd
 
-# ===== THE WEBSITE ===================================================================
+
+ # ===============================================================================
+ #  _______ _           __          __  _         _ _       
+ # |__   __| |          \ \        / / | |       (_) |      
+ #    | |  | |__   ___   \ \  /\  / /__| |__  ___ _| |_ ___ 
+ #    | |  | '_ \ / _ \   \ \/  \/ / _ \ '_ \/ __| | __/ _ \
+ #    | |  | | | |  __/    \  /\  /  __/ |_) \__ \ | ||  __/
+ #    |_|  |_| |_|\___|     \/  \/ \___|_.__/|___/_|\__\___|
+ # 
+ # ===============================================================================                                                         
+
 def landing_page(request):
     return render(request, 'landing_page.html')
 
@@ -52,12 +59,6 @@ def subscriber_page(request, userid):
 
     return render(request, 'subscriber_page.html', {'subscriber':subscriber, 'is_post_request':is_post_request, })
 
-
-# ===== ADMIN PAGES ===================================================================
-
-def newsletter_subscribers(request):
-    newsletter_subscribers = Newsletter_subscriber.objects.all().order_by('email')
-    return render(request, 'newsletter_subscribers.html', {'newsletter_subscribers': newsletter_subscribers,})
 
 
 
@@ -168,9 +169,6 @@ def upload_data3(request, upload_id):
 
     
     if request.method == 'POST':
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print(request.POST)
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         form3 = Uploaded_datasetForm3(data=request.POST, instance=uploaded_dataset)
         if not form3.is_valid():
             errors.append('Error: the form is not valid.')
@@ -207,7 +205,8 @@ def upload_data4(request, upload_id):
             form4.save()
             return redirect('upload_data5', upload_id=upload_id)
 
-    return render(request, 'tree_of_knowledge_frontend/upload_data4.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+    print('uploaded_dataset.data_generation_date.year = ' + str(uploaded_dataset.data_generation_date.year))
+    return render(request, 'tree_of_knowledge_frontend/upload_data4.html', {'uploaded_dataset': uploaded_dataset, 'data_generation_year':uploaded_dataset.data_generation_date.year, 'errors': errors})
 
 
 
@@ -231,6 +230,48 @@ def upload_data5(request, upload_id):
             return redirect('upload_data6', upload_id=upload_id)
  
     return render(request, 'tree_of_knowledge_frontend/upload_data5.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+
+
+
+@login_required
+def upload_data6(request, upload_id):
+    errors = []
+    # if the upload_id was wrong, send the user back to the first page
+    uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
+    if uploaded_dataset is None:
+        errors.append('Error: %s is not a valid upload_id' % str(upload_id))
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+
+    
+    if request.method == 'POST':
+        form6 = Uploaded_datasetForm6(data=request.POST, instance=uploaded_dataset)
+        if not form6.is_valid():
+            errors.append('Error: the form is not valid.')
+        else:
+            form6.save()
+            new_model_id = upload_data.perform_uploading(uploaded_dataset)
+            return redirect('upload_data_success', new_model_id=new_model_id)
+   
+    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+
+
+@login_required
+def upload_data_success(request, new_model_id):
+    all_models = Simulation_model.objects.all().order_by('id') 
+    return render(request, 'tree_of_knowledge_frontend/upload_data_success.html', {'new_model_id':new_model_id, 'all_models': all_models})
+
+
+
+ # =================================================================================
+ #  _    _      _                   ______                _   _                 
+ # | |  | |    | |                 |  ____|              | | (_)                
+ # | |__| | ___| |_ __   ___ _ __  | |__ _   _ _ __   ___| |_ _  ___  _ __  ___ 
+ # |  __  |/ _ \ | '_ \ / _ \ '__| |  __| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+ # | |  | |  __/ | |_) |  __/ |    | |  | |_| | | | | (__| |_| | (_) | | | \__ \
+ # |_|  |_|\___|_| .__/ \___|_|    |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+ #               | |                                                            
+ #               |_|                                                          
+ # =================================================================================               
 
 
 
@@ -268,68 +309,91 @@ def upload_data5__edit_column(request):
 def upload_data5__get_columns_format_violations(request):
     request_body = json.loads(request.body)
     attribute_name = request_body['attribute_name']
-
-    constraint_dict = get_from_db.get_attribute_constraints(attribute_name)
     column_values = request_body['column_values']
-    print("===============================================")
-    print("column_values = " + str(column_values))
-    print("===============================================")
-    df = pd.DataFrame({'column':column_values})
-    pdv = PandasConstraintVerifier(df, epsilon=None, type_checking=None)
 
-    constraints = DatasetConstraints()
-    constraints.initialize_from_dict(constraint_dict)
+    # constraint_dict = get_from_db.get_attribute_constraints(attribute_name)
+    # df = pd.DataFrame({'column':column_values})
+    # pdv = PandasConstraintVerifier(df, epsilon=None, type_checking=None)
 
-    pdv.repair_field_types(constraints)
-    detection = pdv.detect(constraints, VerificationClass=PandasDetection, outpath=None, write_all=False, per_constraint=False, output_fields=None, index=False, in_place=False, rownumber_is_index=True, boolean_ints=False, report='records') 
-    violation_df = detection.detected()
-    violation_columns = [int(col_nb) for col_nb in list(violation_df.index.values)]
+    # constraints = DatasetConstraints()
+    # constraints.initialize_from_dict(constraint_dict)
 
-    response_string = json.dumps(violation_columns)
-    print("===============================================")
-    print("violation_columns = " + str(violation_columns))
-    print(type(violation_columns))
-    print(response_string)
-    print("===============================================")
+    # pdv.repair_field_types(constraints)
+    # detection = pdv.detect(constraints, VerificationClass=PandasDetection, outpath=None, write_all=False, per_constraint=False, output_fields=None, index=False, in_place=False, rownumber_is_index=True, boolean_ints=False, report='records') 
+    # violation_df = detection.detected()
+    # violating_columns = [int(col_nb) for col_nb in list(violation_df.index.values)]
+
+    violating_columns = tdda_functions.get_columns_format_violations(attribute_name, column_values)
     return HttpResponse(json.dumps(violation_columns))
 
 
 
 @login_required
 def upload_data5__suggest_attribute_format(request): 
-    request_body = json.loads(request.body)
-    df = pd.DataFrame(request_body)
-    # constraints = discover_df(df, df_path=path)
-    constraints = discover_df(df, inc_rex=False)
-    return HttpResponse(json.dumps(constraints.to_dict()))
-
-
+    column_dict = json.loads(request.body)
+    # df = pd.DataFrame(column_dict)
+    # constraints = discover_df(df, inc_rex=False)
+    # constraints_dict = constraints.to_dict()
+    constraints_dict = tdda_functions.suggest_attribute_format(column_dict)
+    return HttpResponse(json.dumps(constraints_dict))
 
 @login_required
-def upload_data6(request, upload_id):
-    errors = []
-    # if the upload_id was wrong, send the user back to the first page
-    uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
-    if uploaded_dataset is None:
-        errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+def check_single_fact_format(request):
+    format_violation_text = '';
+#     attribute = request.GET.get('attribute', '')
+#     operator = request.GET.get('operator', '')
+#     value = request.GET.get('value', '')
 
-    
-    if request.method == 'POST':
-        form6 = Uploaded_datasetForm6(data=request.POST, instance=uploaded_dataset)
-        if not form6.is_valid():
-            errors.append('Error: the form is not valid.')
-        else:
-            form5.save()
-            return redirect('main_menu')
-   
-    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+#     if (attribute != '') and (value != ''):
+#         attribute_constraints = get_from_db.get_attribute_constraints(attribute)
+#         attribute_dtype = attribute_constraints['fields']['column']['type']
+
+#         attribute_record = Attribute.objects.get(id=attribute)
+#         if attribute_record is not None:
+#             format_violation_text += 'The attribute "' + attribute + '"" does not yet exist.\n\n'
+
+#         if (operator not in ['=', '>', '<', 'in']):
+#             format_violation_text += '"' + operator +'" is not a valid operator.\n\n'
+
+#         if (operator == 'in') and (attribute_constraints['fields']['column']['allowed_values'] is None):
+#             format_violation_text += 'The "in" operator is only permitted for categorical attributes'
+
+#         if (operator in ['>', '<']) and (attribute_constraints['fields']['column']['allowed_values'] is None):
+#             format_violation_text += 'The "<" and ">" operators are only permitted for attributes with type "real" or "int"'
+
+#         # TO DO: check if value is truly an int (for int) or float (for real)
+
+#         # TO DO: if int or real, first convert value to int of float, respectively
+
+
+#         violating_columns = get_columns_format_violations(attribute, [value])
+#         if len(violating_columns) > 0:
+#             format_violation_text += 'The value "' + + '" does not satisfy the format for ' + attribute + '-values. \n'
+#             format_violation_text += 'It must satisfy: \n'
+#             for key in attribute_constraints['fields']['column'].keys():
+#                 format_violation_text += '•   ' + key + ' = ' + attribute_constraints['fields']['column'][key] + '\n'
+
+    return format_violation_text
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @login_required
 def get_possible_attributes(request):
     print("object_type = %s" % request.GET.get('object_type', ''))
-    possible_attributes = [{"name":"Name", "points":39}, {"name":"Position", "points":62}, {"name":"Weight", "points":96}, {"name":"Height", "points":63}, {"name":"Age", "points":61}, {"name":"Preferred environment", "points":21}, {"name":"CO2 production per day", "points":2}, {"name":"Genus", "points":24}, {"name":"Leaf coverage", "points":24}, {"name":"Species", "points":36}, {"name":"Edible", "points":65}]
+    possible_attributes = ["Country", "Year", "Count", "Rate", "Source", "Source Type"]   
     return HttpResponse(json.dumps(possible_attributes))
 
 @login_required
@@ -344,6 +408,19 @@ def get_suggested_attributes(request):
                         {'attribute_name':'Source', 'description':'this is a bad option.', "format": { "type": "string", "min_length": 3, "max_length": 28 }},
                         {'attribute_name':'Source Type', 'description':'this is a option...', "format": { "type": "string", "min_length": 2, "max_length": 2, "allowed_values": [ "CJ", "PH" ] }}]
     return HttpResponse(json.dumps(returned_dict))
+
+
+
+
+ # ==========================================================================
+ #   _____ _                 _       _   _             
+ #  / ____(_)               | |     | | (_)            
+ # | (___  _ _ __ ___  _   _| | __ _| |_ _  ___  _ __  
+ #  \___ \| | '_ ` _ \| | | | |/ _` | __| |/ _ \| '_ \ 
+ #  ____) | | | | | | | |_| | | (_| | |_| | (_) | | | |
+ # |_____/|_|_| |_| |_|\__,_|_|\__,_|\__|_|\___/|_| |_|
+ # 
+ # ==========================================================================
 
 
 @login_required
@@ -407,10 +484,19 @@ def new_model(request):
  # ==========================================================================
 
 
+def newsletter_subscribers(request):
+    newsletter_subscribers = Newsletter_subscriber.objects.all().order_by('email')
+    return render(request, 'newsletter_subscribers.html', {'newsletter_subscribers': newsletter_subscribers,})
+
+
+def clear_database(request):
+    populate_db.clear_object_hierachy_tree()
+    populate_db.clear_attributes()
+    return HttpResponse('done')
 
 def populate_database(request):
-    populate_db.empty_object_hierachy_tree()
     populate_db.populate_object_hierachy_tree()
+    populate_db.populate_attributes()
     return HttpResponse('done')
 
 
@@ -423,5 +509,8 @@ def test_page2(request):
 
 def test_page3(request):
     return render(request, 'tree_of_knowledge_frontend/test_page3.html')
+
+
+
 
 

@@ -1,15 +1,15 @@
-from collection.models import Uploaded_dataset, Object_hierachy_tree
+from collection.models import Uploaded_dataset, Object_types
 import json
 
 def get_object_hierachy_tree():
-    hierachy_objects = Object_hierachy_tree.objects.all()
+    hierachy_objects = Object_types.objects.all()
 
     object_hierachy_tree = []
     for hierachy_object in hierachy_objects:
         object_dict = {}
         object_dict['id'] = hierachy_object.id
         object_dict['parent'] = hierachy_object.parent
-        object_dict['text'] = hierachy_object.text
+        object_dict['text'] = hierachy_object.name
         if hierachy_object.li_attr is not None:
             object_dict['li_attr'] = json.loads(hierachy_object.li_attr)
         if hierachy_object.a_attr is not None:

@@ -1,7 +1,7 @@
 import json
 import traceback
 import pandas as pd
-from collection.models import Uploaded_dataset
+from collection.models import Uploaded_dataset, Attribute
 from django.utils.safestring import mark_safe
 import os
 
@@ -101,3 +101,55 @@ def save_existing_upload_details(upload_id, request):
     
     return (upload_error, errors)
 
+
+
+
+def perform_uploading(uploaded_dataset, request):
+
+
+
+
+    simulation_model = Simulation_model(user=request.user, name="", description="")
+    simulation_model.save()
+    model_id = uploaded_dataset.id
+
+    # Add the Meta Data Constraints to the simulation
+    attribute = Attribute.objects.get(id=uploaded_dataset.attribute1)
+    if ((attribute is not None) and (uploaded_dataset.operation1 in ['=','>', '<', 'in'])):
+        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation1, value=uploaded_dataset.value1)
+    
+    attribute = Attribute.objects.get(id=uploaded_dataset.attribute2)
+    if ((attribute is not None) and (uploaded_dataset.operation2 in ['=', '>', '<', 'in'])):
+        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation2, value=uploaded_dataset.value2)
+
+    attribute = Attribute.objects.get(id=uploaded_dataset.attribute3)
+    if ((attribute is not None) and (uploaded_dataset.operation3 in ['=', '>', '<', 'in'])):
+        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation3, value=uploaded_dataset.value3)
+
+    attribute = Attribute.objects.get(id=uploaded_dataset.attribute4)
+    if ((attribute is not None) and (uploaded_dataset.operation4 in ['=', '>', '<', 'in'])):
+        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation4, value=uploaded_dataset.value4)
+
+    attribute = Attribute.objects.get(id=uploaded_dataset.attribute5)
+    if ((attribute is not None) and (uploaded_dataset.operation5 in ['=', '>', '<', 'in'])):
+        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation5, value=uploaded_dataset.value5)
+
+    attribute = Attribute.objects.get(id=uploaded_dataset.attribute6)
+    if ((attribute is not None) and (uploaded_dataset.operation6 in ['=', '>', '<', 'in'])):
+        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation6, value=uploaded_dataset.value6)
+
+    attribute = Attribute.objects.get(id=uploaded_dataset.attribute7)
+    if ((attribute is not None) and (uploaded_dataset.operation7 in ['=', '>', '<', 'in'])):
+        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation7, value=uploaded_dataset.value7)
+
+    attribute = Attribute.objects.get(id=uploaded_dataset.attribute8)
+    if ((attribute is not None) and (uploaded_dataset.operation8 in ['=', '>', '<', 'in'])):
+        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation8, value=uploaded_dataset.value8)
+
+    attribute = Attribute.objects.get(id=uploaded_dataset.attribute9)
+    if ((attribute is not None) and (uploaded_dataset.operation9 in ['=', '>', '<', 'in'])):
+        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation9, value=uploaded_dataset.value9)
+
+    # ETC...
+
+    return model_id

@@ -9,69 +9,189 @@
 {% block additionalcss %}
 
 
-	<style>
-		#month-range .table-condensed thead tr:nth-child(2),
-		#month-range .table-condensed tbody {
-		  display: none
+<style>
+		
+
+		
+		/* ---  Instructions (on the left) -------------------------------------------- */
+		
+		.instructions > ul > li {
+		    margin-bottom:10px;
 		}
-	</style>
+		
+		.instructions > b {
+			font-weight:600;
+		}
+
+		/* ---  Object type info (on the right) -------------------------------------------- */
+		
+		.info-panel {
+			padding-right:10px;
+			margin-top:-10px;
+		}
+		
+		
+		#object-info {
+			max-height: calc(100vh - 315px);
+			overflow:auto;
+			scroll-padding-bottom: 0px;
+		}
+		
+		
+		h3 {
+			text-align:center
+		}
+		
+		.list-group-row {
+			padding:0;
+			margin:0; 
+			border: 1px solid #ddd;
+			border-radius: 4px;
+		}
+		
+		.list-group-right-column {
+			padding:0;
+		}
+		
+		.list-group-left-column {
+			padding:0;
+			text-align:center;
+		}
+		
+		.list-group-left-column > span {
+			vertical-align: middle; 
+			display: inline-block;
+			transform: rotate(270deg);
+		}
+		
+		.list-group {
+			margin-bottom:0;
+
+		}
+		
+		.row {
+		  display: -webkit-box;
+		  display: -webkit-flex;
+		  display: -ms-flexbox;
+		  display:         flex;
+		}
+		.row > [class*='col-'] {
+			 display: flex;
+			 flex-direction: column;
+		}
+		
+		.narrow {
+			padding-top:4px;
+			padding-bottom:4px;
+		}
+		
+		.btn-outline-dark {
+			border-color: rgb(185, 185, 185);
+			color: rgb(85, 85, 85);
+			background-color: rgb(225, 225, 225);
+			padding-top:5px;
+			padding-bottom:5px;
+	
+		}
+		
+		/* --- Additional Attribute Drop Down -------------------------------------------- */
+		.dropdown-menu {
+			padding:0;
+		}
+		
+		.search {
+			height:40px;
+			border-radius:4px;
+			border: 1px solid #999;
+		}
+		
+		div.inline { 
+			float:left; 
+			margin-right: 5px;
+		}
+		
+		.broad {
+			padding-top: 4px;
+			padding-bottom: 1px;
+			padding-right: 13px;
+			padding-left: 8px;
+			overflow: auto;
+			height:auto;
+			/*height:48.23px;*/
+		}
+		.form-group {
+			margin-bottom: 0px;
+		}
+		
+		.dropdown-item {
+			padding: 6px 10px;
+			border-radius:2px;
+			width:150px
+		}
+		
+		
+		/* --- Valid DateTime Picker -------------------------------------------- */
+		.valid_time {
+			/*margin-left:330px;*/
+			float:right;
+			padding-left: 5px;
+			background-color: rgb(214, 249, 219);
+			border: 1px solid rgb(168, 239, 160);
+			border-radius: 3px;
+			width: 300px;
+		}
+		
+		.datetimepicker {
+			display:inline-block;
+			width: 100px;
+		}
+		
+		.picker-label {
+			display:inline-block;
+			margin-right: 3px;
+		} 
+</style>
 
 {% endblock %}
 
 {% block content %}
-	<link href="https://adminlte.io/themes/AdminLTE/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css" rel="stylesheet"/>
-	<link href="https://adminlte.io/themes/AdminLTE/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
-
-	<script src="https://adminlte.io/themes/AdminLTE/bower_components/jquery/dist/jquery.min.js"></script>
-	<script src="https://adminlte.io/themes/AdminLTE/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
-	<script src="https://adminlte.io/themes/AdminLTE/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-
-	<div class="input-group input-daterange" id="year-range">
-		<input class="valid-date-selector form-control" value="">
-		<div class="input-group-addon">to</div>
-		<input class="valid-date-selector form-control" value="">
+<!--
+	<div class="dropdown inline">
+		<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+		<div class="dropdown-menu" aria-labelledby="attributeMenu1">
+			<div id="attributeList1">
+				<input type="text" class="search" id="dropDonwSearch1" onkeyup="filterAttributeDropDown()" placeholder=" Search">
+				<ul id="drop-down-display1" class="list list-group drop-down-display"><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(1, this.innerHTML)"></button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(1, this.innerHTML)"></button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(1, this.innerHTML)"></button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(1, this.innerHTML)"></button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(1, this.innerHTML)"></button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(1, this.innerHTML)"></button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(1, this.innerHTML)"></button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(1, this.innerHTML)"></button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(1, this.innerHTML)"></button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(1, this.innerHTML)"></button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(1, this.innerHTML)"></button></li></ul>
+			</div>
+		</div>
+	</div>-->
+	
+	<div class="dropdown inline">
+		<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+		<div class="dropdown-menu" aria-labelledby="attributeMenu1">
+			<div id="attributeList1">
+				<!--<input class="search" placeholder=" Search" />-->
+				<input type="text" class="search" id="dropDonwSearch1" onkeyup="filterAttributeDropDown()" placeholder=" Search">
+				<ul id="drop-down-display1" class="list list-group drop-down-display"><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(2, this.innerHTML)">Weight</button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(2, this.innerHTML)">Edible</button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(2, this.innerHTML)">Height</button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(2, this.innerHTML)">Position</button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(2, this.innerHTML)">Age</button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(2, this.innerHTML)">Name</button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(2, this.innerHTML)">Species</button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(2, this.innerHTML)">Genus</button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(2, this.innerHTML)">Leaf coverage</button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(2, this.innerHTML)">Preferred environment</button></li><li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(2, this.innerHTML)">CO2 production per day</button></li></ul>
+			</div>
+		</div>
 	</div>
 	
-	<div class="input-group input-daterange" id="month-range">
-		<input class="valid-date-selector form-control" value="2012-04-05">
-		<div class="input-group-addon">to</div>
-		<input class="valid-date-selector form-control" value="2012-04-19">
-	</div>
-
-	
-	
-
-
 	<script>
-	/*
-	$('.valid-date-selector').datepicker({
-			singleDatePicker: true,
-            autoclose: true,
-            format: " yyyy",
-            viewMode: "years",
-            minViewMode: "years"
-        });
-		
-	$('.valid-date-selector').datepicker('clearDates');
-		
-	$('.valid-date-selector').datepicker().on('changeDate', function (ev) {
-		console.log($(this).val());
-	});
-	*/	
-		
-			///*
-	$(".valid-date-selector").datepicker( {
-		singleDatePicker: true,
-        autoclose: true,
-		viewMode: "years", 
-	});
-	
-	$('.valid-date-selector').datepicker('clearDates');
-	//*/
-
-		
-
-	
+		function filterAttributeDropDown(){	
+		var current_query = $('#dropDonwSearch1').val().toLowerCase();
+		if (current_query !== "") {
+			$("#drop-down-display1 li").hide();
+			$("#drop-down-display1 li").each(function(){
+				var current_keyword = $(this).text().toLowerCase();
+				if (current_keyword.indexOf(current_query) >=0) {
+					$(this).show();    	 	
+				};
+			});    	
+		} else {
+			$("#drop-down-display1 li").show();
+		};
+	}
 	</script>
 	
 {% endblock %}

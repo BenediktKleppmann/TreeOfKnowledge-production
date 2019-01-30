@@ -297,7 +297,7 @@
 						</ul>
 						<br>
 						<textarea cols="25" rows="6" class="form-control" id="transformation-rule"></textarea>
-						<button class="btn btn-outline-secondary apply-transformation-button" type="button" onclick="applyTransformation()">Apply Transformation</button>
+						<button class="btn btn-success apply-transformation-button" type="button" onclick="applyTransformation()">Apply Transformation</button>
 						<div id="editColumnErrors"></div>
 					</div>
 				  </div>
@@ -411,6 +411,9 @@
 	//=== the "Next" Button is pressed  =============================================================================	
 	function next() {
 		
+		var ok_given = confirm("The following will be removed:\n•   not specified columns\n•   values with missmatching format");
+		if (ok_given == false){return;}
+				
 		request_body = {}
 		var final_table_headers = [];
 		var final_table_body = {};

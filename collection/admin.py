@@ -2,7 +2,6 @@ from django.contrib import admin
 
 # import the models
 from collection.models import Newsletter_subscriber
-from collection.models import Simulation_model
 from collection.models import Uploaded_dataset
 
 
@@ -23,5 +22,4 @@ class Uploaded_datasetAdmin(admin.ModelAdmin):
 
 # register the models
 admin.site.register(Newsletter_subscriber, Newsletter_subscriberAdmin)
-admin.site.register(Simulation_model)
 admin.site.register(Uploaded_dataset, Uploaded_datasetAdmin)
