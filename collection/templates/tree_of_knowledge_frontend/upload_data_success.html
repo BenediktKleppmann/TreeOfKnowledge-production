@@ -1,0 +1,35 @@
+{% extends 'layouts/base_tool.html' %}
+
+{% block title %}
+	Edit Simulation {{ model.name }}
+{% endblock %}
+
+{% block additionalcss %}{% endblock %}
+
+{% block content %}
+	<br><br>
+	<h1>Uploading Data was successful!</h1><br>
+	<br>
+	
+	Would you like to continue and
+	<ul>
+		<li><a href="{% url 'edit_model'  id=new_model_id %}">model the systen that generated the data?</a></li>
+		<li><a href="{% url 'upload_data1_new' %}">query the data you just now uploaded?</a></li>
+	</ul>	
+	
+	<br>
+	<br>
+	Or would you like to
+	<ul>
+		<li><a href="{% url 'upload_data1_new' %}">upload data</a></li>
+		<li><a href="{% url 'new_model' %}">new model</a></li>
+		{% for model in all_models %}
+			<li><a href="{% url 'edit_model' id=model.id %}">edit model {{ model.name }}</a></li>
+		{% endfor %}
+	</ul>
+		
+
+{% endblock %}
+
+
+
