@@ -1,6 +1,7 @@
 {% extends 'layouts/base_tool.html' %}
-{% load bootstrap3 %}
 {% load staticfiles %}
+{% load bootstrap3 %}
+
 
 {% block title %}
 	Edit Simulation {{ model.name }}
@@ -9,26 +10,35 @@
 {% block additionalcss %}
 
 
-
 <script type="text/javascript" src="{% static 'js/datepicker/moment.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/datepicker/transition.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/datepicker/collapse.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/datepicker/bootstrap-datetimepicker.min.js' %}"></script>
-<script src="{% static 'js/list.min.js' %}"></script>
 
-<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+<script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+<!--<script type="text/javascript" src="{% static 'js/bootstrap-3.4.0.min.js' %}"></script>-->
+  
+
+<link rel="stylesheet" href="{% static 'css/bootstrap-3.4.0.min.css' %}" />
 <link rel="stylesheet" href="{% static 'css/bootstrap-datetimepicker.min.css' %}" />
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-
 
 
 
 <style>
 		
+		
+		.content {
+			padding-left: 1.5%;
+			padding-right: 1.5%;
+		}
 
+		.next-button {
+			margin-top: 15px;
+			width:180px;
+		}
 		
 		/* ---  Instructions (on the left) -------------------------------------------- */
+		
 		
 		.instructions > ul > li {
 		    margin-bottom:10px;
@@ -79,10 +89,11 @@
 			transform: rotate(270deg);
 		}
 		
-		.list-group {
+		.list-group.object-info {
 			margin-bottom:0;
-
 		}
+		
+
 		
 		.row {
 		  display: -webkit-box;
@@ -109,7 +120,12 @@
 	
 		}
 		
-		/* --- Additional Attribute Drop Down -------------------------------------------- */
+		.btn-danger {
+			padding: 3px 5px;
+			font-size:18px;
+		}
+		
+		/* --- Additional Fact Row -------------------------------------------- */
 		.dropdown-menu {
 			padding:0;
 		}
@@ -128,23 +144,20 @@
 		.broad {
 			padding-top: 3px;
 			padding-bottom: 1px;
-			padding-right: 5px;
-			padding-left: 6px;
+			padding-right: 3px;
+			padding-left: 2px;
 			height:43px;
 		}
 		.form-group {
 			margin-bottom: 0px;
 		}
-		
-		.dropdown-item {
-			padding: 6px 10px;
-			border-radius:2px;
-			width:150px
+
+		div.inline {
+			margin-right:3px;
 		}
 		
-		
 		.operator {
-			width:7%;
+			width:6%;
 			max-width:59px;
 		}
 		
@@ -153,11 +166,57 @@
 			max-width: 140px;
 		}
 		
+		
+		/* --- Additional Attribute Drop Down ----------------------------------- */
+		
+		.list-group.drop-down-display {
+			margin-bottom:3px;
+			max-height: 250px;
+			overflow-y: scroll;
+		}
+
+		.dropdown {
+			margin-left:2px;
+		}
+		
+		.dropdown-item {
+			padding: 6px 10px;
+			border-radius:2px;
+			width:150px
+		}
+		
+		.dropdown-item-button {
+			padding: 6px 10px;
+			border-radius:2px;
+			width:150px;
+			margin-left:17px;
+			margin-bottom:3px;
+			border-radius:5px;
+		}
+		
+		
+		/* --- Valid DateTime Picker -------------------------------------------- */
+		
+		
+		.valid_time {
+			/*margin-left:330px;*/
+			float:right;
+			padding-left: 4px;
+			padding-right: 2px;
+			background-color: rgb(214, 249, 219);
+			border: 1px solid rgb(168, 239, 160);
+			border-radius: 3px;
+			/*width: 300px;*/
+		}
+
+		
 		.datetimepicker {
 			width: 37%;
 			max-width: 100px;
 			height:32px;
 			margin-bottom:1px;
+			display:inline-block;
+			width: 100px;
 		}
 		
 		.picker-label1 {
@@ -175,24 +234,19 @@
 		}
 		
 		
-		
-		
-		/* --- Valid DateTime Picker -------------------------------------------- */
-		.valid_time {
-			/*margin-left:330px;*/
-			float:right;
-			padding-left: 4px;
-			padding-right: 2px;
-			background-color: rgb(214, 249, 219);
-			border: 1px solid rgb(168, 239, 160);
-			border-radius: 3px;
-			/*width: 300px;*/
+		.table-condensed {
+			background-color: rgb(255, 255, 255);
 		}
 		
-		.datetimepicker {
-			display:inline-block;
-			width: 100px;
+		
+		/* --- Create New Attribute Modal -------------------------------------------- */
+		#createAttributeModal .modal-dialog {
+			margin-top:10px;
+			margin-left: -300px;
+			width: 600px;
 		}
+		
+		
 		
 
 </style>
@@ -202,7 +256,7 @@
 
 
 	<br>
-	<h1>4 - Meta data specification</h1>
+	<h1>4 - Meta data</h1>
 	<br>
 		{% for error in errors %}
 			<div class="error">{{ error }}</div><br>
@@ -230,23 +284,25 @@
 				 Note: you can also encode things like "all participants had been professional athletes 2-3 years before" with the fact "Profession = athlete | valid from: 2016-01-01 to: 2017-01-01".
 			</div>
 			<div class="col-sm-9 col-md-8 col-lg-7">
-				<form role="form" action="" method="post" class="info-panel form" enctype="multipart/form-data">
-				{% csrf_token %}
+				<div class="form">
 					<div id="jstree-result">
 						{{ uploaded_dataset.entire_objectInfoHTMLString|safe }}
 					</div>
 					<div class="row list-group-row row-eq-height" id="additional_facts">  
 						<div class="col-sm-1 list-group-left-column" id="additional_facts" ><span style="margin-left:-42px;margin-top:44px;width:136px;height:50px">additional&nbsp;facts on the objects</span></div>
 						<div class="col-sm-11 list-group-right-column">  
-							<ul class="list-group" id="additional_facts_list"> 
+							<ul class="list-group object-info" id="additional_facts_list"> 
 								<li class="list-group-item broad" > <!-- Additional Attribute 1 -->
 									<div>
+										<button type="button" id="format_violation1" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
 										<div class="dropdown inline">
-											<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+											<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name1">Attribute</span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
 											<div class="dropdown-menu" aria-labelledby="attributeMenu1">
 												<div id="attributeList1">
-													<input type="text" class="search" id="dropDonwSearch1" onkeyup="filterAttributeDropDown(1)" placeholder=" Search">
-													<ul id="drop-down-display1" class="list list-group drop-down-display"></ul>
+													<input type="text" class="search" id="dropDonwSearch1" onkeyup="filterAttributeDropDown(1);" placeholder=" Search">
+													<ul id="drop-down-display1" class="list-group drop-down-display"></ul>
+													<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(1);">Reset</button>
+													<button class="btn btn-success dropdown-item-button" type="button" data-toggle="modal" data-target="#createAttributeModal">Create New Attribute</button>
 												</div>
 											</div>
 										</div>
@@ -256,6 +312,7 @@
 												<option value="=" selected>=</option>
 												<option value=">">></option>
 												<option value="<"><</option>
+												<option value="in">in</option>
 											</select>
 										</div> 
 										<div class="form-group inline value">
@@ -269,12 +326,15 @@
 								</li>
 								<li class="list-group-item broad" > <!-- Additional Attribute 2 -->
 									<div>
+										<button type="button" id="format_violation2" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
 										<div class="dropdown inline" >
-											<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+											<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name2">Attribute</span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
 											<div class="dropdown-menu" aria-labelledby="attributeMenu2">
 												<div id="attributeList2">
-													<input type="text" class="search" id="dropDonwSearch2" onkeyup="filterAttributeDropDown(2)" placeholder=" Search">
-													<ul id="drop-down-display2" class="list list-group drop-down-display"></ul>
+													<input type="text" class="search" id="dropDonwSearch2" onkeyup="filterAttributeDropDown(2);" placeholder=" Search">
+													<ul id="drop-down-display2" class="list-group drop-down-display"></ul>
+													<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(2);">Reset</button>
+													<button class="btn btn-success dropdown-item-button" type="button" data-toggle="modal" data-target="#createAttributeModal">Create New Attribute</button>
 												</div>
 											</div>
 										</div>
@@ -284,6 +344,7 @@
 												<option value="=" selected>=</option>
 												<option value=">">></option>
 												<option value="<"><</option>
+												<option value="in">in</option>
 											</select>
 										</div> 
 										<div class="form-group inline value">
@@ -300,23 +361,20 @@
 						</div>  
 					</div> 
 					<br>
-					<button type="submit" class="btn btn-primary pull-right">Next</button>
-				</form> 
+					<button type="button" class="btn btn-primary pull-right" onclick="next()">Next</button>
+				</div> 
+				
 			</div>
 			
 		</div>
 	  </div>
 	
 	
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
 
+
+	{% include "tree_of_knowledge_frontend/includes/create_attribute_modal.html" %} 
 	
+
 
 	
 	
@@ -343,12 +401,15 @@
 		
 		var additionalFactHTMLString = 	'<li class="list-group-item broad" >' +
 											'<div>' + 
+												'<button type="button" id="format_violation' + fact_number + '" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>' +
 												'<div class="dropdown inline" >' + 
-													'<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu' + fact_number + '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Attribute &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>' + 
+													'<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu' + fact_number + '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name' + fact_number + '">Attribute</span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>' + 
 													'<div class="dropdown-menu" aria-labelledby="attributeMenu' + fact_number + '">' + 
 														'<div id="attributeList' + fact_number + '">' + 
-															'<input type="text" class="search" id="dropDonwSearch2" onkeyup="filterAttributeDropDown(2)" placeholder=" Search">' + 
-															'<ul id="drop-down-display' + fact_number + '" class="list list-group drop-down-display"></ul>' + 
+															'<input type="text" class="search" id="dropDonwSearch2" onkeyup="filterAttributeDropDown(' + fact_number + ')" placeholder=" Search">' + 
+															'<ul id="drop-down-display' + fact_number + '" class="list-group drop-down-display"></ul>' + 
+															'<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(' + fact_number + ');">Reset</button>' +
+															'<button class="btn btn-success dropdown-item-button" type="button" data-toggle="modal" data-target="#createAttributeModal">Create New Attribute</button>' +
 														'</div>' + 
 													'</div>' + 
 												'</div>' + 
@@ -358,6 +419,7 @@
 														'<option value="=" selected>=</option>' + 
 														'<option value=">">></option>' + 
 														'<option value="<"><</option>' + 
+														'<option value="in">in</option>' +
 													'</select>' + 
 												'</div> ' + 
 												'<div class="form-group inline value">' + 
@@ -394,13 +456,47 @@
 				}
 		});
 		
-		makeObjectsAdditionalAttributesDropdown( "{{ uploaded_dataset.object_type }}" , number_of_additional_facts);
+		makeObjectsAdditionalAttributesDropdown( "{{ uploaded_dataset.object_type_id }}" , number_of_additional_facts);
 	}
+	
+	
+		//=== the "Next" Button is pressed  =============================================================================	
+	function next() {
+	
+		var meta_data_facts_list = []
+				
+		//for every attribute-specification, get the attribute, operator and value and save to the meta_data_facts_list
+		for (var fact_number = 1; fact_number <= number_of_additional_object_facts; fact_number++) {
+			
+			new_fact = {}
+			new_fact['attribute'] = $('#attributeMenu' + fact_number + ' > #attribute-name' + fact_number).html();
+			new_fact['attribute_id'] = $("#attribute" + fact_number).val();
+			new_fact['operation'] = $("#operator" + fact_number).val();
+			new_fact['value'] = $("#value" + fact_number).val();
+			var has_no_format_error = ($("#format_violation" + fact_number).attr("style") == "display:none;")
+			
+			if (new_fact['attribute'] != "" && new_fact['value'] != "" && has_no_format_error) {
+				meta_data_facts_list.push(new_fact)
+			}
+		}
+	
+		var csrf_token = "{% csrf_token %}"
+		$(	"<form role='form' action='' method='post' class='form' enctype='multipart/form-data'>" + 
+				csrf_token +
+				"<input type='hidden' name='meta_data_facts' value='" + JSON.stringify(meta_data_facts_list) + "'>" +
+			"</form>").appendTo("body").submit();	
+	}
+	
+	
+	
+	/*========================================================================*/
+	/*===================   DROP DOWN FUNCTIONS    ===========================*/
+	/*========================================================================*/
 	
 	
 		/*=============  POPULATE AdditionalAttribute-DROPDOWNS  ================================================================ */
 	
-		function makeObjectsAdditionalAttributesDropdown(object_type, attribute_number){
+		function makeObjectsAdditionalAttributesDropdown(object_type_id, attribute_number){
 	
 			var xhttp = new XMLHttpRequest();       
 			xhttp.onreadystatechange = function() {
@@ -411,7 +507,7 @@
 					var possible_attributes = JSON.parse(this.responseText);
 					
 					for (var i = 0; i < possible_attributes.length; i++) {
-						list_group_html_string += '<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(' + attribute_number + ', this.innerHTML)">' + possible_attributes[i] + '</button></li>'
+						list_group_html_string += '<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(' + attribute_number + ', this.innerHTML, ' + possible_attributes[i]['attribute_id'] + ')">' + possible_attributes[i]['attribute_name'] + '</button></li>'
 						
 					}
 					
@@ -420,7 +516,7 @@
 				}
 			};
 
-			xhttp.open("GET", "/tool/get_possible_attributes?object_type=" + object_type , true);
+			xhttp.open("GET", "/tool/get_possible_attributes?object_type_id=" + object_type_id , true);
 			xhttp.send();
 		}
 	
@@ -442,16 +538,24 @@
 
 
 	/*=============  SELECT DROPDOWN OPTION  ================================================================ */
-	function selectAdditionalAttribute(attribute_number , attribute_name) {
-		$('#attributeMenu' + attribute_number).html(attribute_name + ' &nbsp;<i class="fas fa-caret-down fa-sm"></i>');
-		$('#attribute' + attribute_number).attr('value', attribute_name);									
+	function selectAdditionalAttribute(attribute_number , attribute_name, attribute_id) {
+		$('#attributeMenu' + attribute_number + ' > #attribute-name' + attribute_number).html(attribute_name);
+		$('#attribute' + attribute_number).attr('value', attribute_id);									
 	}
 	
+	/*=============  RESET DROPDOWN SELECTION  ================================================================ */
+	function resetAttribute(attribute_number){
+		$('#attributeMenu' + attribute_number + ' > #attribute-name' + attribute_number).html('Attribute');
+		document.getElementById('attribute' + attribute_number).value = '';	
+		document.getElementById('operator' + attribute_number).selectedIndex = 0;
+		document.getElementById('value' + attribute_number).value = '';	
+		checkAdditionalFactFormats();
+	}
 	
 	/*=============  CHECK ADDITIONAL FACTS FORMATS  ================================================================ */
 	function checkAdditionalFactFormats() {
 		for (var fact_number = 1; fact_number <= number_of_additional_facts; fact_number++) {
-			var attribute = $('#attribute' + fact_number).val();
+			var attribute_id = $('#attribute' + fact_number).val();
 			var operator = $('#operator' + fact_number).val();
 			var value = $('#value' + fact_number).val();
 			
@@ -459,24 +563,45 @@
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
 
-					if (this.responseText = "") {
-						$("#format_violation" + fact_number).attr("style", "display:none;");
+					var response_dict = JSON.parse(this.responseText);
+					var format_violation_text = response_dict['format_violation_text']
+					var returned_fact_number = response_dict['fact_number']
+					
+					if (format_violation_text == "") {
+						$("#format_violation" + returned_fact_number).attr("style", "display:none;");
+						$("#format_violation" + returned_fact_number).popover('hide');
+						document.getElementById("attribute" + returned_fact_number).disabled = false; // this attribute won't be sent in the POST when pressing 'Next' - the backend thus knows that the fact is invalid
 					} else {
-						$("#format_violation" + fact_number).attr("style", "");
+						$("#format_violation" + returned_fact_number).attr("style", "display:block;");
+						document.getElementById("attribute" + returned_fact_number).disabled = true;
+						
 					}
 					
-					format_violations[fact_number] = this.responseText;
+					$("#format_violation" + returned_fact_number).attr("data-content", format_violation_text);
 					console.log("-------------------------");
-					console.log(this.responseText);
+					console.log(response_dict[format_violation_text]);
 				}
 			};
-
-			xhttp.open("GET", "/tool/check_single_fact_format?attribute=" + attribute + '&operator=' + operator + '&value=' + value, true);
+			
+			xhttp.open("GET", "/tool/check_single_fact_format?fact_number=" + String(fact_number) + "&attribute_id=" + attribute_id + '&operator=' + operator + '&value=' + value, true);
 			xhttp.send();
 		}									
 	}
 	
 	
+
+	
+	//========================================================================
+	//===============    create attribute modal    ===========================
+	//========================================================================
+	
+	
+	function redrawAttributeSelections() {
+		//re-draw the attribute dropdowns (so that they contain the new attribute)
+		for (var i = 1; i <= number_of_additional_facts; i++) {
+			makeObjectsAdditionalAttributesDropdown( "{{ uploaded_dataset.object_type_id }}" , i);
+		}
+	}
 	
 	
 	window.onload = function() {
@@ -521,8 +646,30 @@
 		
 		//For all Attribute-dropdowns: load a list of possible_attributes (for the selected object_type)
 		for (var i = 1; i <= number_of_additional_facts; i++) {
-			makeObjectsAdditionalAttributesDropdown( "{{ uploaded_dataset.object_type }}" , i);
+			makeObjectsAdditionalAttributesDropdown( "{{ uploaded_dataset.object_type_id }}" , i);
 		}
+		
+		
+		// activate the invalid-fact Popovers
+		$(document).ready(function(){
+			$('[data-toggle="popover"]').popover();   
+		});
+
+		//automatically check the fact-formats when a value was edited
+		$(".value").focusout(function(){
+			checkAdditionalFactFormats();
+		});
+		
+		
+		loadListOfParentObjects('{{ uploaded_dataset.object_type_id }}');
+		
+		
+		//$('.attribute-modal-button').on('click', function (e) {
+//			$("#createAttributeModal").attr('style', "display:block;");
+	//	});
+		
+		
+
 		
 	};
 </script>

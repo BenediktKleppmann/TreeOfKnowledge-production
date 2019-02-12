@@ -1,10 +1,14 @@
 from tdda.constraints.pd.constraints import discover_df, PandasConstraintVerifier, PandasDetection
 from tdda.constraints.base import DatasetConstraints
 import pandas as pd
+from collection.functions import get_from_db
+from collection.models import Attribute
+import json
 
 
-def get_columns_format_violations(attribute_name, column_values):
-    constraint_dict = get_from_db.get_attribute_constraints(attribute_name)
+def get_columns_format_violations(attribute_id, column_values):
+    attribute_record = Attribute.objects.get(id=attribute_id)
+    constraint_dict =  json.loads(attribute_record.format_specification)
     df = pd.DataFrame({'column':column_values})
     pdv = PandasConstraintVerifier(df, epsilon=None, type_checking=None)
 
@@ -14,9 +18,13 @@ def get_columns_format_violations(attribute_name, column_values):
     pdv.repair_field_types(constraints)
     detection = pdv.detect(constraints, VerificationClass=PandasDetection, outpath=None, write_all=False, per_constraint=False, output_fields=None, index=False, in_place=False, rownumber_is_index=True, boolean_ints=False, report='records') 
     violation_df = detection.detected()
-    violating_columns = [int(col_nb) for col_nb in list(violation_df.index.values)]
 
-    return violating_columns
+    if violation_df is None:
+        return []
+    else:
+        violating_columns = [int(col_nb) for col_nb in list(violation_df.index.values)]
+        return violating_columns
+
 
 def suggest_attribute_format(column_dict):
     df = pd.DataFrame(column_dict)

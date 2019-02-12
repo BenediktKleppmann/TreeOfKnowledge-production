@@ -1,8 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history#, Attribute
-from collection.forms import Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types
+from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
 from collection.functions import upload_data, get_from_db, populate_db, tdda_functions
 from django.http import HttpResponse
@@ -67,6 +67,26 @@ def subscriber_page(request, userid):
 def main_menu(request):
     models = Simulation_model.objects.all().order_by('id') 
     return render(request, 'tree_of_knowledge_frontend/main_menu.html', {'models': models})
+
+
+@login_required
+def profile_and_settings(request):
+    errors = []
+    
+    if request.method == 'POST':
+        user_form = UserForm(request.POST, instance=request.user)
+        profile_form = ProfileForm(request.POST, instance=request.user.profile)
+        if not user_form.is_valid():
+            errors.append('Error: something is wrong with either the first name, last name or email.')
+        else:
+            if not profile_form.is_valid():
+                errors.append('Error: something is wrong with the message-box setting.')
+            else:
+                user_form.save()
+                profile_form.save()
+                return redirect('main_menu')
+   
+    return render(request, 'tree_of_knowledge_frontend/profile_and_settings.html', {'errors': errors})
 
 
 
@@ -177,6 +197,9 @@ def upload_data3(request, upload_id):
             return redirect('upload_data4', upload_id=upload_id)
 
     object_hierachy_tree = get_from_db.get_object_hierachy_tree()
+    print("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
+    print(json.dumps(object_hierachy_tree))
+    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     return render(request, 'tree_of_knowledge_frontend/upload_data3.html', {'uploaded_dataset': uploaded_dataset, 'object_hierachy_tree':object_hierachy_tree, 'errors': errors})
 
 
@@ -191,13 +214,11 @@ def upload_data4(request, upload_id):
 
     
     if request.method == 'POST':
-        request.POST = request.POST.copy()
-        for fact_number in range(1,19):
-            if 'attribute' + str(fact_number) in request.POST.keys():
-                if request.POST['attribute' + str(fact_number)] == '':
-                    request.POST.pop('attribute' + str(fact_number))
-                    request.POST.pop('operator' + str(fact_number))
-                    request.POST.pop('value' + str(fact_number))
+        meta_data_facts_old = json.loads(request.POST['meta_data_facts'])
+        meta_data_facts_new = get_from_db.convert_fact_values_to_the_right_format(meta_data_facts_old)
+        request.POST._mutable = True
+        request.POST['meta_data_facts'] = json.dumps(meta_data_facts_new)
+
         form4 = Uploaded_datasetForm4(data=request.POST, instance=uploaded_dataset)
         if not form4.is_valid():
             errors.append('Error: the form is not valid.')
@@ -249,10 +270,33 @@ def upload_data6(request, upload_id):
             errors.append('Error: the form is not valid.')
         else:
             form6.save()
+            return redirect('upload_data7', upload_id=upload_id)
+   
+    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+
+
+
+
+@login_required
+def upload_data7(request, upload_id):
+    errors = []
+    # if the upload_id was wrong, send the user back to the first page
+    uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
+    if uploaded_dataset is None:
+        errors.append('Error: %s is not a valid upload_id' % str(upload_id))
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+
+    
+    if request.method == 'POST':
+        form7 = Uploaded_datasetForm7(data=request.POST, instance=uploaded_dataset)
+        if not form7.is_valid():
+            errors.append('Error: the form is not valid.')
+        else:
+            form7.save()
             new_model_id = upload_data.perform_uploading(uploaded_dataset)
             return redirect('upload_data_success', new_model_id=new_model_id)
    
-    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+    return render(request, 'tree_of_knowledge_frontend/upload_data7.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
 @login_required
@@ -273,10 +317,188 @@ def upload_data_success(request, new_model_id):
  #               |_|                                                          
  # =================================================================================               
 
+# ==================
+# GET
+# ==================
+
+
+
+
 
 
 @login_required
-def upload_data5__edit_column(request): 
+def get_possible_attributes(request):
+    print("object_type_id = %s" % request.GET.get('object_type_id', ''))
+    response = []
+    attributes = Attribute.objects.all()
+    for attribute in attributes:
+        response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name})
+    return HttpResponse(json.dumps(response))
+
+
+@login_required
+def get_suggested_attributes(request):
+
+    request_body = json.loads(request.body)
+    attributenumber = request_body['attributenumber']
+    object_type_id = request_body['object_type_id']
+    column_values = request_body['column_values']
+
+    response = []
+    attributes = Attribute.objects.all()
+    for attribute in attributes:
+        format_specification = json.loads(attribute.format_specification)
+        attribute_format = format_specification['fields']['column']
+        response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'description': attribute.description, 'format': attribute_format, 'comments': '{}'})
+    return HttpResponse(json.dumps(response))
+
+# get_suggested_attributes2 get the concluding_format instead of just the attribute's format
+@login_required
+def get_suggested_attributes2(request):
+    request_body = json.loads(request.body)
+    attributenumber = request_body['attributenumber']
+    object_type_id = request_body['object_type_id']
+    upload_id = int(request_body['upload_id'])
+    column_values = request_body['column_values']
+
+    response = []
+    attributes = Attribute.objects.all()
+    for attribute in attributes:
+        concluding_format = get_from_db.get_attributes_concluding_format(attribute.id, object_type_id, upload_id)
+        response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'description': attribute.description, 'format': concluding_format['format_specification'], 'comments': concluding_format['comments']})
+    return HttpResponse(json.dumps(response))
+
+@login_required
+def get_list_of_parent_objects(request):
+    object_type_id = request.GET.get('object_type_id', '')
+    list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
+    return HttpResponse(json.dumps(list_of_parent_objects))
+
+
+# ==================
+# SAVE
+# ==================
+@login_required
+def save_new_object_hierachy_tree(request):
+    if request.method == 'POST':
+        new_entry = Object_hierachy_tree_history(object_hierachy_tree=request.body, user=request.user)
+        new_entry.save()
+        return HttpResponse("success")
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
+# used in: upload_data3 (the create-object-type modal)
+@login_required
+def save_new_object_type(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+            object_facts = request_body['li_attr']['attribute_values']
+            request_body['li_attr']['attribute_values'] = get_from_db.convert_fact_values_to_the_right_format(object_facts)
+            new_entry = Object_types(id=request_body['id'], parent=request_body['parent'], name=request_body['text'], li_attr=json.dumps(request_body['li_attr']), a_attr=None)
+            new_entry.save()
+            return HttpResponse("success")
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
+# used in: upload_data3 (the create-object-type modal)
+@login_required
+def save_edited_object_type(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+            object_facts = request_body['li_attr']['attribute_values']
+            request_body['li_attr']['attribute_values'] = get_from_db.convert_fact_values_to_the_right_format(object_facts)
+            edited_object_type = Object_types.objects.get(id=request_body['id'])
+            edited_object_type.parent = request_body['parent']
+            edited_object_type.name = request_body['text']
+            edited_object_type.li_attr = json.dumps(request_body['li_attr'])
+            edited_object_type.save()
+            return HttpResponse("success")
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
+
+# used in: upload_data3 (the create-object-type modal)
+@login_required
+def delete_object_type(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+            object_id = request_body['object_id']
+
+            delted_object = Object_types.objects.get(id=object_id)
+
+            children_of_deleted_object  = Object_types.objects.filter(parent=object_id)
+            for child in children_of_deleted_object:
+                child.parent = delted_object.parent
+                child.save()
+
+            delted_object.delete()
+            return HttpResponse("success")
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
+
+
+# used in: upload_data3
+@login_required
+def save_edited_object_type(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+            object_facts = request_body['li_attr']['attribute_values']
+            request_body['li_attr']['attribute_values'] = get_from_db.convert_fact_values_to_the_right_format(object_facts)
+            edited_object_type = Object_types.objects.get(id=request_body['id'])
+            edited_object_type.parent = request_body['parent']
+            edited_object_type.name = request_body['text']
+            edited_object_type.li_attr = json.dumps(request_body['li_attr'])
+            edited_object_type.save()
+            return HttpResponse("success")
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
+# used in: upload_data4
+@login_required
+def save_new_attribute(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+
+            new_entry = Attribute(name=request_body['name'], description=request_body['description'], first_applicable_object=request_body['first_applicable_object'], format_specification=json.dumps(request_body['format_specification']))
+            new_entry.save()
+            return HttpResponse("success")
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
+
+
+# ==================
+# PROCESS/EDIT
+# ==================
+
+@login_required
+def edit_column(request): 
     request_body = json.loads(request.body)
 
     transformation = request_body['transformation']
@@ -304,110 +526,134 @@ def upload_data5__edit_column(request):
     return HttpResponse(json.dumps(response))
 
 
+# ==================
+# COLUMN FORMAT
+# ==================
 
 @login_required
-def upload_data5__get_columns_format_violations(request):
+def suggest_attribute_format(request): 
     request_body = json.loads(request.body)
-    attribute_name = request_body['attribute_name']
     column_values = request_body['column_values']
-
-    # constraint_dict = get_from_db.get_attribute_constraints(attribute_name)
-    # df = pd.DataFrame({'column':column_values})
-    # pdv = PandasConstraintVerifier(df, epsilon=None, type_checking=None)
-
-    # constraints = DatasetConstraints()
-    # constraints.initialize_from_dict(constraint_dict)
-
-    # pdv.repair_field_types(constraints)
-    # detection = pdv.detect(constraints, VerificationClass=PandasDetection, outpath=None, write_all=False, per_constraint=False, output_fields=None, index=False, in_place=False, rownumber_is_index=True, boolean_ints=False, report='records') 
-    # violation_df = detection.detected()
-    # violating_columns = [int(col_nb) for col_nb in list(violation_df.index.values)]
-
-    violating_columns = tdda_functions.get_columns_format_violations(attribute_name, column_values)
-    return HttpResponse(json.dumps(violation_columns))
-
-
-
-@login_required
-def upload_data5__suggest_attribute_format(request): 
-    column_dict = json.loads(request.body)
-    # df = pd.DataFrame(column_dict)
-    # constraints = discover_df(df, inc_rex=False)
-    # constraints_dict = constraints.to_dict()
+    column_dict = {'column': column_values}
     constraints_dict = tdda_functions.suggest_attribute_format(column_dict)
     return HttpResponse(json.dumps(constraints_dict))
 
+
+
 @login_required
-def check_single_fact_format(request):
-    format_violation_text = '';
-#     attribute = request.GET.get('attribute', '')
-#     operator = request.GET.get('operator', '')
-#     value = request.GET.get('value', '')
+def get_columns_format_violations(request):
+    request_body = json.loads(request.body)
+    attribute_id = request_body['attribute_id']
+    column_values = request_body['column_values']
 
-#     if (attribute != '') and (value != ''):
-#         attribute_constraints = get_from_db.get_attribute_constraints(attribute)
-#         attribute_dtype = attribute_constraints['fields']['column']['type']
-
-#         attribute_record = Attribute.objects.get(id=attribute)
-#         if attribute_record is not None:
-#             format_violation_text += 'The attribute "' + attribute + '"" does not yet exist.\n\n'
-
-#         if (operator not in ['=', '>', '<', 'in']):
-#             format_violation_text += '"' + operator +'" is not a valid operator.\n\n'
-
-#         if (operator == 'in') and (attribute_constraints['fields']['column']['allowed_values'] is None):
-#             format_violation_text += 'The "in" operator is only permitted for categorical attributes'
-
-#         if (operator in ['>', '<']) and (attribute_constraints['fields']['column']['allowed_values'] is None):
-#             format_violation_text += 'The "<" and ">" operators are only permitted for attributes with type "real" or "int"'
-
-#         # TO DO: check if value is truly an int (for int) or float (for real)
-
-#         # TO DO: if int or real, first convert value to int of float, respectively
-
-
-#         violating_columns = get_columns_format_violations(attribute, [value])
-#         if len(violating_columns) > 0:
-#             format_violation_text += 'The value "' + + '" does not satisfy the format for ' + attribute + '-values. \n'
-#             format_violation_text += 'It must satisfy: \n'
-#             for key in attribute_constraints['fields']['column'].keys():
-#                 format_violation_text += '•   ' + key + ' = ' + attribute_constraints['fields']['column'][key] + '\n'
-
-    return format_violation_text
+    violating_rows = tdda_functions.get_columns_format_violations(attribute_id, column_values)
+    return HttpResponse(json.dumps(violating_rows))
 
 
 
 
 
 
+def is_int(s):
+    try: 
+        int(s)
+        return True
+    except ValueError:
+        return False
 
-
-
-
-
-
-
-
+def is_float(s):
+    try: 
+        float(s)
+        return True
+    except ValueError:
+        return False
 
 
 @login_required
-def get_possible_attributes(request):
-    print("object_type = %s" % request.GET.get('object_type', ''))
-    possible_attributes = ["Country", "Year", "Count", "Rate", "Source", "Source Type"]   
-    return HttpResponse(json.dumps(possible_attributes))
+def check_single_fact_format(request):
+    attribute_id = request.GET.get('attribute_id', '')
+    operator = request.GET.get('operator', '')
+    value = request.GET.get('value', '')
 
-@login_required
-def get_suggested_attributes(request):
-    print("upload_id = %s" % request.GET.get('upload_id', ''))
-    print("attributenumber = %s" % request.GET.get('attributenumber', ''))
+    response = {}
+    response['fact_number'] = int(request.GET.get('fact_number', ''))
 
-    returned_dict = [    {'attribute_name':'Country', 'description':'this is the best option! :)', "format": { "type": "string", "min_length": 4, "max_length": 52 }},
-                        {'attribute_name':'Year', 'description':'this is a great option!', "format": { "type": "int", "min": 1995, "max": 2011, "sign": "positive" }},
-                        {'attribute_name':'Count', 'description':'this is a good option! ', "format": { "type": "int", "min": 0, "max": 45559, "sign": "non-negative" }},
-                        {'attribute_name':'Rate', 'description':'this is an ok option.', "format": { "type": "real", "min": 0.0, "max": 139.1, "sign": "non-negative" }},
-                        {'attribute_name':'Source', 'description':'this is a bad option.', "format": { "type": "string", "min_length": 3, "max_length": 28 }},
-                        {'attribute_name':'Source Type', 'description':'this is a option...', "format": { "type": "string", "min_length": 2, "max_length": 2, "allowed_values": [ "CJ", "PH" ] }}]
-    return HttpResponse(json.dumps(returned_dict))
+    if (attribute_id == '') or (value == '') or not is_int(attribute_id):
+        response['format_violation_text'] = ''
+        return HttpResponse(json.dumps(response))
+        
+    attribute_id = int(attribute_id)
+    attribute_record = Attribute.objects.get(id=attribute_id)
+
+    if attribute_record is None:
+        response['format_violation_text'] = 'This attribute wasn''t found.'
+        return HttpResponse(json.dumps(response))
+    
+    attribute_name = attribute_record.name
+    format_specification = json.loads(attribute_record.format_specification)
+    if (operator not in ['=', '>', '<', 'in']):
+        response['format_violation_text'] = '"' + operator +'" is not a valid operator.'
+        return HttpResponse(json.dumps(response))
+
+    if (operator == 'in') and ('allowed_values' not in format_specification['fields']['column'].keys()):
+        response['format_violation_text'] = 'The "in" operator is only permitted for categorical attributes.'
+        return HttpResponse(json.dumps(response))
+        
+    if (operator in ['>', '<']) and (format_specification['fields']['column']['type'] not in ['int','real']):
+        response['format_violation_text'] = 'The "<" and ">" operators are only permitted for attributes with type "real" or "int".'
+        return HttpResponse(json.dumps(response))
+
+    if format_specification['fields']['column']['type']=='int':
+        if is_int(value):
+            value = int(value)
+        else:
+            response['format_violation_text'] = attribute_name +'-values must be integers. ' + value + ' is not an integer.'
+            return HttpResponse(json.dumps(response))
+
+    if format_specification['fields']['column']['type']=='real':
+        if is_float(value):
+            value = float(value)
+        else:
+            response['format_violation_text'] = attribute_name +'-values must be real numbers. ' + value + ' is not a number.'
+            return HttpResponse(json.dumps(response))
+
+    if format_specification['fields']['column']['type']=='bool':
+        if value.lower() in ['true', 'true ', 'tru', 't', 'yes', 'yes ', 'y']:
+            value = True
+        elif value.lower() in ['false', 'false ', 'flase', 'f', 'no', 'no ', 'n']:
+            value = False
+        else:
+            response['format_violation_text'] = attribute_name +'-values must be "true" or "false", not ' + value + '.'
+            return HttpResponse(json.dumps(response))
+
+    violating_columns = tdda_functions.get_columns_format_violations(attribute_id, [value])
+    if len(violating_columns) > 0:
+        format_violation_text = 'The value "' + str(value) + '" does not satisfy the required format for ' + attribute_name + '-values. <br />'
+        format_violation_text += 'It must satisfy: <ul>'
+        for key in format_specification['fields']['column'].keys():
+            format_violation_text += '<li>' + str(key) + ' = ' + str(format_specification['fields']['column'][key]) + '</li>'
+        format_violation_text += '</ul>'
+        response['format_violation_text'] = format_violation_text
+        return HttpResponse(json.dumps(response))
+
+    response['format_violation_text'] = ''
+    return HttpResponse(json.dumps(response))
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -423,10 +669,6 @@ def get_suggested_attributes(request):
  # ==========================================================================
 
 
-@login_required
-def save_new_object_hierachy_tree(request):
-    new_entry = Object_hierachy_tree_history(object_hierachy_tree=request.body, user=request.user)
-    new_entry.save()
 
 
 @login_required
@@ -505,10 +747,25 @@ def test_page1(request):
     return render(request, 'tree_of_knowledge_frontend/test_page1.html')
 
 def test_page2(request):
-    return render(request, 'tree_of_knowledge_frontend/test_page2.html')
+    return HttpResponse(str(request.user.profile.verbose))
 
 def test_page3(request):
     return render(request, 'tree_of_knowledge_frontend/test_page3.html')
+    # populate_db.clear_attributes()
+    # populate_db.populate_attributes()
+
+    # attributes = Attribute.objects.all()
+    # response = {}
+    
+    # for att_nb, attribute in enumerate(attributes):
+    #     # response[attribute.name] = "hello"
+    #     attribute_dict = {}
+    #     attribute_dict['description'] = attribute.description
+    #     attribute_dict['format_specification'] = attribute.format_specification
+    #     attribute_dict['first_applicable_object'] = attribute.first_applicable_object.id
+    #     response[attribute.name] = attribute_dict
+    # return HttpResponse("success")
+    
 
 
 

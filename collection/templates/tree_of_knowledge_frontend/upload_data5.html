@@ -1,4 +1,5 @@
 {% extends 'layouts/base_tool.html' %}
+{% load staticfiles %}
 {% load bootstrap3 %}
 
 {% block title %}
@@ -6,6 +7,10 @@
 {% endblock %}
 
 {% block additionalcss %}
+
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<!--<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>-->
 
 
 <style>
@@ -130,6 +135,38 @@
 			margin-top:10px;
 		}
 		
+		
+		/* --- Unique Identifier Selection		------------------------------------------------------------------- */
+		
+		#unique_identifier_selection {
+			margin-left:24px;
+			height: 44px;
+		}
+		
+		.btn-group > .btn {
+			margin-right:43px;
+			width:109px;	
+			border: 1px solid black;
+			border-radius: 0px;
+			color:rgb(179, 179, 181);
+			background-color: rgb(252, 252, 255);
+			border-color: rgb(186, 187, 188);
+		  }
+		  
+		.btn-group > .btn:hover, 
+		.btn-group > .btn:focus, 
+		.btn-group > .btn:active  {
+			color:rgb(0, 0, 0);
+			background-color: rgb(156, 209, 183);
+			border-color: rgb(146, 147, 147);
+		  }
+		  
+		.btn-group > .active  {
+		   color:rgb(0, 0, 0);
+			background-color: rgb(156, 209, 183);
+			border-color: rgb(146, 147, 147);
+		  }
+  
 		/* --- Attributes Selection Menu ----------------------------------------------------- */
 		
 		.modal-body{
@@ -154,9 +191,9 @@
 		#selection-options-frame {
 			margin-top:12px;
 			height: 290px; 
-			width: 250px; 
+			width: 201px; 
 			overflow-y:auto;
-			margin-bottom:10px;
+			margin-bottom:5px;
 		}
 		
 		#selection-options {
@@ -165,13 +202,35 @@
 		
 		#selection-options > .btn {
 			margin-top:5px; 
-			width: 220px;
+			width: 175px;
 			text-align: left;
 		}
 
 		#attribute-choice {
 			margin-top:12px;
 			margin-bottom: 15px;
+		}
+		
+		#attribute-details .row {
+			margin-left:0px;
+			margin-right:0px;
+		}
+		
+		#attribute-details .col-sm-2,
+		#attribute-details .col-sm-10,
+		#attribute-details .col-sm-4,
+		#attribute-details .col-sm-8 {
+			padding-left:8px;
+		}
+		
+		
+		#reoccuring-entities-group {
+			padding-left:15px;
+		}
+		
+		#chooseAttribute .modal-footer {
+			padding: 12px 20px 13px;
+			margin-top: 0px;
 		}
 		
 		/* --- Edit Column Buttons ------------------------------------------------------------------- */
@@ -181,10 +240,11 @@
 			margin-left:7px;
 		}
 		
-		.btn-default {
+		.edit-column {
 			margin-left:22px;
 			margin-right:22px;
 		}
+		
 		
 		/* --- Edit Column Modal ------------------------------------------------------------------- */
 		.modal-column {       
@@ -214,18 +274,13 @@
 				<div class="overflowing-content">			
 					<div class="table-box">
 						<div id="attribute_selections"></div>
+						<div id="unique_identifier_selection" class="btn-group" data-toggle="buttons" style="display:none;"></div>
 						<div id="uploaded_table"></div>
 						<div id="column_transformations"></div>
 					</div>
 				</div>
 			</div>
-			<div style="display:inline-block; margin-top: 25px">
-				Not specified columns will not be uploaded.<br>
-				Data values that do not match the format (highlighted in red) will not be uploaded.
-			</div>
-			<button type="button" class="btn btn-primary pull-right next-button" onclick="next()">
-				<span class="glyphicon glyphicon-star"></span> Next
-			</button>
+			<button type="button" class="btn btn-primary pull-right next-button" onclick="next()">Next</button>
 		</div>
 	</div>	
 	
@@ -239,7 +294,8 @@
 	  <div class="modal-dialog" role="document">
 		<div class="modal-content">
 		  <div class="modal-header row">
-			<h5 class="modal-title col-md-11">Select Attribute Type</h5>
+			<h5 class="modal-title col-md-11">Select the Column's Attribute</h5>
+			<div id="attribute-options" style="display:none;"></div>
 			<button type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:2px; margin-right:19px;font-size:29px">
 			  <span aria-hidden="true" >&times;</span>
 			</button>
@@ -247,14 +303,18 @@
 		  <div class="modal-body">
 			  <div class="container-fluid">
 				<div class="row">
-				  <div class="col-md-5">
+				  <div class="col-md-4">
 					<span id="choose-attribute-attributenumber" style="display:none;"></span>
 					<div id="selection-options-frame">
 						<div class="input-group" id="selection-options" ></div>
 					</div>
-					<button type="button" class="btn btn-info" data-toggle="modal" data-target="#createAttribute" style="width:220px;">Create attribute type</button>
+					<!--<button type="button" class="btn btn-info" data-toggle="modal" data-target="#createAttributeModal" style="width:220px;">Create New Attribute</button>-->
+					<button type="button" class="btn btn-secondary" style="width:175px;margin-left:4px;margin-bottom:5px;padding-left:6px" onclick="inspectDateTimeColumn()">Date/Time of Observation</button>
+					<button type="button" class="btn btn-warning" style="width:175px;margin-left:4px;margin-bottom:5px;" onclick="resetAttributeSelection()" data-dismiss="modal">Reset</button>
+					<button type="button" class="btn btn-success" style="width:175px;margin-left:4px;" onclick="openModalWithFormatSuggestions()">Create New Attribute</button>
+					
 				  </div>
-				  <div class="col-md-7 ml-auto">
+				  <div class="col-md-8 ml-auto">
 					<div class="form">
 						<div id="attribute-details"></div>
 					</div>	
@@ -325,12 +385,12 @@
 	  </div>
 	</div>
 	
+	{% include "tree_of_knowledge_frontend/includes/create_attribute_modal.html" %} 
 	
 	
-	<div id="useful-things" style="display:none;">
-		<div id="attribute-options"></div>
-		<div id="object_hierachy_tree">{{ object_hierachy_tree }}</div>
-	</div>
+
+
+
 	
 
 <script>
@@ -339,10 +399,17 @@
 	// THE DATA
 	var data_table_json = {{ uploaded_dataset.data_table_json | safe }}
 
-	// GLOBAL VARIABLES
+	// GLOBAL VARIABLES ==========================================
 	var table_headers = data_table_json["table_header"]
 	var table_body = data_table_json["table_body"]
 	var edited_column = []
+	
+	var attribute_selections = []
+	var object_identifiers = []
+	for (var i = 0; i < table_headers.length; i++) {
+		attribute_selections.push("")
+		object_identifiers.push(false)
+	}	
 	
 	
 	//====================================================================================================
@@ -394,7 +461,18 @@
 		}	
 		$("#attribute_selections").html(buttons_html_string);
     }
+
+	//===  Create the "Object Id" Buttons  =============================================================================	
+	function createObjectIdButtons() {
 	
+		var buttons_html_string = "";	
+		for (var i = 0; i < table_headers.length; i++) {
+			buttons_html_string +=	'<label class="unique-identifier-element btn btn-primary">' +
+										'<input type="checkbox" autocomplete="off" id="object-id' + i + '" onclick="objectIdButtonClick(' + i + ')">Object Id' +
+									'</label>';
+		}	
+		$("#unique_identifier_selection").html(buttons_html_string);
+    }	
 	//===  Create the "Edit Column" Buttons  =============================================================================	
 	function createColumnTransformationFields() {
 		var column_transformation_html_string = '';
@@ -411,19 +489,28 @@
 	//=== the "Next" Button is pressed  =============================================================================	
 	function next() {
 		
-		var ok_given = confirm("The following will be removed:\n•   not specified columns\n•   values with missmatching format");
-		if (ok_given == false){return;}
+		{% if user.profile.verbose %}
+			var ok_given = confirm("The following will be removed:\n•   not specified columns\n•   values with missmatching format");
+			if (ok_given == false){return;}
+		{% else %}{% endif %}
+		
 				
 		request_body = {}
 		var final_table_headers = [];
+		var final_attribute_selection = []
 		var final_table_body = {};
 		final_column_index = 0;
+		var has_datetime_column = false;
 	
 		for (var i = 0; i < table_headers.length; i++) {
-			var attribute_name = $("#attribute-button" + i).html();
-			if (attribute_name != "Choose Attribute"){
+			if (attribute_selections[i] == "DateTime of Observation") {
+				has_datetime_column = true;
+				additional_input_fields =	"<input type='hidden' name='datetime_column' value='" + JSON.stringify(table_body[i]) + "'>" +
+											"<input type='hidden' name='object_identifiers' value='" + JSON.stringify(object_identifiers) + "'>";	
+			} else if (attribute_selections[i] != ""){
 				//save column in final-variables
-				final_table_headers.push(attribute_name);
+				final_table_headers.push($("#attribute-button" + i).html());
+				final_attribute_selection.push(attribute_selections[i])
 				final_table_body[final_column_index] = table_body[i];
 				
 				
@@ -443,10 +530,14 @@
 		var csrf_token = "{% csrf_token %}"
 
 		
-		$(	"<form role='form' action='' method='post' class='form' enctype='multipart/form-data'>" + 
-				csrf_token +
-				"<input type='hidden' name='data_table_json' value='" + JSON.stringify(request_body) + "'>" +
-			"</form>").appendTo("body").submit();
+		form_html_string =	"<form role='form' action='' method='post' class='form' enctype='multipart/form-data'>" + 
+								csrf_token +
+								"<input type='hidden' name='data_table_json' value='" + JSON.stringify(request_body) + "'>" +
+								"<input type='hidden' name='attribute_selection' value='" + JSON.stringify(final_attribute_selection) + "'>";
+		if (has_datetime_column) { form_html_string += additional_input_fields;}
+		form_html_string += "</form>"
+		
+		$(form_html_string).appendTo("body").submit();
 		
 	}
 	
@@ -474,14 +565,15 @@
 		}
 		
 		//if an attribute was chosen: get and set the new markings
+		var attribute_id = attribute_selections[attributenumber]
 		var attribute_name = $("#attribute-button" + attributenumber).html();
 		if (attribute_name != "Choose Attribute") {
 		
 			var request_body = {}
-			request_body['attribute_name'] = attribute_name;
+			request_body['attribute_id'] = attribute_id;
 			request_body['column_values'] = table_body[attributenumber];
 			
-			//send the new object_hierachy_tree to the backend
+			//get_columns_format_violations from the backend
 			var xmlhttp = new XMLHttpRequest();       
 			xmlhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
@@ -503,7 +595,7 @@
 				}
 			};
 
-			xmlhttp.open("POST", "/tool/upload_data5__get_columns_format_violations/");
+			xmlhttp.open("POST", "/tool/get_columns_format_violations/");
 			xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 			xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 			xmlhttp.send(JSON.stringify(request_body));	
@@ -512,6 +604,14 @@
 	
 	}
 	
+	//===  Click on "Object Id" Button  =====================================================================================	
+	function objectIdButtonClick(attributenumber) {
+		if (object_identifiers[attributenumber] == true) {
+			object_identifiers[attributenumber] = false;
+		} else {
+			object_identifiers[attributenumber] = true;
+		}
+	}
 	
 	//====================================================================================================
 	//====  Choose Attribute Modal  ======================================================================
@@ -519,13 +619,14 @@
 	
 
 	
-	//===  Display Attribute Details  =========================================================================================		  
+	//== Clicking on an Attribute in the Choose Attribute Modal =========================================================================================		  
 	function inspectAttribute(i) {
 		var attribute_details = JSON.parse($("#attribute-options").html())
 		var attribute_detail = attribute_details[i]
 		
 		
 		var attribute_detail_html_string = 	'<h3 id="attribute-choice">' + attribute_detail['attribute_name'] + '</h3>' +
+											'<input type="hidden" id="attribute-id" value="' + attribute_detail['attribute_id'] + '">' + 
 											'<div class="form-group">' + 
 												'<label class="control-label" for="attribute-description">Description</label>' +
 												'<textarea cols="20" rows="3" class="form-control" id="attribute-description">' + attribute_detail['description'] + '</textarea>' +
@@ -536,16 +637,28 @@
 			
 		for (var j = 0; j < format_specifications.length; j++) {
 			
-			attribute_detail_html_string += '<div class="form-group row">' +
-												'<label for="form-element" class="col-sm-4 col-form-label">' + format_specifications[j] + '</label>' +
-												'<div class="col-sm-8">' +
-													'<input type="text" readonly class="form-control-plaintext" id="form-element" value="' + attribute_detail['format'][format_specifications[j]] + '">' +
-												'</div>' +
-											'</div>';
-											
+			if ( (format_specifications[j] in attribute_detail['comments']) && (attribute_detail['comments'][format_specifications[j]] != "")) {
+				// format_specification with comment
+				attribute_detail_html_string += '<div class="form-group row">' +
+													'<label for="form-element" class="col-sm-4 col-form-label">' + format_specifications[j] + '</label>' +
+													'<div class="col-sm-8">' +
+														'<input type="text" readonly class="form-control" id="form-element" value="' + attribute_detail['format'][format_specifications[j]] + '">' +
+													'</div>' +
+													'<button type="button" class="btn btn-default pull-left" data-container="body" data-toggle="popover" data-placement="right" data-html="true" title="Invalid fact" style="display:none;" data-content="' + attribute_detail['comments'][format_specifications[j]] + '"><span class="glyphicon glyphicon-info-sign"></span></button>' +
+												'</div>';
+			} else {
+				// format_specification without comment
+				attribute_detail_html_string += '<div class="form-group row">' +
+													'<label for="form-element" class="col-sm-4 col-form-label">' + format_specifications[j] + '</label>' +
+													'<div class="col-sm-8">' +
+														'<input type="text" readonly class="form-control" id="form-element" value="' + attribute_detail['format'][format_specifications[j]] + '">' +
+													'</div>' +
+												'</div>';
+			}
+			
 			// save the data type in a not-displayed span beneath the "Choose Attribute" button
 			if (format_specifications[j] == "type") {
-				var attributenumber = $("#choose-attribute-attributenumber").html();
+				var attributenumber = parseInt($("#choose-attribute-attributenumber").html());
 				$("#column" + attributenumber + "-data-type").html(attribute_detail['format'][format_specifications[j]])
 			}
 		}
@@ -553,66 +666,148 @@
 		$("#attribute-details").html(attribute_detail_html_string);
 	}
 
+	//===  Clicking on "Date/Time of Observation" in the Choose Attribute Modal   =========================================================================================		
+	function inspectDateTimeColumn() {
+	
+		$("#attribute-details").html(attribute_detail_html_string);
+		
+		var attribute_detail_html_string = 	'<h3 id="attribute-choice">DateTime of Observation</h3>' +
+											'<br>' +
+											'<div class="form-group row">' +
+												'<label for="form-element" class="col-sm-4 col-form-label">Required Format:</label>' +
+												'<div class="col-sm-8">' +
+													'<input type="text" readonly class="form-control" id="form-element" value="2008-09-15 15:53:00">' +
+												'</div>' +
+											'</div>' +
+											'<br>' +
+											'<div class="form-group row">' +
+												'<label for="reoccuring" class="col-sm-9">In the table, are there mutltiple rows with information on the same entity? <br>(e.g. timeseries)</label>' +
+												'<div class="col-sm-3">' +
+													'<input type="checkbox" id="reoccuring" name="reoccuring" data-toggle="toggle" onchange="toggleReoccuringEntities()">' +  
+												'</div>' +
+											'</div>' +
+											'<br>' +
+											'<div id="reoccuring-entities-group" class="row" style="display:none;">' +
+												'Beneath the "Choose Attribute" buttons, another row of buttons will appear.<br>' +
+												'Please use these buttons to select the column(s) that uniquely identify the entities.<br>' +
+												'With this information, the different rows belonging to the same entity can be matched.<br>' +
+											'</div>';
+		$("#attribute-details").html(attribute_detail_html_string);
+		
+		// the bootstrap 3 toogle checkbox only works if bootstrap-toggle.min.js is loaded when the checkbox is already present
+		// this is the only way I've managed to reliably dynamically load this library - by posting it here...
+		+function(a){"use strict";function b(b){return this.each(function(){var d=a(this),e=d.data("bs.toggle"),f="object"==typeof b&&b;e||d.data("bs.toggle",e=new c(this,f)),"string"==typeof b&&e[b]&&e[b]()})}var c=function(b,c){this.$element=a(b),this.options=a.extend({},this.defaults(),c),this.render()};c.VERSION="2.2.0",c.DEFAULTS={on:"Yes",off:"No",onstyle:"primary",offstyle:"default",size:"normal",style:"",width:null,height:null},c.prototype.defaults=function(){return{on:this.$element.attr("data-on")||c.DEFAULTS.on,off:this.$element.attr("data-off")||c.DEFAULTS.off,onstyle:this.$element.attr("data-onstyle")||c.DEFAULTS.onstyle,offstyle:this.$element.attr("data-offstyle")||c.DEFAULTS.offstyle,size:this.$element.attr("data-size")||c.DEFAULTS.size,style:this.$element.attr("data-style")||c.DEFAULTS.style,width:this.$element.attr("data-width")||c.DEFAULTS.width,height:this.$element.attr("data-height")||c.DEFAULTS.height}},c.prototype.render=function(){this._onstyle="btn-"+this.options.onstyle,this._offstyle="btn-"+this.options.offstyle;var b="large"===this.options.size?"btn-lg":"small"===this.options.size?"btn-sm":"mini"===this.options.size?"btn-xs":"",c=a('<label class="btn">').html(this.options.on).addClass(this._onstyle+" "+b),d=a('<label class="btn">').html(this.options.off).addClass(this._offstyle+" "+b+" active"),e=a('<span class="toggle-handle btn btn-default">').addClass(b),f=a('<div class="toggle-group">').append(c,d,e),g=a('<div class="toggle btn" data-toggle="toggle">').addClass(this.$element.prop("checked")?this._onstyle:this._offstyle+" off").addClass(b).addClass(this.options.style);this.$element.wrap(g),a.extend(this,{$toggle:this.$element.parent(),$toggleOn:c,$toggleOff:d,$toggleGroup:f}),this.$toggle.append(f);var h=this.options.width||Math.max(c.outerWidth(),d.outerWidth())+e.outerWidth()/2,i=this.options.height||Math.max(c.outerHeight(),d.outerHeight());c.addClass("toggle-on"),d.addClass("toggle-off"),this.$toggle.css({width:h,height:i}),this.options.height&&(c.css("line-height",c.height()+"px"),d.css("line-height",d.height()+"px")),this.update(!0),this.trigger(!0)},c.prototype.toggle=function(){this.$element.prop("checked")?this.off():this.on()},c.prototype.on=function(a){return this.$element.prop("disabled")?!1:(this.$toggle.removeClass(this._offstyle+" off").addClass(this._onstyle),this.$element.prop("checked",!0),void(a||this.trigger()))},c.prototype.off=function(a){return this.$element.prop("disabled")?!1:(this.$toggle.removeClass(this._onstyle).addClass(this._offstyle+" off"),this.$element.prop("checked",!1),void(a||this.trigger()))},c.prototype.enable=function(){this.$toggle.removeAttr("disabled"),this.$element.prop("disabled",!1)},c.prototype.disable=function(){this.$toggle.attr("disabled","disabled"),this.$element.prop("disabled",!0)},c.prototype.update=function(a){this.$element.prop("disabled")?this.disable():this.enable(),this.$element.prop("checked")?this.on(a):this.off(a)},c.prototype.trigger=function(b){this.$element.off("change.bs.toggle"),b||this.$element.change(),this.$element.on("change.bs.toggle",a.proxy(function(){this.update()},this))},c.prototype.destroy=function(){this.$element.off("change.bs.toggle"),this.$toggleGroup.remove(),this.$element.removeData("bs.toggle"),this.$element.unwrap()};var d=a.fn.bootstrapToggle;a.fn.bootstrapToggle=b,a.fn.bootstrapToggle.Constructor=c,a.fn.toggle.noConflict=function(){return a.fn.bootstrapToggle=d,this},a(function(){a("input[type=checkbox][data-toggle^=toggle]").bootstrapToggle()}),a(document).on("click.bs.toggle","div[data-toggle^=toggle]",function(b){var c=a(this).find("input[type=checkbox]");c.bootstrapToggle("toggle"),b.preventDefault()})}(jQuery);
+	}
+	
+	
+	//===  CHECKBOX: has_reoccuring_entities   =========================================================================================		
+	
+	function toggleReoccuringEntities() {
+		var displayed = $("#reoccuring-entities-group").attr("style")=="display:block;";
+		if (displayed) {
+			$("#reoccuring-entities-group").attr("style","display:none;");
+		} else {
+			$("#reoccuring-entities-group").attr("style","display:block;");
+		}
+	}
+	
+	//===  The "Reset" Button  =========================================================================================	
+	function resetAttributeSelection() {
+		var attributenumber = parseInt($("#choose-attribute-attributenumber").html());
+		
+		$("#attribute-button" + attributenumber).html("Choose Attribute");
+		$("#attribute-button" + attributenumber).attr("class", "btn btn-primary");
+		if (attribute_selections[attributenumber] == "DateTime of Observation") {
+			$("#unique_identifier_selection").attr("style", "display:none;");
+			$("#attribute_selections").attr("style", "");
+			createObjectIdButtons();     // redraw the buttons so that they are all un-selected
+			var object_identifiers = []  // also, reset the object_identifiers variable
+			for (var i = 0; i < table_headers.length; i++) {
+				object_identifiers.push(false)
+			}	
+		}
+		attribute_selections[attributenumber] == "";
+	}
+	
 	//===  The "Save" Button  =========================================================================================		  
 	function saveAttributeSelection() {
 
-		var attributenumber = $("#choose-attribute-attributenumber").html();
+		var attributenumber = parseInt($("#choose-attribute-attributenumber").html());
 		var attributechoice = $("#attribute-choice").html();
+		var attribute_id = $("#attribute-id").val();
 		
+		if (attributechoice == "DateTime of Observation") {
 
-		
-		//create the new column (with the converted datatype)
-		var data_type = $("#column" + attributenumber + "-data-type").html()
-		var new_column = []
-		
-		if (data_type == "int"){
-			for (var i = 0; i < table_body[attributenumber].length; i++) {
-				new_column.push(parseInt(table_body[attributenumber][i], 10) || null);
-			}
-		} else if (data_type == "real"){
-			for (var i = 0; i < table_body[attributenumber].length; i++) {
-				new_column.push(parseFloat(table_body[attributenumber][i], 10) || null);
-			}
-		} else if (data_type == "string"){
-			for (var i = 0; i < table_body[attributenumber].length; i++) {
-				if (table_body[attributenumber][i] != null){
-					new_column.push(String(table_body[attributenumber][i]));
-				} 
-			}
-		} else if (data_type == "boolean"){
-			for (var i = 0; i < table_body[attributenumber].length; i++) {
-				if (table_body[attributenumber][i].toLowerCase() == "true"){
-					new_column.push(true);
-				} else if (table_body[attributenumber][i].toLowerCase() == "false"){
-					new_column.push(false);
-				} else {
-					new_column.push(null);
+			$("#attribute-button" + attributenumber).html("Current DateTime");
+			$("#attribute-button" + attributenumber).attr("class", "btn btn-light");
+			attribute_selections[attributenumber] = "DateTime of Observation";
+			
+			if (document.getElementById("reoccuring").checked) {
+				$("#unique_identifier_selection").attr("style", "display:block;");
+				$("#attribute_selections").attr("style", "height:86px;");
+			}	
+			
+		} else {
+		 
+		 
+			//create the new column (with the converted datatype)
+			var data_type = $("#column" + attributenumber + "-data-type").html()
+			var new_column = []
+			
+			if (data_type == "int"){
+				for (var i = 0; i < table_body[attributenumber].length; i++) {
+					new_column.push(parseInt(table_body[attributenumber][i], 10) || null);
+				}
+			} else if (data_type == "real"){
+				for (var i = 0; i < table_body[attributenumber].length; i++) {
+					new_column.push(parseFloat(table_body[attributenumber][i], 10) || null);
+				}
+			} else if (data_type == "string"){
+				for (var i = 0; i < table_body[attributenumber].length; i++) {
+					if (table_body[attributenumber][i] != null){
+						new_column.push(String(table_body[attributenumber][i]));
+					} 
+				}
+			} else if (data_type == "boolean"){
+				for (var i = 0; i < table_body[attributenumber].length; i++) {
+					if (table_body[attributenumber][i].toLowerCase() == "true"){
+						new_column.push(true);
+					} else if (table_body[attributenumber][i].toLowerCase() == "false"){
+						new_column.push(false);
+					} else {
+						new_column.push(null);
+					}
 				}
 			}
-		}
-		
-		
-		//check if the user is ok with the abount of new nulls
-		var original_null_values = table_body[attributenumber].filter(function (el) {return el == null;});
-		var new_null_values = new_column.filter(function (el) {return el == null;});
-		number_of_additional_null_values = new_null_values.length - original_null_values.length;
-		if (number_of_additional_null_values > 0) {
-			var ok_given = confirm("By converting the column to " + data_type + ", " + number_of_additional_null_values.toString() + " values will be made null.");
-			if (ok_given == false){return;}
-		}
-		
-		table_body[attributenumber] = new_column
-	
-		//change the "Choose Attribute" button
-		$("#attribute-button" + attributenumber).html(attributechoice);
-		$("#attribute-button" + attributenumber).attr("class", "btn btn-light");
-		
-		
-		
-		// show the updated column
-		updateColumn(attributenumber)
-		showColumnsFormatViolations(attributenumber);
+			
+			
+			//check if the user is ok with the abount of new nulls
+			var original_null_values = table_body[attributenumber].filter(function (el) {return el == null;});
+			var new_null_values = new_column.filter(function (el) {return el == null;});
+			number_of_additional_null_values = new_null_values.length - original_null_values.length;
+			
+			{% if user.profile.verbose %}
+				if (number_of_additional_null_values > 0) {
+					var ok_given = confirm("By converting the column to " + data_type + ", " + number_of_additional_null_values.toString() + " values will be made null.");
+					if (ok_given == false){return;}
+				}
+			{% else %}{% endif %}
 
+			
+			table_body[attributenumber] = new_column
+		
+			//change the "Choose Attribute" button
+			$("#attribute-button" + attributenumber).html(attributechoice);
+			$("#attribute-button" + attributenumber).attr("class", "btn btn-light");
+			attribute_selections[attributenumber] = attribute_id;
+
+			
+			
+			// show the updated column
+			updateColumn(attributenumber)
+			showColumnsFormatViolations(attributenumber);
+			
+		}
 	}
 	
 	//====================================================================================================
@@ -639,7 +834,7 @@
 		request_body['transformation'] = $("#transformation-rule").val();
 		request_body['edited_column'] = edited_column;
 		
-		//send the new object_hierachy_tree to the backend
+		//have the column edited by the backend
 		var xmlhttp = new XMLHttpRequest();       
 		xmlhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -657,7 +852,7 @@
 			}
 		};
 
-		xmlhttp.open("POST", "/tool/upload_data5__edit_column/");
+		xmlhttp.open("POST", "/tool/edit_column/");
 		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send(JSON.stringify(request_body));	
@@ -672,6 +867,107 @@
 		showColumnsFormatViolations(edited_column_number);
 
 	}
+	
+	
+	/*========================================================================*/
+	/*=================    CREATE ATTRIBUTE MODAL     ========================*/
+	/*========================================================================*/
+	
+	
+	
+	function redrawAttributeSelections() {
+		//re-draw the attribute dropdowns (so that they contain the new attribute)
+		for (var i = 1; i <= number_of_additional_facts; i++) {
+			makeObjectsAdditionalAttributesDropdown( "{{ uploaded_dataset.object_type_id }}" , i);
+		}
+	}
+	
+	function openModalWithFormatSuggestions(){
+	
+		$("#createAttributeModal").modal('show');
+		
+		loadListOfParentObjects('{{ uploaded_dataset.object_type_id }}')
+		
+		var attributenumber = parseInt($("#choose-attribute-attributenumber").html());
+		var request_body = {};
+		request_body['column_values'] = table_body[attributenumber];
+		
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				
+				
+				console.log(this.responseText)
+				var response_dict = JSON.parse(this.responseText)
+				var data_type = response_dict["fields"]["column"]["type"]
+				
+				document.getElementById('type').value=data_type;
+				
+				var dataTypeSpecificOptions = ""
+				if (["int", "real", "date"].includes(data_type)) {
+					dataTypeSpecificOptions += 	'<br>' +
+												'<div class="form-group row">' +
+													'<label for="min" class="col-sm-7">Minimum allowed value</label>' +
+													'<div class="col-sm-5">' +
+														'<input type="text" class="form-control" id="min" name="min" value="' + response_dict["fields"]["column"]["min"] + '">' +
+													'</div>' +
+												'</div>' +
+												'<br>' +
+												'<div class="form-group row">' +
+													'<label for="max" class="col-sm-7">Maximum allowed value</label>' +
+													'<div class="col-sm-5">' +
+														'<input type="text" class="form-control" id="max" name="max" value="' + response_dict["fields"]["column"]["max"] + '">' +
+													'</div>' +
+												'</div>';
+				}
+				
+				if (data_type == "string") {
+					var allowed_values = JSON.stringify(response_dict["fields"]["column"]["allowed_values"])
+					var checked  =  (allowed_values.length > 0) ? "checked" : "" ;
+					dataTypeSpecificOptions += 	'<br>' +
+												'<div class="form-group row">' +
+													'<label for="min_length" class="col-sm-7">Minimum string length</label>' +
+													'<div class="col-sm-5">' +
+														'<input type="text" class="form-control" id="min_length" name="min_length" value="' + response_dict["fields"]["column"]["min_length"] + '">' +
+													'</div>' +
+												'</div>' +
+												'<br>' +
+												'<div class="form-group row">' +
+													'<label for="max_length" class="col-sm-7">Maximum string length</label>' +
+													'<div class="col-sm-5">' +
+														'<input type="text" class="form-control" id="max_length" name="max_length" value="' + response_dict["fields"]["column"]["max_length"] + '">' +
+													'</div>' +
+												'</div>' +
+												'<br>' +
+												'<div class="row">' +
+													'<div class="custom-control custom-checkbox">' +
+														'<input type="checkbox" class="custom-control-input" id="is_categorical" onchange="toggleCategoricalField()" ' + checked + '>' +
+														'<label class="custom-control-label" for="is_categorical">&nbsp;Categorical</label>' +
+													'</div>' +
+												'</div>' +
+												'<div id="allowed-values-group" class="row" style="display:none;">' +
+													'<label for="allowed_values" class="form-group col-sm-7">Allowed Values</label>' +
+													'<div class="col-sm-5">' +
+														'<input type="text" class="form-control" id="allowed_values" name="allowed_values" placeholder="' + allowed_values + '">' +
+													'</div>' +
+												'</div>';
+
+				}
+				
+				$("#new-attribute-further-fields").html(dataTypeSpecificOptions);
+		
+				
+				
+
+			}
+		};
+
+		xmlhttp.open("POST", "/tool/suggest_attribute_format/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));	
+	}
+	
 						
 	//====================================================================================================
 	//====  Main  ========================================================================================
@@ -685,10 +981,14 @@
 		/*====  Create Table    ========================================== */
 		drawTheTable()
 		createChooseAttributeButtons();
+		createObjectIdButtons()
 		createColumnTransformationFields();
 	  
 	  
-		/*====  WHEN CLICKED, LOAD the AttributeSelection Modal    ======= */
+	    /*========================================================================== */
+		/*========  WHEN CLICKED, LOAD the AttributeSelection Modal    ============= */
+		/*========================================================================== */
+		
 		var ATTRIBUTES = ['attributenumber'];
 	  	$('[class="btn btn-primary choose-attribute"]').on('click', function (e) {
 		   //PART 0: clear the attribute details-section
@@ -716,10 +1016,17 @@
 			var url_components = window.location.href.split("/");
 			var upload_id = url_components[url_components.length - 2]
 			
-			var xhttp = new XMLHttpRequest();       
-			  xhttp.onreadystatechange = function() {
+			var request_body = {};
+			request_body['attributenumber'] = attributenumber;
+			request_body['column_values'] = table_body[attributenumber];
+			request_body['object_type_id'] = '{{ uploaded_dataset.object_type_id }}';
+			request_body['upload_id'] = '{{ uploaded_dataset.id }}';
+			
+			
+			var xmlhttp = new XMLHttpRequest();       
+			xmlhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
-				
+
 					$("#attribute-options").html(this.responseText);
 					var attribute_options = JSON.parse(this.responseText)
 					
@@ -734,12 +1041,14 @@
 					$("#selection-options").html(selection_options_html_string);
 
 				}
-			  };
-		
+			};
 
-			  xhttp.open("GET", "/tool/get_suggested_attributes?upload_id=" + upload_id + "&attributenumber=" + attributenumber , true);
-			  xhttp.send();
-		  });
+			xmlhttp.open("POST", "/tool/get_suggested_attributes2/");
+			xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+			xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+			xmlhttp.send(JSON.stringify(request_body));	
+		});
+
 
 		
 	/*====  SAVE MANUAL CHANGES TO THE TABLE  ========================================================== */
