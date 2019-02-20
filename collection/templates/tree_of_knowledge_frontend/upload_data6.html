@@ -8,115 +8,147 @@
 
 {% block additionalcss %}
 
-<script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/datepicker/moment.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/datepicker/transition.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/datepicker/collapse.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/datepicker/bootstrap-datetimepicker.min.js' %}"></script>
-<link rel="stylesheet" href="{% static 'css/bootstrap-3.4.0.min.css' %}" />
-<link rel="stylesheet" href="{% static 'css/bootstrap-datetimepicker.min.css' %}" />
+<script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/remove-element-function.js' %}"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
 
 
 
 <style>
-		
-		h1 {
-			margin-bottom:25px;
-		}
-		
-		.list-group-item {
-			display: inline-block;
-			padding: 6px 7px;
-		}
-		
-		.list-group {
-			margin-bottom: 40px;
-		}
-		
+	
+	h1 {
+		margin-bottom:25px;
+	}
+	
+	#find-matches-button-box {
+		display:inline-block;
+		vertical-align: top;
+	}
 
-		/* --- Table box ----------------------------------------------------------- */
-		
-		
-		.box {
-			display:inline-block;
-			top: 40px;
-			left: 0;
-			border: 1px solid rgb(210, 210, 210);
-			padding:2px;
-		
-		}
-		
-		.overflowing-content {
-		    height: 100%;
-			overflow: auto;
-		}
-		
-		.table-box {
-			width: max-content;
-			width: intrinsic;           /* Safari/WebKit uses a non-standard name */
-            width: -moz-max-content;    /* Firefox/Gecko */
-            width: -webkit-max-content; /* Chrome */
-		}
-		
-		#uploaded_table {
-			margin-left: 6px;
-			margin-right: 4px;
-			margin-bottom:0px;
-			background-color:rgb(240, 240, 240);
-		}
-		
-		/* --- Table format -------------------------------------------------------- */
-        .table {
-			margin-bottom:0px;
-			width: 2705px;
-			overflow: auto;
-        }
-		
+	#find-matches-button {
+		padding: 6px 4px;
+		margin-left: 5px;
+		margin-right: 5px;
+	}
+	/* --- Table box ----------------------------------------------------------- */
+	
+	
+	.box {
+		display:inline-block;
+		vertical-align: top;
+		border: 1px solid rgb(210, 210, 210);
+		padding:2px;
+		height: calc(100vh - 280px);
+	}
 
-        .table thead, .table tbody, .table tr, .table td, .table th { display: block; text-align:left; }
+	
+	.table-box {
+		width: max-content;
+		width: intrinsic;           /* Safari/WebKit uses a non-standard name */
+		width: -moz-max-content;    /* Firefox/Gecko */
+		width: -webkit-max-content; /* Chrome */
+	}
+	
+	#uploaded_table {
+		margin-left: 6px;
+		margin-right: 4px;
+		margin-bottom:0px;
+		background-color:rgb(240, 240, 240);
+	}
+	
+	/* --- Table format -------------------------------------------------------- */
+	.table {
+		margin-bottom:0px;
+		width: 2705px;
+		overflow: auto;
+	}
+	
 
-        .table  tr:after {
-            content: ' ';
-            display: block;
-            visibility: hidden;
-            clear: both;
-        }
+	.table thead, .table tbody, .table tr, .table td, .table th { display: block; text-align:left; }
 
-		
-        .table thead th {
-            height: max-content;
-			height: intrinsic;           /* Safari/WebKit uses a non-standard name */
-            height: -moz-max-content;    /* Firefox/Gecko */
-            height: -webkit-max-content; /* Chrome */
-        }
-		
-		
-		.table thead {
-			margin-left:20px;
-		}
-		
-		.table thead > tr > th {border-bottom: 0;}
+	.table  tr:after {
+		content: ' ';
+		display: block;
+		visibility: hidden;
+		clear: both;
+	}
 
-        .table tbody {
-            height: calc(100vh - 495px);
-            overflow-y: auto;
-			direction: rtl;
-        }
+	
+	.table thead th {
+		height: max-content;
+		height: intrinsic;           /* Safari/WebKit uses a non-standard name */
+		height: -moz-max-content;    /* Firefox/Gecko */
+		height: -webkit-max-content; /* Chrome */
+	}
+	
+	
+	.table thead {
+		margin-left:20px;
+	}
+	
+	.table thead > tr > th {border-bottom: 0;}
 
-        .table tbody td, .table thead th {
-            width: 180px;
-            float: left;
-        }
-		
-		uploaded_table th, uploaded_table tr {
-			border-left:1px solid black;
-		}
-		
-		.table thead > tr > ts:hover {
-			background-color: rgb(225, 225, 225);
-		}
+	.table-body {
+		height: calc(100vh - 320px);
+		overflow-y: auto;
+		direction: rtl;
+	}
 
+	.table tbody td, .table thead th {
+		width: 140px;
+		float: left;
+	}
+	
+	uploaded_table th, uploaded_table tr {
+		border-left:1px solid black;
+	}
+	
+	.table thead > tr > ts:hover {
+		background-color: rgb(225, 225, 225);
+	}
+		
+	/* --- Match-attribute selection (the dropdowns at the top) -------------------------------------------------------- */
+	
+	#match-attribute-selection {
+		margin-bottom:20px
+	}
+	
+	
+	.match-attribute-dropdown {
+		width: 121px;
+		margin-left: 15px;
+		display: inline-block;
+	}
+	
+	/* --- Potential Matches (the display at the right) -------------------------------------------------------- */
+	
+	.matches-body {
+		height: calc(100vh - 320px);
+		overflow-y: auto;
+		/*direction: rtl;*/
+	}
+	
+	
+	.match-row {
+		height: 37px;
+	}
+	
+	.match-dropdown {
+		width: 440px;
+		display: inline-block;
+	}
+	
+	.match-checkbox {
+		display: inline-block;
+		margin-left: 28px !important;
+	}
+	
+	.de_select_button {
+		margin-top: 5px;
+		margin-left: 5px;
+		float:right;
+	}
+	
 		
 </style>
 {% endblock %}
@@ -126,42 +158,216 @@
 	{% for error in errors %}
 		<div class="error">{{ error }}</div><br>
 	{% endfor %}
-	<br>
-	<h1>6 - Match to entities in the knowledge base</h1>
+	<h1>6 - Match to existing entities</h1>
+	<!--
 	Does the table contain columns that can be used for identifying it's entities? <br>
 	<ul>
 		<li>&nbsp;&nbsp;Yes&nbsp;&nbsp; -> &nbsp;please select them </li>
-		<li>&nbsp;&nbsp;No&nbsp;&nbsp;&nbsp; -> &nbsp;press 'Next' </li>
+		<li>&nbsp;&nbsp;No&nbsp;&nbsp;D -> &nbsp;press 'Next' </li>
 	</ul>
-	<br>
+	<br>-->
 	
-	<div class="form">
-		<div class="form-group">
-			<div class="box">
-				<div class="overflowing-content">			
-					<div class="table-box">
-						<div id="uploaded_table"></div>
-					</div>
+	<div class="form" id="match-attribute-selection">
+		<span id="end-of-attribute-selection"><span>
+	</div>
+	<div>
+		<div class="box">		
+			<div class="table-box">
+				<div id="uploaded_table"></div>
+			</div>
+		</div>
+		<div id="find-matches-button-box">
+			<button id="find-matches-button" class="btn btn-success" type="button" onclick="findMatches()" style="display:none;">Find<br>Matches<br><span class="glyphicon glyphicon-chevron-right"></span></button>
+		</div>
+		<div class="box">		
+			<div class="table-box">
+				<div id="potential_matches">
+				
+					<!--
+					<table id="data-table" class="table table-sm" style="width:524px;">
+						<thead>
+							<tr>
+								<th scope="col">Col 1</th>
+								<th scope="col">Col 2</th>
+								<th scope="col">Col 3</th>
+								<th style="width:80px;">is match</th>
+							</tr>
+						</thead>
+					</table>
+					<div class="matches-body">
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+						<div class="match-row">
+						</div>
+						<div class="match-row">
+							<select class="match-dropdown form-control" id="match-dropdown0">
+								<option value="=" selected>=</option>
+								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
+								<option value="<"><</option>
+								<option value="in">in</option>
+							</select>
+							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
+						</div>
+					<div>
+					-->
+					
 				</div>
 			</div>
 		</div>
-	</div>	
-	
-
-
-	
-	
-	<br>
-	<br>
-	
-
-
-	
-	<div id="useful-things" style="display:none;">
-		<div id="attribute-options"></div>
-		<div id="object_hierachy_tree">{{ object_hierachy_tree }}</div>
+		<div id="select-all-buttons" style="display:none;">
+			<button class="btn btn-secondary de_select_button" type="button" onclick="selectAll()">Select All</button>
+			<button class="btn btn-secondary de_select_button" type="button" onclick="unselectAll()">Unselect All</button>
+		</div>
 	</div>
+	<br>
+	<br>
+	<button id="select-all-button" class="btn btn-primary pull-right" type="button" onclick="next()">Next</button>
+
+	<form id="next-form" role='form' action='' method='post' class='form' enctype='multipart/form-data'>
+		{% csrf_token %}
+		<input type='hidden' id='list_of_matches' name='list_of_matches' value=''>
+	</form>
+
+
 	
+	
+	
+
+
+	
+
 
 	
 	
@@ -171,41 +377,48 @@
 
 	// THE DATA
 	var data_table_json = {{ uploaded_dataset.data_table_json | safe }}
+	var table_attributes = {{ table_attributes | safe }}
 	
 	// GLOBAL VARIABLES
 	var table_headers = data_table_json["table_header"]
 	var table_body = data_table_json["table_body"]
-	var time_granularity = 2;
-
-	
-	
-	
-	
+	var largest_dropdown_number = 0
+	var match_attributes = []
 	
 	//====================================================================================================
-	//====  Draw Main window  =================================================================================
+	//====  Draw Main window  ============================================================================
 	//====================================================================================================
 	
 	
-	//===  Draw the table  =============================================================================	
+	//===  Draw the table  ================================================================================================================================	
     function drawTheTable() {
+	
+		var columns_to_show = []
+		
+		for (var i = 0; i < match_attributes.length; i++) {
+			for (var column_index = 0; column_index < table_headers.length; column_index++) {
+				if (table_headers[column_index] == match_attributes[i]['attribute_name']) {columns_to_show.push(column_index)}
+			}
+		}
 
-		var table_html_string = '<table id="data-table" class="table table-sm" style="width:' + (181*table_headers.length + 20) + 'px;">' +
+		var table_html_string = '<table id="data-table" class="table table-sm" style="width:' + (141*match_attributes.length + 20) + 'px;">' +
 									'<thead>' +
 										'<tr>';
 
-		for (var i = 0; i < table_headers.length; i++) {
-			table_html_string +=  			'<th scope="col" contenteditable="true">' + table_headers[i] + '</th>';
+		for (var i = 0; i < columns_to_show.length; i++) {
+			var column_index = columns_to_show[i];
+			table_html_string +=  			'<th scope="col" contenteditable="true">' + table_headers[column_index] + '</th>';
 		}
 		
 		table_html_string +=  			'</tr>' +
 									'</thead>' +
-									'<tbody>';
+									'<tbody class="table-body">';
 		
 		for (var i = 0; i < table_body[0].length; i++) {
 			table_html_string +=  		'<tr>';
-			for (var j = 0; j < table_headers.length; j++) {
-				table_html_string +=  			'<td>' + table_body[j][i] + '</td>';
+			for (var j = 0; j < columns_to_show.length; j++) {
+				var column_index = columns_to_show[j];
+				table_html_string +=  			'<td>' + table_body[column_index][i] + '</td>';
 			}
 			table_html_string +=  		'</tr>';
 		}
@@ -217,7 +430,222 @@
 	}
 
 	
+	
+	//===  Draw the first Dropdown  =======================================================================================================================	
+	function drawTheFirstDropDown() {
+	
+		dropdown_html_string = 	'<select class="form-control match-attribute-dropdown" id="attribute0" name="attribute0" onchange="matchAttributeChange(0)">' +
+									'<option value="" selected></option>';
+		for (var i = 0; i < table_attributes.length; i++) {
+			dropdown_html_string +=	'<option value="' + table_attributes[i]['attribute_id'] + '">' + table_attributes[i]['attribute_name'] + '</option>';
+		}
+		dropdown_html_string +=	'</select>';
+		
+	
+		$(dropdown_html_string).insertBefore('#end-of-attribute-selection');
+	}
 
+	//===  the "Next" Button  =======================================================================================================================	
+	function next() {
+	
+		var list_of_matches = [];
+		
+		for (var i = 0; i < table_body[0].length; i++) {
+			var this_rows_checkbox = document.getElementById("match-checkbox" + i);
+			if (this_rows_checkbox) {
+				if (this_rows_checkbox.checked == true) {
+					var dropdown = document.getElementById("attribute" + dropdown_number);
+					var object_id = dropdown[dropdown.selectedIndex].value;
+					list_of_matches.push(object_id);
+				} else {
+				list_of_matches.push(null);
+				}	
+			} else {
+				list_of_matches.push(null);
+			}	
+		}
+		
+		$("#list_of_matches").val(JSON.stringify(list_of_matches));
+	
+		$("#next-form").submit();
+	}
+	
+
+	//====================================================================================================
+	//====  DROPDOWNS: Match-Attribute Selection  ===================================================================
+	//====================================================================================================
+	
+	function matchAttributeChange(dropdown_number) {
+
+		//var new_value = $("#attribute" + dropdown_number).val();
+		var dropdown = document.getElementById("attribute" + dropdown_number);
+		var new_attribute_id = dropdown[dropdown.selectedIndex].value;
+		var new_attribute_name = $('[value="' + new_attribute_id + '"]').html();
+		
+		
+		if (new_attribute_id == ""){
+			if (dropdown_number < largest_dropdown_number) {
+				
+				
+				
+				//move all values one to the left to fill the gap
+				for (var i = dropdown_number; i < largest_dropdown_number; i++) {
+					var dropdown_right = document.getElementById("attribute" + (i+1));
+					var right_value = dropdown_right[dropdown_right.selectedIndex].value;
+					document.getElementById("attribute" + i).value = right_value;
+					match_attributes[i] = match_attributes[i+1];
+				}
+				
+				//remove the dropdown on the far right
+				document.getElementById("attribute" + largest_dropdown_number).remove();
+				match_attributes.pop();
+				largest_dropdown_number--;
+			}
+			
+		} else {
+			if (dropdown_number == largest_dropdown_number) {
+
+				largest_dropdown_number++;
+				dropdown_html_string = 	'<select class="form-control match-attribute-dropdown" id="attribute' + largest_dropdown_number + '" name="attribute' + largest_dropdown_number + '" onchange="matchAttributeChange(' + largest_dropdown_number + ')">' +
+											'<option value="" selected></option>';
+				for (var i = 0; i < table_attributes.length; i++) {
+					dropdown_html_string +=	'<option value="' + table_attributes[i]['attribute_id'] + '">' + table_attributes[i]['attribute_name'] + '</option>';
+				}
+				dropdown_html_string +=	'</select>';
+				
+				match_attributes.push({'attribute_id': new_attribute_id, 'attribute_name': new_attribute_name});
+				
+			
+				$(dropdown_html_string).insertBefore('#end-of-attribute-selection');
+			}
+			
+			match_attributes[dropdown_number] = {'attribute_id': new_attribute_id, 'attribute_name': new_attribute_name};	
+		}
+		
+		drawTheTable();
+		if (match_attributes.length > 0){
+			$("#find-matches-button").attr("style","display:block;");
+		} else {
+			$("#find-matches-button").attr("style","display:none;");
+		}
+
+	}
+
+
+	//====================================================================================================
+	//====  The Matches  ===================================================================
+	//====================================================================================================
+	
+	
+	//===  "Find Matches" Button pressed  ================================================================================================================================
+	function findMatches(){
+	
+		/*$("#find-matches-button").html('<span class="glyphicon glyphicon-chevron-right"></span>');*/
+		
+		var request_body = {};
+		
+		var match_values = []
+		for (var i = 0; i < match_attributes.length; i++) {
+			for (var column_index = 0; column_index < table_attributes.length; column_index++) {
+				if (table_headers[column_index] == match_attributes[i]['attribute_name']) {
+					match_values.push(table_body[column_index])
+				}
+			}
+		}
+		
+		
+		request_body['match_values'] = match_values;
+		request_body['match_attributes'] = match_attributes;
+	
+			
+		
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+
+				var potential_matches = JSON.parse(this.responseText)
+				
+				drawPotentialMatches(potential_matches);
+				$("#select-all-buttons").attr("style","display:block;");
+
+			}
+		};
+
+		xmlhttp.open("POST", "/tool/find_matching_entities/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));	
+	}
+	
+	
+	//===  Draw the potenatil Matches  ================================================================================================================================
+	
+	function drawPotentialMatches(potential_matches) {
+	
+	
+	matches_html_string =	'<table id="data-table" class="table table-sm" style="width:' + (141*match_attributes.length + 100) + 'px;">' +
+								'<thead>' +
+									'<tr>';
+	for (var i = 0; i < match_attributes.length; i++) {
+		matches_html_string +=			'<th scope="col">' + match_attributes[i]['attribute_name'] + '</th>';
+	}
+	
+	matches_html_string +=				'<th style="width:80px;">is match</th>' +
+									'</tr>' +
+								'</thead>' +
+							'</table>' +
+							'<div class="matches-body">'
+
+	for (var i = 0; i < potential_matches.length; i++) {	
+		var potential_matches_row = potential_matches[i];
+		
+		if (potential_matches_row.keys().length == 0){
+			matches_html_string +=	'<div class="match-row"></div>';
+		} else {
+		
+			matches_html_string +=	'<div class="match-row">' +
+										'<select class="match-dropdown form-control" id="match-dropdown' + i + '">';
+										
+			for (var j = 0; j < potential_matches_row.keys().length; j++) {
+				var object_id = potential_matches_row.keys()[j];
+				var dropdown_text = "";
+				
+				for (var i = 0; i < match_attributes.length; i++) {
+					var attriute_id = match_attributes[i]['attribute_id']
+					var attribute_value = potential_matches_row[object_id][attriute_id]
+					dropdown_text += attribute_value + "&nbsp;".repeat(34 - attribute_value.length)
+				}
+				matches_html_string +=		'<option value="' + object_id + '" selected>' + dropdown_text + '</option>';
+			}
+			
+			matches_html_string +=		'</select>' +
+										'<input type="checkbox" id="match-checkbox' + i + '" class="match-checkbox" value="">' +
+									'</div>';
+		}
+	}
+	matches_html_string +=	'</div>';
+	
+	$("#potential_matches").html(matches_html_string);
+	
+	}
+		
+	//===  "Select All Button pressed  ================================================================================================================================
+	function selectAll() {
+		var checkboxes = document.getElementsByClassName("match-checkbox");
+
+		Array.prototype.forEach.call(checkboxes, function(checkbox) {
+			checkbox.checked = true;
+		});
+	}
+	
+	//===  "Deselect All Button pressed  ================================================================================================================================
+	function unselectAll() {
+		var checkboxes = document.getElementsByClassName("match-checkbox");
+
+		Array.prototype.forEach.call(checkboxes, function(checkbox) {
+			checkbox.checked = false;
+		});
+	}
 						
 	//====================================================================================================
 	//====  Main  ========================================================================================
@@ -225,11 +653,14 @@
 
 	$(document).ready(function() {
 	
-	
+
+		// set up the screen
+		drawTheFirstDropDown();
 		
-		//PART 1: SET UP SCREEN  ----------------------
-		drawTheTable();
-		
+		// simultaneous scrolling
+		$(".table-body, .matches-body").on("scroll", function() {
+			$(".table-body, .matches-body").scrollTop($(this).scrollTop());
+		});
 
 		
 	});

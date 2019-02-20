@@ -1,11 +1,11 @@
 import json
 import traceback
 import pandas as pd
-from collection.models import Uploaded_dataset, Attribute
+from collection.models import Uploaded_dataset, Attribute, Simulation_model, Object, Data_point
 from django.utils.safestring import mark_safe
 import os
 
-
+# called from upload_data1
 def save_new_upload_details(request):
     errors = []
     upload_error = False
@@ -35,8 +35,6 @@ def save_new_upload_details(request):
         
         data_table_dict = {"table_header": table_header, "table_body": table_body}
         data_table_json = json.dumps(data_table_dict)
-        # data_table_json = simplejson.dumps(data_table_dict, ignore_nan=True)
-        # data_table_json = mark_safe(data_table_json)
 
 
         # create record in Uploaded_dataset-table -----------------------------------
@@ -52,6 +50,7 @@ def save_new_upload_details(request):
     return (upload_id, upload_error, errors)
 
 
+# called from upload_data1
 def save_existing_upload_details(upload_id, request):
     errors = []
     upload_error = False
@@ -81,9 +80,6 @@ def save_existing_upload_details(upload_id, request):
         
         data_table_dict = {"table_header": table_header, "table_body": table_body}
         data_table_json = json.dumps(data_table_dict)
-        # data_table_json = simplejson.dumps(data_table_dict, ignore_nan=True)
-        # data_table_json = data_table_json.replace('&quot;','"')
-        # data_table_json = mark_safe(data_table_json)
 
         uploaded_dataset.update(file_name=file_name, file_path=file_path, sep=sep, encoding=encoding, quotechar=quotechar, escapechar=escapechar, na_values=na_values, skiprows=skiprows, header=header, data_table_json=data_table_json, user=user)
 
@@ -91,65 +87,79 @@ def save_existing_upload_details(upload_id, request):
         traceback.print_exc()
         errors = [str(error)]
         upload_error = True
-
-    # except Exception as error: 
-    #     errors = [str(error)]
-    #     upload_error = True
-    #     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    #     print(error)
-    #     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     
     return (upload_error, errors)
 
 
 
-
+# called from upload_data7
 def perform_uploading(uploaded_dataset, request):
+    number_of_datapoints_saved = 0;
 
+    object_type_id = uploaded_dataset.object_type_id
 
+    data_quality = uploaded_dataset.correctness_of_data
+    attribute_selection = json.loads(uploaded_dataset.attribute_selection)
+    object_identifiers = json.loads(uploaded_dataset.object_identifiers)
 
+    valid_times = json.loads(uploaded_dataset.data_table_json)
+    data_table_json = json.loads(uploaded_dataset.data_table_json)
+    table_body = data_table_json["table_body"]
+    number_of_entities = len(table_body[0])
 
-    simulation_model = Simulation_model(user=request.user, name="", description="")
-    simulation_model.save()
-    model_id = uploaded_dataset.id
-
-    # Add the Meta Data Constraints to the simulation
-    attribute = Attribute.objects.get(id=uploaded_dataset.attribute1)
-    if ((attribute is not None) and (uploaded_dataset.operation1 in ['=','>', '<', 'in'])):
-        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation1, value=uploaded_dataset.value1)
     
-    attribute = Attribute.objects.get(id=uploaded_dataset.attribute2)
-    if ((attribute is not None) and (uploaded_dataset.operation2 in ['=', '>', '<', 'in'])):
-        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation2, value=uploaded_dataset.value2)
 
-    attribute = Attribute.objects.get(id=uploaded_dataset.attribute3)
-    if ((attribute is not None) and (uploaded_dataset.operation3 in ['=', '>', '<', 'in'])):
-        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation3, value=uploaded_dataset.value3)
+    # prepare list of data types
+    data_types = []
+    for attribute_id in attribute_selection:
+        attribute_record = Attribute.objects.get(id=attribute_id)
+        data_types.append(attribute_record.data_type)
 
-    attribute = Attribute.objects.get(id=uploaded_dataset.attribute4)
-    if ((attribute is not None) and (uploaded_dataset.operation4 in ['=', '>', '<', 'in'])):
-        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation4, value=uploaded_dataset.value4)
 
-    attribute = Attribute.objects.get(id=uploaded_dataset.attribute5)
-    if ((attribute is not None) and (uploaded_dataset.operation5 in ['=', '>', '<', 'in'])):
-        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation5, value=uploaded_dataset.value5)
+    for entity_nb in range(number_of_entities):
 
-    attribute = Attribute.objects.get(id=uploaded_dataset.attribute6)
-    if ((attribute is not None) and (uploaded_dataset.operation6 in ['=', '>', '<', 'in'])):
-        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation6, value=uploaded_dataset.value6)
+        if (object_identifiers[entity_nb] is not None):
+            object_id = object_identifiers[entity_nb]
+        else:
+            object_record = Object(object_type_id=object_type_id)
+            object_record.save()
+            object_id = object_record.id
 
-    attribute = Attribute.objects.get(id=uploaded_dataset.attribute7)
-    if ((attribute is not None) and (uploaded_dataset.operation7 in ['=', '>', '<', 'in'])):
-        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation7, value=uploaded_dataset.value7)
+        for column_number, attribute_id in enumerate(attribute_selection):
+            value = table_body[column_number][entity_nb]
+            valid_time_start = valid_times[column_number][entity_nb]['start']
+            valid_time_end = valid_times[column_number][entity_nb]['end']
 
-    attribute = Attribute.objects.get(id=uploaded_dataset.attribute8)
-    if ((attribute is not None) and (uploaded_dataset.operation8 in ['=', '>', '<', 'in'])):
-        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation8, value=uploaded_dataset.value8)
+            if attribute_value is not None:
+                value_as_string = str(value)
 
-    attribute = Attribute.objects.get(id=uploaded_dataset.attribute9)
-    if ((attribute is not None) and (uploaded_dataset.operation9 in ['=', '>', '<', 'in'])):
-        meta_data_constaint = Meta_data_constaint(simulation_model=simulation_model, attribute=attribute, operation=uploaded_dataset.operation9, value=uploaded_dataset.value9)
+                if data_types[column_number] == "string":             
+                    numeric_value = None
+                    string_value = value
+                    boolean_value = None
+                elif data_types[column_number] in ["int", "real"]: 
+                    numeric_value = value
+                    string_value = None
+                    boolean_value = None
+                elif data_types[column_number] == "bool": 
+                    numeric_value = value
+                    string_value = None
+                    boolean_value = None
 
-    # ETC...
+                data_point_record = Data_point( object_id=object_id, 
+                                                attribute_id=attribute_id, 
+                                                value_as_string=value_as_string, 
+                                                numeric_value=numeric_value, 
+                                                string_value=string_value, 
+                                                boolean_value=boolean_value, 
+                                                valid_time_start=valid_time_start, 
+                                                valid_time_end=valid_time_end, 
+                                                data_quality=data_quality)
+                data_point_record.save()
+                number_of_datapoints_saved += 1
 
-    return model_id
+    simulation_model = Simulation_model(user=request.user, name="", description="", meta_data_facts=uploaded_dataset.meta_data_facts)
+    simulation_model.save()
+    model_id = simulation_model.id
+
+    return (model_id, number_of_datapoints_saved)

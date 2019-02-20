@@ -49,6 +49,7 @@ class Newsletter_subscriber(models.Model):
 
 
 class Uploaded_dataset(models.Model):
+	# upload_data1
     file_name = models.CharField(max_length=255)
     file_path = models.TextField()
     sep = models.CharField(max_length=3, blank=True, null=True)
@@ -69,7 +70,13 @@ class Uploaded_dataset(models.Model):
     entire_objectInfoHTMLString = models.TextField(null=True)
     # upload_data4
     meta_data_facts = models.TextField()
+    # upload_data5
+    attribute_selection = models.TextField()
+    datetime_column = models.TextField(null=True)
+    object_identifiers = models.TextField(null=True)
     # upload_data6
+    list_of_matches = models.TextField()
+    # upload_data7
     valid_times = models.TextField()
     created = models.DateTimeField(editable=False)
     updated = models.DateTimeField(editable=False)
@@ -79,6 +86,19 @@ class Uploaded_dataset(models.Model):
             self.created = datetime.datetime.today()
         self.updated = datetime.datetime.today()
         super(Uploaded_dataset, self).save()
+
+
+class Data_point(models.Model):
+    object_id = models.IntegerField()
+    attribute_id = models.TextField()
+    value_as_string = models.TextField()
+    numeric_value = models.FloatField(null=True)
+    string_value = models.TextField(null=True)
+    boolean_value = models.NullBooleanField() 
+    valid_time_start = models.IntegerField()
+    valid_time_end = models.IntegerField()
+    data_quality = models.IntegerField()
+
 
 
 class Object_hierachy_tree_history(models.Model):
@@ -96,24 +116,28 @@ class Object_types(models.Model):
     li_attr = models.TextField(null=True)
     a_attr = models.TextField(null=True)
 
+
+class Object(models.Model):
+    object_type_id = models.TextField()
+
+
 class Attribute(models.Model):
     name = models.TextField()
+    data_type = models.TextField()
+    expected_valid_period = models.IntegerField()
     description = models.TextField()
     format_specification = models.TextField()
     first_applicable_object = models.TextField()
 
 
-class Object_properties(models.Model):
-    first_applicable_object = models.ForeignKey(Object_types, on_delete=models.SET_NULL, blank=True, null=True,)
-    attribute =  models.ForeignKey(Attribute, on_delete=models.SET_NULL, blank=True, null=True,)
-    operation = models.CharField(max_length=2)
-    value = models.TextField()
+
 
 
 
 class Simulation_model(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
+    meta_data_facts = models.TextField(null=True)
     created = models.DateTimeField(editable=False)
     updated = models.DateTimeField(editable=False)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
@@ -125,20 +149,21 @@ class Simulation_model(models.Model):
         super(Simulation_model, self).save()
 
 
-class Meta_data_constaint(models.Model):
-    simulation_model = models.ForeignKey(Simulation_model, on_delete=models.SET_NULL, blank=True, null=True,)
-    attribute =  models.ForeignKey(Attribute, on_delete=models.SET_NULL, blank=True, null=True,)
-    operation = models.CharField(max_length=2)
-    value = models.TextField()
+# class Meta_data_constaint(models.Model):
+#     simulation_model = models.ForeignKey(Simulation_model, on_delete=models.SET_NULL, blank=True, null=True,)
+#     attribute =  models.ForeignKey(Attribute, on_delete=models.SET_NULL, blank=True, null=True,)
+#     operation = models.CharField(max_length=2)
+#     value = models.TextField()
 
 
-# class Data_points(models.Model):
-#     object_type = models.ForeignKey(Attributes, on_delete=models.SET_NULL, blank=True, null=True,)
-#     object_id = models.IntegerField()
-#     attribute = models.ForeignKey(Attributes, on_delete=models.SET_NULL, blank=True, null=True,)
-#     valid_time_start = models.IntegerField()
-#     valid_time_end = models.IntegerField()
-#     data_quality = models.IntegerField()
+# class Object_properties(models.Model):
+#     first_applicable_object = models.ForeignKey(Object_types, on_delete=models.SET_NULL, blank=True, null=True,)
+#     attribute =  models.ForeignKey(Attribute, on_delete=models.SET_NULL, blank=True, null=True,)
+#     operation = models.CharField(max_length=2)
+#     value = models.TextField()
+
+
+
 
 
 

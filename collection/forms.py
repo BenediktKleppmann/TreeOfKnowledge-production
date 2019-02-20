@@ -40,6 +40,9 @@ class UploadFileForm(forms.Form):
 
 
 class Uploaded_datasetForm2(forms.ModelForm):
+	data_source = forms.CharField()
+	datetime_column = forms.DateField(required=False)
+	correctness_of_data = forms.IntegerField()
 	class Meta:
 		model = Uploaded_dataset
 		fields = ('data_source', 'data_generation_date', 'correctness_of_data', )
@@ -57,14 +60,18 @@ class Uploaded_datasetForm4(forms.ModelForm):
 
 
 class Uploaded_datasetForm5(forms.ModelForm):
+	data_table_json = forms.CharField()
+	attribute_selection = forms.CharField()
+	datetime_column = forms.CharField(required=False)
+	object_identifiers = forms.CharField(required=False)
 	class Meta:
 		model = Uploaded_dataset
-		fields = ('data_table_json', )
+		fields = ('data_table_json', 'attribute_selection', 'datetime_column', 'object_identifiers')
 
 class Uploaded_datasetForm6(forms.ModelForm):
 	class Meta:
 		model = Uploaded_dataset
-		fields = ('valid_times', )
+		fields = ('list_of_matches', )
 
 
 class Uploaded_datasetForm7(forms.ModelForm):

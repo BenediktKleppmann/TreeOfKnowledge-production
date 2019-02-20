@@ -22,8 +22,8 @@ def get_columns_format_violations(attribute_id, column_values):
     if violation_df is None:
         return []
     else:
-        violating_columns = [int(col_nb) for col_nb in list(violation_df.index.values)]
-        return violating_columns
+        violating_rows = [int(row_nb) for row_nb in list(violation_df.index.values)]
+        return violating_rows
 
 
 def suggest_attribute_format(column_dict):

@@ -59,10 +59,14 @@ urlpatterns = [
     # Helper Functions  -------------------------------------------------------------------------
     # get
     url(r'^tool/get_possible_attributes/$', views.get_possible_attributes, name='get_possible_attributes'),
-    url(r'^tool/get_suggested_attributes/$', views.get_suggested_attributes, name='get_suggested_attributes'),
-    url(r'^tool/get_suggested_attributes2/$', views.get_suggested_attributes2, name='get_suggested_attributes2'),
+    # url(r'^tool/get_suggested_attributes/$', views.get_suggested_attributes, name='get_suggested_attributes'),
+    # url(r'^tool/get_suggested_attributes2/$', views.get_suggested_attributes2, name='get_suggested_attributes2'),
     url(r'^tool/get_list_of_parent_objects/$', views.get_list_of_parent_objects, name='get_list_of_parent_objects'),
     # url(r'^tool/get_attributes_concluding_format/$', views.get_attributes_concluding_format, name='get_attributes_concluding_format'),
+    # find
+    url(r'^tool/find_suggested_attributes/$', views.find_suggested_attributes, name='find_suggested_attributes'),
+    url(r'^tool/find_suggested_attributes2/$', views.find_suggested_attributes2, name='find_suggested_attributes2'),
+    url(r'^tool/find_matching_entities/$', views.find_matching_entities, name='find_matching_entities'),
     # save
     url(r'^tool/save_new_object_hierachy_tree/$', views.save_new_object_hierachy_tree, name='save_new_object_hierachy_tree'),
     url(r'^tool/save_new_object_type/$', views.save_new_object_type, name='save_new_object_type'),

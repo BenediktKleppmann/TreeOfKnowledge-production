@@ -1,7 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point
+from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
 from collection.functions import upload_data, get_from_db, populate_db, tdda_functions
@@ -160,6 +161,8 @@ def upload_data1(request, upload_id, errors=[]):
 @login_required
 def upload_data2(request, upload_id):
     errors = []
+    error_dict = ''
+    
     # if the upload_id was wrong, send the user back to the first page
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
@@ -169,13 +172,23 @@ def upload_data2(request, upload_id):
     if request.method == 'POST':
         form2 = Uploaded_datasetForm2(data=request.POST, instance=uploaded_dataset)
         if not form2.is_valid():
-            errors.append('Error: the form is not valid.')
+            errors.append('Error: the form is not valid.' + str(form2.errors))
+            error_dict += json.dumps(dict(form2.errors))
+            print("V 1 VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
+            print(error_dict)
+            print("A 1 1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
         else:
+            error_dict += '{}'
             form2.save()
             return redirect('upload_data3', upload_id=upload_id)
-
+    
     known_data_sources = get_from_db.get_known_data_sources()
-    return render(request, 'tree_of_knowledge_frontend/upload_data2.html', {'uploaded_dataset': uploaded_dataset, 'known_data_sources': known_data_sources, 'errors': errors})
+    print("V 2 VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
+    print(error_dict)
+    print("A 2 1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    # error_dict = '{"data_generation_date": ["This field is required."]}'
+    
+    return render(request, 'tree_of_knowledge_frontend/upload_data2.html', {'uploaded_dataset': uploaded_dataset, 'known_data_sources': known_data_sources, 'errors': errors, 'error_dict': error_dict})
 
 
 @login_required
@@ -197,9 +210,6 @@ def upload_data3(request, upload_id):
             return redirect('upload_data4', upload_id=upload_id)
 
     object_hierachy_tree = get_from_db.get_object_hierachy_tree()
-    print("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
-    print(json.dumps(object_hierachy_tree))
-    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     return render(request, 'tree_of_knowledge_frontend/upload_data3.html', {'uploaded_dataset': uploaded_dataset, 'object_hierachy_tree':object_hierachy_tree, 'errors': errors})
 
 
@@ -240,7 +250,6 @@ def upload_data5(request, upload_id):
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
         return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
-
     
     if request.method == 'POST':
         form5 = Uploaded_datasetForm5(data=request.POST, instance=uploaded_dataset)
@@ -263,7 +272,6 @@ def upload_data6(request, upload_id):
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
         return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
 
-    
     if request.method == 'POST':
         form6 = Uploaded_datasetForm6(data=request.POST, instance=uploaded_dataset)
         if not form6.is_valid():
@@ -272,7 +280,13 @@ def upload_data6(request, upload_id):
             form6.save()
             return redirect('upload_data7', upload_id=upload_id)
    
-    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+    
+    selected_attribute_ids = json.loads(uploaded_dataset.attribute_selection)
+    table_attributes = []
+    for attribute_id in selected_attribute_ids:
+        attribute_record = Attribute.objects.get(id=attribute_id)
+        table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name})
+    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'uploaded_dataset': uploaded_dataset, 'table_attributes': table_attributes, 'errors': errors})
 
 
 
@@ -293,8 +307,8 @@ def upload_data7(request, upload_id):
             errors.append('Error: the form is not valid.')
         else:
             form7.save()
-            new_model_id = upload_data.perform_uploading(uploaded_dataset)
-            return redirect('upload_data_success', new_model_id=new_model_id)
+            (number_of_datapoints_saved, new_model_id) = upload_data.perform_uploading(uploaded_dataset, request)
+            return redirect('upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
    
     return render(request, 'tree_of_knowledge_frontend/upload_data7.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
@@ -337,7 +351,19 @@ def get_possible_attributes(request):
 
 
 @login_required
-def get_suggested_attributes(request):
+def get_list_of_parent_objects(request):
+    object_type_id = request.GET.get('object_type_id', '')
+    list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
+    return HttpResponse(json.dumps(list_of_parent_objects))
+
+# ==================
+# FIND
+# ==================
+
+
+# used in: upload_data5
+@login_required
+def find_suggested_attributes(request):
 
     request_body = json.loads(request.body)
     attributenumber = request_body['attributenumber']
@@ -352,9 +378,11 @@ def get_suggested_attributes(request):
         response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'description': attribute.description, 'format': attribute_format, 'comments': '{}'})
     return HttpResponse(json.dumps(response))
 
+
+# used in: upload_data5 
 # get_suggested_attributes2 get the concluding_format instead of just the attribute's format
 @login_required
-def get_suggested_attributes2(request):
+def find_suggested_attributes2(request):
     request_body = json.loads(request.body)
     attributenumber = request_body['attributenumber']
     object_type_id = request_body['object_type_id']
@@ -368,13 +396,42 @@ def get_suggested_attributes2(request):
         response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'description': attribute.description, 'format': concluding_format['format_specification'], 'comments': concluding_format['comments']})
     return HttpResponse(json.dumps(response))
 
+
+# used in: upload_data6 
 @login_required
-def get_list_of_parent_objects(request):
-    object_type_id = request.GET.get('object_type_id', '')
-    list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
-    return HttpResponse(json.dumps(list_of_parent_objects))
+def find_matching_entities(request):
+    request_body = json.loads(request.body)
+    match_attributes = request_body['match_attributes']
+    match_values = request_body['match_values']
+    matching_objects_entire_list = []
+
+    for row_nb in range(len(match_values[0])):
+        matching_objects_dict = {}
+
+        # append all matching datapoints
+        found_datapoints = Data_point.objects.none()
+        for attribute_nb, attribute_details in enumerate(match_attributes):
+
+            additional_datapoints = Data_point.objects.filter(attribute_id=attribute_details['attribute_id'], attribute_value = json.dumps({'value':match_values[attribute_nb][row_nb]}))
+            found_datapoints = found_datapoints.union(additional_datapoints)
+
+        # get the object_ids  - those with most matching datapoints first
+        object_id_list = found_datapoints.values('object_id').annotate(Count('object_id')).order_by('-object_id__count').values_list('object_id', flat=True)
+
+        for object_id in object_id_list:
+            # create a matching_object for each of the found object_id (containing the values from the this object_id)
+            matching_object = {}
+            for datapoint in found_datapoints.filter(object_id=object_id):
+                matching_object[datapoint.attribute_id] = datapoint.attribute_value
+            matching_objects_dict['object_id'] = matching_object
+            
+        
+        matching_objects_entire_list.append(matching_objects_dict)
+
+    return HttpResponse(json.dumps(matching_objects_entire_list))
 
 
+7
 # ==================
 # SAVE
 # ==================
@@ -474,14 +531,14 @@ def save_edited_object_type(request):
     else:
         return HttpResponse("This must be a POST request.")
 
-# used in: upload_data4
+# used in: create_attribute_modal.html (i.e. upload_data3,4,5)
 @login_required
 def save_new_attribute(request):
     if request.method == 'POST':
         try:
             request_body = json.loads(request.body)
 
-            new_entry = Attribute(name=request_body['name'], description=request_body['description'], first_applicable_object=request_body['first_applicable_object'], format_specification=json.dumps(request_body['format_specification']))
+            new_entry = Attribute(name=request_body['name'], data_type=request_body['data_type'], expected_valid_period=request_body['expected_valid_period'], description=request_body['description'], first_applicable_object=request_body['first_applicable_object'], format_specification=json.dumps(request_body['format_specification']))
             new_entry.save()
             return HttpResponse("success")
         except Exception as error:
@@ -747,7 +804,9 @@ def test_page1(request):
     return render(request, 'tree_of_knowledge_frontend/test_page1.html')
 
 def test_page2(request):
-    return HttpResponse(str(request.user.profile.verbose))
+    populate_db.clear_attributes()
+    populate_db.populate_attributes()
+    return HttpResponse("success")
 
 def test_page3(request):
     return render(request, 'tree_of_knowledge_frontend/test_page3.html')

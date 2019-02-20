@@ -105,12 +105,12 @@
 		}
 		 /* --- Attribute Selections ----------------------------------------------------- */
 		
-		#attribute_selections {
+		#attribute_selection {
 			margin-top:0px;
 			margin-left:8px;
 		}
 		
-		#attribute_selections > div > .btn{
+		#attribute_selection > div > .btn{
 			width:130px;
 			margin-top:35px;
 			margin-left:9px;
@@ -273,7 +273,7 @@
 			<div class="box">
 				<div class="overflowing-content">			
 					<div class="table-box">
-						<div id="attribute_selections"></div>
+						<div id="attribute_selection"></div>
 						<div id="unique_identifier_selection" class="btn-group" data-toggle="buttons" style="display:none;"></div>
 						<div id="uploaded_table"></div>
 						<div id="column_transformations"></div>
@@ -404,10 +404,10 @@
 	var table_body = data_table_json["table_body"]
 	var edited_column = []
 	
-	var attribute_selections = []
+	var attribute_selection = []
 	var object_identifiers = []
 	for (var i = 0; i < table_headers.length; i++) {
-		attribute_selections.push("")
+		attribute_selection.push("")
 		object_identifiers.push(false)
 	}	
 	
@@ -459,7 +459,7 @@
 									'</div>' +
 								   '<div class="vertical-line"></div>'
 		}	
-		$("#attribute_selections").html(buttons_html_string);
+		$("#attribute_selection").html(buttons_html_string);
     }
 
 	//===  Create the "Object Id" Buttons  =============================================================================	
@@ -503,14 +503,14 @@
 		var has_datetime_column = false;
 	
 		for (var i = 0; i < table_headers.length; i++) {
-			if (attribute_selections[i] == "DateTime of Observation") {
+			if (attribute_selection[i] == "DateTime of Observation") {
 				has_datetime_column = true;
 				additional_input_fields =	"<input type='hidden' name='datetime_column' value='" + JSON.stringify(table_body[i]) + "'>" +
 											"<input type='hidden' name='object_identifiers' value='" + JSON.stringify(object_identifiers) + "'>";	
-			} else if (attribute_selections[i] != ""){
+			} else if (attribute_selection[i] != ""){
 				//save column in final-variables
 				final_table_headers.push($("#attribute-button" + i).html());
-				final_attribute_selection.push(attribute_selections[i])
+				final_attribute_selection.push(attribute_selection[i])
 				final_table_body[final_column_index] = table_body[i];
 				
 				
@@ -536,7 +536,11 @@
 								"<input type='hidden' name='attribute_selection' value='" + JSON.stringify(final_attribute_selection) + "'>";
 		if (has_datetime_column) { form_html_string += additional_input_fields;}
 		form_html_string += "</form>"
-		
+		console.log("------------------------------------------------------------")
+		console.log(JSON.stringify(request_body));
+		console.log("------------------------------------------------------------")
+		console.log(JSON.stringify(final_attribute_selection));
+		console.log("------------------------------------------------------------")
 		$(form_html_string).appendTo("body").submit();
 		
 	}
@@ -563,9 +567,11 @@
 			var violating_cell = document.getElementById('data-table').rows[i+1].cells[attributenumber];
 			violating_cell.setAttribute("style", "");
 		}
+		$("#violation-summary" + attributenumber).html("&nbsp;");
+		
 		
 		//if an attribute was chosen: get and set the new markings
-		var attribute_id = attribute_selections[attributenumber]
+		var attribute_id = attribute_selection[attributenumber]
 		var attribute_name = $("#attribute-button" + attributenumber).html();
 		if (attribute_name != "Choose Attribute") {
 		
@@ -717,16 +723,18 @@
 		
 		$("#attribute-button" + attributenumber).html("Choose Attribute");
 		$("#attribute-button" + attributenumber).attr("class", "btn btn-primary");
-		if (attribute_selections[attributenumber] == "DateTime of Observation") {
+		if (attribute_selection[attributenumber] == "DateTime of Observation") {
 			$("#unique_identifier_selection").attr("style", "display:none;");
-			$("#attribute_selections").attr("style", "");
+			$("#attribute_selection").attr("style", "");
 			createObjectIdButtons();     // redraw the buttons so that they are all un-selected
 			var object_identifiers = []  // also, reset the object_identifiers variable
 			for (var i = 0; i < table_headers.length; i++) {
 				object_identifiers.push(false)
 			}	
 		}
-		attribute_selections[attributenumber] == "";
+		attribute_selection[attributenumber] == "";
+		
+		showColumnsFormatViolations(attributenumber);
 	}
 	
 	//===  The "Save" Button  =========================================================================================		  
@@ -740,11 +748,11 @@
 
 			$("#attribute-button" + attributenumber).html("Current DateTime");
 			$("#attribute-button" + attributenumber).attr("class", "btn btn-light");
-			attribute_selections[attributenumber] = "DateTime of Observation";
+			attribute_selection[attributenumber] = "DateTime of Observation";
 			
 			if (document.getElementById("reoccuring").checked) {
 				$("#unique_identifier_selection").attr("style", "display:block;");
-				$("#attribute_selections").attr("style", "height:86px;");
+				$("#attribute_selection").attr("style", "height:86px;");
 			}	
 			
 		} else {
@@ -799,7 +807,7 @@
 			//change the "Choose Attribute" button
 			$("#attribute-button" + attributenumber).html(attributechoice);
 			$("#attribute-button" + attributenumber).attr("class", "btn btn-light");
-			attribute_selections[attributenumber] = attribute_id;
+			attribute_selection[attributenumber] = attribute_id;
 
 			
 			
@@ -1043,7 +1051,7 @@
 				}
 			};
 
-			xmlhttp.open("POST", "/tool/get_suggested_attributes2/");
+			xmlhttp.open("POST", "/tool/find_suggested_attributes2/");
 			xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 			xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 			xmlhttp.send(JSON.stringify(request_body));	

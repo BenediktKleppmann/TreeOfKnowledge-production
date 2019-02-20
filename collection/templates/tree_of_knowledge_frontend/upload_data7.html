@@ -251,7 +251,7 @@
 	// THE DATA
 	var data_table_json = {{ uploaded_dataset.data_table_json | safe }}
 	var column_valid_times = [{'start':1325376000, 'end':1548275592}, {'start':1420070400, 'end':1465862400}, {'start':1420070400, 'end':1465862400}]
-	var valid_times = {}
+	var valid_times = []
 	
 	// GLOBAL VARIABLES
 	var table_headers = data_table_json["table_header"]
@@ -476,7 +476,7 @@
 					for (var j=0; j < table_body[0].length ; j++) {
 						this_columns_valid_times.concat(column_valid_times[i]);
 					}
-					valid_times[i] = this_columns_valid_times;
+					valid_times.push(this_columns_valid_times);
 				}
 				
 				$("#valid_times").val(valid_times);

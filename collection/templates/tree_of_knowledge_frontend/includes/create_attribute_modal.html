@@ -67,6 +67,37 @@
 						</div>
 					</div> 
 					<br>
+						<div class="form-group row">
+						<label for="expected_valid_period" class="col-sm-7">Is this a slow or fast changing attribute? Estimated time until the attribute changes significantly:</label>
+						<div class="col-sm-5">
+							<select class="form-control form-control-lg" id="expected_valid_period" name="expected_valid_period">
+								<option value="" selected></option>
+								<option value=3153600000>constant throughout the object's existence</option>
+								<option value=315360000>10 years</option>
+								<option value=157680000>5 years</option>
+								<option value=63072000>2 years</option>
+								<option value=31536000>1 year</option>
+								<option value=14515200>6 months</option>
+								<option value=7257600>3 months</option>
+								<option value=2419200>1 month</option>
+								<option value=1209600>2 weeks</option>
+								<option value=604800>1 week</option>
+								<option value=259200>3 days</option>
+								<option value=86400>1 day</option>
+								<option value=43200>12 hours</option>
+								<option value=21600>6 hours</option>
+								<option value=10800>3 hours</option>
+								<option value=3600>1 hour</option>
+								<option value=1800>30 minutes</option>
+								<option value=360>6 minutes</option>
+								<option value=60>1 minute</option>
+								<option value=30>30 seconds</option>
+								<option value=6>6 seconds</option>
+								<option value=1>1 second</option>
+							</select>
+						</div>
+					</div>
+					<br>
 					<div class="form-group row">
 						<label for="first_applicable_object" class="col-sm-7">Most general Object Type for which it makes sence to have this attribute</label>
 						<div class="col-sm-5">
@@ -216,6 +247,7 @@
 		
 		var name = $("#name").val();
 		var description = $("#description").val();
+		var expected_valid_period = $("#expected_valid_period").val();
 		var first_applicable_object = $("#first_applicable_object").val();
 		var type = $("#type").val();
 		var min = $("#min").val();
@@ -226,7 +258,9 @@
 		
 		message_body = {} 
 		message_body['name'] = name;
+		message_body['data_type'] = type;
 		message_body['description'] = description;
+		message_body['expected_valid_period'] = expected_valid_period;
 		message_body['first_applicable_object'] = first_applicable_object;
 		message_body['format_specification'] = {}
 		message_body['format_specification']['fields'] = {}
@@ -238,10 +272,17 @@
 			return;
 		}
 		
+		if (expected_valid_period=="") {
+			alert("Please specify an estimated valid time (from the dropdown beneath 'Description')");
+			return;		
+		}
+		
+		
 		if (type == "") {
 			alert("Data Type required");
 			return;
 		}
+		
 		
 		if (type == "string") {
 			if (isNaN(min_length) || min_length[0] == " " || min_length == ""){
