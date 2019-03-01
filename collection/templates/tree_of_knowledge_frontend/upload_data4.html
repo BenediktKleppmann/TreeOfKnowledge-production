@@ -246,6 +246,13 @@
 			width: 600px;
 		}
 		
+		/* --- Edit Attribute Modal -------------------------------------------- */
+		#createAttributeModal .modal-dialog {
+			margin-top:10px;
+			margin-left: -300px;
+			width: 600px;
+		}
+		
 		
 		
 
@@ -373,6 +380,7 @@
 
 
 	{% include "tree_of_knowledge_frontend/includes/create_attribute_modal.html" %} 
+	{% include "tree_of_knowledge_frontend/includes/edit_attribute_modal.html" %} 
 	
 
 
@@ -507,7 +515,7 @@
 					var possible_attributes = JSON.parse(this.responseText);
 					
 					for (var i = 0; i < possible_attributes.length; i++) {
-						list_group_html_string += '<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(' + attribute_number + ', this.innerHTML, ' + possible_attributes[i]['attribute_id'] + ')">' + possible_attributes[i]['attribute_name'] + '</button></li>'
+						list_group_html_string += '<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(' + attribute_number + ', this.innerHTML, ' + possible_attributes[i]['attribute_id'] + ')" data-attribute-id=' + possible_attributes[i]['attribute_id'] + '>' + possible_attributes[i]['attribute_name'] + '</button></li>'
 						
 					}
 					

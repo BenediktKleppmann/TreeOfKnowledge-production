@@ -142,6 +142,10 @@
 
         .table thead, .table tbody, .table tr, .table td, .table th { display: block; text-align:left; }
 
+		td > span {
+			visibility: hidden;
+		}
+		
         .table  tr:after {
             content: ' ';
             display: block;
@@ -286,7 +290,7 @@
 		for (var i = 0; i < table_body[0].length; i++) {
 			table_html_string +=  		'<tr>';
 			for (var j = 0; j < table_headers.length; j++) {
-				table_html_string +=  			'<td>' + table_body[j][i] + '</td>';
+				table_html_string +=  			'<td><span>f</span>' + table_body[j][i] + '</td>';
 			}
 			table_html_string +=  		'</tr>';
 		}

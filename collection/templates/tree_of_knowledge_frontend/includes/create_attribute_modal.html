@@ -159,7 +159,7 @@
 						options_html_string += '<option value="' + list_of_parent_objects[i]["id"] + '">' + list_of_parent_objects[i]["name"] + '</option>'
 					}
 				}
-				$("#first_applicable_object").html(options_html_string);
+				$("#createAttributeModal #first_applicable_object").html(options_html_string);
 			}
 		};
 		xhttp.open("GET", "/tool/get_list_of_parent_objects?object_type_id=" + object_type_id , true);
@@ -230,12 +230,12 @@
 	
 	/*=============  CHEDKBOX "CATEGORICAL" -> TOGGLE ALLOWED VALUES  ================================================================ */
 	function toggleCategoricalField() {
-		var displayed = $("#allowed-values-group").attr("style")=="display:block;";
+		var displayed = $("#createAttributeModal #allowed-values-group").attr("style")=="display:block;";
 		if (displayed) {
-			$("#allowed-values-group").attr("style","display:none;");
+			$("#createAttributeModal #allowed-values-group").attr("style","display:none;");
 			document.getElementById("allowed-values").disabled = true;
 		} else {
-			$("#allowed-values-group").attr("style","display:block;");
+			$("#createAttributeModal #allowed-values-group").attr("style","display:block;");
 			document.getElementById("allowed-values").disabled = false;
 		}
 	
@@ -245,16 +245,16 @@
 	/*=============  SAVE NEW ATTRIBUTE  ================================================================ */
 	function saveAttribute() {
 		
-		var name = $("#name").val();
-		var description = $("#description").val();
-		var expected_valid_period = $("#expected_valid_period").val();
-		var first_applicable_object = $("#first_applicable_object").val();
-		var type = $("#type").val();
-		var min = $("#min").val();
-		var max = $("#max").val();
-		var min_length = $("#min_length").val();
-		var max_length = $("#max_length").val();
-		var allowed_values = $("#allowed_values").val();
+		var name = $("#createAttributeModal #name").val();
+		var description = $("#createAttributeModal #description").val();
+		var expected_valid_period = $("#createAttributeModal #expected_valid_period").val();
+		var first_applicable_object = $("#createAttributeModal #first_applicable_object").val();
+		var type = $("#createAttributeModal #type").val();
+		var min = $("#createAttributeModal #min").val();
+		var max = $("#createAttributeModal #max").val();
+		var min_length = $("#createAttributeModal #min_length").val();
+		var max_length = $("#createAttributeModal #max_length").val();
+		var allowed_values = $("#createAttributeModal #allowed_values").val();
 		
 		message_body = {} 
 		message_body['name'] = name;
@@ -305,7 +305,7 @@
 			message_body['format_specification']['fields']['column']['min_length'] = min_length;
 			message_body['format_specification']['fields']['column']['max_length'] = max_length;
 			
-			if (($("#allowed-values-group").attr("style")=="display:block;") && (allowed_values_list != "")) {
+			if (($("#createAttributeModal #allowed-values-group").attr("style")=="display:block;") && (allowed_values_list != "")) {
 				try {
 					allowed_values_list  = JSON.parse(allowed_values)
 					if (!Array.isArray(allowed_values_list)) {
@@ -376,6 +376,14 @@
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send(JSON.stringify(message_body));
 	
+		// CLEAN UP -------------------------
+		// empty the input fields
+		$("#createAttributeModal #name").val("");
+		$("#createAttributeModal #description").val("");
+		$("#createAttributeModal #expected_valid_period").val("");
+		$("#createAttributeModal #type").val("");
+		$("#createAttributeModal #new-attribute-further-fields").html("");
+		
 		//close the modal
 		document.getElementById("newAttributeCloseButton").click();
 		

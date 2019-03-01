@@ -12,6 +12,14 @@
 <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
 <!--<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>-->
 
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<link href="{% static 'css/contextmenu.min.css' %}" rel="stylesheet" />
+
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+<script src="{% static 'js/contextmenu.js' %}"></script>
+
+
 
 <style>
 		
@@ -20,7 +28,7 @@
 		}
 		
 		.next-button {
-			margin-top: 15px;
+			margin-top: 11px;
 		}
 		/* --- Table box ----------------------------------------------------------- */
 		
@@ -28,7 +36,7 @@
 			/*position: absolute;*/
 			top: 40px;
 			left: 0;
-			height:calc(100vh - 235px);
+			height:calc(100vh - 210px);
 			border: 1px solid rgb(210, 210, 210);
 			padding:2px;
 		
@@ -62,6 +70,10 @@
 		
 
         thead, tbody, tr, td, th { display: block; text-align:left; }
+		
+		td > span {
+			visibility: hidden;
+		}
 
         tr:after {
             content: ' ';
@@ -86,9 +98,10 @@
 		.table thead > tr > th {border-bottom: 0;}
 
         tbody {
-            height: calc(100vh - 425px);
+            height: calc(100vh - 455px);
             overflow-y: auto;
 			direction: rtl;
+			overflow-x: hidden;
         }
 
         tbody td, thead th {
@@ -100,9 +113,7 @@
 			border-left:1px solid black;
 		}
 		
-		[contenteditable="true"]:focus {
-			background-color: rgb(225, 225, 225);
-		}
+		
 		 /* --- Attribute Selections ----------------------------------------------------- */
 		
 		#attribute_selection {
@@ -167,14 +178,15 @@
 			border-color: rgb(146, 147, 147);
 		  }
   
-		/* --- Attributes Selection Menu ----------------------------------------------------- */
+		/* --- Attributes Selection Modal ----------------------------------------------------- */
 		
 		.modal-body{
 			padding-top:0px;
 		}
 		
 		.modal-dialog {
-			width:700px;
+			margin-left: -300px;
+			width: 700px;
 		}	
 		
 		.modal-header {		
@@ -204,6 +216,7 @@
 			margin-top:5px; 
 			width: 175px;
 			text-align: left;
+			overflow: hidden;
 		}
 
 		#attribute-choice {
@@ -255,6 +268,12 @@
 			margin-top: 15px;
 		}
 		
+		#subset_specification {
+			margin-left: 15px;
+			width: 415px;
+			margin-top: 5px;
+		}
+		
 </style>
 {% endblock %}
 
@@ -291,9 +310,9 @@
 
 	<!-- Choose Attribute Modal -->
 	<div class="modal fade" id="chooseAttribute" tabindex="-1" role="dialog" aria-labelledby="chooseAttributeTitle" aria-hidden="true">
-	  <div class="modal-dialog" role="document">
+	  <div class="modal-dialog" role="document" style="margin-left:-300px;width:700px">
 		<div class="modal-content">
-		  <div class="modal-header row">
+		  <div class="modal-header row" style="margin:0px; padding:15px 0px;">
 			<h5 class="modal-title col-md-11">Select the Column's Attribute</h5>
 			<div id="attribute-options" style="display:none;"></div>
 			<button type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:2px; margin-right:19px;font-size:29px">
@@ -357,6 +376,13 @@
 						</ul>
 						<br>
 						<textarea cols="25" rows="6" class="form-control" id="transformation-rule"></textarea>
+						
+						<input type="checkbox" id="use-subset" name="use-subset" onchange="toggleSubsetSpecification()">&nbsp;Apply on a subset
+						<br>
+						<div id="subset-specification-div" class="row" style="display:none;">
+							<input type="text" class="form-control" id="subset_specification" name="subset_specification" value="" placeholder="e.g. (value[0] == '-') and ('7' not in value) ">
+						</div>
+						
 						<button class="btn btn-success apply-transformation-button" type="button" onclick="applyTransformation()">Apply Transformation</button>
 						<div id="editColumnErrors"></div>
 					</div>
@@ -386,6 +412,7 @@
 	</div>
 	
 	{% include "tree_of_knowledge_frontend/includes/create_attribute_modal.html" %} 
+	{% include "tree_of_knowledge_frontend/includes/edit_attribute_modal.html" %} 
 	
 	
 
@@ -425,7 +452,7 @@
 										'<tr>';
 
 		for (var i = 0; i < table_headers.length; i++) {
-			table_html_string +=  			'<th scope="col" contenteditable="true">' + table_headers[i] + '</th>';
+			table_html_string +=  			'<th scope="col">' + table_headers[i] + '</th>';
 		}
 		
 		table_html_string +=  			'</tr>' +
@@ -435,7 +462,7 @@
 		for (var i = 0; i < table_body[0].length; i++) {
 			table_html_string +=  		'<tr>';
 			for (var j = 0; j < table_headers.length; j++) {
-				table_html_string +=  			'<td contenteditable="true">' + table_body[j][i] + '</td>';
+				table_html_string +=  		'<td><span>f</span>' + table_body[j][i] + '</td>';
 			}
 			table_html_string +=  		'</tr>';
 		}
@@ -467,8 +494,8 @@
 	
 		var buttons_html_string = "";	
 		for (var i = 0; i < table_headers.length; i++) {
-			buttons_html_string +=	'<label class="unique-identifier-element btn btn-primary">' +
-										'<input type="checkbox" autocomplete="off" id="object-id' + i + '" onclick="objectIdButtonClick(' + i + ')">Object Id' +
+			buttons_html_string +=	'<label class="unique-identifier-element btn btn-primary" onclick="objectIdButtonClick(' + i + ')">' +
+										'<input type="checkbox" autocomplete="off" id="object-id' + i + '">Object Id' +
 									'</label>';
 		}	
 		$("#unique_identifier_selection").html(buttons_html_string);
@@ -499,19 +526,19 @@
 		var final_table_headers = [];
 		var final_attribute_selection = []
 		var final_table_body = {};
+		var final_object_identifiers = [];
 		final_column_index = 0;
-		var has_datetime_column = false;
+		var datetime_column = null;
 	
 		for (var i = 0; i < table_headers.length; i++) {
 			if (attribute_selection[i] == "DateTime of Observation") {
-				has_datetime_column = true;
-				additional_input_fields =	"<input type='hidden' name='datetime_column' value='" + JSON.stringify(table_body[i]) + "'>" +
-											"<input type='hidden' name='object_identifiers' value='" + JSON.stringify(object_identifiers) + "'>";	
+				datetime_column = table_body[i]		
 			} else if (attribute_selection[i] != ""){
 				//save column in final-variables
 				final_table_headers.push($("#attribute-button" + i).html());
 				final_attribute_selection.push(attribute_selection[i])
 				final_table_body[final_column_index] = table_body[i];
+				final_object_identifiers[final_column_index] = object_identifiers[i];
 				
 				
 				//remove those values from the final_table_body that have violating formats
@@ -524,6 +551,18 @@
 			}
 		}
 		
+		//check if valid object_identifiers were selected 
+		if ($("#unique_identifier_selection").attr("style") == "display:block;") {
+			object_identifier_selected = false;
+			for (var i = 0; i < final_object_identifiers.length; i++) { 
+				if (final_object_identifiers[i]){object_identifier_selected = true;}
+			}
+			if (! object_identifier_selected){
+				alert("Object Id required.")
+				return;
+			}
+		}
+		
 		request_body["table_header"] = final_table_headers
 		request_body["table_body"] = final_table_body
 		
@@ -532,15 +571,16 @@
 		
 		form_html_string =	"<form role='form' action='' method='post' class='form' enctype='multipart/form-data'>" + 
 								csrf_token +
-								"<input type='hidden' name='data_table_json' value='" + JSON.stringify(request_body) + "'>" +
+								"<input type='hidden' name='data_table_json' value='" + JSON.stringify(request_body).replace(/'/g, "&#39;") +  "' >" +  //maxlength='1000000000000'
 								"<input type='hidden' name='attribute_selection' value='" + JSON.stringify(final_attribute_selection) + "'>";
-		if (has_datetime_column) { form_html_string += additional_input_fields;}
-		form_html_string += "</form>"
-		console.log("------------------------------------------------------------")
-		console.log(JSON.stringify(request_body));
-		console.log("------------------------------------------------------------")
-		console.log(JSON.stringify(final_attribute_selection));
-		console.log("------------------------------------------------------------")
+		if (datetime_column != null) { 
+			form_html_string +=	"<input type='hidden' name='datetime_column' value='" + JSON.stringify(datetime_column) + "'>";
+		}
+		if ($("#unique_identifier_selection").attr("style") == "display:block;") {
+			form_html_string += "<input type='hidden' name='object_identifiers' value='" + JSON.stringify(final_object_identifiers) + "'>";
+		}
+		form_html_string += "</form>";
+
 		$(form_html_string).appendTo("body").submit();
 		
 	}
@@ -553,7 +593,11 @@
 	
 	function updateColumn(attributenumber) {
 		for (var i = 0; i < table_body[attributenumber].length; i++) {
-			document.getElementById('data-table').rows[i+1].cells[attributenumber].innerHTML = table_body[attributenumber][i];
+			if (String(table_body[attributenumber][i]).length < 30) {
+				document.getElementById('data-table').rows[i+1].cells[attributenumber].innerHTML = '&nbsp;' + String(table_body[attributenumber][i]).replace(new RegExp(' ', 'g'), '&nbsp;');
+			} else {
+				document.getElementById('data-table').rows[i+1].cells[attributenumber].innerHTML = '&nbsp;' + table_body[attributenumber][i]
+			}			
 		}
 	}
 	
@@ -822,6 +866,10 @@
 	//====  Edit Column Modal  ===========================================================================
 	//====================================================================================================
 	
+	String.prototype.replaceAll = function(search, replacement) {
+		var target = this;
+		return target.replace(new RegExp(search, 'g'), replacement);
+	};
 
 	//===  Draw the Edited Column (in the Edit-Column Modal on the right)  =========================================================================================		  
 	function drawEditedColumnValues() {
@@ -829,17 +877,31 @@
 		column_html_string = '';									
 		
 		for (var i = 0; i < edited_column.length; i++) {
-			column_html_string += 	'<tr><td>' + edited_column[i] + '</td></tr>';
+			column_html_string += 	'<tr><td><span>f</span>' + edited_column[i] + '</td></tr>';
 		}
 		$("#edited-column-values").html(column_html_string);
 	}					
-					
+		
+		
+	//===  CHECKBOX: Apply on a subset   =========================================================================================		
+	
+	function toggleSubsetSpecification() {
+		var displayed = $("#subset-specification-div").attr("style")=="display:block;";
+		if (displayed) {
+			$("#subset-specification-div").attr("style","display:none;");
+			$("#subset_specification").val("");
+		} else {
+			$("#subset-specification-div").attr("style","display:block;");
+		}
+	}
+	
 
 	//===  "Apply Transformation" Button  =========================================================================================		  				
 	function applyTransformation() {
 	
 		var request_body = {}
 		request_body['transformation'] = $("#transformation-rule").val();
+		request_body['subset_specification'] = $("#subset_specification").val();
 		request_body['edited_column'] = edited_column;
 		
 		//have the column edited by the backend
@@ -931,7 +993,8 @@
 				
 				if (data_type == "string") {
 					var allowed_values = JSON.stringify(response_dict["fields"]["column"]["allowed_values"])
-					var checked  =  (allowed_values.length > 0) ? "checked" : "" ;
+					var checked  =  (typeof allowed_values === "undefined") ? "" : "checked";
+					//var checked  =  (allowed_values.length > 0) ? "checked" : "" ;
 					dataTypeSpecificOptions += 	'<br>' +
 												'<div class="form-group row">' +
 													'<label for="min_length" class="col-sm-7">Minimum string length</label>' +
@@ -1042,7 +1105,7 @@
 					
 				  
 					for (var i = 0; i < attribute_options.length; i++) {
-						selection_options_html_string += 	'<button class="btn btn-outline-secondary" type="button" onclick="inspectAttribute(' + i + ')" scope="col">' + attribute_options[i]["attribute_name"] + '</button>' +
+						selection_options_html_string += 	'<button class="btn btn-outline-secondary" type="button" onclick="inspectAttribute(' + i + ')" scope="col" data-attribute-id=' + attribute_options[i]["attribute_id"] + '>' + attribute_options[i]["attribute_name"] + '</button>' +
 															'<br>';
 					}
 
@@ -1123,6 +1186,9 @@
 		$("#edited-column-name").html(table_headers[attributenumber]);
 		edited_column = table_body[attributenumber]
 		drawEditedColumnValues();
+		$("#subset-specification-div").attr("style","display:none;");
+		$("#subset_specification").val("");
+		document.getElementById("use-subset").checked = false;
 		});
 
 		

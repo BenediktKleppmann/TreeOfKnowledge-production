@@ -1,0 +1,793 @@
+{% extends 'layouts/base_tool.html' %}
+{% load staticfiles %}
+
+{% block title %}
+	Edit Simulation {{ model.name }}
+{% endblock %}
+
+{% block additionalcss %}
+<script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+
+<style>
+	/* ------------------------------------------------------------- */
+	/* --- THE LEFT SIDE  ------------------------------------------ */
+	/* ------------------------------------------------------------- */
+
+	.input-field {
+	    width: 180px;
+	}
+	
+	/* --- Choose Object Type Popover ----------------------------------- */
+	.popover {
+		max-width: 730px;
+	}
+	
+	.choose-object-type-content  {
+		width: 700px;
+	}
+	
+	#search-box{
+		width: 150px;
+		margin-bottom: 10px;
+	}
+	
+	.object-type-spec-box {
+		border: solid 1px grey;
+		height: calc(100vh - 345px);
+		overflow: auto;
+	}
+	
+		/* --- Additional Fact Row -------------------------------------------- */
+		.dropdown-menu {
+			padding:0;
+		}
+		
+		.search {
+			height:40px;
+			border-radius:4px;
+			border: 1px solid #999;
+		}
+		
+		div.inline { 
+			float:left; 
+			margin-right: 5px;
+		}
+		
+		
+		.broad {
+			padding-top: 3px;
+			padding-bottom: 1px;
+			padding-right: 3px;
+			padding-left: 2px;
+			height:43px;
+		}
+		
+		.form-group {
+			margin-bottom: 0px;
+		}
+		
+		div.inline {
+			margin-right:3px;
+		}
+		
+		.dropdown {
+			position: absolute;
+			margin-left:2px;
+		}
+		
+		.dropdown-item {
+			padding: 6px 10px;
+			border-radius:2px;
+			width:150px
+		}
+		
+		
+		/* --- Additional Attribute Drop Down ----------------------------------- */
+		
+		.list-group.drop-down-display {
+			margin-bottom:3px;
+			max-height: 250px;
+			overflow-y: scroll;
+		}
+
+		.dropdown {
+			margin-left:2px;
+		}
+		
+		.dropdown-item {
+			padding: 6px 10px;
+			border-radius:2px;
+			width:150px
+		}
+		
+		.dropdown-item-button {
+			padding: 6px 10px;
+			border-radius:2px;
+			width:150px;
+			margin-left:17px;
+			margin-bottom:3px;
+			border-radius:5px;
+		}
+		
+		
+	/* ------------------------------------------------------------- */
+	/* --- THE RIGHT SIDE  ------------------------------------------ */
+	/* ------------------------------------------------------------- */
+	
+	#entity-count {
+		text-align: center;
+		margin-bottom: 10px;
+	}
+	
+	/* --- Table box ----------------------------------------------------------- */
+	
+	
+	.box {
+		display:inline-block;
+		vertical-align: top;
+		border: 1px solid rgb(210, 210, 210);
+		padding:2px;
+		height: calc(100vh - 280px);
+	}
+
+	
+	.table-box {
+		width: max-content;
+		width: intrinsic;           /* Safari/WebKit uses a non-standard name */
+		width: -moz-max-content;    /* Firefox/Gecko */
+		width: -webkit-max-content; /* Chrome */
+	}
+	
+	#uploaded_table {
+		margin-left: 6px;
+		margin-right: 4px;
+		margin-bottom:0px;
+		background-color:rgb(240, 240, 240);
+	}
+	
+	/* --- Table format -------------------------------------------------------- */
+	.table {
+		margin-bottom:0px;
+		width: 2705px;
+		overflow: auto;
+	}
+	
+
+	.table thead, .table tbody, .table tr, .table td, .table th { display: block; text-align:left; }
+
+	td > span {
+		visibility: hidden;
+	}
+		
+	.table  tr:after {
+		content: ' ';
+		display: block;
+		visibility: hidden;
+		clear: both;
+	}
+
+	
+	.table thead th {
+		height: max-content;
+		height: intrinsic;           /* Safari/WebKit uses a non-standard name */
+		height: -moz-max-content;    /* Firefox/Gecko */
+		height: -webkit-max-content; /* Chrome */
+	}
+	
+	
+	.table thead {
+		margin-left:20px;
+	}
+	
+	.table thead > tr > th {border-bottom: 0;}
+
+	.table-body {
+		height: calc(100vh - 340px);
+		overflow-y: auto;
+		direction: rtl;
+	}
+
+	.table tbody td, .table thead th {
+		width: 140px;
+		float: left;
+	}
+	
+	uploaded_table th, uploaded_table tr {
+		border-left:1px solid black;
+	}
+	
+	.table thead > tr > ts:hover {
+		background-color: rgb(225, 225, 225);
+	}
+		
+	/* --- Table-attribute selection (the dropdowns at the top) -------------------------------------------------------- */
+	
+	#table-attribute-selection {
+		margin-bottom:20px
+	}
+	
+	
+	.table-attribute-dropdown {
+		width: 121px;
+		margin-left: 15px;
+		display: inline-block;
+	}
+	
+</style>
+{% endblock %}
+
+{% block content %}
+	
+	<h1>Query Data</h1> 
+	<div class="row">
+		<!-- THE LEFT SIDE-->
+		<div class="col-sm-6 col-md-5 col-lg-3 form">
+		
+		
+			<div class="form-group">
+				<label for="object_type">Object Type</label>
+				<input type="text" id="object_type" class="form-control input-field" placeholder="Object Type">
+				<input type="hidden" id="object_type_id">
+			</div>
+			<br>
+			<div class="form-group">
+				<label for="object_type">Filters</label>
+				<ul class="list-group" id="new_object_facts_list"> 
+					<li class="list-group-item broad" > <!-- Object Attribute 1 -->
+						<div>
+							<div class="dropdown inline">
+								<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name1">Attribute<span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+								<div class="dropdown-menu" aria-labelledby="attributeMenu1">
+									<div id="attributeList1">
+										<input type="text" class="search" id="dropDonwSearch1" onkeyup="filterAttributeDropDown(1)" placeholder=" Search">
+										<ul id="drop-down-display1" class="list-group drop-down-display"></ul>									
+										<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(1);">Reset</button>
+									</div>
+								</div>
+							</div>
+							<input type="hidden" id="attribute1" name="attribute1" value="">
+							<div class="form-group inline operator" style="position: absolute; margin-left: 102px;">
+								<select class="form-control form-control-lg" id="operator1" name="operator1">
+									<option value="=" selected>=</option>
+									<option value=">">></option>
+									<option value="<"><</option>
+									<option value="in">in</option>
+								</select>
+							</div> 
+							<div class="form-group inline value" style="position: absolute;margin-left: 165px;">
+								<input type="text" class="form-control" id="value1" name="value1" value="" size="15">
+							</div>
+							<button type="button" id="format_violation1" class="btn btn-danger pull-right" data-container="body" data-toggle="popover" data-placement="right" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
+						</div>
+					</li>
+					<li class="list-group-item broad" > <!-- Object Attribute 2 -->
+						<div>
+							<div class="dropdown inline" >
+								<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name2">Attribute<span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+								<div class="dropdown-menu" aria-labelledby="attributeMenu2">
+									<div id="attributeList2">
+										<input type="text" class="search" id="dropDonwSearch2" onkeyup="filterAttributeDropDown(2)" placeholder=" Search">
+										<ul id="drop-down-display2" class="list-group drop-down-display"></ul>									
+										<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(2);">Reset</button>
+									</div>
+								</div>
+							</div>
+							<input type="hidden" id="attribute2" name="attribute2" value="">
+							<div class="form-group inline operator" style="position: absolute; margin-left: 102px;">
+								<select class="form-control form-control-lg" id="operator2" name="operator2">
+									<option value="=" selected>=</option>
+									<option value=">">></option>
+									<option value="<"><</option>
+									<option value="in">in</option>
+								</select>
+							</div> 
+							<div class="form-group inline value" style="position: absolute;margin-left: 165px;">
+								<input type="text" class="form-control" id="value2" name="value2" value="" size="15">
+							</div>
+							<button type="button" id="format_violation2" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="right" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
+						</div>
+					</li>
+					<li class="list-group-item narrow" id="create-new-object-fact-button">  	<button id="make-new-additional-fact-button" type="button" class="btn btn-outline-dark" onclick="newAdditionalFactInput('all');" ><i class="fas fa-plus"></i></button> </li>
+				</ul>  
+			</div>
+		</div>
+		
+		<!-- THE RIGHT SIDE-->
+		<div class="col-sm-6 col-md-7 col-lg-9">
+			<div id="entity-count"></div>
+			
+			<div class="form" id="table-attribute-selection">
+				<span id="end-of-attribute-selection"><span>
+			</div>
+			
+			<div class="box">		
+				<div class="table-box">
+					<div id="uploaded_table"></div>
+				</div>
+			</div>
+		</div>
+		
+		
+	</div>
+
+
+
+
+	
+	
+	
+	
+<script>
+	// GLOBAL VARIABLES:
+	var object_hierachy_tree = {{ object_hierachy_tree|safe }}
+	var table_body = {}
+	var largest_dropdown_number = 0
+	var table_attributes = []
+	var selected_table_attributes = []
+	
+	
+	
+	/*========================================================================*/
+	/*=================    OBJECT TYPE      ==================================*/
+	/*========================================================================*/
+
+
+
+	// Set up the Object Hierachy Tree =============================================================	
+	function loadObjectHierachyTree() {
+			
+		// search 
+		var to = false;
+		$('#object_type').keyup(function () {
+			if(to) { clearTimeout(to); }
+			to = setTimeout(function () {
+				var v = $('#object_type').val();
+				$('#container-for-object-tree').jstree(true).search(v);
+			}, 250);
+		});
+		
+		// display object hierachy tree
+		$('#container-for-object-tree').jstree({
+			'core' : {
+				"animation" : 0,
+				"check_callback" : true,
+				'force_text' : true,
+				"themes" : { "stripes" : false,
+							 "icons": false},	
+				'data' : object_hierachy_tree
+			},
+			"types" : {
+				"root" : { "icon" : "/static/3.3.7/assets/images/tree_icon.png", "valid_children" : ["default"] },
+				"default" : { "valid_children" : ["default","file"] },
+				"file" : { "icon" : "glyphicon glyphicon-file", "valid_children" : [] }
+			},
+			"themes":{"icons":false},
+			"plugins" : [ "contextmenu", "dnd", "search", "state", "types" ]
+		});	
+
+		// Select node in object hierachy tree =======================================
+		$('#container-for-object-tree')
+			.on('select_node.jstree', function (e, data) {
+			  
+			var node_id = data.selected[0];
+			var object_type_name = data.instance.get_node(node_id).text;
+			$("#object_type").val(object_type_name);
+			$("#object_type_id").val(node_id);
+			
+			//for the "+"-button change it so that the new attribute-drop-downs will list the object-types attributes
+			$("#make-new-additional-fact-button").attr("onclick", "newAdditionalFactInput('" + node_id + "');")
+			
+			//For all Attribute-dropdowns: remove the old selection and load a list of possible_attributes 
+			for (var i = 1; i <= number_of_additional_object_facts; i++) {
+				resetAttribute(i);
+				makeObjectsAdditionalAttributesDropdown(node_id , i);
+			}
+			
+			runQuery(true);
+		});
+		
+		  
+	}
+	
+	
+	/*========================================================================*/
+	/*=====================    FILTERS      ==================================*/
+	/*========================================================================*/
+	
+	/*=============  MAKE NEW ADDITIONAL FACT LIST ITEM  ================================================================ */
+	var number_of_additional_object_facts = 2;
+
+	function newAdditionalFactInput(object_type_id) { 
+
+
+		number_of_additional_object_facts += 1;
+		fact_number = number_of_additional_object_facts;
+		var insert_before = '#create-new-object-fact-button';
+
+		
+		var additionalFactHTMLString = 	'<li class="list-group-item broad" >' +
+											'<div">' + 
+												'<div class="dropdown inline" >' + 
+													'<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu' + fact_number + '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name' + fact_number + '">Attribute<span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>' + 
+													'<div class="dropdown-menu" aria-labelledby="attributeMenu' + fact_number + '">' + 
+														'<div id="attributeList' + fact_number + '">' + 
+															'<input type="text" class="search" id="dropDonwSearch' + fact_number + '" onkeyup="filterAttributeDropDown(' + fact_number + ')" placeholder=" Search">' +
+															'<ul id="drop-down-display' + fact_number + '" class="list list-group drop-down-display"></ul>' +															
+															'<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(' + fact_number + ');">Reset</button>' +
+														'</div>' + 
+													'</div>' + 
+												'</div>' + 
+												'<input type="hidden" id="attribute' + fact_number + '" name="attribute' + fact_number + '" value="">' + 
+												'<div class="form-group inline operator" style="position: absolute; margin-left: 102px;">' + 
+													'<select class="form-control form-control-lg" id="operator' + fact_number + '" name="operator' + fact_number + '">' + 
+														'<option value="=" selected>=</option>' + 
+														'<option value=">">></option>' + 
+														'<option value="<"><</option>' + 
+														'<option value="in">in</option>' +
+													'</select>' + 
+												'</div> ' + 
+												'<div class="form-group inline value" style="position: absolute;margin-left: 165px;">' + 
+													'<input type="text" class="form-control" id="value' + fact_number + '" name="value' + fact_number + '" size="15">' + 
+												'</div>' + 
+											'</div>' +
+											'<button type="button" id="format_violation' + fact_number + '" class="btn btn-danger pull-right" data-container="body" data-toggle="popover" data-placement="right" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>' +
+										'</li>';
+										
+		$(additionalFactHTMLString).insertBefore(insert_before);
+		
+		makeObjectsAdditionalAttributesDropdown(object_type_id, fact_number);
+		
+	}
+	
+	
+	
+	/*========================================================================*/
+	/*==========  DROP DOWNS (in "Create Object Type" Modal)  ================*/
+	/*========================================================================*/								
+								
+										
+	/*=============  POPULATE AdditionalAttribute-DROPDOWNS  ================================================================ */
+
+	function makeObjectsAdditionalAttributesDropdown(object_type_id, attribute_number){
+
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+
+				list_group_html_string = ""
+				
+				var possible_attributes = JSON.parse(this.responseText);
+				
+				for (var i = 0; i < possible_attributes.length; i++) {
+					list_group_html_string += '<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(' + attribute_number + ', this.innerHTML, ' + possible_attributes[i]['attribute_id'] + ')" data-attribute-id=' + possible_attributes[i]['attribute_id'] + '>' + possible_attributes[i]['attribute_name'] + '</button></li>'
+					
+				}
+				
+				$("#drop-down-display" + attribute_number).html(list_group_html_string);
+				
+			}
+		};
+
+		xhttp.open("GET", "/tool/get_possible_attributes?object_type_id=" + object_type_id , true);
+		xhttp.send();
+	}
+
+
+	function filterAttributeDropDown(attribute_number){	
+		var current_query = $('#dropDonwSearch' + attribute_number).val().toLowerCase();
+		if (current_query !== "") {
+			$("#drop-down-display" + attribute_number + " li").hide();
+			$("#drop-down-display" + attribute_number + " li").each(function(){
+				var current_keyword = $(this).text().toLowerCase();
+				if (current_keyword.indexOf(current_query) >=0) {
+					$(this).show();    	 	
+				};
+			});    	
+		} else {
+			$("#drop-down-display" + attribute_number + " li").show();
+		};
+	}
+
+
+	/*=============  SELECT DROPDOWN OPTION  ================================================================ */
+	function selectAdditionalAttribute(attribute_number , attribute_name, attribute_id) {
+		$('#attribute-name' + attribute_number).html(attribute_name);
+		$('#attribute' + attribute_number).attr('value', attribute_id);									
+	}
+
+
+	/*=============  CHECK ADDITIONAL FACTS FORMATS  ================================================================ */
+	function checkAdditionalFactFormats() {
+		for (var fact_number = 1; fact_number <= number_of_additional_object_facts; fact_number++) {
+			var attribute_id = $('#attribute' + fact_number).val();
+			var operator = $('#operator' + fact_number).val();
+			var value = $('#value' + fact_number).val();
+			
+			var xhttp = new XMLHttpRequest();       
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+
+					var response_dict = JSON.parse(this.responseText);
+					var format_violation_text = response_dict['format_violation_text']
+					var returned_fact_number = response_dict['fact_number']
+					
+					if (format_violation_text == "") {
+						$("#format_violation" + returned_fact_number).attr("style", "display:none;");
+						$("#format_violation"  + returned_fact_number).popover('hide');
+						document.getElementById("attribute" + returned_fact_number).disabled = false; // this attribute won't be sent in the POST when pressing 'Next' - the backend thus knows that the fact is invalid
+					} else {
+						$("#format_violation" + returned_fact_number).attr("style", "display:block;");
+						document.getElementById("attribute" + returned_fact_number).disabled = true;
+						
+					}
+					
+					$("#format_violation" + returned_fact_number).attr("data-content", format_violation_text);
+					console.log("-------------------------");
+					console.log(response_dict[format_violation_text]);
+				}
+			};
+			
+			xhttp.open("GET", "/tool/check_single_fact_format?fact_number=" + String(fact_number) + "&attribute_id=" + attribute_id + '&operator=' + operator + '&value=' + value, true);
+			xhttp.send();
+		}									
+	}
+
+
+	/*=============  RESET DROPDOWN SELECTION  ================================================================ */
+	function resetAttribute(attribute_number){
+		$('#attribute-name' + attribute_number).html('Attribute');
+		document.getElementById('attribute' + attribute_number).value = '';	
+		document.getElementById('operator' + attribute_number).selectedIndex = 0;
+		document.getElementById('value' + attribute_number).value = '';	
+		checkAdditionalFactFormats();
+	}
+
+
+	/*========================================================================*/
+	/*========================================================================*/
+	/*========================================================================*/
+	/*====================    THE RIGHT SIDE      ============================*/
+	/*========================================================================*/
+	/*========================================================================*/
+	/*========================================================================*/
+	
+	
+	function runQuery(reset_attribute_selection){
+		object_type_id = $("#object_type_id").val();
+		
+		
+		filter_facts = [];
+		
+		//for every attribute-specification, get the attribute, operator and value and save to the object_dict
+		for (var fact_number = 1; fact_number <= number_of_additional_object_facts; fact_number++) {
+			new_fact = {}
+			new_fact['attribute'] = $("#attribute-name" + fact_number).html();
+			new_fact['attribute_id'] = $("#attribute" + fact_number).val();
+			new_fact['operation'] = $("#operator" + fact_number).val();
+			new_fact['value'] = $("#value" + fact_number).val();
+			var has_no_format_error = ($("#format_violation" + fact_number).attr("style") == "display:none;");
+			
+			if (new_fact['attribute'] != "" && new_fact['value'] != "" && has_no_format_error) {
+				filter_facts.push(new_fact);
+			}
+		}
+		
+		request_body = {};
+		request_body['object_type_id'] = object_type_id;
+		request_body['filter_facts'] = filter_facts;
+		
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+
+				var response = JSON.parse(this.responseText);
+				table_body = response['table_body']
+				table_attributes = response['table_attributes']
+				
+				//reset everything
+				$("#entity-count").html(response['number_of_entities_found'] + " entities found");
+				$("#uploaded_table").html("");
+				
+				if (reset_attribute_selection) {
+					$("#table-attribute-selection").html('<span id="end-of-attribute-selection"><span>');
+					selected_table_attributes = []
+					if (response['number_of_entities_found'] > 0){
+						drawTheFirstDropDown();
+					}
+				} else {
+					drawTheTable();
+				}
+				
+				
+
+
+
+			}
+		};
+
+		xmlhttp.open("POST", "/tool/get_data_points/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));
+	
+	}
+	
+	
+	//===  Draw the table  ================================================================================================================================	
+    function drawTheTable() {
+	
+		number_of_rows = table_body[Object.keys(table_body)[0]].length;
+		
+		//When you change the filters, then a new query is run, but the selected_table_attributes remain.
+		//The table returned by the new query may not have one of the selected attributes.
+		//Here we check for this and add a column of nulls to table_body for any missing column.
+		for (var i = 0; i < selected_table_attributes.length; i++) {
+			var selected_attribute_id = selected_table_attributes[i]['attribute_id'];
+			if (! Object.keys(table_body).includes( selected_attribute_id )) {
+				var new_column = []
+				for (var j = 0; j < number_of_rows; j++) { 
+					new_column.push(null);
+				}
+				table_body[selected_attribute_id] = new_column;
+			}
+		}
+		
+		
+		// Draw the Table
+		var table_html_string = '<table id="data-table" class="table table-sm" style="width:' + (141*selected_table_attributes.length + 20) + 'px;">' +
+									'<thead>' +
+										'<tr>';
+
+		for (var i = 0; i < selected_table_attributes.length; i++) {
+			table_html_string +=  			'<th scope="col">' + selected_table_attributes[i]['attribute_name'] + '</th>';
+		}
+		
+		table_html_string +=  			'</tr>' +
+									'</thead>' +
+									'<tbody class="table-body">';
+		
+		for (var i = 0; i < number_of_rows; i++) {
+			table_html_string +=  		'<tr>';
+			for (var j = 0; j < selected_table_attributes.length; j++) {
+				var attribute_id = selected_table_attributes[j]['attribute_id']
+				table_html_string +=  			'<td><span>f</span>' + table_body[attribute_id][i] + '</td>';
+			}
+			table_html_string +=  		'</tr>';
+		}
+		
+		table_html_string +=  		'</tbody>' +
+								'</table>';
+									
+		$("#uploaded_table").html(table_html_string);
+	}
+
+
+	
+	//====================================================================================================
+	//====  DROPDOWNS: Table-Attribute Selection  ========================================================
+	//====================================================================================================
+	
+	//===  Draw the first Dropdown  =======================================================================================================================	
+	function drawTheFirstDropDown() {
+	
+		dropdown_html_string = 	'<select class="form-control table-attribute-dropdown" id="table_attribute0" name="table_attribute0" onchange="tableAttributeChange(0)">' +
+									'<option value="" selected></option>';
+		for (var i = 0; i < table_attributes.length; i++) {
+			dropdown_html_string +=	'<option value="' + table_attributes[i]['attribute_id'] + '">' + table_attributes[i]['attribute_name'] + '</option>';
+		}
+		dropdown_html_string +=	'</select>';
+		
+	
+		$(dropdown_html_string).insertBefore('#end-of-attribute-selection');
+	}
+	
+	
+	//===  Table Attribute Dropdown was changed  =======================================================================================================================	
+	function tableAttributeChange(dropdown_number) {
+
+		var dropdown = document.getElementById("table_attribute" + dropdown_number);
+		var new_attribute_id = dropdown[dropdown.selectedIndex].value;
+		var new_attribute_name = $('[value="' + new_attribute_id + '"]').html();
+		
+		
+		if (new_attribute_id == ""){
+			if (dropdown_number < largest_dropdown_number) {
+				
+				
+				
+				//move all values one to the left to fill the gap
+				for (var i = dropdown_number; i < largest_dropdown_number; i++) {
+					var dropdown_right = document.getElementById("table_attribute" + (i+1));
+					var right_value = dropdown_right[dropdown_right.selectedIndex].value;
+					document.getElementById("table_attribute" + i).value = right_value;
+					selected_table_attributes[i] = selected_table_attributes[i+1];
+				}
+				
+				//remove the dropdown on the far right
+				document.getElementById("table_attribute" + largest_dropdown_number).remove();
+				selected_table_attributes.pop();
+				largest_dropdown_number--;
+			}
+			
+		} else {
+			if (dropdown_number == largest_dropdown_number) {
+
+				largest_dropdown_number++;
+				dropdown_html_string = 	'<select class="form-control table-attribute-dropdown" id="table_attribute' + largest_dropdown_number + '" name="table_attribute' + largest_dropdown_number + '" onchange="tableAttributeChange(' + largest_dropdown_number + ')">' +
+											'<option value="" selected></option>';
+				for (var i = 0; i < table_attributes.length; i++) {
+					dropdown_html_string +=	'<option value="' + table_attributes[i]['attribute_id'] + '">' + table_attributes[i]['attribute_name'] + '</option>';
+				}
+				dropdown_html_string +=	'</select>';
+				
+				selected_table_attributes.push({'attribute_id': new_attribute_id, 'attribute_name': new_attribute_name});
+				
+			
+				$(dropdown_html_string).insertBefore('#end-of-attribute-selection');
+			}
+			
+			selected_table_attributes[dropdown_number] = {'attribute_id': new_attribute_id, 'attribute_name': new_attribute_name};	
+		}
+		
+		drawTheTable();
+
+	}
+
+	
+	
+	/*========================================================================*/
+	/*===============    MAIN      ===========================================*/
+	/*========================================================================*/
+	
+	
+	
+	
+	window.onload = function() {
+		// Set up the Popover button ================================================================
+		// initialize popover
+		$('#object_type').popover({
+			container: 'body',
+			placement: 'bottom',
+			html: true,
+			content:"<div class='choose-object-type-content form'> " +
+						"<div class='object-type-spec-box'>" + 
+							"<div id='container-for-object-tree'></div>" + 
+						"</div>" + 
+					"</div>"
+		});
+		
+		// When the popover is opened, load the object hierachy tree
+		$('#object_type').on('shown.bs.popover', function () {
+			loadObjectHierachyTree();
+		});
+		
+		// when you click outside the popover, close it
+		/*$('body').on('click', function (e) {
+			if (!$('#object_type').is(e.target) && document.activeElement.classList[0]=="jstree-anchor" ) {  // 
+				$('#object_type').popover('hide');
+			}
+		});
+		*/
+		
+		// Other stuff ================================================================
+		
+		// activate the invalid-fact Popovers
+		$(document).ready(function(){
+			$('[data-toggle="popover"]').popover();   
+		});
+
+		//automatically check the fact-formats when a value was edited
+		$(".value").focusout(function(){
+			checkAdditionalFactFormats();
+			runQuery(false);
+		});
+	}
+	
+	
+
+</script>
+
+{% endblock %}
+
+
+

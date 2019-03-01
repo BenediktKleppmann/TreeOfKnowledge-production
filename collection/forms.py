@@ -40,9 +40,7 @@ class UploadFileForm(forms.Form):
 
 
 class Uploaded_datasetForm2(forms.ModelForm):
-	data_source = forms.CharField()
-	datetime_column = forms.DateField(required=False)
-	correctness_of_data = forms.IntegerField()
+	data_generation_date = forms.DateField(required=False)
 	class Meta:
 		model = Uploaded_dataset
 		fields = ('data_source', 'data_generation_date', 'correctness_of_data', )

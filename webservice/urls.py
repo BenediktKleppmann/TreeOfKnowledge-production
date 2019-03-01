@@ -52,17 +52,18 @@ urlpatterns = [
     url(r'^tool/upload_data3/(?P<upload_id>[-\d]+)/$', views.upload_data3, name='upload_data3'),
     url(r'^tool/upload_data4/(?P<upload_id>[-\d]+)/$', views.upload_data4, name='upload_data4'),
     url(r'^tool/upload_data5/(?P<upload_id>[-\d]+)/$', views.upload_data5, name='upload_data5'),
-    url(r'^tool/upload_data6/(?P<upload_id>[-\d]+)/$', views.upload_data6, name='upload_data6'),
+    url(r'^tool/upload_data6A/(?P<upload_id>[-\d]+)/$', views.upload_data6A, name='upload_data6A'),
+    url(r'^tool/upload_data6B/(?P<upload_id>[-\d]+)/$', views.upload_data6B, name='upload_data6B'),
     url(r'^tool/upload_data7/(?P<upload_id>[-\d]+)/$', views.upload_data7, name='upload_data7'),
-    url(r'^tool/upload_data_success/(?P<new_model_id>[-\d]+)/$', views.upload_data_success, name='upload_data_success'),
+    url(r'^tool/upload_data_success/(?P<number_of_datapoints_saved>[-\d]+)-(?P<new_model_id>[-\d]+)/$', views.upload_data_success, name='upload_data_success'),
 
     # Helper Functions  -------------------------------------------------------------------------
     # get
     url(r'^tool/get_possible_attributes/$', views.get_possible_attributes, name='get_possible_attributes'),
-    # url(r'^tool/get_suggested_attributes/$', views.get_suggested_attributes, name='get_suggested_attributes'),
-    # url(r'^tool/get_suggested_attributes2/$', views.get_suggested_attributes2, name='get_suggested_attributes2'),
     url(r'^tool/get_list_of_parent_objects/$', views.get_list_of_parent_objects, name='get_list_of_parent_objects'),
-    # url(r'^tool/get_attributes_concluding_format/$', views.get_attributes_concluding_format, name='get_attributes_concluding_format'),
+    url(r'^tool/get_list_of_objects/$', views.get_list_of_objects, name='get_list_of_objects'),
+    url(r'^tool/get_attribute_details/$', views.get_attribute_details, name='get_attribute_details'),
+    url(r'^tool/get_data_points/$', views.get_data_points, name='get_data_points'),
     # find
     url(r'^tool/find_suggested_attributes/$', views.find_suggested_attributes, name='find_suggested_attributes'),
     url(r'^tool/find_suggested_attributes2/$', views.find_suggested_attributes2, name='find_suggested_attributes2'),
@@ -71,8 +72,11 @@ urlpatterns = [
     url(r'^tool/save_new_object_hierachy_tree/$', views.save_new_object_hierachy_tree, name='save_new_object_hierachy_tree'),
     url(r'^tool/save_new_object_type/$', views.save_new_object_type, name='save_new_object_type'),
     url(r'^tool/save_edited_object_type/$', views.save_edited_object_type, name='save_edited_object_type'),
-    url(r'^tool/delete_object_type/$', views.delete_object_type, name='delete_object_type'),
     url(r'^tool/save_new_attribute/$', views.save_new_attribute, name='save_new_attribute'),
+    url(r'^tool/save_changed_attribute/$', views.save_changed_attribute, name='save_changed_attribute'),
+    # delete
+    url(r'^tool/delete_object_type/$', views.delete_object_type, name='delete_object_type'),
+    url(r'^tool/delete_attribute/$', views.delete_attribute, name='delete_attribute'),
     # process/edit
     url(r'^tool/edit_column/$', views.edit_column, name='edit_column'),
     # column format
@@ -83,6 +87,7 @@ urlpatterns = [
     
 
     # Simulation  -------------------------------------------------------------------------
+    url(r'^tool/query_data/$', views.query_data, name='query_data'),
     url(r'^tool/edit_model/$', views.new_model, name='new_model'),
     url(r'^tool/edit_model/(?P<id>[-\d]+)/$', views.edit_model, name='edit_model'),
     url(r'^main_menu/$', RedirectView.as_view(pattern_name='main_menu')),
@@ -93,6 +98,7 @@ urlpatterns = [
     url(r'^subscribers/$', views.newsletter_subscribers, name='subscribers'),
     url(r'^clear_database/$', views.clear_database, name='clear_database'),
     url(r'^populate_database/$', views.populate_database, name='populate_database'),
+    url(r'^backup_database/$', views.backup_database, name='backup_database'),
     url(r'^test_page1/$', views.test_page1, name='test_page1'),
     url(r'^test_page2/$', views.test_page2, name='test_page2'),
     url(r'^test_page3/$', views.test_page3, name='test_page3'),

@@ -1,5 +1,6 @@
-from collection.models import Uploaded_dataset, Object_types, Attribute
+from collection.models import Uploaded_dataset, Object_types, Attribute, Object, Data_point
 import json
+import pandas as pd
 
 def get_object_hierachy_tree():
     hierachy_objects = Object_types.objects.all()
@@ -11,12 +12,12 @@ def get_object_hierachy_tree():
         object_dict['parent'] = hierachy_object.parent
         object_dict['text'] = hierachy_object.name
         if hierachy_object.li_attr is not None:
-            print("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUU")
-            print(hierachy_object.name)
-            print(hierachy_object.id)
-            print(hierachy_object.li_attr)
-            print(hierachy_object.a_attr)
-            print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+            # print("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUU")
+            # print(hierachy_object.name)
+            # print(hierachy_object.id)
+            # print(hierachy_object.li_attr)
+            # print(hierachy_object.a_attr)
+            # print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
             object_dict['li_attr'] = json.loads(hierachy_object.li_attr)
         if hierachy_object.a_attr is not None:
             object_dict['a_attr'] = json.loads(hierachy_object.a_attr)
@@ -35,13 +36,107 @@ def get_known_data_sources():
 
 def get_list_of_parent_objects(object_type_id):
     list_of_parent_objects = []
-    next_object_type_id = object_type_id
+    current_object_type = Object_types.objects.filter(id=object_type_id).first()
 
-    while(next_object_type_id is not None) and (next_object_type_id != 'n1'):
-        current_object_type = Object_types.objects.get(id=next_object_type_id)
+    while(current_object_type is not None):
         list_of_parent_objects.append({'id':current_object_type.id, 'name':current_object_type.name})
-        next_object_type_id = current_object_type.parent
+        current_object_type = Object_types.objects.filter(id=current_object_type.parent).first()
+
     return list_of_parent_objects
+
+
+def get_list_of_child_objects(object_type_id):
+    # add the value from this generation
+    current_generation = Object_types.objects.filter(id=object_type_id)
+    list_of_child_objects = list(current_generation.values('id', 'name'))
+    
+    # successively add the values from the children 
+    previous_generations_ids = [object_type_id]
+    while len(previous_generations_ids)>0:
+        current_generation = Object_types.objects.filter(parent__in=previous_generations_ids)
+        list_of_child_objects += list(current_generation.values('id', 'name'))
+        previous_generations_ids = current_generation.values_list('id', flat=True)
+
+    return list_of_child_objects
+
+
+
+def get_data_points(object_type_id, filter_facts):
+
+    child_object_types = get_list_of_child_objects(object_type_id)
+    child_object_ids = [el['id'] for el in child_object_types]
+    objects_with_suitable_otype = Object.objects.filter(object_type_id__in=child_object_ids).values_list('id', flat=True)
+    data_point_records = Data_point.objects.filter(object_id__in=objects_with_suitable_otype)
+
+    # apply the filters
+    for filter_fact in filter_facts:
+        if filter_fact['operation'] == '=':
+            data_point_records = data_point_records.filter(attribute_id=filter_fact['attribute_id'],string_value=str(filter_fact['value']))           
+        elif filter_fact['operation'] == '>':
+            data_point_records = data_point_records.filter(attribute_id=filter_fact['attribute_id'],numeric_value__gt=filter_fact['value'])           
+        elif filter_fact['operation'] == '<':
+            data_point_records = data_point_records.filter(attribute_id=filter_fact['attribute_id'],numeric_value__lt=filter_fact['value'])           
+        elif filter_fact['operation'] == 'in':
+            values = [str(value) for value in filter_fact['value']]
+            data_point_records = data_point_records.filter(attribute_id=filter_fact['attribute_id'],string_value__in=values)           
+
+    # make long table with all datapoints of the found objects
+    found_objects = list(set(data_point_records.values_list('object_id', flat=True)))
+    all_data_points = Data_point.objects.filter(object_id__in=found_objects)
+    if len(found_objects) > 0:
+        long_table_df = pd.DataFrame(list(all_data_points.values()))
+        long_table_df = long_table_df.sort_values(['data_quality','valid_time_end'])
+        long_table_df = long_table_df.drop_duplicates(subset=['object_id','attribute_id'], keep='first')
+        long_table_df = long_table_df[['object_id','attribute_id', 'string_value', 'numeric_value','boolean_value' ]]
+
+        # pivot the long table
+        long_table_df = long_table_df.reindex()
+        long_table_df.set_index(['object_id','attribute_id'],inplace=True)
+        broad_table_df = long_table_df.unstack('attribute_id')
+
+        # there are columns for the different datatypes, determine which to keep
+        columns_to_keep = []
+        for column in broad_table_df.columns:
+            attribute_data_type = Attribute.objects.get(id=column[1]).data_type
+            if attribute_data_type=='string' and column[0]=='string_value':
+                columns_to_keep.append(column)
+            elif attribute_data_type in ['real', 'int'] and column[0]=='numeric_value':
+                columns_to_keep.append(column)
+            elif attribute_data_type == 'boolean' and column[0]=='boolean_value':
+                columns_to_keep.append(column)
+
+        broad_table_df = broad_table_df[columns_to_keep]
+        new_column_names = [column[1] for column in columns_to_keep]
+        broad_table_df.columns = new_column_names
+        
+        # for response: list of the tables' attributes sorted with best populated first
+        table_attributes = []
+        sorted_attribute_ids = broad_table_df.isnull().sum(0).sort_values(ascending=False).index
+        sorted_attribute_ids = [int(attribute_id) for attribute_id in list(sorted_attribute_ids)]
+        for attribute_id in sorted_attribute_ids:
+            attribute_record = Attribute.objects.get(id=attribute_id)
+            table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name})
+
+
+        # sort broad_table_df (the best-populated entities to the top)
+        broad_table_df = broad_table_df.loc[broad_table_df.isnull().sum(1).sort_values().index]
+
+        # prepare response
+        broad_table_df['object_id'] = broad_table_df.index
+        broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
+        table_body = broad_table_df.to_dict('list')
+
+        response = {}
+        response['table_body'] = table_body
+        response['table_attributes'] = table_attributes
+        response['number_of_entities_found'] = len(found_objects)
+    else:
+        response = {}
+        response['table_body'] = {}
+        response['table_attributes'] = []
+        response['number_of_entities_found'] = len(found_objects)
+
+    return response
 
 
 # ================================================================
@@ -53,11 +148,11 @@ def compare_facts_with_format_specification(list_of_facts, attribute_id, source_
     for fact in list_of_facts:
             if (fact['attribute_id'] == attribute_id):
                 if (format_specification['type'] in ['int', 'real']) and (fact['operation'] in ['<', '>']):
-                    print("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
-                    print(format_specification)
-                    # print(type(fact['value']))
-                    # print(type(['max']))
-                    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                    # print("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
+                    # print(format_specification)
+                    # # print(type(fact['value']))
+                    # # print(type(['max']))
+                    # print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
                     if(fact['operation'] == '<') and (fact['value'] < format_specification['max']):
                         # LOWER MAX FOUND
                         format_specification['max'] = fact['value']
@@ -101,7 +196,7 @@ def get_attributes_concluding_format(attribute_id, object_type_id, upload_id):
     # Additional Format Restrictions from the Meta Data
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id)
     meta_data_facts_list = json.loads(uploaded_dataset.meta_data_facts)
-    (format_specification, comments) = compare_facts_with_format_specification(li_attr['attribute_values'], attribute_id, "Meta Data", format_specification, comments)
+    (format_specification, comments) = compare_facts_with_format_specification(meta_data_facts_list, attribute_id, "Meta Data", format_specification, comments)
 
     concluding_format = {}
     concluding_format['format_specification'] = format_specification

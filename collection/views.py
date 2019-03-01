@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
@@ -161,7 +161,7 @@ def upload_data1(request, upload_id, errors=[]):
 @login_required
 def upload_data2(request, upload_id):
     errors = []
-    error_dict = ''
+    error_dict = '{}'
     
     # if the upload_id was wrong, send the user back to the first page
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
@@ -172,22 +172,13 @@ def upload_data2(request, upload_id):
     if request.method == 'POST':
         form2 = Uploaded_datasetForm2(data=request.POST, instance=uploaded_dataset)
         if not form2.is_valid():
-            errors.append('Error: the form is not valid.' + str(form2.errors))
-            error_dict += json.dumps(dict(form2.errors))
-            print("V 1 VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
-            print(error_dict)
-            print("A 1 1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+            errors.append('Error: the form is not valid.')
+            error_dict = json.dumps(dict(form2.errors))
         else:
-            error_dict += '{}'
             form2.save()
             return redirect('upload_data3', upload_id=upload_id)
-    
+
     known_data_sources = get_from_db.get_known_data_sources()
-    print("V 2 VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
-    print(error_dict)
-    print("A 2 1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-    # error_dict = '{"data_generation_date": ["This field is required."]}'
-    
     return render(request, 'tree_of_knowledge_frontend/upload_data2.html', {'uploaded_dataset': uploaded_dataset, 'known_data_sources': known_data_sources, 'errors': errors, 'error_dict': error_dict})
 
 
@@ -236,8 +227,10 @@ def upload_data4(request, upload_id):
             form4.save()
             return redirect('upload_data5', upload_id=upload_id)
 
-    print('uploaded_dataset.data_generation_date.year = ' + str(uploaded_dataset.data_generation_date.year))
-    return render(request, 'tree_of_knowledge_frontend/upload_data4.html', {'uploaded_dataset': uploaded_dataset, 'data_generation_year':uploaded_dataset.data_generation_date.year, 'errors': errors})
+    data_generation_year = "2015"
+    if uploaded_dataset.data_generation_date is not None:
+        data_generation_year = uploaded_dataset.data_generation_date.year
+    return render(request, 'tree_of_knowledge_frontend/upload_data4.html', {'uploaded_dataset': uploaded_dataset, 'data_generation_year':data_generation_year, 'errors': errors})
 
 
 
@@ -252,19 +245,29 @@ def upload_data5(request, upload_id):
         return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
     
     if request.method == 'POST':
+        print("VVVV upload_data5 VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
+        print(request.POST)
+        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
         form5 = Uploaded_datasetForm5(data=request.POST, instance=uploaded_dataset)
         if not form5.is_valid():
             errors.append('Error: the form is not valid.')
         else:
             form5.save()
-            return redirect('upload_data6', upload_id=upload_id)
+            print("V^V^V^V^V^V^V^V^V^V^V^V^V^V^V^V^")
+            print(request.POST.get('datetime_column'))
+            print(type(request.POST.get('datetime_column')))
+            print("AVAVAVAVAVAVAVAVAVAVAVAVAVAVAVAV")
+            if request.POST.get('datetime_column') is None:
+                return redirect('upload_data6A', upload_id=upload_id) #non-timeseries
+            else:
+                return redirect('upload_data6B', upload_id=upload_id) #timeseries
  
     return render(request, 'tree_of_knowledge_frontend/upload_data5.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
 
 @login_required
-def upload_data6(request, upload_id):
+def upload_data6A(request, upload_id):
     errors = []
     # if the upload_id was wrong, send the user back to the first page
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
@@ -280,13 +283,37 @@ def upload_data6(request, upload_id):
             form6.save()
             return redirect('upload_data7', upload_id=upload_id)
    
+    table_attributes = upload_data.make_table_attributes_dict(uploaded_dataset)
+    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'data_table_json': uploaded_dataset.data_table_json, 'table_attributes': table_attributes, 'errors': errors})
+
+
+
+@login_required
+def upload_data6B(request, upload_id):
+    errors = []
+    # if the upload_id was wrong, send the user back to the first page
+    uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
+    if uploaded_dataset is None:
+        errors.append('Error: %s is not a valid upload_id' % str(upload_id))
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+
+    if request.method == 'POST':
+        form6 = Uploaded_datasetForm6(data=request.POST, instance=uploaded_dataset)
+        if not form6.is_valid():
+            errors.append('Error: the form is not valid.')
+        else:
+            form6.save()
+            (number_of_datapoints_saved, new_model_id) = upload_data.perform_uploading_for_timeseries(uploaded_dataset, request)
+            return redirect('upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
+   
     
-    selected_attribute_ids = json.loads(uploaded_dataset.attribute_selection)
-    table_attributes = []
-    for attribute_id in selected_attribute_ids:
-        attribute_record = Attribute.objects.get(id=attribute_id)
-        table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name})
-    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'uploaded_dataset': uploaded_dataset, 'table_attributes': table_attributes, 'errors': errors})
+    table_attributes = upload_data.make_table_attributes_dict(uploaded_dataset)
+    if uploaded_dataset.object_identifiers is None:
+        data_table_json = uploaded_dataset.data_table_json
+    else: 
+        data_table_json_dict = upload_data.make_data_table_json_with_distinct_entities(uploaded_dataset)
+        data_table_json = json.dumps(data_table_json_dict)
+    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'data_table_json': data_table_json, 'table_attributes': table_attributes, 'errors': errors})
 
 
 
@@ -314,9 +341,9 @@ def upload_data7(request, upload_id):
 
 
 @login_required
-def upload_data_success(request, new_model_id):
+def upload_data_success(request, number_of_datapoints_saved, new_model_id):
     all_models = Simulation_model.objects.all().order_by('id') 
-    return render(request, 'tree_of_knowledge_frontend/upload_data_success.html', {'new_model_id':new_model_id, 'all_models': all_models})
+    return render(request, 'tree_of_knowledge_frontend/upload_data_success.html', {'number_of_datapoints_saved':number_of_datapoints_saved, 'new_model_id':new_model_id, 'all_models': all_models})
 
 
 
@@ -342,19 +369,64 @@ def upload_data_success(request, new_model_id):
 
 @login_required
 def get_possible_attributes(request):
-    print("object_type_id = %s" % request.GET.get('object_type_id', ''))
+    object_type_id = request.GET.get('object_type_id', '')
+    list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
+    list_of_parent_object_ids = [el['id'] for el in list_of_parent_objects]
+
     response = []
-    attributes = Attribute.objects.all()
+    attributes = Attribute.objects.all().filter(first_applicable_object__in=list_of_parent_object_ids)
     for attribute in attributes:
         response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name})
     return HttpResponse(json.dumps(response))
 
-
+# used in create_attribute_modal.html
 @login_required
 def get_list_of_parent_objects(request):
     object_type_id = request.GET.get('object_type_id', '')
     list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
     return HttpResponse(json.dumps(list_of_parent_objects))
+
+
+# used in edit_attribute_modal.html
+@login_required
+def get_list_of_objects(request):
+    list_of_objects = []
+    object_records = Object_types.objects.all()
+    for object_record in object_records:
+        list_of_objects.append({'id':object_record.id, 'name':object_record.name})
+    return HttpResponse(json.dumps(list_of_objects))    
+
+
+# used in edit_attribute_modal.html
+@login_required
+def get_attribute_details(request):
+    attribute_id = request.GET.get('attribute_id', '')
+    attribute_id = int(attribute_id)
+    attribute_record = Attribute.objects.get(id=attribute_id)
+    attribute_details = {'id':attribute_record.id, 
+                'name':attribute_record.name,
+                'data_type':attribute_record.data_type,
+                'expected_valid_period':attribute_record.expected_valid_period,
+                'description':attribute_record.description,
+                'format_specification':json.loads(attribute_record.format_specification),
+                'first_applicable_object':attribute_record.first_applicable_object}
+    print("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
+    print(str(attribute_id))
+    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
+    return HttpResponse(json.dumps(attribute_details))   
+
+
+# used in query_data.html
+@login_required
+def get_data_points(request):
+    request_body = json.loads(request.body)
+    object_type_id = request_body['object_type_id']
+    filter_facts = request_body['filter_facts']
+
+    response = get_from_db.get_data_points(object_type_id, filter_facts)
+    return HttpResponse(json.dumps(response))
+
 
 # ==================
 # FIND
@@ -389,8 +461,11 @@ def find_suggested_attributes2(request):
     upload_id = int(request_body['upload_id'])
     column_values = request_body['column_values']
 
+    list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
+    list_of_parent_object_ids = [el['id'] for el in list_of_parent_objects]
+    
     response = []
-    attributes = Attribute.objects.all()
+    attributes = Attribute.objects.all().filter(first_applicable_object__in=list_of_parent_object_ids)
     for attribute in attributes:
         concluding_format = get_from_db.get_attributes_concluding_format(attribute.id, object_type_id, upload_id)
         response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'description': attribute.description, 'format': concluding_format['format_specification'], 'comments': concluding_format['comments']})
@@ -431,7 +506,7 @@ def find_matching_entities(request):
     return HttpResponse(json.dumps(matching_objects_entire_list))
 
 
-7
+
 # ==================
 # SAVE
 # ==================
@@ -485,31 +560,6 @@ def save_edited_object_type(request):
 
 
 
-# used in: upload_data3 (the create-object-type modal)
-@login_required
-def delete_object_type(request):
-    if request.method == 'POST':
-        try:
-            request_body = json.loads(request.body)
-            object_id = request_body['object_id']
-
-            delted_object = Object_types.objects.get(id=object_id)
-
-            children_of_deleted_object  = Object_types.objects.filter(parent=object_id)
-            for child in children_of_deleted_object:
-                child.parent = delted_object.parent
-                child.save()
-
-            delted_object.delete()
-            return HttpResponse("success")
-        except Exception as error:
-            traceback.print_exc()
-            return HttpResponse(str(error))
-    else:
-        return HttpResponse("This must be a POST request.")
-
-
-
 
 # used in: upload_data3
 @login_required
@@ -548,7 +598,75 @@ def save_new_attribute(request):
         return HttpResponse("This must be a POST request.")
 
 
+# used in: edit_attribute_modal.html (i.e. upload_data3,4,5)
+@login_required
+def save_changed_attribute(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+            attribute_record = Attribute.objects.get(id=request_body['attribute_id'])
 
+            attribute_record.name = request_body['name']
+            attribute_record.data_type = request_body['data_type']
+            attribute_record.expected_valid_period = request_body['expected_valid_period']
+            attribute_record.description = request_body['description']
+            attribute_record.first_applicable_object = request_body['first_applicable_object']
+            attribute_record.format_specification = json.dumps(request_body['format_specification'])
+            attribute_record.save()
+            return HttpResponse("success")
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
+# ==================
+# DELETE
+# ==================
+
+# used in: upload_data3 (the create-object-type modal)
+@login_required
+def delete_object_type(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+            object_id = request_body['object_id']
+
+            delted_object = Object_types.objects.get(id=object_id)
+
+            children_of_deleted_object  = Object_types.objects.filter(parent=object_id)
+            for child in children_of_deleted_object:
+                child.parent = delted_object.parent
+                child.save()
+
+            delted_object.delete()
+            return HttpResponse("success")
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
+
+
+# used in: edit_attribute_modal.html
+@login_required
+def delete_attribute(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+            attribute_id = request_body['attribute_id']
+
+            attribute = Attribute.objects.get(id=attribute_id)
+            attribute.delete()
+            return HttpResponse("success")
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
 
 # ==================
 # PROCESS/EDIT
@@ -561,6 +679,11 @@ def edit_column(request):
     transformation = request_body['transformation']
     transformation = transformation.replace('"','')
 
+    subset_specification = request_body['subset_specification']
+    subset_specification = subset_specification.replace('"','')
+    if subset_specification.replace(' ','') != "":
+        subset_specification = subset_specification + " and "
+
     column = request_body['edited_column']
     # column = column.replace('"','')
 
@@ -568,10 +691,9 @@ def edit_column(request):
     errors = []
 
     try:
-        entire_code = "edited_column = [" + transformation + " for value in " + str(column) + "]"
+        entire_code = "edited_column = [" + transformation + " if " + subset_specification + "value is not None else value for value in " + str(column) + " ]"
         execution_results = {}
         exec(entire_code, globals(), execution_results)
-        
         edited_column = execution_results['edited_column']
     except Exception as error:
         traceback.print_exc()
@@ -580,6 +702,9 @@ def edit_column(request):
     response = {}
     response['errors'] = errors
     response['edited_column'] = edited_column
+    print("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
+    print(response['edited_column'])
+    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     return HttpResponse(json.dumps(response))
 
 
@@ -725,6 +850,11 @@ def check_single_fact_format(request):
  # 
  # ==========================================================================
 
+@login_required
+def query_data(request):
+    object_hierachy_tree = get_from_db.get_object_hierachy_tree()
+    return render(request, 'tree_of_knowledge_frontend/query_data.html',{'object_hierachy_tree':object_hierachy_tree})
+
 
 
 
@@ -789,14 +919,23 @@ def newsletter_subscribers(request):
 
 
 def clear_database(request):
-    populate_db.clear_object_hierachy_tree()
+    populate_db.clear_object_types()
     populate_db.clear_attributes()
     return HttpResponse('done')
 
 def populate_database(request):
-    populate_db.populate_object_hierachy_tree()
+    populate_db.populate_object_types()
     populate_db.populate_attributes()
     return HttpResponse('done')
+
+def backup_database(request):
+    success_for_object_types = populate_db.backup_object_types()
+    success_for_attributes = populate_db.backup_attributes()
+
+    if (success_for_object_types and success_for_attributes):
+        return HttpResponse('success')
+    else:
+        return HttpResponse('An error occured')
 
 
 
@@ -804,29 +943,20 @@ def test_page1(request):
     return render(request, 'tree_of_knowledge_frontend/test_page1.html')
 
 def test_page2(request):
-    populate_db.clear_attributes()
-    populate_db.populate_attributes()
-    return HttpResponse("success")
+    # date_string = "2012-12-12 10:10:10"
+    # date_time = dateutil.parser.parse(date_string)
+    # return HttpResponse(int(time.mktime(date_time.timetuple())))
+    return render(request, 'tree_of_knowledge_frontend/test_page2.html')
+
 
 def test_page3(request):
-    return render(request, 'tree_of_knowledge_frontend/test_page3.html')
-    # populate_db.clear_attributes()
-    # populate_db.populate_attributes()
+    # datapoints = Object_types.objects.values()
+    list_of_child_objects = get_from_db.get_list_of_child_objects('j1_3')
+    print(list_of_child_objects)
+    # get_list_of_child_objects(object_type_id)
+    # datapoints = Object.objects.values()
 
-    # attributes = Attribute.objects.all()
-    # response = {}
+    # Data_point.objects.filter('object_type_id': 'j1_5',)
+    return HttpResponse(json.dumps(list_of_child_objects))   
+    # return render(request, 'tree_of_knowledge_frontend/test_page3.html')
     
-    # for att_nb, attribute in enumerate(attributes):
-    #     # response[attribute.name] = "hello"
-    #     attribute_dict = {}
-    #     attribute_dict['description'] = attribute.description
-    #     attribute_dict['format_specification'] = attribute.format_specification
-    #     attribute_dict['first_applicable_object'] = attribute.first_applicable_object.id
-    #     response[attribute.name] = attribute_dict
-    # return HttpResponse("success")
-    
-
-
-
-
-

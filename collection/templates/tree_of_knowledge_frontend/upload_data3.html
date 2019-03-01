@@ -209,6 +209,8 @@
 		
 		
 		/* ---  Create Object Type Modal -------------------------------------------- */
+		
+		
 		#createObjectType .modal-body {
 			padding-top:5px;
 			padding-bottom:0px;
@@ -447,6 +449,7 @@
 	
 	
 	{% include "tree_of_knowledge_frontend/includes/create_attribute_modal.html" %} 
+	{% include "tree_of_knowledge_frontend/includes/edit_attribute_modal.html" %} 
 
 
 <script>
@@ -927,7 +930,7 @@
 				var possible_attributes = JSON.parse(this.responseText);
 				
 				for (var i = 0; i < possible_attributes.length; i++) {
-					list_group_html_string += '<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(' + attribute_number + ', this.innerHTML, ' + possible_attributes[i]['attribute_id'] + ')">' + possible_attributes[i]['attribute_name'] + '</button></li>'
+					list_group_html_string += '<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(' + attribute_number + ', this.innerHTML, ' + possible_attributes[i]['attribute_id'] + ')" data-attribute-id=' + possible_attributes[i]['attribute_id'] + '>' + possible_attributes[i]['attribute_name'] + '</button></li>'
 					
 				}
 				
@@ -1048,7 +1051,7 @@
 			}, 250);
 		});
 		
-
+		
 		$('#container-for-object-tree').jstree({
 			'core' : {
 				"animation" : 0,
@@ -1064,7 +1067,7 @@
 				"file" : { "icon" : "glyphicon glyphicon-file", "valid_children" : [] }
 			},
 			"themes":{"icons":false},
-			"plugins" : [ "contextmenu", "dnd", "search", "state", "types", "wholerow" ]
+			"plugins" : [ "contextmenu", "dnd", "search", "state", "types"]
 		});	
 	
 		
@@ -1110,7 +1113,6 @@
 			
 			//set the line-heights so that the object-type labels are at the right height in the left_cols
 			for(var key in all_entry_counts) {
-				//$("#left_col_" + key ).css("line-height", 40 * all_entry_counts[key] + "px");
 				$("#left_col_" + key ).attr("style", "line-height:" + (40 * all_entry_counts[key]) + "px; white-space:nowrap;")
 			} 
 			
@@ -1145,7 +1147,7 @@
 				}, 250);
 			});
 			
-			
+			//load tree
 			$('#container-for-object-tree2').jstree({
 				'core' : {
 					"animation" : 0,
@@ -1160,10 +1162,10 @@
 					"default" : { "valid_children" : ["default","file"] },
 					"file" : { "icon" : "glyphicon glyphicon-file", "valid_children" : [] }
 				},
-				"plugins" : [ "contextmenu", "dnd", "search", "state", "types", "wholerow" ]
+				"plugins" : [ "contextmenu", "dnd", "search", "state", "types"]
 			});	
 			
-			//SELECT THE SELECTED NODE 
+			//select the node that was selected in the modal
 			var ref = $('#container-for-object-tree').jstree(true),
 				sel = ref.get_selected();
 			if(sel.length) {
@@ -1240,12 +1242,13 @@
 			} 
 		
 		
+			
 			//=====  PART 2: display the "additional facts on the objects" section   ====================
 			$("#additional_facts").css("display", "block");
 			
 			//For all Attribute-dropdowns: load a list of possible_attributes (for the selected object_type)
 			for (var i = 1; i <= number_of_additional_object_facts; i++) {
-				makeObjectsAdditionalAttributesDropdown( data.instance.get_node(node_id).text , i);
+				makeObjectsAdditionalAttributesDropdown(node_id , i);
 			}
 			
 			// activate the invalid-fact Popovers
@@ -1257,7 +1260,7 @@
 			$(".value").focusout(function(){
 				checkAdditionalFactFormats();
 			});
-		
+			
 		  
 		  });
 		  

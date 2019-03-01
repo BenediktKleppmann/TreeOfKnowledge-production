@@ -72,6 +72,11 @@
 		color: #c59b08;
 	}
 
+	.form-error {
+		display: inline-block;
+		color: rgb(204, 30, 30);
+		margin-left: 15px;
+	}
 
 		
 </style>
@@ -151,7 +156,15 @@
 		keys = Object.keys(error_dict)
 		if (keys.length > 0) {
 			for (var i = 0; i < keys.length; i++) { 
-				document.getElementById(keys[i]).parentNode.insertBefore(error_dict[keys[i]], referenceNode.nextSibling);
+			
+				var error_div = document.createElement("div"); 
+				error_div.setAttribute("class", "form-error");  
+				error_div.innerHTML = error_dict[keys[i]];
+				
+				var input = document.getElementById(keys[i])
+				input.setAttribute("style", "display: inline-block;");  
+				input.parentNode.insertBefore(error_div, input.nextSibling);
+
 			}
 		}
 	}
@@ -177,6 +190,7 @@
 	window.onload = function() {
 		// PART 1
 		CreateDataSourceAutocompleteOptions();
+		displayErrors();
 		
 		// PART 2: INITILIZE THE DATETIME PICKERS
 		// load js/datepicker/bootstrap-datetimepicker.min.js, because it doesn't load correctly if the document is not ready (no idea why!!!)
