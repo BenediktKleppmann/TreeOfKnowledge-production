@@ -20,7 +20,7 @@ def clear_attributes():
 
 def populate_object_types():
 
-    path = "collection/static/db_backup/object_types/"
+    path = "collection/static/webservice files/db_backup/object_types/"
     backup_files = os.listdir(path)
     with open(path + backup_files[-1], "r") as backup_file:
         lines = backup_file.readlines()
@@ -40,7 +40,7 @@ def populate_object_types():
 
 def populate_attributes():
 
-    path = "collection/static/db_backup/attributes/"
+    path = "collection/static/webservice files/db_backup/attributes/"
     backup_files = os.listdir(path)
     with open(path + backup_files[-1], "r") as backup_file:
         lines = backup_file.readlines()
@@ -84,7 +84,7 @@ def backup_object_types():
 
         result_list.append(object_type_dict)
 
-    file_path = "collection/static/db_backup/object_types/" + str(datetime.datetime.now()).replace(':','') + ".json"
+    file_path = "collection/static/webservice files/db_backup/object_types/" + str(datetime.datetime.now()).replace(':','') + ".json"
     # file_path = str(datetime.datetime.now()).replace(':','') + ".json"
     with open(file_path, "w") as file:
             file.write(json.dumps(result_list))
@@ -102,7 +102,7 @@ def backup_attributes():
                             'format_specification':json.loads(attribute.format_specification), 
                             'first_applicable_object':attribute.first_applicable_object})
 
-    file_path = "collection/static/db_backup/attributes/" + str(datetime.datetime.now()).replace(':','') + ".json"
+    file_path = "collection/static/webservice files/db_backup/attributes/" + str(datetime.datetime.now()).replace(':','') + ".json"
     # file_path = str(datetime.datetime.now()).replace(':','') + ".json"
     with open(file_path, "w") as file:
         file.write(json.dumps(result_list))

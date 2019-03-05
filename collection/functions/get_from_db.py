@@ -1,6 +1,8 @@
-from collection.models import Uploaded_dataset, Object_types, Attribute, Object, Data_point
+from collection.models import Uploaded_dataset, Object_types, Attribute
 import json
-import pandas as pd
+
+
+
 
 def get_object_hierachy_tree():
     hierachy_objects = Object_types.objects.all()
@@ -61,82 +63,6 @@ def get_list_of_child_objects(object_type_id):
 
 
 
-def get_data_points(object_type_id, filter_facts):
-
-    child_object_types = get_list_of_child_objects(object_type_id)
-    child_object_ids = [el['id'] for el in child_object_types]
-    objects_with_suitable_otype = Object.objects.filter(object_type_id__in=child_object_ids).values_list('id', flat=True)
-    data_point_records = Data_point.objects.filter(object_id__in=objects_with_suitable_otype)
-
-    # apply the filters
-    for filter_fact in filter_facts:
-        if filter_fact['operation'] == '=':
-            data_point_records = data_point_records.filter(attribute_id=filter_fact['attribute_id'],string_value=str(filter_fact['value']))           
-        elif filter_fact['operation'] == '>':
-            data_point_records = data_point_records.filter(attribute_id=filter_fact['attribute_id'],numeric_value__gt=filter_fact['value'])           
-        elif filter_fact['operation'] == '<':
-            data_point_records = data_point_records.filter(attribute_id=filter_fact['attribute_id'],numeric_value__lt=filter_fact['value'])           
-        elif filter_fact['operation'] == 'in':
-            values = [str(value) for value in filter_fact['value']]
-            data_point_records = data_point_records.filter(attribute_id=filter_fact['attribute_id'],string_value__in=values)           
-
-    # make long table with all datapoints of the found objects
-    found_objects = list(set(data_point_records.values_list('object_id', flat=True)))
-    all_data_points = Data_point.objects.filter(object_id__in=found_objects)
-    if len(found_objects) > 0:
-        long_table_df = pd.DataFrame(list(all_data_points.values()))
-        long_table_df = long_table_df.sort_values(['data_quality','valid_time_end'])
-        long_table_df = long_table_df.drop_duplicates(subset=['object_id','attribute_id'], keep='first')
-        long_table_df = long_table_df[['object_id','attribute_id', 'string_value', 'numeric_value','boolean_value' ]]
-
-        # pivot the long table
-        long_table_df = long_table_df.reindex()
-        long_table_df.set_index(['object_id','attribute_id'],inplace=True)
-        broad_table_df = long_table_df.unstack('attribute_id')
-
-        # there are columns for the different datatypes, determine which to keep
-        columns_to_keep = []
-        for column in broad_table_df.columns:
-            attribute_data_type = Attribute.objects.get(id=column[1]).data_type
-            if attribute_data_type=='string' and column[0]=='string_value':
-                columns_to_keep.append(column)
-            elif attribute_data_type in ['real', 'int'] and column[0]=='numeric_value':
-                columns_to_keep.append(column)
-            elif attribute_data_type == 'boolean' and column[0]=='boolean_value':
-                columns_to_keep.append(column)
-
-        broad_table_df = broad_table_df[columns_to_keep]
-        new_column_names = [column[1] for column in columns_to_keep]
-        broad_table_df.columns = new_column_names
-        
-        # for response: list of the tables' attributes sorted with best populated first
-        table_attributes = []
-        sorted_attribute_ids = broad_table_df.isnull().sum(0).sort_values(ascending=False).index
-        sorted_attribute_ids = [int(attribute_id) for attribute_id in list(sorted_attribute_ids)]
-        for attribute_id in sorted_attribute_ids:
-            attribute_record = Attribute.objects.get(id=attribute_id)
-            table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name})
-
-
-        # sort broad_table_df (the best-populated entities to the top)
-        broad_table_df = broad_table_df.loc[broad_table_df.isnull().sum(1).sort_values().index]
-
-        # prepare response
-        broad_table_df['object_id'] = broad_table_df.index
-        broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
-        table_body = broad_table_df.to_dict('list')
-
-        response = {}
-        response['table_body'] = table_body
-        response['table_attributes'] = table_attributes
-        response['number_of_entities_found'] = len(found_objects)
-    else:
-        response = {}
-        response['table_body'] = {}
-        response['table_attributes'] = []
-        response['number_of_entities_found'] = len(found_objects)
-
-    return response
 
 
 # ================================================================

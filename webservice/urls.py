@@ -87,7 +87,13 @@ urlpatterns = [
     
 
     # Simulation  -------------------------------------------------------------------------
-    url(r'^tool/query_data/$', views.query_data, name='query_data'),
+    url(r'^tool/query_data/$', views.query_data__simple, name='query_data'),
+    url(r'^tool/download_file1/$', views.download_file1, name='download_file1'),
+    url(r'^tool/query_data/(?P<file_name>[-\d]+)-(?P<file_type>[a-z]+)/$', views.download_file2, name='download_file2'),
+    
+    # url(r'^tool/download_file2_excel/$', views.download_file2_excel, name='download_file2_excel'),
+    # url(r'^tool/download_file2_csv/$', views.download_file2_csv, name='download_file2_csv'),
+    
     url(r'^tool/edit_model/$', views.new_model, name='new_model'),
     url(r'^tool/edit_model/(?P<id>[-\d]+)/$', views.edit_model, name='edit_model'),
     url(r'^main_menu/$', RedirectView.as_view(pattern_name='main_menu')),

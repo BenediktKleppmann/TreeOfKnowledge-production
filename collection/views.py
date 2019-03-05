@@ -5,10 +5,15 @@ from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
-from collection.functions import upload_data, get_from_db, populate_db, tdda_functions
+from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_data
 from django.http import HttpResponse
 import json
 import traceback
+import csv
+import pandas as pd
+import xlwt
+from django.utils.encoding import smart_str
+import time
 
 
  # ===============================================================================
@@ -245,18 +250,11 @@ def upload_data5(request, upload_id):
         return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
     
     if request.method == 'POST':
-        print("VVVV upload_data5 VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
-        print(request.POST)
-        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
         form5 = Uploaded_datasetForm5(data=request.POST, instance=uploaded_dataset)
         if not form5.is_valid():
             errors.append('Error: the form is not valid.')
         else:
             form5.save()
-            print("V^V^V^V^V^V^V^V^V^V^V^V^V^V^V^V^")
-            print(request.POST.get('datetime_column'))
-            print(type(request.POST.get('datetime_column')))
-            print("AVAVAVAVAVAVAVAVAVAVAVAVAVAVAVAV")
             if request.POST.get('datetime_column') is None:
                 return redirect('upload_data6A', upload_id=upload_id) #non-timeseries
             else:
@@ -420,11 +418,14 @@ def get_attribute_details(request):
 # used in query_data.html
 @login_required
 def get_data_points(request):
+
     request_body = json.loads(request.body)
     object_type_id = request_body['object_type_id']
     filter_facts = request_body['filter_facts']
+    specified_start_time = int(request_body['specified_start_time'])
+    specified_end_time = int(request_body['specified_end_time'])
 
-    response = get_from_db.get_data_points(object_type_id, filter_facts)
+    response = query_data.get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time)
     return HttpResponse(json.dumps(response))
 
 
@@ -851,10 +852,81 @@ def check_single_fact_format(request):
  # ==========================================================================
 
 @login_required
-def query_data(request):
+def query_data__simple(request):
     object_hierachy_tree = get_from_db.get_object_hierachy_tree()
     return render(request, 'tree_of_knowledge_frontend/query_data.html',{'object_hierachy_tree':object_hierachy_tree})
 
+
+def download_file1(request):
+    displayed_table_dict = json.loads(request.body)
+    displayed_table_df = pd.DataFrame(displayed_table_dict)
+    current_timestamp = int(round(time.time() * 1000))
+    filename = str(current_timestamp) + ".csv"
+    displayed_table_df.to_csv("collection/static/webservice files/downloaded_data_files/" + filename)
+    return HttpResponse(current_timestamp)
+
+def download_file2(request, file_name, file_type):
+    # filename = request.GET.get('filename', '')
+    displayed_table_df = pd.read_csv("collection/static/webservice files/downloaded_data_files/" + file_name + ".csv")
+    column_names = displayed_table_df.columns
+    
+    if file_type=='xls':
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename="tree_of_knowledge_data.xls"'
+
+        #creating workbook
+        wb = xlwt.Workbook(encoding='utf-8')
+        ws = wb.add_sheet("sheet1")
+
+        # headers
+        font_style = xlwt.XFStyle()
+        font_style.font.bold = True
+        for column_number, column_name in enumerate(column_names[1:]):
+            ws.write(0, column_number, column_name, font_style)
+
+        # table body
+        font_style.font.bold = False
+        for index, row in displayed_table_df.iterrows():
+            for column_number, value in enumerate(row.tolist()[1:]):
+                ws.write(index + 1, column_number, value, font_style)
+
+        wb.save(response)
+        return response
+
+    elif file_type=='csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="tree_of_knowledge_data.csv"'
+
+        writer = csv.writer(response, csv.excel)
+        response.write(u'\ufeff'.encode('utf8'))
+
+        # headers
+        smart_str_column_names = [smart_str(name) for name in column_names[1:]]
+        writer.writerow(smart_str_column_names)
+
+        # table body
+        for index, row in displayed_table_df.iterrows():
+            smart_str_row = [smart_str(value) for value in row.tolist()[1:]]
+            writer.writerow(smart_str_row)
+            
+        return response
+
+
+
+
+def download_file2_csv(request):
+    filename = request.GET.get('filename', '')
+    displayed_table_dict = pd.read_csv("collection/static/webservice files/downloaded_data_files/" + filename + ".csv")
+    
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(displayed_table_df.columns)
+    for index, row in displayed_table_df.iterrows():
+        writer.writerow(row.tolist())
+    return response
 
 
 
@@ -887,6 +959,7 @@ def new_model(request):
         if form.is_valid():
             model = form.save(commit=False)
             model.user = request.user
+
             model.save()
             return redirect('edit_model', id= model.id)
 
@@ -940,23 +1013,117 @@ def backup_database(request):
 
 
 def test_page1(request):
-    return render(request, 'tree_of_knowledge_frontend/test_page1.html')
+    # return render(request, 'tree_of_knowledge_frontend/test_page1.html')
+    # content-type of response
+    response = HttpResponse(content_type='application/ms-excel')
+
+    #decide file name
+    response['Content-Disposition'] = 'attachment; filename="ThePythonDjango.xls"'
+
+    #creating workbook
+    wb = xlwt.Workbook(encoding='utf-8')
+
+    #adding sheet
+    ws = wb.add_sheet("sheet1")
+
+
+
+    font_style = xlwt.XFStyle()
+    # headers are bold
+    font_style.font.bold = True
+
+
+    #write column headers in sheet
+    columns = ['2af','sdfg',234,52,6,'dfg']
+    for column_number in range(len(columns)):
+        ws.write(0, column_number, columns[column_number], font_style)
+
+    # Sheet body, remaining rows
+    # font_style = xlwt.XFStyle()
+
+    # for index, row in displayed_table_df.iterrows():
+    #     print(index)
+    #     for column_number, value in enumerate(row.tolist()):
+    #         ws.write(index + 1, column_number, value, font_style)
+    #     # ws.write(row_number, 1, my_row.start_date_time, font_style)
+    #     # ws.write(row_number, 2, my_row.end_date_time, font_style)
+    #     # ws.write(row_number, 3, my_row.notes, font_style)
+
+    wb.save(response)
+    return response
+
+
 
 def test_page2(request):
-    # date_string = "2012-12-12 10:10:10"
-    # date_time = dateutil.parser.parse(date_string)
-    # return HttpResponse(int(time.mktime(date_time.timetuple())))
-    return render(request, 'tree_of_knowledge_frontend/test_page2.html')
+    # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
+    displayed_table_dict = json.loads(request.body)
+    displayed_table_df = pd.DataFrame(displayed_table_dict)
+
+    # content-type of response
+    response = HttpResponse(content_type='application/ms-excel')
+
+    #decide file name
+    response['Content-Disposition'] = 'attachment; filename="ThePythonDjango.xls"'
+
+    #creating workbook
+    wb = xlwt.Workbook(encoding='utf-8')
+
+    #adding sheet
+    ws = wb.add_sheet("sheet1")
+
+
+
+    font_style = xlwt.XFStyle()
+    # headers are bold
+    font_style.font.bold = True
+
+
+    #write column headers in sheet
+    columns = displayed_table_df.columns
+    for column_number in range(len(columns)):
+        ws.write(0, column_number, columns[column_number], font_style)
+
+    # Sheet body, remaining rows
+    font_style = xlwt.XFStyle()
+
+    for index, row in displayed_table_df.iterrows():
+        print(index)
+        for column_number, value in enumerate(row.tolist()):
+            ws.write(index + 1, column_number, value, font_style)
+        # ws.write(row_number, 1, my_row.start_date_time, font_style)
+        # ws.write(row_number, 2, my_row.end_date_time, font_style)
+        # ws.write(row_number, 3, my_row.notes, font_style)
+
+    wb.save(response)
+    return response
+
 
 
 def test_page3(request):
-    # datapoints = Object_types.objects.values()
-    list_of_child_objects = get_from_db.get_list_of_child_objects('j1_3')
-    print(list_of_child_objects)
-    # get_list_of_child_objects(object_type_id)
-    # datapoints = Object.objects.values()
-
-    # Data_point.objects.filter('object_type_id': 'j1_5',)
-    return HttpResponse(json.dumps(list_of_child_objects))   
     # return render(request, 'tree_of_knowledge_frontend/test_page3.html')
+    # response content type
+    response = HttpResponse(content_type='text/csv')
+    #decide the file name
+    response['Content-Disposition'] = 'attachment; filename="ThePythonDjango.csv"'
+
+    writer = csv.writer(response, csv.excel)
+    response.write(u'\ufeff'.encode('utf8'))
+
+    #write the headers
+    writer.writerow([
+        smart_str(u"Event Name"),
+        smart_str(u"Start Date"),
+        smart_str(u"End Date"),
+        smart_str(u"Notes"),
+    ])
+    #get data from database or from text file....
+    events = event_services.get_events_by_year(year) #dummy function to fetch data
+    for event in events:
+        writer.writerow([
+            smart_str(event.name),
+            smart_str(event.start_date_time),
+            smart_str(event.end_date_time),
+            smart_str(event.notes),
+        ])
+    return response
     
