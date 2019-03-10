@@ -87,7 +87,7 @@ urlpatterns = [
     
 
     # Simulation  -------------------------------------------------------------------------
-    url(r'^tool/query_data/$', views.query_data__simple, name='query_data'),
+    url(r'^tool/query_data/$', views.query_data, name='query_data'),
     url(r'^tool/download_file1/$', views.download_file1, name='download_file1'),
     url(r'^tool/query_data/(?P<file_name>[-\d]+)-(?P<file_type>[a-z]+)/$', views.download_file2, name='download_file2'),
     

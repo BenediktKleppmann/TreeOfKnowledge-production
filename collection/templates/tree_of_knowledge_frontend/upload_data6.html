@@ -17,7 +17,16 @@
 <style>
 	
 	h1 {
-		margin-bottom:25px;
+		margin-bottom:18px;
+	}
+	
+	.instruction {
+		margin-bottom: 6px;
+		margin-left: 17px;
+	}
+	
+	#find-matches-button-icon{
+		text-align: center
 	}
 	
 	#find-matches-button-box {
@@ -30,6 +39,41 @@
 		margin-left: 5px;
 		margin-right: 5px;
 	}
+	
+	/* --- Spinner on 'Find Matches'-Button ----------------------------------- */
+
+	.lds-dual-ring {
+	  display: inline-block;
+	  width: 16px;
+	  height: 16px;
+	  //width: 64px;
+	  //height: 64px;
+	}
+	.lds-dual-ring:after {
+	  content: " ";
+	  display: block;
+	  //width: 46px;
+	  //height: 46px;
+	  width: 14px;
+	  height: 14px;
+	  margin: 1px;
+	  border-radius: 50%;
+	  //border: 5px solid #fed;
+	  border: 2px solid #fed;
+	  border-color: #fed transparent #fed transparent;
+	  animation: lds-dual-ring 3.2s linear infinite;
+	}
+	@keyframes lds-dual-ring {
+	  0% {
+		transform: rotate(0deg);
+	  }
+	  100% {
+		transform: rotate(360deg);
+	  }
+	}
+	
+		
+		
 	/* --- Table box ----------------------------------------------------------- */
 	
 	
@@ -159,6 +203,7 @@
 		<div class="error">{{ error }}</div><br>
 	{% endfor %}
 	<h1>6 - Match to existing entities</h1>
+	<div class="instruction">Entitiy-identifying columns:</div>
 	<!--
 	Does the table contain columns that can be used for identifying it's entities? <br>
 	<ul>
@@ -171,185 +216,24 @@
 		<span id="end-of-attribute-selection"><span>
 	</div>
 	<div>
-		<div class="box">		
+		<div class="box" id="outer-table-box" style="display:none;">		
 			<div class="table-box">
 				<div id="uploaded_table"></div>
 			</div>
 		</div>
 		<div id="find-matches-button-box">
-			<button id="find-matches-button" class="btn btn-success" type="button" onclick="findMatches()" style="display:none;">Find<br>Matches<br><span class="glyphicon glyphicon-chevron-right"></span></button>
+			<button id="find-matches-button" class="btn btn-success" type="button" onclick="findMatches()" style="display:none;">Find<br>Matches<div id="find-matches-button-icon"><span class="glyphicon glyphicon-chevron-right"></span><div></button>
 		</div>
-		<div class="box">		
+		<div class="box" id="outer-matches-box"  style="display:none;">		
 			<div class="table-box">
-				<div id="potential_matches">
-				
-					<!--
-					<table id="data-table" class="table table-sm" style="width:524px;">
-						<thead>
-							<tr>
-								<th scope="col">Col 1</th>
-								<th scope="col">Col 2</th>
-								<th scope="col">Col 3</th>
-								<th style="width:80px;">is match</th>
-							</tr>
-						</thead>
-					</table>
-					<div class="matches-body">
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-						<div class="match-row">
-						</div>
-						<div class="match-row">
-							<select class="match-dropdown form-control" id="match-dropdown0">
-								<option value="=" selected>=</option>
-								<option value=">">v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v</option>
-								<option value="<"><</option>
-								<option value="in">in</option>
-							</select>
-							<input type="checkbox" id="match-checkbox0" class="match-checkbox" value="">
-						</div>
-					<div>
-					-->
-					
-				</div>
+				<div id="potential_matches"></div>
+			</div>
+			<div id="select-all-buttons">
+				<button class="btn btn-secondary de_select_button" type="button" onclick="selectAll()">Select All</button>
+				<button class="btn btn-secondary de_select_button" type="button" onclick="unselectAll()">Unselect All</button>
 			</div>
 		</div>
-		<div id="select-all-buttons" style="display:none;">
-			<button class="btn btn-secondary de_select_button" type="button" onclick="selectAll()">Select All</button>
-			<button class="btn btn-secondary de_select_button" type="button" onclick="unselectAll()">Unselect All</button>
-		</div>
+
 	</div>
 	<br>
 	<br>
@@ -362,14 +246,8 @@
 
 
 	
-	
-	
+	{% include "tree_of_knowledge_frontend/includes/instruction_video_modal.html" with url="https://www.youtube-nocookie.com/embed/ZVlZMOB-Sq0" %} 
 
-
-	
-
-
-	
 	
 
 <script>
@@ -407,7 +285,7 @@
 
 		for (var i = 0; i < columns_to_show.length; i++) {
 			var column_index = columns_to_show[i];
-			table_html_string +=  			'<th scope="col" contenteditable="true">' + table_headers[column_index] + '</th>';
+			table_html_string +=  			'<th scope="col" contenteditable="true"  nowrap>' + table_headers[column_index] + '</th>';
 		}
 		
 		table_html_string +=  			'</tr>' +
@@ -418,7 +296,7 @@
 			table_html_string +=  		'<tr>';
 			for (var j = 0; j < columns_to_show.length; j++) {
 				var column_index = columns_to_show[j];
-				table_html_string +=  			'<td>' + table_body[column_index][i] + '</td>';
+				table_html_string +=  			'<td nowrap>' + table_body[column_index][i] + '</td>';
 			}
 			table_html_string +=  		'</tr>';
 		}
@@ -427,6 +305,7 @@
 								'</table>';
 									
 		$("#uploaded_table").html(table_html_string);
+		$("#outer-table-box").attr("style","display:inline-block;");
 	}
 
 	
@@ -454,7 +333,7 @@
 			var this_rows_checkbox = document.getElementById("match-checkbox" + i);
 			if (this_rows_checkbox) {
 				if (this_rows_checkbox.checked == true) {
-					var dropdown = document.getElementById("attribute" + dropdown_number);
+					var dropdown = document.getElementById("match-dropdown" + i);
 					var object_id = dropdown[dropdown.selectedIndex].value;
 					list_of_matches.push(object_id);
 				} else {
@@ -524,7 +403,7 @@
 		
 		drawTheTable();
 		if (match_attributes.length > 0){
-			$("#find-matches-button").attr("style","display:block;");
+			$("#find-matches-button").attr("style","display:inline-block;");
 		} else {
 			$("#find-matches-button").attr("style","display:none;");
 		}
@@ -540,7 +419,8 @@
 	//===  "Find Matches" Button pressed  ================================================================================================================================
 	function findMatches(){
 	
-		/*$("#find-matches-button").html('<span class="glyphicon glyphicon-chevron-right"></span>');*/
+		$("#find-matches-button-icon").html('<div class="lds-dual-ring"></div>');
+		
 		
 		var request_body = {};
 		
@@ -562,12 +442,12 @@
 		var xmlhttp = new XMLHttpRequest();       
 		xmlhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-
+				
 				var potential_matches = JSON.parse(this.responseText)
 				
+				$("#find-matches-button-icon").html('<span class="glyphicon glyphicon-chevron-right"></span>');
+				$("#outer-matches-box").attr("style", "display:inline-block;");
 				drawPotentialMatches(potential_matches);
-				$("#select-all-buttons").attr("style","display:block;");
-
 			}
 		};
 
@@ -583,49 +463,57 @@
 	function drawPotentialMatches(potential_matches) {
 	
 	
-	matches_html_string =	'<table id="data-table" class="table table-sm" style="width:' + (141*match_attributes.length + 100) + 'px;">' +
-								'<thead>' +
-									'<tr>';
-	for (var i = 0; i < match_attributes.length; i++) {
-		matches_html_string +=			'<th scope="col">' + match_attributes[i]['attribute_name'] + '</th>';
-	}
-	
-	matches_html_string +=				'<th style="width:80px;">is match</th>' +
-									'</tr>' +
-								'</thead>' +
-							'</table>' +
-							'<div class="matches-body">'
-
-	for (var i = 0; i < potential_matches.length; i++) {	
-		var potential_matches_row = potential_matches[i];
-		
-		if (potential_matches_row.keys().length == 0){
-			matches_html_string +=	'<div class="match-row"></div>';
-		} else {
-		
-			matches_html_string +=	'<div class="match-row">' +
-										'<select class="match-dropdown form-control" id="match-dropdown' + i + '">';
-										
-			for (var j = 0; j < potential_matches_row.keys().length; j++) {
-				var object_id = potential_matches_row.keys()[j];
-				var dropdown_text = "";
-				
-				for (var i = 0; i < match_attributes.length; i++) {
-					var attriute_id = match_attributes[i]['attribute_id']
-					var attribute_value = potential_matches_row[object_id][attriute_id]
-					dropdown_text += attribute_value + "&nbsp;".repeat(34 - attribute_value.length)
-				}
-				matches_html_string +=		'<option value="' + object_id + '" selected>' + dropdown_text + '</option>';
-			}
-			
-			matches_html_string +=		'</select>' +
-										'<input type="checkbox" id="match-checkbox' + i + '" class="match-checkbox" value="">' +
-									'</div>';
+		matches_html_string =	'<table id="data-table" class="table table-sm" style="width:' + (141*match_attributes.length + 100) + 'px;">' +
+									'<thead>' +
+										'<tr>';
+		for (var i = 0; i < match_attributes.length; i++) {
+			matches_html_string +=			'<th scope="col" nowrap>' + match_attributes[i]['attribute_name'] + '</th>';
 		}
-	}
-	matches_html_string +=	'</div>';
-	
-	$("#potential_matches").html(matches_html_string);
+		
+		matches_html_string +=				'<th style="width:80px;">is match</th>' +
+										'</tr>' +
+									'</thead>' +
+								'</table>' +
+								'<div class="matches-body">'
+
+		for (var i = 0; i < potential_matches.length; i++) {	
+			var potential_matches_row = potential_matches[i];
+			
+			if (potential_matches_row.length == 0){
+				matches_html_string +=	'<div class="match-row"></div>';
+			} else {
+			
+				matches_html_string +=	'<div class="match-row">' +
+											'<select class="match-dropdown form-control" id="match-dropdown' + i + '">';			
+				
+				for (var j = 0; j < potential_matches_row.length; j++) {
+					var object_id = potential_matches_row[j]['object_id'];
+					var dropdown_text = "";
+					
+					for (var k = 0; k < match_attributes.length; k++) {
+						var attriute_id = match_attributes[k]['attribute_id']
+						var attribute_value = potential_matches_row[j][attriute_id]
+						if (typeof attribute_value != 'undefined') {
+							dropdown_text += attribute_value + "&nbsp;".repeat(Math.max(37 - Math.round(attribute_value.length * 1.82 ),0))
+						}
+					}
+					matches_html_string +=		'<option value="' + object_id + '" selected>' + dropdown_text + '</option>';
+				}
+				
+				matches_html_string +=		'</select>' +
+											'<input type="checkbox" id="match-checkbox' + i + '" class="match-checkbox" value="">' +
+										'</div>';
+			}
+		}
+		matches_html_string +=	'</div>';
+		
+		$("#potential_matches").html(matches_html_string);
+		$(".match-dropdown").css('width', (141*match_attributes.length) + 'px');
+		
+		// simultaneous scrolling
+		$(".table-body, .matches-body").on("scroll", function() {
+			$(".table-body, .matches-body").scrollTop($(this).scrollTop());
+		});
 	
 	}
 		
@@ -657,10 +545,6 @@
 		// set up the screen
 		drawTheFirstDropDown();
 		
-		// simultaneous scrolling
-		$(".table-body, .matches-body").on("scroll", function() {
-			$(".table-body, .matches-body").scrollTop($(this).scrollTop());
-		});
 
 		
 	});

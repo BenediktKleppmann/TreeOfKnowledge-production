@@ -75,4 +75,4 @@ class Uploaded_datasetForm6(forms.ModelForm):
 class Uploaded_datasetForm7(forms.ModelForm):
 	class Meta:
 		model = Uploaded_dataset
-		fields = ('valid_times', )
+		fields = ('data_generation_date', )

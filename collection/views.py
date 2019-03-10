@@ -5,7 +5,7 @@ from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
-from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_data
+from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_datapoints
 from django.http import HttpResponse
 import json
 import traceback
@@ -279,7 +279,11 @@ def upload_data6A(request, upload_id):
             errors.append('Error: the form is not valid.')
         else:
             form6.save()
-            return redirect('upload_data7', upload_id=upload_id)
+            if uploaded_dataset.data_generation_date is None:
+                return redirect('upload_data7', upload_id=upload_id)
+            else:
+                (number_of_datapoints_saved, new_model_id) = upload_data.perform_uploading(uploaded_dataset, request)
+                return redirect('upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
    
     table_attributes = upload_data.make_table_attributes_dict(uploaded_dataset)
     return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'data_table_json': uploaded_dataset.data_table_json, 'table_attributes': table_attributes, 'errors': errors})
@@ -425,7 +429,7 @@ def get_data_points(request):
     specified_start_time = int(request_body['specified_start_time'])
     specified_end_time = int(request_body['specified_end_time'])
 
-    response = query_data.get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time)
+    response = query_datapoints.get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time)
     return HttpResponse(json.dumps(response))
 
 
@@ -479,30 +483,7 @@ def find_matching_entities(request):
     request_body = json.loads(request.body)
     match_attributes = request_body['match_attributes']
     match_values = request_body['match_values']
-    matching_objects_entire_list = []
-
-    for row_nb in range(len(match_values[0])):
-        matching_objects_dict = {}
-
-        # append all matching datapoints
-        found_datapoints = Data_point.objects.none()
-        for attribute_nb, attribute_details in enumerate(match_attributes):
-
-            additional_datapoints = Data_point.objects.filter(attribute_id=attribute_details['attribute_id'], attribute_value = json.dumps({'value':match_values[attribute_nb][row_nb]}))
-            found_datapoints = found_datapoints.union(additional_datapoints)
-
-        # get the object_ids  - those with most matching datapoints first
-        object_id_list = found_datapoints.values('object_id').annotate(Count('object_id')).order_by('-object_id__count').values_list('object_id', flat=True)
-
-        for object_id in object_id_list:
-            # create a matching_object for each of the found object_id (containing the values from the this object_id)
-            matching_object = {}
-            for datapoint in found_datapoints.filter(object_id=object_id):
-                matching_object[datapoint.attribute_id] = datapoint.attribute_value
-            matching_objects_dict['object_id'] = matching_object
-            
-        
-        matching_objects_entire_list.append(matching_objects_dict)
+    matching_objects_entire_list = query_datapoints.find_matching_entities(match_attributes, match_values)
 
     return HttpResponse(json.dumps(matching_objects_entire_list))
 
@@ -852,7 +833,7 @@ def check_single_fact_format(request):
  # ==========================================================================
 
 @login_required
-def query_data__simple(request):
+def query_data(request):
     object_hierachy_tree = get_from_db.get_object_hierachy_tree()
     return render(request, 'tree_of_knowledge_frontend/query_data.html',{'object_hierachy_tree':object_hierachy_tree})
 
@@ -1013,117 +994,18 @@ def backup_database(request):
 
 
 def test_page1(request):
-    # return render(request, 'tree_of_knowledge_frontend/test_page1.html')
-    # content-type of response
-    response = HttpResponse(content_type='application/ms-excel')
-
-    #decide file name
-    response['Content-Disposition'] = 'attachment; filename="ThePythonDjango.xls"'
-
-    #creating workbook
-    wb = xlwt.Workbook(encoding='utf-8')
-
-    #adding sheet
-    ws = wb.add_sheet("sheet1")
-
-
-
-    font_style = xlwt.XFStyle()
-    # headers are bold
-    font_style.font.bold = True
-
-
-    #write column headers in sheet
-    columns = ['2af','sdfg',234,52,6,'dfg']
-    for column_number in range(len(columns)):
-        ws.write(0, column_number, columns[column_number], font_style)
-
-    # Sheet body, remaining rows
-    # font_style = xlwt.XFStyle()
-
-    # for index, row in displayed_table_df.iterrows():
-    #     print(index)
-    #     for column_number, value in enumerate(row.tolist()):
-    #         ws.write(index + 1, column_number, value, font_style)
-    #     # ws.write(row_number, 1, my_row.start_date_time, font_style)
-    #     # ws.write(row_number, 2, my_row.end_date_time, font_style)
-    #     # ws.write(row_number, 3, my_row.notes, font_style)
-
-    wb.save(response)
-    return response
+    return render(request, 'tree_of_knowledge_frontend/test_page1.html')
 
 
 
 def test_page2(request):
+    attribute_records = Attribute.objects.all()
+    attributes_list = list(attribute_records.values())
+    return HttpResponse(json.dumps(attributes_list))
     # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
-    displayed_table_dict = json.loads(request.body)
-    displayed_table_df = pd.DataFrame(displayed_table_dict)
-
-    # content-type of response
-    response = HttpResponse(content_type='application/ms-excel')
-
-    #decide file name
-    response['Content-Disposition'] = 'attachment; filename="ThePythonDjango.xls"'
-
-    #creating workbook
-    wb = xlwt.Workbook(encoding='utf-8')
-
-    #adding sheet
-    ws = wb.add_sheet("sheet1")
-
-
-
-    font_style = xlwt.XFStyle()
-    # headers are bold
-    font_style.font.bold = True
-
-
-    #write column headers in sheet
-    columns = displayed_table_df.columns
-    for column_number in range(len(columns)):
-        ws.write(0, column_number, columns[column_number], font_style)
-
-    # Sheet body, remaining rows
-    font_style = xlwt.XFStyle()
-
-    for index, row in displayed_table_df.iterrows():
-        print(index)
-        for column_number, value in enumerate(row.tolist()):
-            ws.write(index + 1, column_number, value, font_style)
-        # ws.write(row_number, 1, my_row.start_date_time, font_style)
-        # ws.write(row_number, 2, my_row.end_date_time, font_style)
-        # ws.write(row_number, 3, my_row.notes, font_style)
-
-    wb.save(response)
-    return response
-
 
 
 def test_page3(request):
-    # return render(request, 'tree_of_knowledge_frontend/test_page3.html')
-    # response content type
-    response = HttpResponse(content_type='text/csv')
-    #decide the file name
-    response['Content-Disposition'] = 'attachment; filename="ThePythonDjango.csv"'
+    return render(request, 'tree_of_knowledge_frontend/test_page3.html')
 
-    writer = csv.writer(response, csv.excel)
-    response.write(u'\ufeff'.encode('utf8'))
-
-    #write the headers
-    writer.writerow([
-        smart_str(u"Event Name"),
-        smart_str(u"Start Date"),
-        smart_str(u"End Date"),
-        smart_str(u"Notes"),
-    ])
-    #get data from database or from text file....
-    events = event_services.get_events_by_year(year) #dummy function to fetch data
-    for event in events:
-        writer.writerow([
-            smart_str(event.name),
-            smart_str(event.start_date_time),
-            smart_str(event.end_date_time),
-            smart_str(event.notes),
-        ])
-    return response
     

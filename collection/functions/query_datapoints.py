@@ -4,6 +4,53 @@ import pandas as pd
 from datetime import datetime
 from collection.functions import generally_useful_functions, get_from_db
 
+
+def find_matching_entities(match_attributes, match_values):
+    matching_objects_entire_list = []
+
+    for row_nb in range(len(match_values[0])):
+        matching_objects_dict = {}
+
+        # append all matching datapoints
+        found_datapoints = Data_point.objects.none()
+        for attribute_nb, attribute_details in enumerate(match_attributes):
+
+            additional_datapoints = Data_point.objects.filter(attribute_id=attribute_details['attribute_id'], value_as_string=str(match_values[attribute_nb][row_nb]))
+            found_datapoints = found_datapoints.union(additional_datapoints)
+
+        # get the object_ids  - those with most matching datapoints first
+        found_datapoints_df = pd.DataFrame(list(found_datapoints.values('object_id','attribute_id','value_as_string','data_quality')))
+        if len(found_datapoints_df)==0:
+            matching_objects_entire_list.append([])
+        else:
+            found_object_attributes_df = found_datapoints_df.groupby(['object_id','attribute_id','value_as_string']).aggregate({'object_id': 'first','attribute_id': 'first', 'value_as_string':'first', 'data_quality':np.sum})
+            object_scores_df = found_object_attributes_df.groupby('object_id').aggregate({'object_id':'first', 'attribute_id':'count', 'data_quality':np.sum})
+            
+
+            objects_df = found_object_attributes_df.pivot(index='object_id', columns='attribute_id', values='value_as_string')
+            objects_df['object_id'] = objects_df.index
+            objects_df = pd.merge(objects_df, object_scores_df, on='object_id', how='left')
+            objects_df = objects_df.sort_values(['attribute_id','data_quality'], ascending=[False, False])
+            objects_df = objects_df[:3]
+            object_columns = list(objects_df.columns)
+            attribute_ids = [attribute['attribute_id'] for attribute in match_attributes if (attribute['attribute_id'] in object_columns)]
+            objects_df = objects_df[['object_id'] + attribute_ids]
+            matching_objects_dict = objects_df.to_dict('records')
+             
+            matching_objects_entire_list.append(matching_objects_dict)
+    return matching_objects_entire_list
+
+
+
+
+
+
+
+
+
+
+
+
 def get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time):
     nothing_found_response = {}
     nothing_found_response['table_body'] = {}
@@ -45,15 +92,17 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
 
         valid_ranges_df = pd.merge(valid_ranges_df, new_valid_ranges_df, on='object_id', how='left')
         valid_ranges_df = valid_ranges_df[valid_ranges_df['new_valid_range'].notnull()]
+        if len(valid_ranges_df) == 0:
+            return nothing_found_response
         valid_ranges_df['valid_range'] = valid_ranges_df.apply(generally_useful_functions.intersections, axis=1)
         # valid_ranges_df['valid_range'] = np.vectorize(generally_useful_functions.intersections)(valid_ranges_df['valid_range'], valid_ranges_df['new_valid_range'])
         valid_ranges_df = valid_ranges_df[['object_id', 'valid_range']]
 
 
     # choose the first time interval that satisfies all filter-fact conditions
-    valid_ranges_df['satisfying_time_start'] = [object_ranges[0][0] for object_ranges in valid_ranges_df['valid_range']]
-    valid_ranges_df['satisfying_time_end'] = [object_ranges[0][1] for object_ranges in valid_ranges_df['valid_range']]
-
+    valid_ranges_df['satisfying_time_start'] = [object_ranges[0][0] if len(object_ranges)>0 else None for object_ranges in valid_ranges_df['valid_range'] ]
+    valid_ranges_df['satisfying_time_end'] = [object_ranges[0][1] if len(object_ranges)>0 else None for object_ranges in valid_ranges_df['valid_range']]
+    valid_ranges_df = valid_ranges_df[valid_ranges_df['satisfying_time_start'].notnull()]
 
     # make long table with all datapoints of the found objects
     found_objects = list(set(data_point_records.values_list('object_id', flat=True)))
@@ -63,7 +112,7 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
     long_table_df = pd.DataFrame(list(all_data_points.values()))
 
     # filter out the observations from not-satisfying times
-    long_table_df = pd.merge(long_table_df, valid_ranges_df, how='left', on='object_id')
+    long_table_df = pd.merge(long_table_df, valid_ranges_df, how='inner', on='object_id')
     long_table_df = long_table_df[(long_table_df['valid_time_end'] > long_table_df['satisfying_time_start']) & (long_table_df['valid_time_start'] < long_table_df['satisfying_time_end'])]
 
 

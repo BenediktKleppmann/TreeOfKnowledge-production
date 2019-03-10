@@ -98,7 +98,7 @@
 		.table thead > tr > th {border-bottom: 0;}
 
         tbody {
-            height: calc(100vh - 455px);
+            height: calc(100vh - 475px);
             overflow-y: auto;
 			direction: rtl;
 			overflow-x: hidden;
@@ -204,6 +204,7 @@
 			margin-top:12px;
 			height: 290px; 
 			width: 201px; 
+			overflow-x:hidden;
 			overflow-y:auto;
 			margin-bottom:5px;
 		}
@@ -212,11 +213,17 @@
 			padding-left: 5px;
 		}
 		
-		#selection-options > .btn {
-			margin-top:5px; 
+		.list-group-item {
+			padding: 0px;
+			margin:0px;
+			width: 175px;
+			border-style: none;
+			margin-bottom: 5px;
+		}
+		
+		.list-group-item > .btn{
 			width: 175px;
 			text-align: left;
-			overflow: hidden;
 		}
 
 		#attribute-choice {
@@ -322,12 +329,13 @@
 		  <div class="modal-body">
 			  <div class="container-fluid">
 				<div class="row">
-				  <div class="col-md-4">
+				  <div class="col-md-4 form-group">
 					<span id="choose-attribute-attributenumber" style="display:none;"></span>
+					<input type="text" class="search form-control" id="selectOptionSearch" onkeyup="filterSelectionOptions();" placeholder=" Search">
 					<div id="selection-options-frame">
-						<div class="input-group" id="selection-options" ></div>
+						<!--<div class="input-group" id="selection-options" ></div>-->
+						<ul id="selection-options" class="input-group list-group"></ul>
 					</div>
-					<!--<button type="button" class="btn btn-info" data-toggle="modal" data-target="#createAttributeModal" style="width:220px;">Create New Attribute</button>-->
 					<button type="button" class="btn btn-secondary" style="width:175px;margin-left:4px;margin-bottom:5px;padding-left:6px" onclick="inspectDateTimeColumn()">Date/Time of Observation</button>
 					<button type="button" class="btn btn-warning" style="width:175px;margin-left:4px;margin-bottom:5px;" onclick="resetAttributeSelection()" data-dismiss="modal">Reset</button>
 					<button type="button" class="btn btn-success" style="width:175px;margin-left:4px;" onclick="openModalWithFormatSuggestions()">Create New Attribute</button>
@@ -404,7 +412,7 @@
 			  </div>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+			<button type="button" id="choose-attribute-close-button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
 			<button type="button" class="btn btn-primary" onclick="takeOverEditedColumn()" data-dismiss="modal">Save</button>
 		  </div>
 		</div>
@@ -413,6 +421,7 @@
 	
 	{% include "tree_of_knowledge_frontend/includes/create_attribute_modal.html" %} 
 	{% include "tree_of_knowledge_frontend/includes/edit_attribute_modal.html" %} 
+	{% include "tree_of_knowledge_frontend/includes/instruction_video_modal.html" with url="https://www.youtube-nocookie.com/embed/ZVlZMOB-Sq0" %} 
 	
 	
 
@@ -667,7 +676,20 @@
 	//====  Choose Attribute Modal  ======================================================================
 	//====================================================================================================
 	
-
+	function filterSelectionOptions(){	
+		var current_query = $('#selectOptionSearch').val().toLowerCase();
+		if (current_query !== "") {
+			$("#selection-options li").hide();
+			$("#selection-options li").each(function(){
+				var current_keyword = $(this).text().toLowerCase();
+				if (current_keyword.indexOf(current_query) >=0) {
+					$(this).show();    	 	
+				};
+			});    	
+		} else {
+			$("#selection-options li").show();
+		};
+	}
 	
 	//== Clicking on an Attribute in the Choose Attribute Modal =========================================================================================		  
 	function inspectAttribute(i) {
@@ -946,10 +968,11 @@
 	
 	
 	function redrawAttributeSelections() {
-		//re-draw the attribute dropdowns (so that they contain the new attribute)
-		for (var i = 1; i <= number_of_additional_facts; i++) {
-			makeObjectsAdditionalAttributesDropdown( "{{ uploaded_dataset.object_type_id }}" , i);
-		}
+		//close and re-open the choose-attribute modal in order for the new attribute to be loaded
+		var attributenumber = $("#choose-attribute-attributenumber").html();
+		document.getElementById("choose-attribute-close-button").click();
+		document.getElementById("attribute-button" + attributenumber).click();
+		
 	}
 	
 	function openModalWithFormatSuggestions(){
@@ -1104,12 +1127,17 @@
 					var selection_options_html_string = "";
 					
 				  
-					for (var i = 0; i < attribute_options.length; i++) {
+					/*for (var i = 0; i < attribute_options.length; i++) {
 						selection_options_html_string += 	'<button class="btn btn-outline-secondary" type="button" onclick="inspectAttribute(' + i + ')" scope="col" data-attribute-id=' + attribute_options[i]["attribute_id"] + '>' + attribute_options[i]["attribute_name"] + '</button>' +
 															'<br>';
+					} */
+					
+					for (var i = 0; i < attribute_options.length; i++) {
+						selection_options_html_string += 	'<li class="list-group-item narrow"><button class="btn btn-outline-secondary" type="button" onclick="inspectAttribute(' + i + ')" scope="col" data-attribute-id=' + attribute_options[i]["attribute_id"] + '>' + attribute_options[i]["attribute_name"] + '</button></li>';
 					}
 
 					$("#selection-options").html(selection_options_html_string);
+					
 
 				}
 			};

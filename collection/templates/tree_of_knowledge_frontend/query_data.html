@@ -140,6 +140,42 @@
 			width: 36px;
 			
 		}
+		
+		/* --- Spinner on 'Get Data'-Button ----------------------------------- */
+
+		#run-query-button-icon{
+			text-align: center
+		}
+	
+		.lds-dual-ring {
+		  display: inline-block;
+		  width: 16px;
+		  height: 16px;
+		  //width: 64px;
+		  //height: 64px;
+		}
+		.lds-dual-ring:after {
+		  content: " ";
+		  display: block;
+		  //width: 46px;
+		  //height: 46px;
+		  width: 14px;
+		  height: 14px;
+		  margin: 1px;
+		  border-radius: 50%;
+		  //border: 5px solid #fed;
+		  border: 2px solid #fed;
+		  border-color: #fed transparent #fed transparent;
+		  animation: lds-dual-ring 3.2s linear infinite;
+		}
+		@keyframes lds-dual-ring {
+		  0% {
+			transform: rotate(0deg);
+		  }
+		  100% {
+			transform: rotate(360deg);
+		  }
+		}
 	/* ------------------------------------------------------------- */
 	/* --- THE RIGHT SIDE  ------------------------------------------ */
 	/* ------------------------------------------------------------- */
@@ -362,7 +398,7 @@
 					<div id="to-label" class="col-sm-2">To:</div>
 					<input name="specified_end_time" id="specified_end_time" class="datetimepicker form-control col-sm-4" value="2020-01-01">
 			</div> 
-			<button type="button" id="run-query-button" class="btn btn-success" onclick="runQuery()">Get Data<br>></button>
+			<button type="button" id="run-query-button" class="btn btn-success" onclick="runQuery()">Get Data<div id="run-query-button-icon"><span class="glyphicon glyphicon-chevron-right"></span><div></button>
 		</div>
 		
 		<!-- THE RIGHT SIDE-->
@@ -630,8 +666,12 @@
 	
 	
 	function runQuery(){
+		
+		$("#run-query-button-icon").html('<div class="lds-dual-ring"></div>');
+		
 		object_type_id = $("#object_type_id").val();
 		var reset_attribute_selection = ((last_queried_object_id == object_type_id) ? false : true);
+		last_queried_object_id = object_type_id; // for next time...
 	
 		//for every attribute-specification, get the attribute, operator and value and save to the object_dict
 		filter_facts = [];
@@ -664,6 +704,7 @@
 		xmlhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 
+				$("#run-query-button-icon").html('<span class="glyphicon glyphicon-chevron-right"></span>');
 				var response = JSON.parse(this.responseText);
 				table_body = response['table_body']
 				table_attributes = response['table_attributes']

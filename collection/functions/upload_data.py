@@ -134,41 +134,46 @@ def perform_uploading(uploaded_dataset, request):
     """
         Main upload function for non-timeseries data.
     """
+
+
     number_of_datapoints_saved = 0;
 
     object_type_id = uploaded_dataset.object_type_id
 
     data_quality = uploaded_dataset.correctness_of_data
     attribute_selection = json.loads(uploaded_dataset.attribute_selection)
-    object_identifiers = json.loads(uploaded_dataset.object_identifiers)
 
-    valid_times = json.loads(uploaded_dataset.data_table_json)
+    list_of_matches = json.loads(uploaded_dataset.list_of_matches)
+
+    valid_time_start = int(time.mktime(uploaded_dataset.data_generation_date.timetuple()))
     data_table_json = json.loads(uploaded_dataset.data_table_json)
     table_body = data_table_json["table_body"]
-    number_of_entities = len(table_body[0])
 
-    
+    number_of_entities = len(table_body[list(table_body.keys())[0]])
+     
 
-    # prepare list of data types
+
+    # prepare list of data_types and of expected_valid_periods
     data_types = []
+    valid_times_end = []
     for attribute_id in attribute_selection:
         attribute_record = Attribute.objects.get(id=attribute_id)
         data_types.append(attribute_record.data_type)
+        valid_times_end.append(valid_time_start + attribute_record.expected_valid_period)
 
 
     for entity_nb in range(number_of_entities):
 
-        if (object_identifiers[entity_nb] is not None):
-            object_id = object_identifiers[entity_nb]
+        if (list_of_matches[entity_nb] is not None):
+            object_id = list_of_matches[entity_nb]
         else:
             object_record = Object(object_type_id=object_type_id)
             object_record.save()
             object_id = object_record.id
 
         for column_number, attribute_id in enumerate(attribute_selection):
-            value = table_body[column_number][entity_nb]
-            valid_time_start = valid_times[column_number][entity_nb]['start']
-            valid_time_end = valid_times[column_number][entity_nb]['end']
+            value = table_body[str(column_number)][entity_nb]
+            valid_time_end = valid_times_end[column_number]
 
             if value is not None:
                 value_as_string = str(value)

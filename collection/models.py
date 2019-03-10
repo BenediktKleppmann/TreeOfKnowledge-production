@@ -77,7 +77,7 @@ class Uploaded_dataset(models.Model):
     # upload_data6
     list_of_matches = models.TextField()
     # upload_data7
-    valid_times = models.TextField()
+    # valid_times = models.TextField()
     created = models.DateTimeField(editable=False)
     updated = models.DateTimeField(editable=False)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)

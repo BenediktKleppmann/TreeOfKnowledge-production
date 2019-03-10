@@ -9,59 +9,49 @@
 {% block additionalcss %}
 
 
-<script src="{% static 'js/attribute-dropdown-functions.js' %}"></script>
-
-
+<button id="find-matches-button" class="btn btn-success" type="button" onclick="findMatches()" style="display:none;">Find<br>Matches<div id="find-matches-button-icon"><span class="glyphicon glyphicon-chevron-right"></span><div></button>
 
 <style>
 		
-		/* --- Additional Attribute Drop Down ----------------------------------- */
+		/* --- Loading Spinner ----------------------------------- */
 		
-		.list-group.drop-down-display {
-			margin-bottom:3px;
-			max-height: 250px;
-			overflow-y: scroll;
+		body {background: #2e1c8a;}
+
+
+		// Dual Ring
+		.lds-dual-ring {
+		  display: inline-block;
+		  width: 18px;
+		  height: 18px;
+		}
+		.lds-dual-ring:after {
+		  content: " ";
+		  display: block;
+		  width: 14px;
+		  height: 14px;
+		  margin: 1px;
+		  border-radius: 50%;
+		  border: 2px solid #fed;
+		  border-color: #fed transparent #fed transparent;
+		  animation: lds-dual-ring 3.2s linear infinite;
+		}
+		@keyframes lds-dual-ring {
+		  0% {
+			transform: rotate(0deg);
+		  }
+		  100% {
+			transform: rotate(360deg);
+		  }
 		}
 
-		.dropdown {
-			margin-left:2px;
-		}
-		
-		.dropdown-item {
-			padding: 6px 10px;
-			border-radius:2px;
-			width:150px
-		}
-		
-		.dropdown-item-button {
-			padding: 6px 10px;
-			border-radius:2px;
-			width:150px;
-			margin-left:17px;
-			margin-bottom:3px;
-			border-radius:5px;
-		}
+
 		
 </style>
 {% endblock %}
 
 {% block content %}
-
-	 <div id="item-types" class="context-click-area" data-attribute-id=1>Right Click Here</div>
-		 
-		 <ul id="drop-down-display0" class="list list-group drop-down-display">
-			<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(0, this.innerHTML, 1)" data-attribute-id=1>Country</button></li>'
-			<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(0, this.innerHTML, 2)" data-attribute-id=2>Year</button></li>'
-			<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(0, this.innerHTML, 3)" data-attribute-id=3>Count</button></li>'
-			<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(0, this.innerHTML, 4)" data-attribute-id=4>Rate</button></li>'
-			<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(0, this.innerHTML, 5)" data-attribute-id=5>Source</button></li>'
-		 </ul>
-           
-
-	
-	{% include "tree_of_knowledge_frontend/includes/create_attribute_modal.html" %} 
-	{% include "tree_of_knowledge_frontend/includes/edit_attribute_modal.html" %} 
-
-	
+<br><br>
+	<br>
+	<div class="lds-dual-ring"></div>
 	
 {% endblock %}
