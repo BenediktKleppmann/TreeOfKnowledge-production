@@ -849,7 +849,7 @@
 					var dropdown_right = document.getElementById("table_attribute" + (i+1));
 					var right_value = dropdown_right[dropdown_right.selectedIndex].value;
 					document.getElementById("table_attribute" + i).value = right_value;
-					selected_table_attributes[i] = selected_table_attributes[i+1];
+					selected_table_attributes[i+1] = selected_table_attributes[i+2];
 				}
 				
 				//remove the dropdown on the far right

@@ -64,6 +64,7 @@ urlpatterns = [
     url(r'^tool/get_list_of_objects/$', views.get_list_of_objects, name='get_list_of_objects'),
     url(r'^tool/get_attribute_details/$', views.get_attribute_details, name='get_attribute_details'),
     url(r'^tool/get_data_points/$', views.get_data_points, name='get_data_points'),
+    url(r'^tool/get_data_from_random_object/$', views.get_data_from_random_object, name='get_data_from_random_object'),
     # find
     url(r'^tool/find_suggested_attributes/$', views.find_suggested_attributes, name='find_suggested_attributes'),
     url(r'^tool/find_suggested_attributes2/$', views.find_suggested_attributes2, name='find_suggested_attributes2'),

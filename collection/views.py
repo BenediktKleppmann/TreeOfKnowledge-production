@@ -14,6 +14,7 @@ import pandas as pd
 import xlwt
 from django.utils.encoding import smart_str
 import time
+import os
 
 
  # ===============================================================================
@@ -433,6 +434,20 @@ def get_data_points(request):
     return HttpResponse(json.dumps(response))
 
 
+# used in edit_model.html
+@login_required
+def get_data_from_random_object(request):
+
+    request_body = json.loads(request.body)
+    object_type_id = request_body['object_type_id']
+    environmental_filter_facts = request_body['environmental_filter_facts']
+    specified_start_time = request_body['specified_start_time']
+    specified_end_time = request_body['specified_end_time']
+
+    response = query_datapoints.get_data_from_random_object(object_type_id, environmental_filter_facts, specified_start_time, specified_end_time)
+    return HttpResponse(json.dumps(response))
+
+
 # ==================
 # FIND
 # ==================
@@ -510,7 +525,7 @@ def save_new_object_type(request):
             request_body = json.loads(request.body)
             object_facts = request_body['li_attr']['attribute_values']
             request_body['li_attr']['attribute_values'] = get_from_db.convert_fact_values_to_the_right_format(object_facts)
-            new_entry = Object_types(id=request_body['id'], parent=request_body['parent'], name=request_body['text'], li_attr=json.dumps(request_body['li_attr']), a_attr=None)
+            new_entry = Object_types(id=request_body['id'], parent=request_body['parent'], name=request_body['text'], li_attr=json.dumps(request_body['li_attr']), a_attr=None, object_icon="si-glyph-square-dashed-2")
             new_entry.save()
             return HttpResponse("success")
         except Exception as error:
@@ -543,26 +558,6 @@ def save_edited_object_type(request):
 
 
 
-# used in: upload_data3
-@login_required
-def save_edited_object_type(request):
-    if request.method == 'POST':
-        try:
-            request_body = json.loads(request.body)
-            object_facts = request_body['li_attr']['attribute_values']
-            request_body['li_attr']['attribute_values'] = get_from_db.convert_fact_values_to_the_right_format(object_facts)
-            edited_object_type = Object_types.objects.get(id=request_body['id'])
-            edited_object_type.parent = request_body['parent']
-            edited_object_type.name = request_body['text']
-            edited_object_type.li_attr = json.dumps(request_body['li_attr'])
-            edited_object_type.save()
-            return HttpResponse("success")
-        except Exception as error:
-            traceback.print_exc()
-            return HttpResponse(str(error))
-    else:
-        return HttpResponse("This must be a POST request.")
-
 # used in: create_attribute_modal.html (i.e. upload_data3,4,5)
 @login_required
 def save_new_attribute(request):
@@ -570,7 +565,7 @@ def save_new_attribute(request):
         try:
             request_body = json.loads(request.body)
 
-            new_entry = Attribute(name=request_body['name'], data_type=request_body['data_type'], expected_valid_period=request_body['expected_valid_period'], description=request_body['description'], first_applicable_object=request_body['first_applicable_object'], format_specification=json.dumps(request_body['format_specification']))
+            new_entry = Attribute(name=request_body['name'], data_type=request_body['data_type'], expected_valid_period=request_body['expected_valid_period'], description=request_body['description'], first_applicable_object=request_body['first_applicable_object'], format_specification=json.dumps(request_body['format_specification']), behaviour_rules='[]')
             new_entry.save()
             return HttpResponse("success")
         except Exception as error:
@@ -684,9 +679,9 @@ def edit_column(request):
     response = {}
     response['errors'] = errors
     response['edited_column'] = edited_column
-    print("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
-    print(response['edited_column'])
-    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    # print("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
+    # print(response['edited_column'])
+    # print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     return HttpResponse(json.dumps(response))
 
 
@@ -909,26 +904,9 @@ def download_file2_csv(request):
         writer.writerow(row.tolist())
     return response
 
-
-
-@login_required
-def edit_model(request, id):
-    model = Simulation_model.objects.get(id=id)
-    form_class = Simulation_modelForm
-    form = form_class(data=request.POST, instance=model)
-
-    if model.is_private and (model.user != request.user):
-        raise Http404
-
-    if request.method == 'POST':
-        if form.is_valid():
-            model = form.save(commit=False)
-            model.user = request.user
-            model.save()
-
-    return render(request, 'tree_of_knowledge_frontend/edit_model.html', {'model':model, 'form': form,})
-
-
+# ==========
+# SIMULATION
+# ==========
 
 @login_required
 def new_model(request):
@@ -946,7 +924,32 @@ def new_model(request):
 
     form_class = Simulation_modelForm
     form = form_class()
-    return render(request, 'tree_of_knowledge_frontend/edit_model.html', {'form': form,})
+    available_object_types = get_from_db.get_most_common_object_types()
+    object_icons = os.listdir("collection/static/images/object icons/")
+    return render(request, 'tree_of_knowledge_frontend/edit_model.html', {'form': form, 'available_object_types': available_object_types, 'object_icons': object_icons})
+
+
+@login_required
+def edit_model(request, id):
+    model = Simulation_model.objects.get(id=id)
+    form_class = Simulation_modelForm
+    form = form_class(data=request.POST, instance=model)
+
+    if model.is_private and (model.user != request.user):
+        raise Http404
+
+    if request.method == 'POST':
+        if form.is_valid():
+            model = form.save(commit=False)
+            model.user = request.user
+            model.save()
+
+    object_icons = os.listdir("collection/static/images/object icons/")
+    return render(request, 'tree_of_knowledge_frontend/edit_model.html', {'model':model, 'form': form, 'available_object_types': model.available_object_types, 'object_icons': object_icons})
+
+
+
+
 
 
 
@@ -999,13 +1002,40 @@ def test_page1(request):
 
 
 def test_page2(request):
-    attribute_records = Attribute.objects.all()
-    attributes_list = list(attribute_records.values())
-    return HttpResponse(json.dumps(attributes_list))
+    from django.db import connection
+    tables = connection.introspection.table_names()
+    seen_models = connection.introspection.installed_models(tables)
+    return HttpResponse(str(seen_models))
     # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
+
+    
 
 
 def test_page3(request):
-    return render(request, 'tree_of_knowledge_frontend/test_page3.html')
+    child_object_ids = ['j1_5', 'j1_8']
+    # object_ids = list(Object.objects.filter(object_type_id__in=child_object_ids).values_list('id', flat=True))
+    # object_ids = object_ids[:500]
+    # object_ids = [2899, 2900, 2901, 2902]
+
+    # query_string = 'SELECT DISTINCT id FROM collection_object WHERE object_type_id in (%s)' % (', '.join('"{0}"'.format(object_type_id) for object_type_id in child_object_ids))
+    # query_string = 'SELECT DISTINCT object_id FROM collection_data_point'
+    # result = Object.objects.raw(query_string)
+
+    from django.db import connection
+    object_ids = [2899, 2900, 2901, 2902, 4357, 4358, 4359, 4360, 4361, 4362, 4363, 4364, 4365, 4366, 4367, 4368, 4369, 4370, 4371, 4372, 4373, 4374, 4375, 4376, 4377, 4378, 4379, 4380, 4381, 4382, 4383, 4384, 4385, 4386, 4387, 4388, 4389, 4390, 4391, 4392, 4393, 4394, 4395, 4396, 4397, 4398, 4399, 4400, 4401, 4402, 4403, 4404, 4405, 4406, 4407, 4408, 4409, 4410, 4411, 4412, 4413, 4414, 4415, 4416, 4417, 4418, 4419, 4420, 4421, 4422, 4423, 4424, 4425, 4426, 4427, 4428, 4429, 4430, 4431, 4432, 4433, 4434, 4435, 4436, 4437, 4438, 4439, 4440, 4441, 4442, 4443, 4444, 4445, 4446, 4447, 4448, 4449, 4450, 4451, 4452, 4453, 4454, 4455, 4456, 4457, 4458, 4459, 4460, 4461, 4462, 4463, 4464, 4465, 4466, 4467, 4468, 4469, 4470, 4471, 4472, 4473, 4474, 4475, 4476, 4477, 4478, 4479, 4480, 4481, 4482, 4483, 4484, 4485, 4486, 4487, 4488, 4489, 4490, 4491, 4492, 4493, 4494, 4495, 4496, 4497, 4498, 4499, 4500, 4501, 4502, 4503, 4504, 4505, 4506, 4507, 4508, 4509, 4510, 4511, 4512, 4513, 4514, 4515, 4516, 4517, 4518, 4519, 4520, 4521, 4522, 4523, 4524, 4525, 4526, 4527, 4528, 4529, 4530, 4531, 4532, 4533, 4534, 4535, 4536, 4537, 4538, 4539]
+    specified_start_time = 946684800;
+    specified_end_time =  1577836800;
+    
+
+
+    object_id_list = ', '.join('"{0}"'.format(object_id) for object_id in object_ids)
+    query_string = 'SELECT DISTINCT object_id FROM collection_data_point WHERE valid_time_start >= %s AND valid_time_start < %s AND object_id IN (%s);' % (specified_start_time, specified_end_time, object_id_list)
+
+    with connection.cursor() as cursor:
+        cursor.execute(query_string)
+        object_ids = [entry[0] for entry in cursor.fetchall()]
+
+
+    return HttpResponse(str(object_ids))
 
     

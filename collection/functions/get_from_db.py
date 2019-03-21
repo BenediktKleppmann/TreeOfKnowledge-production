@@ -1,5 +1,7 @@
-from collection.models import Uploaded_dataset, Object_types, Attribute
+from collection.models import Uploaded_dataset, Object_types, Attribute, Object
+from django.db.models import Count
 import json
+
 
 
 
@@ -147,8 +149,39 @@ def convert_fact_values_to_the_right_format(facts):
         updated_facts.append(fact)
 
     return updated_facts
-                     
-        
+
+
+# used in edit_model.html
+# TODO: CHANGE THIS LATER TO: the object types that are most commonly used in simulations (instead of: with biggest number of objects)
+def get_most_common_object_types():
+
+    top_object_groups = Object.objects.all().values('object_type_id').annotate(total=Count('object_type_id')).order_by('-total')[:8]
+    top_object_type_ids = top_object_groups.values_list('object_type_id', flat=True)
+    top_object_types = list(Object_types.objects.filter(id__in=top_object_type_ids).values('id','name','object_icon'))
+
+    result = {}
+    for object_type in top_object_types:
+        object_type_id = object_type.pop('id')
+        result[object_type_id] = object_type
+
+    print("===================================================")
+    print("===================================================")
+    print("===================================================")
+    print(top_object_groups)
+    print("---------------------------------------------------")
+    print(top_object_type_ids)
+    print("---------------------------------------------------")
+    print(top_object_types)
+    print("===================================================")
+    print("===================================================")
+    print("===================================================")
+
+    return result
+
+
+
+
+
 
 
 

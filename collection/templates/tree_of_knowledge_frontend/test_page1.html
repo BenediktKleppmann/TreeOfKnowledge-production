@@ -1,57 +1,99 @@
-{% extends 'layouts/base_tool.html' %}
 {% load staticfiles %}
-{% load bootstrap3 %}
 
-{% block title %}
-	Edit Simulation {{ model.name }}
-{% endblock %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
 
-{% block additionalcss %}
+        <title>Logic Circuits</title>
 
+        <link rel="stylesheet" type="text/css" href="{% static 'js/temp/joint.css' %}" />
+    </head>
+    <body>
+        <div id="paper"></div>
 
-<button id="find-matches-button" class="btn btn-success" type="button" onclick="findMatches()" style="display:none;">Find<br>Matches<div id="find-matches-button-icon"><span class="glyphicon glyphicon-chevron-right"></span><div></button>
-
-<style>
+        <script src="{% static 'js/temp/jquery.js' %}"></script>
+        <script src="{% static 'js/temp/lodash.js' %}"></script>
+        <script src="{% static 'js/temp/backbone.js' %}"></script>
+        <script src="{% static 'js/temp/joint.js' %}"></script>
 		
-		/* --- Loading Spinner ----------------------------------- */
 		
-		body {background: #2e1c8a;}
+<!--<script src="src/logic.js"></script>-->
+<script>		
+	var graph = new joint.dia.Graph();
+	var paper = new joint.dia.Paper({
 
+		el: document.getElementById('paper'),
+		model: graph,
+		width: 1000,
+		height: 600,
+		gridSize: 5,
+		snapLinks: true,
+		linkPinning: false,
+		defaultLink: new joint.shapes.logic.Wire,
 
-		// Dual Ring
-		.lds-dual-ring {
-		  display: inline-block;
-		  width: 18px;
-		  height: 18px;
+		validateConnection: function(vs, ms, vt, mt, e, vl) {
+
+			if (e === 'target') {
+
+				// target requires an input port to connect
+				if (!mt || !mt.getAttribute('class') || mt.getAttribute('class').indexOf('input') < 0) return false;
+
+				// check whether the port is being already used
+				var portUsed = this.model.getLinks().some(function(link) {
+					return (link.id !== vl.model.id &&
+							link.get('target').id === vt.model.id &&
+							link.get('target').port === mt.getAttribute('port'));
+				});
+
+				return !portUsed;
+
+			} else { // e === 'source'
+
+				// source requires an output port to connect
+				return ms && ms.getAttribute('class') && ms.getAttribute('class').indexOf('output') >= 0;
+			}
 		}
-		.lds-dual-ring:after {
-		  content: " ";
-		  display: block;
-		  width: 14px;
-		  height: 14px;
-		  margin: 1px;
-		  border-radius: 50%;
-		  border: 2px solid #fed;
-		  border-color: #fed transparent #fed transparent;
-		  animation: lds-dual-ring 3.2s linear infinite;
+	});
+
+	// zoom the viewport by 50%
+	paper.scale(1.5,1.5);
+
+
+	// diagramm setup
+
+	var gates = {
+		repeater: new joint.shapes.logic.Repeater({ position: { x: 410, y: 25 }}),
+		or: new joint.shapes.logic.Or({ position: { x: 550, y: 50 }}),
+		and: new joint.shapes.logic.And({ position: { x: 550, y: 150 }}),
+		not: new joint.shapes.logic.Not({ position: { x: 90, y: 140 }}),
+		nand: new joint.shapes.logic.Nand({ position: { x: 550, y: 250 }}),
+		nor: new joint.shapes.logic.Nor({ position: { x: 270, y: 190 }}),
+		xor: new joint.shapes.logic.Xor({ position: { x: 550, y: 200 }}),
+		xnor: new joint.shapes.logic.Xnor({ position: { x: 550, y: 100 }}),
+		input: new joint.shapes.logic.Input({ position: { x: 5, y: 45 }}),
+		output: new joint.shapes.logic.Output({ position: { x: 440, y: 290 }})
+	};
+
+
+	var wires = [
+		{ source: { id: gates.input.id, port: 'out' }, target: { id: gates.not.id, port: 'in' }},
+		{ source: { id: gates.not.id, port: 'out' }, target: { id: gates.nor.id, port: 'in1' }},
+		{ source: { id: gates.nor.id, port: 'out' }, target: { id: gates.repeater.id, port: 'in' }},
+		{ source: { id: gates.nor.id, port: 'out' }, target: { id: gates.output.id, port: 'in' }},
+		{ source: { id: gates.repeater.id, port: 'out' }, target: { id: gates.nor.id, port: 'in2' },
+			vertices: [{ x: 215, y: 100 }]
 		}
-		@keyframes lds-dual-ring {
-		  0% {
-			transform: rotate(0deg);
-		  }
-		  100% {
-			transform: rotate(360deg);
-		  }
-		}
+	];
+
+	// add gates and wires to the graph
+	graph.addCells(joint.util.toArray(gates));
+	joint.util.forIn(wires, function(attributes) {
+		graph.addCell(paper.getDefaultLink().set(attributes));
+	});
 
 
-		
-</style>
-{% endblock %}
+</script>
 
-{% block content %}
-<br><br>
-	<br>
-	<div class="lds-dual-ring"></div>
-	
-{% endblock %}
+    </body>
+</html>

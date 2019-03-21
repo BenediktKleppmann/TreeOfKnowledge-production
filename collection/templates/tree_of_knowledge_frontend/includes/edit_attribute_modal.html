@@ -127,9 +127,9 @@
 					</div>
 					<br>
 					<div class="form-group row">
-						<label for="type" class="col-sm-7">Data Type</label>
+						<label for="type_edit" class="col-sm-7">Data Type</label>
 						<div class="col-sm-5">
-							<select class="form-control form-control-lg" id="type" name="type" onchange="loadDataTypeSpecificAttributeOptions()">
+							<select class="form-control form-control-lg" id="type_edit" name="type" onchange="loadDataTypeSpecificAttributeOptions_edit()">
 								<option value="" selected></option>
 								<option value="string">string</option>
 								<option value="int">int</option>
@@ -189,7 +189,7 @@ var selected_attribute_id = "1";
 				$("#editAttributeModal #description").html(response_dict["description"]);
 				$("#editAttributeModal #expected_valid_period").val(response_dict["expected_valid_period"]);
 				first_applicable_object = response_dict["first_applicable_object"];
-				$("#editAttributeModal #type").val(response_dict["data_type"]);
+				$("#editAttributeModal #type_edit").val(response_dict["data_type"]);
 
 				
 				
@@ -317,8 +317,8 @@ var selected_attribute_id = "1";
 	
 	
 	/*=============  LOAD DATATYPE-SPECIFIC ATTRIBUTE OPTIONS  ================================================================ */
-	function loadDataTypeSpecificAttributeOptions() {
-		var sel_element = document.getElementById("type");
+	function loadDataTypeSpecificAttributeOptions_edit() {
+		var sel_element = document.getElementById("type_edit");
 		var data_type = sel_element.options[sel_element.selectedIndex].value;
 		
 		var dataTypeSpecificOptions = ""
@@ -382,7 +382,7 @@ var selected_attribute_id = "1";
 		var description = $("#editAttributeModal #description").val();
 		var expected_valid_period = $("#editAttributeModal #expected_valid_period").val();
 		var first_applicable_object = $("#editAttributeModal #first_applicable_object").val();
-		var type = $("#editAttributeModal #type").val();
+		var type = $("#editAttributeModal #type_edit").val();
 		var min = $("#editAttributeModal #min").val();
 		var max = $("#editAttributeModal #max").val();
 		var min_length = $("#editAttributeModal #min_length").val();
@@ -515,7 +515,7 @@ var selected_attribute_id = "1";
 		$("#name").val("");
 		$("#description").val("");
 		$("#expected_valid_period").val("");
-		$("#type").val("");
+		$("#type_edit").val("");
 		$("#edited-attribute-further-fields").html("");
 		
 		//close the modal
@@ -545,7 +545,7 @@ var selected_attribute_id = "1";
 		$("#editAttributeModal #description").html("");
 		$("#editAttributeModal #expected_valid_period").val("");
 		$("#editAttributeModal #first_applicable_object").val("");
-		$("#editAttributeModal #type").val("");		
+		$("#editAttributeModal #type_edit").val("");		
 		$("#edited-attribute-further-fields").html("");
 
 	}

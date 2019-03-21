@@ -1,49 +1,649 @@
 {% extends 'layouts/base_tool.html' %}
+{% load staticfiles %}
 
 {% block title %}
 	Edit Simulation {{ model.name }}
 {% endblock %}
 
-{% block additionalcss %}{% endblock %}
+{% block additionalcss %}
+
+
+	<script src="{% static 'js/temp/jquery.js' %}"></script>
+	<script src="{% static 'js/temp/lodash.js' %}"></script>
+	<script src="{% static 'js/temp/backbone.js' %}"></script>
+	<script src="{% static 'js/temp/joint.js' %}"></script>
+	<link rel="stylesheet" type="text/css" href="{% static 'js/temp/joint.css' %}" />
+
+	<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+	<script type="text/javascript" src="https://rawgit.com/RickStrahl/jquery-resizable/master/src/jquery-resizable.js"></script>
+		
+	
+<style>
+	.content {
+		padding: 0px;
+	}
+	
+
+	/* Resizable Panels -------------------------------------------------*/
+
+	.panel-container {
+	  display: flex;
+	  flex-direction: row;
+	  border: 1px solid silver;
+	  overflow: hidden;
+	  xtouch-action: none; /* avoid browser level touch actions */
+	}
+
+	#left-panel {
+	  flex: 0 0 auto;  /* only manually resize */
+	  width: 300px;
+	  min-width: 150px;
+	  height:calc(100vh - 59px);
+	  //white-space: nowrap;
+	  background: rgb(226, 226, 226);
+	}
+
+	#splitter {
+	  flex: 0 0 auto;
+	  width: 4px;  
+	  background: rgb(215, 215, 215);
+	  border: 1px solid rgb(190, 190, 190);
+	  cursor: col-resize; 
+	  box-shadow: 3px  0 6px 0 rgba(0, 0, 0, 0.19);
+	  z-index: 1;
+	}
+
+	#right-panel {
+	  flex: 1 1 auto;   /* resizable */
+	  padding: 10px;
+	  width: 100%;
+	  min-width: 200px;
+	}
+	
+	/* Accorion - Left Panel -------------------------------------------------*/
+
+	.card-header {
+		border-top: 1px solid rgb(180, 180, 180);
+		border-bottom: 1px solid rgb(180, 180, 180);
+	}
+	
+	.left-panel-header {
+		font-size: 15.5px;
+		background: rgb(226, 226, 226);
+		width: 100%;
+		padding-left: 20px;
+		text-align: left;
+		overflow: hidden;
+	}
+	
+	.card-body {
+		padding-left: 12px;
+		padding-right: 5px;
+		background-color: rgb(244, 244, 244);
+	}
+	
+	
+	.object-icon {
+		height: 55px;
+		width: 55px;
+		background: rgb(235, 235, 235);
+		border: 1px solid rgb(183, 183, 183);
+		border-radius: 4px;
+		box-shadow: -1px 1px 0px 2px rgba(0, 0, 0, 0.05);
+		margin-top: 6px;
+		padding-top: 5px;
+		padding-left: 5px;
+		padding-right: 3px;
+	}
+	
+	.object-name {
+		width: 55px;
+		text-align: center;
+		font-size: 12px;
+		font-weight: 300;
+	}
+	
+	/* The Canvas -------------------------------------------------*/
+	.paper {
+		height: 400px;
+	}
+	
+	
+	/* ---------------------------------------------------------------*/
+	/* Right Sidebar -------------------------------------------------*/
+	/* ---------------------------------------------------------------*/
+	
+	#right-sidebar {
+		z-index: 2; 
+		position: absolute; 
+		top: 58px; 
+		right: 0px; 
+		width: 0px; 
+		height: 100%; 
+	}
+	
+	#right-sidebar-left-edge {
+	  width: 4px;  
+	  background: rgb(215, 215, 215);
+	  border: 1px solid rgb(190, 190, 190);
+	  box-shadow: -3px  0 6px 0 rgba(0, 0, 0, 0.19);
+	  z-index: 1;
+	  float:left;
+	  display:inline-block;
+	  height: 100%;
+	}
+	
+	#right-sidebar-body {
+		display: inline-block;
+		width: 410px;
+	}
+	
+	/* Object Header -------------------------------------------------*/
+	#object-header {
+		background: rgb(226, 226, 226);
+		box-shadow: 0  3px 6px 0 rgba(0, 0, 0, 0.20);
+		position: relative
+	}
+	
+	#object-icon-button {
+		display: inline-block;
+		margin-top: 5px;
+		margin-left: 22px;
+		margin-bottom: 8px;
+		height: 49px;
+		width: 49px;		
+		//background: rgb(235, 235, 235);
+		border: 1px solid rgb(183, 183, 183);
+		border-radius: 4px;
+		padding-top: 5px;
+		padding-left: 5px;
+		padding-right: 3px;
+	}
+	
+	#object-name-field {
+		margin-top: 25px;
+		margin-left: 10px;
+		margin-bottom: 21px;
+		height: 40px;
+		width: 280px;
+	}
+	
+	/* Object Icon Popover */
+	.small-object-icon {
+		height: 25px;
+		width: 25px;
+		background: rgb(249, 249, 249);
+		border: 1px solid rgb(210, 210, 210);
+		border-radius: 2px;
+		box-shadow: -1px 1px 0px 2px rgba(0, 0, 0, 0.05);
+		margin-top: 3px;
+		margin-left: 1px;
+		padding-top: 2px;
+		padding-left: 2px;
+		padding-right: 1px;
+	}
+	
+	.small-object-icon:hover {
+		background: rgb(235, 235, 235);
+	}
+	
+	/* Object Body ----------------------------------------------------------*/
+	
+	#object-body {
+		max-height: calc(100vh - 200px);
+		overflow:auto;
+	}
+	
+	#object-attributes-table {
+		border-collapse: collapse;
+	}
+	
+	.attribute-name {
+		width: 184px;
+		padding-left: 9px;
+		border: 1px solid rgb(202, 202, 202);
+		background: -moz-linear-gradient(
+			top,
+			#f5f5f2 0%,
+			#ebeae6);
+		background: -webkit-gradient(
+			linear, left top, left bottom,
+			from(#f5f5f2),
+			to(#ebeae6));
+		-moz-box-shadow:
+			inset 0px 0px 3px rgba(255,255,255,0.9);
+		-webkit-box-shadow:
+			inset 0px 0px 3px rgba(255,255,255,0.9);
+		box-shadow:
+			inset 0px 0px 3px rgba(255,255,255,0.9);
+			
+		color: black;
+	}
+
+
+	.attribute-value-box {
+		border: 1px solid rgb(202, 202, 202);
+		width: 119px;
+		padding: 0px;
+	}
+	
+	.attribute-value {
+		border-width: 0px;
+		border-radius: 0px;
+		color: rgb(51, 51, 51);
+	}
+	
+	.attribute-rule-box {
+		border: 1px solid rgb(202, 202, 202);
+		width: 89px;
+		background: white;
+	}
+	
+	.attribute-rule-button {
+		border: 1px solid rgb(202, 202, 202);
+		margin-left: 3px;
+		color: rgb(85, 85, 85);
+	}
+	
+	/* Object Footer ----------------------------------------------------------*/
+	
+	#object-footer {
+		background: rgb(226, 226, 226);
+		box-shadow: 0  -3px 6px 0 rgba(0, 0, 0, 0.20);
+		height: 20px;
+	}
+
+	
+</style>
+{% endblock %}
 
 {% block content %}
-	<br><br>
-	{% if user == model.user %}
-	<b>I am the owner of this simulation</b>
-	{% else %}
-	<b>I am NOT the owner of this simulation</b>
-	{% endif %}
-	<br><br>
+
+<div class="panel-container">
+
+	<div id="left-panel">
+
+		
+		<div class="accordion md-accordion" id="accordion-left" role="tablist" aria-multiselectable="true">
+		
+			<div class="card">
+
+				<!-- Accordion Header - Environment -->
+				<div class="card-header" role="tab" id="accordion-left-header-1">
+					<button class="btn left-panel-header collapsed" data-toggle="collapse" data-parent="#accordion-left" href="#accordion-left-content-1"
+					aria-expanded="false" aria-controls="accordion-left-content-1">Environment</button>
+				</div>
+
+				<!-- Accordion Content - Environment -->
+				<div id="accordion-left-content-1" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-1" data-parent="#accordion-left">
+					<div class="card-body">
+						Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3
+						wolf
+						moon
+						officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+						Brunch
+						3
+						wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda
+						shoreditch
+						et.
+						Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+						Ad
+						vegan
+						excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth
+						nesciunt
+						you probably haven't heard of them accusamus labore sustainable VHS.
+					</div>
+				</div>
+			</div>
+			
+			
+			<div class="card">
+
+				<!-- Accordion Header - Objects -->
+				<div class="card-header" role="tab" id="accordion-left-header-2">
+					<button class="btn left-panel-header collapsed" data-toggle="collapse" data-parent="#accordion-left" href="#accordion-left-content-2"
+					aria-expanded="false" aria-controls="accordion-left-content-2">Objects</button>
+				</div>
+
+				<!-- Accordion Content - Objects -->
+				<div id="accordion-left-content-2" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-2" data-parent="#accordion-left">
+					<div class="card-body">
+						<table style="width:100%">
+							<tr>
+								<td><div class="object-icon" draggable="true" ondragstart="drag(event, 1)"><img src="{% static 'images/object icons/object_icon1.png' %}"></div><div class="object-name">Triangle</div></td>
+								<td><div class="object-icon" draggable="true" ondragstart="drag(event, 2)"><img src="{% static 'images/object icons/object_icon2.png' %}"></div><div class="object-name">Person</div></td>
+								<td><div class="object-icon" draggable="true" ondragstart="drag(event, 3)"><img src="{% static 'images/object icons/object_icon3.png' %}"></div><div class="object-name">House</div></td>
+						    </tr>
+						    <tr>
+								<td><div class="object-icon" draggable="true" ondragstart="drag(event, 4)"><img src="{% static 'images/object icons/object_icon4.png' %}"></div><div class="object-name">Flag</div></td>
+								
+								
+						    </tr>
+						</table> 
+						<table id="objects-table" style="width:100%">
+						</table> 
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="splitter">
+	</div>
+
+	<div id="right-panel">
+		<div id="paper" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+	</div>
 	
-	<form role="form" action="" method="post">
-		{% csrf_token %}
-		Name:<br>
-		<input type="text" name="name" value="{{ model.name }}" /><br><br>
-		Specification: <br>
-		<input type="text" name="specification" value="{{ model.specification }}" /><br><br>
-		<input type="submit" value="Submit" />
-	</form>
-	
-	<!--<b>From Form:</b>
-	<ul>
-		<li>{{ form.name.value|default_if_none:""  }}</li>
-		<li>{{ form.description.value|default_if_none:""  }}</li>
-		<li>{{ form.specification.value|default_if_none:""  }}</li>
-	</ul><br><br>
-	<b>From Model:</b>
-	<ul>
-		<li>{{ model.name }}</li>
-		<li>{{ model.description }}</li>
-		<li>{{ model.specification }}</li>
-	</ul><br><br>
+	<div id="right-sidebar">
+		<div id="right-sidebar-left-edge"></div>
+		<div id="right-sidebar-body" class="form">
+			<div id="object-header">
+				<button type="button" id="object-icon-button" class="btn" style="display:inline-block;" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" title="Choose icon" data-content='
+					<table>
+						<tr>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+						</tr>
+						<tr>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+							<td><div class="small-object-icon" onclick="objectIconSelected(&#39;si-glyph-mustache&#39;, 1)"><img src="{% static "images/object icons/" %}si-glyph-mustache.svg" %}"></div></td>
+						</tr>
+					</table> 
+				'><img src="{% static "images/object icons/" %}si-glyph-mustache.svg"></button>
+				<input type="text" class="form-control" id="object-name-field" name="object_name" placeholder="Object Name" value="object_name"  style="display:inline-block;width:300px">
+			</div>
+			
+			<div id="object-body">
+				<table id="object-attributes-table">
+					<tr>
+						<td class="attribute-name">Alsfl</td>
+						<td class="attribute-value-box"><input class="form-control attribute-value" type="text" value="asdf" onchange="attributeValueChange(object_number, attribute_id)"></td>
+					</tr>
+					<tr>
+						<td class="attribute-name">Afefsfl</td>
+						<td class="attribute-value-box"><input class="form-control attribute-value" type="text" value=23></td>
+					</tr>
+					<tr>
+						<td class="attribute-name">GVsfl</td>
+						<td class="attribute-value-box"><input class="form-control attribute-value" type="text" value="asfghdf"></td>
+					</tr>
+				</table>
+			</div>
+				
+			<div id="object-footer">
+			</div>
+				
+
+		</div>
+
+	</div>
+
+</div>
+
+<script>
+	// GLOBAL VARIABLES:
+	var available_object_types = {{ available_object_types|safe }}
+	var object_icons = {{ object_icons|safe }}
+	var objects_dict = {};
+	var object_type_counts = {};
+	var total_object_count = 0;
+	var graph = null;
+	var paper = null;
 	
 
+	//========================================================================
+	//==============    THE LEFT PANEL      ==================================
+	//========================================================================
+	
+	// Resizable Left Panel    =============================================================================
+	 $("#left-panel").resizable({
+	   handleSelector: "#splitter",
+	   resizeHeight: false
+	 });
 
-	<form role="form" action="" method="post">
-		{% csrf_token %}
-		{{ form.as_p }}
-		<input type="submit" value="Submit" />
-	</form>-->
+	 $("#right-panel").resizable({
+	   handleSelector: ".splitter-horizontal",
+	   resizeWidth: false
+	 });
+	 
+	 // Create the Objects-Table    =============================================================================
+
+	 
+	object_type_ids = Object.keys(available_object_types);
+	
+	table_string = "";
+	for (var i = 0; i < Math.ceil(object_type_ids.length/3) ; i++) {
+		table_string += "<tr>";
+		
+		for (var j = 0; j < 3 ; j++) {
+			entry_number = i*3 + j
+			if (entry_number < object_type_ids.length) {
+				object_type_id = object_type_ids[entry_number];
+				object_name = available_object_types[object_type_id]['name']
+				object_icon = available_object_types[object_type_id]['object_icon']
+				table_string += '<td><div class="object-icon" draggable="true" ondragstart="drag(event, \'' + object_type_id + '\')"><img src="{% static "images/object icons/" %}' + object_icon + '.svg"></div><div class="object-name">' + object_name + '</div></td>';
+			}
+		}
+		table_string += "</tr>";
+	}
+	
+	$("#objects-table").html(table_string);
+	
+
+	
+	
+	//========================================================================
+	//==================    THE PAPER      ==================================
+	//========================================================================
+	
+	// Create the Paper    =============================================================================
+	graph = new joint.dia.Graph();
+	paper = new joint.dia.Paper({
+
+		el: document.getElementById('paper'),
+		model: graph,
+		width: 1000,
+		height: 600,
+		gridSize: 5,
+		snapLinks: true,
+		linkPinning: false,
+		defaultLink: new joint.shapes.logic.Wire,
+	});
+
+
+	
+	// Drag & Drop objects into the Paper    =============================================================================
+	 function allowDrop(ev) {
+	  ev.preventDefault();
+	}
+
+	function drag(ev, object_type_id) {
+	  ev.dataTransfer.setData("object_type_id", object_type_id);
+	}
+
+	function drop(ev) {
+		var object_type_id = ev.dataTransfer.getData("object_type_id");
+		var object_type_name = available_object_types[object_type_id]['name'];
+		var object_icon = available_object_types[object_type_id]['object_icon'];
+		var left_panel_width = parseInt($("#left-panel").css("width"),10);
+		
+		var x_coordinate = (ev.clientX-left_panel_width)-48;
+		var y_coordinate = ev.clientY-72;
+
+		createObject(object_type_id, object_type_name, object_type_name, x_coordinate, y_coordinate);
+		
+		ev.preventDefault();
+	}
+	
+	
+	
+	
+	
+	// Click on Object   =============================================================================
+	
+	paper.on('element:inspect', function(elementView, evt) {
+	
+		var object_number = elementView.model.get('object_number');
+		object_attributes = objects_dict[object_number]['object_attributes'];
+		
+		
+		object_attributes_string = "";
+		for (var i = 0; i < object_attributes.length ; i++) {
+			object_attributes_string += '<tr>' +
+											'<td class="attribute-name">' + object_attributes[i]['attribute_name'] + '</td>' +
+											'<td class="attribute-value-box"><input class="form-control attribute-value" type="text" value="' + object_attributes[i]['attribute_value'] + '" onchange="attributeValueChange(' + object_number + ',' + object_attributes[i]['attribute_id'] + ')"></td>' +
+											'<td class="attribute-rule-box"><button type="button" class="btn btn-outline-dark attribute-rule-button"  onclick="openRuleModal(' + object_number + ',' + object_attributes[i]['attribute_id'] + ')">constant</button></td>' +
+										'</tr>';
+		}
+		$("#object-attributes-table").html(object_attributes_string);
+
+		//show the right sidebar
+		$('#right-sidebar').animate({width: '415px'}, 200, 'linear');
+	});
+
+
+
+	
+	// zoom the viewport by 50%
+	//paper.scale(1.5,1.5);
+	
+	/*evt.stopPropagation();
+	  if (confirm('Are you sure you want to delete this element?')) {
+		  elementView.model.remove();
+	  } */
+	
+	
+	
+	//========================================================================
+	//====================    OBJECTS	======================================
+	//========================================================================
+	
+						
+	function createObject(object_type_id, object_type_name, object_type_name, x_coordinate, y_coordinate) {
+	
+
+		total_object_count += 1;
+		
+		
+		//Get Object-attribute-data from the Backend and add Object to Objects_dict  ===================================================================================================
+		var request_body = {};
+		request_body['object_type_id'] = object_type_id;
+		request_body['environmental_filter_facts']  = [];
+		request_body['specified_start_time'] = 946684800;
+		request_body['specified_end_time'] =  1577836800;
+		
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				
+				var object_attributes = JSON.parse(this.responseText);
+				
+				//Add Object to Objects_dict  ===============================================================================
+				if (object_type_id in object_type_counts) {
+					object_type_counts[object_type_id] += 1;
+				} else {
+					object_type_counts[object_type_id] = 1;
+				}
+				var object_name = object_type_name + ' ' + object_type_counts[object_type_id];
+				objects_dict[total_object_count] = {'object_name':object_name, 'object_type_id':object_type_id, 'object_type_name':object_type_name, 'object_icon':object_icon, 'object_attributes':object_attributes};
+
+			}
+		};
+
+		xmlhttp.open("POST", "/tool/get_data_from_random_object/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));	
+		
+		
+
+				
+		//Add Object to Paper  ======================================================================================
+		//get svg_text from backend
+	  	var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			
+
+			
+				//create new shape on Paper
+				var svg_text = this.responseText.replace(/\n/g, '');
+				
+
+				var new_shape = new joint.shapes.basic.Image({
+					  size: {
+						width: 43,
+						height: 43
+					  },
+					  position: {
+						x: x_coordinate,
+						y: y_coordinate
+					  },
+					  attrs: {
+						image: {
+						  width: 43,
+						  height: 43,
+						  'xlink:href': 'data:image/svg+xml;utf8,' + encodeURIComponent(svg_text),
+						  preserveAspectRatio: 'none',
+						  event: 'element:inspect'
+						}
+					  }, label: {
+						text: object_type_name
+					  },
+					  object_number: total_object_count
+					});
+
+				graph.addCells([new_shape]);
+
+
+			}
+		};
+
+		xhttp.open('GET', '{% static "images/object icons/" %}' + object_icon + '.svg', true);
+		xhttp.send();
+	
+	}
+	
+	
+	
+	//========================================================================
+	//========================    MAIN      ==================================
+	//========================================================================
+	
+	// make the right sidebar movable
+	function show_right_sidebar(object_number) {
+		$('#right-sidebar').animate({width: '400px'}, 200, 'linear');
+	}
+	
+	function hide_right_sidebar() {
+		$('#right-sidebar').animate({width: '0px'}, 200, 'linear');
+	}
+	
+	// activate the Popovers
+	$(document).ready(function(){
+		$('[data-toggle="popover"]').popover();   
+	});
+	
+	
+	
+</script>
+
+	
 {% endblock %}
 
 

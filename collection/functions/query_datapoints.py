@@ -3,12 +3,15 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from collection.functions import generally_useful_functions, get_from_db
+import random
+from django.db.models import Count
+from django.db import connection
 
 
 def find_matching_entities(match_attributes, match_values):
     matching_objects_entire_list = []
 
-    for row_nb in range(len(match_values[0])):
+    for row_nb in range(len(match_values[0])):    
         matching_objects_dict = {}
 
         # append all matching datapoints
@@ -38,6 +41,7 @@ def find_matching_entities(match_attributes, match_values):
             matching_objects_dict = objects_df.to_dict('records')
              
             matching_objects_entire_list.append(matching_objects_dict)
+
     return matching_objects_entire_list
 
 
@@ -52,21 +56,114 @@ def find_matching_entities(match_attributes, match_values):
 
 
 def get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time):
-    nothing_found_response = {}
-    nothing_found_response['table_body'] = {}
-    nothing_found_response['table_attributes'] = []
-    nothing_found_response['number_of_entities_found'] = 0
 
-    # PART 1: For each Object_id find the time ranges where all the Filter-Fact Conditions are fulfilled
+
     # basic filtering: object_type and specified time range
     child_object_types = get_from_db.get_list_of_child_objects(object_type_id)
     child_object_ids = [el['id'] for el in child_object_types]
-    objects_with_suitable_otype = Object.objects.filter(object_type_id__in=child_object_ids).values_list('id', flat=True)
-    data_point_records = Data_point.objects.filter(object_id__in=objects_with_suitable_otype)
-    data_point_records = data_point_records.filter(valid_time_start__gte=specified_start_time, valid_time_start__lt=specified_end_time)           
+
+    
+
+    with connection.cursor() as cursor:
+        query_string = 'SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);' % (', '.join('"{0}"'.format(object_type_id) for object_type_id in child_object_ids))
+        cursor.execute(query_string)
+        object_ids = [entry[0] for entry in cursor.fetchall()]
+
+    # object_ids = list(Object.objects.filter(object_type_id__in=child_object_ids).values_list('id', flat=True))
+
+
+    broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)   
+
+
+
+    # prepare response
+    if broad_table_df is not None:
+
+        # for response: list of the tables' attributes sorted with best populated first
+        table_attributes = []
+        sorted_attribute_ids = broad_table_df.isnull().sum(0).sort_values(ascending=False).index
+        sorted_attribute_ids = [int(attribute_id) for attribute_id in list(sorted_attribute_ids) if attribute_id.isdigit()]
+        for attribute_id in sorted_attribute_ids:
+            attribute_record = Attribute.objects.get(id=attribute_id)
+            table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name})
+
+
+        # sort broad_table_df (the best-populated entities to the top)
+        broad_table_df = broad_table_df.loc[broad_table_df.isnull().sum(1).sort_values().index]
+        print("=======================================")
+        print("=======================================")
+        print(object_ids)
+        print(filter_facts)
+        print(specified_start_time)
+        print(specified_end_time)
+        print(str(table_attributes))
+        print("=======================================")
+        print("=======================================")
+
+        response = {}
+        response['table_body'] = broad_table_df.to_dict('list')
+        response['table_attributes'] = table_attributes
+        response['number_of_entities_found'] = len(broad_table_df)
+    else: 
+        response = {}
+        response['table_body'] = {}
+        response['table_attributes'] = []
+        response['number_of_entities_found'] = 0
+
+    return response
+
+
+
+
+
+# used in edit_model.html
+def get_data_from_random_object(object_type_id, filter_facts, specified_start_time, specified_end_time): 
+    
+    satisfying_object_values = list(Object.objects.filter(object_type_id=object_type_id).values())
+    # TODO: filter by environment
+
+    random_object = random.choice(satisfying_object_values)
+    object_id = random_object['id']
+    object_ids = [object_id]
+
+
+    broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)   
+    print("=======================================")
+    print("=======================================")
+    print(object_ids)
+    print(filter_facts)
+    print(specified_start_time)
+    print(specified_end_time)
+    print(str(broad_table_df))
+    print("=======================================")
+    print("=======================================")
+
+
+    if broad_table_df is not None:
+        # for response: make list of attributes & values 
+        # broad_table_df.reindex();
+        attribute_values = []
+        attribute_ids = [int(col) for col in broad_table_df.columns if col.isdigit()]
+        for attribute_id in attribute_ids:
+            attribute_record = Attribute.objects.get(id=attribute_id)
+            attribute_values.append({'attribute_value': broad_table_df[str(attribute_id)].iloc[0], 'attribute_id':attribute_id, 'attribute_name':attribute_record.name, 'attribute_data_type':attribute_record.data_type , 'behaviour_rules': attribute_record.behaviour_rules})
+
+    else: 
+        attribute_values = []
+    
+    return attribute_values
+
+
+
+
+def filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time):
+
+    data_point_records = Data_point.objects.filter(object_id__in=object_ids)
+    data_point_records = data_point_records.filter(valid_time_start__gte=specified_start_time, valid_time_start__lt=specified_end_time)   
+    object_ids = list(set(list(data_point_records.values_list('object_id', flat=True).distinct())))
+
 
     # apply filter-facts
-    object_ids = list(data_point_records.values_list('object_id', flat=True))
     valid_ranges_df = pd.DataFrame({'object_id':object_ids})
     valid_ranges_df['valid_range'] = [[[specified_start_time,specified_end_time]] for i in valid_ranges_df.index]
 
@@ -84,7 +181,7 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
         # find the intersecting time ranges (= the overlap between the known valid_ranges and the valid_ranges from the new filter fact)
         filtered_data_points_df = pd.DataFrame(list(filtered_data_point_records.values('object_id','valid_time_start','valid_time_end')))
         if len(filtered_data_points_df) == 0:
-            return nothing_found_response
+            return None
         filtered_data_points_df = filtered_data_points_df.sort_values(['object_id','valid_time_start'])
         filtered_data_points_df['new_valid_range'] = list(zip(filtered_data_points_df['valid_time_start'],filtered_data_points_df['valid_time_end']))
         new_valid_ranges_df = pd.DataFrame(filtered_data_points_df.groupby('object_id')['new_valid_range'].apply(list)) # for every object_id there now is a list of valid ranges
@@ -93,11 +190,10 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
         valid_ranges_df = pd.merge(valid_ranges_df, new_valid_ranges_df, on='object_id', how='left')
         valid_ranges_df = valid_ranges_df[valid_ranges_df['new_valid_range'].notnull()]
         if len(valid_ranges_df) == 0:
-            return nothing_found_response
+            return None
         valid_ranges_df['valid_range'] = valid_ranges_df.apply(generally_useful_functions.intersections, axis=1)
         # valid_ranges_df['valid_range'] = np.vectorize(generally_useful_functions.intersections)(valid_ranges_df['valid_range'], valid_ranges_df['new_valid_range'])
         valid_ranges_df = valid_ranges_df[['object_id', 'valid_range']]
-
 
     # choose the first time interval that satisfies all filter-fact conditions
     valid_ranges_df['satisfying_time_start'] = [object_ranges[0][0] if len(object_ranges)>0 else None for object_ranges in valid_ranges_df['valid_range'] ]
@@ -107,7 +203,7 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
     # make long table with all datapoints of the found objects
     found_objects = list(set(data_point_records.values_list('object_id', flat=True)))
     if len(found_objects) == 0:
-        return nothing_found_response
+        return None
     all_data_points = Data_point.objects.filter(object_id__in=found_objects)    
     long_table_df = pd.DataFrame(list(all_data_points.values()))
 
@@ -149,34 +245,11 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
     broad_table_df = broad_table_df[columns_to_keep]
     new_column_names = [column[1] for column in columns_to_keep]
     broad_table_df.columns = new_column_names
-    
-    # for response: list of the tables' attributes sorted with best populated first
-    table_attributes = []
-    sorted_attribute_ids = broad_table_df.isnull().sum(0).sort_values(ascending=False).index
-    sorted_attribute_ids = [int(attribute_id) for attribute_id in list(sorted_attribute_ids)]
-    for attribute_id in sorted_attribute_ids:
-        attribute_record = Attribute.objects.get(id=attribute_id)
-        table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name})
 
-
-    # sort broad_table_df (the best-populated entities to the top)
-    broad_table_df = broad_table_df.loc[broad_table_df.isnull().sum(1).sort_values().index]
-
-    # prepare response
+    # clean up the broad table
     broad_table_df['object_id'] = [val[0] for val in broad_table_df.index]
     broad_table_df['time'] = [datetime.fromtimestamp(val[1]).strftime('%Y-%m-%d') for val in broad_table_df.index] # this is the chosen satisfying_time_start for the object_id
     broad_table_df.reindex()
     broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
-    table_body = broad_table_df.to_dict('list')
-
-    response = {}
-    response['table_body'] = table_body
-    response['table_attributes'] = table_attributes
-    response['number_of_entities_found'] = len(found_objects)
-
-    return response
-
-
-
-
-
+    
+    return broad_table_df

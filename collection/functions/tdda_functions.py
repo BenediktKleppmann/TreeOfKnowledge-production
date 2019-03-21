@@ -15,6 +15,10 @@ def get_columns_format_violations(attribute_id, column_values):
         df = df[df['column'].notnull()]
         df = df.astype('int64')
 
+    if constraint_dict['fields']['column']['type'] == 'real':
+        # javascript only has the datatype 'numeric' -> floating point numbers might look just like integers in the json
+        df[df['column'].apply(lambda x: type(x)==int)] = df[df['column'].apply(lambda x: type(x)==int)].astype('float64')
+
     pdv = PandasConstraintVerifier(df, epsilon=None, type_checking=None)
 
     constraints = DatasetConstraints()
@@ -23,17 +27,17 @@ def get_columns_format_violations(attribute_id, column_values):
     pdv.repair_field_types(constraints)
     detection = pdv.detect(constraints, VerificationClass=PandasDetection, outpath=None, write_all=False, per_constraint=False, output_fields=None, index=False, in_place=False, rownumber_is_index=True, boolean_ints=False, report='records') 
     violation_df = detection.detected()
-    print("=====================================")
-    print("=====================================")
-    print(violation_df)
-    print("-------------------------------------")
-    print(constraint_dict)
-    print("-------------------------------------")
-    print(column_values)
-    print("-------------------------------------")
-    print(type(column_values[0]))
-    print("=====================================")
-    print("=====================================")
+    # print("=====================================")
+    # print("=====================================")
+    # print(violation_df)
+    # print("-------------------------------------")
+    # print(constraint_dict)
+    # print("-------------------------------------")
+    # print(column_values)
+    # print("-------------------------------------")
+    # print(type(column_values[0]))
+    # print("=====================================")
+    # print("=====================================")
 
     if violation_df is None:
         return []

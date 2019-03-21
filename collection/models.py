@@ -115,6 +115,7 @@ class Object_types(models.Model):
     name = models.TextField()
     li_attr = models.TextField(null=True)
     a_attr = models.TextField(null=True)
+    object_icon = models.TextField()
 
 
 class Object(models.Model):
@@ -128,8 +129,7 @@ class Attribute(models.Model):
     description = models.TextField()
     format_specification = models.TextField()
     first_applicable_object = models.TextField()
-
-
+    behaviour_rules = models.TextField()
 
 
 

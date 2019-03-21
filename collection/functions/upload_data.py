@@ -282,7 +282,6 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
         submitted_data_table_df = submitted_data_table_df.sort_values(join_columns + ['valid_time_start'])
         submitted_data_table_df['measurement_number'] = submitted_data_table_df.groupby(join_columns).cumcount()+1
 
-
     else: 
         # 1. object_id
         submitted_data_table_df['object_id'] = list_of_matches
@@ -300,11 +299,10 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 
 
 
-    # loop through rows and values
-    for row_nb, row in submitted_data_table_df.iterrows():
 
-        if row_nb >10:
-            break
+    # loop through rows and values 
+    for row_nb, row in submitted_data_table_df.iterrows():
+        print("row_nb: " + str(row_nb))
             
         object_id = row['object_id']
 
@@ -348,6 +346,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
                                                 data_quality=data_quality)
                 data_point_record.save()
                 number_of_datapoints_saved += 1
+
 
     simulation_model = Simulation_model(user=request.user, name="", description="", meta_data_facts=uploaded_dataset.meta_data_facts)
     simulation_model.save()
