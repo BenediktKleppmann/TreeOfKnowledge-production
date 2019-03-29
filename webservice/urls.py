@@ -63,6 +63,7 @@ urlpatterns = [
     url(r'^tool/get_list_of_parent_objects/$', views.get_list_of_parent_objects, name='get_list_of_parent_objects'),
     url(r'^tool/get_list_of_objects/$', views.get_list_of_objects, name='get_list_of_objects'),
     url(r'^tool/get_attribute_details/$', views.get_attribute_details, name='get_attribute_details'),
+	url(r'^tool/get_attribute_rules/$', views.get_attribute_rules, name='get_attribute_rules'),    
     url(r'^tool/get_data_points/$', views.get_data_points, name='get_data_points'),
     url(r'^tool/get_data_from_random_object/$', views.get_data_from_random_object, name='get_data_from_random_object'),
     # find
@@ -75,6 +76,7 @@ urlpatterns = [
     url(r'^tool/save_edited_object_type/$', views.save_edited_object_type, name='save_edited_object_type'),
     url(r'^tool/save_new_attribute/$', views.save_new_attribute, name='save_new_attribute'),
     url(r'^tool/save_changed_attribute/$', views.save_changed_attribute, name='save_changed_attribute'),
+    url(r'^tool/save_new_rule/$', views.save_new_rule, name='save_new_rule'),
     # delete
     url(r'^tool/delete_object_type/$', views.delete_object_type, name='delete_object_type'),
     url(r'^tool/delete_attribute/$', views.delete_attribute, name='delete_attribute'),

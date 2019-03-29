@@ -1,0 +1,182 @@
+<!--                 EDIT MODEL - SIMULATE                   -->
+<!-- This is used edit_model.html. It was extracted, because edit_model.html was getting a bit long  -->
+
+<style>
+
+/* --- Additional Fact Row -------------------------------------------- */
+		.dropdown-menu {
+			padding:0;
+		}
+		
+		.search {
+			height:40px;
+			border-radius:4px;
+			border: 1px solid #999;
+		}
+		
+		div.inline { 
+			float:left; 
+			margin-right: 5px;
+		}
+		
+		
+		.broad {
+			padding-top: 3px;
+			padding-bottom: 1px;
+			padding-right: 3px;
+			padding-left: 2px;
+			height:43px;
+		}
+		
+		.form-group {
+			margin-bottom: 0px;
+		}
+		
+		div.inline {
+			margin-right:3px;
+		}
+		
+		.dropdown {
+			position: absolute;
+			margin-left:2px;
+		}
+		
+		.dropdown-item {
+			padding: 6px 10px;
+			border-radius:2px;
+			width:150px
+		}
+		
+		
+		/* --- Additional Attribute Drop Down ----------------------------------- */
+		
+		.list-group.drop-down-display {
+			margin-bottom:3px;
+			max-height: 250px;
+			overflow-y: scroll;
+		}
+
+		.dropdown {
+			margin-left:2px;
+		}
+		
+		.dropdown-item {
+			padding: 6px 10px;
+			border-radius:2px;
+			width:150px
+		}
+		
+		.dropdown-item-button {
+			padding: 6px 10px;
+			border-radius:2px;
+			width:150px;
+			margin-left:17px;
+			margin-bottom:3px;
+			border-radius:5px;
+		}
+</style>
+
+	
+	
+<script>
+		
+		/*========================================================================*/
+	/*==========  DROP DOWNS (in "Create Object Type" Modal)  ================*/
+	/*========================================================================*/								
+								
+										
+	/*=============  POPULATE AdditionalAttribute-DROPDOWNS  ================================================================ */
+	
+	function makeObjectsAdditionalAttributesDropdown(object_type_id, attribute_number){
+
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+
+				list_group_html_string = ""
+				
+				var possible_attributes = JSON.parse(this.responseText);
+				
+				for (var i = 0; i < possible_attributes.length; i++) {
+					list_group_html_string += '<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(' + attribute_number + ', this.innerHTML, ' + possible_attributes[i]['attribute_id'] + ')" data-attribute-id=' + possible_attributes[i]['attribute_id'] + '>' + possible_attributes[i]['attribute_name'] + '</button></li>'
+					
+				}
+				
+				$("#drop-down-display" + attribute_number).html(list_group_html_string);
+				
+			}
+		};
+
+		xhttp.open("GET", "/tool/get_possible_attributes?object_type_id=" + object_type_id , true);
+		xhttp.send();
+	}
+	
+	
+	function filterAttributeDropDown(attribute_number){	
+		var current_query = $('#dropDonwSearch' + attribute_number).val().toLowerCase();
+		if (current_query !== "") {
+			$("#drop-down-display" + attribute_number + " li").hide();
+			$("#drop-down-display" + attribute_number + " li").each(function(){
+				var current_keyword = $(this).text().toLowerCase();
+				if (current_keyword.indexOf(current_query) >=0) {
+					$(this).show();    	 	
+				};
+			});    	
+		} else {
+			$("#drop-down-display" + attribute_number + " li").show();
+		};
+	}
+
+
+	/*=============  SELECT DROPDOWN OPTION  ================================================================ */
+	function selectAdditionalAttribute(attribute_number , attribute_name, attribute_id) {
+		$('#attribute-name' + attribute_number).html(attribute_name);
+		$('#attribute' + attribute_number).attr('value', attribute_id);									
+	}
+	
+	/*=============  CHECK ADDITIONAL FACTS FORMATS  ================================================================ */
+	function checkAdditionalFactFormats() {
+		for (var fact_number = 1; fact_number <= number_of_additional_object_facts; fact_number++) {
+			var attribute_id = $('#attribute' + fact_number).val();
+			var operator = $('#operator' + fact_number).val();
+			var value = $('#value' + fact_number).val();
+			
+			var xhttp = new XMLHttpRequest();       
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+
+					var response_dict = JSON.parse(this.responseText);
+					var format_violation_text = response_dict['format_violation_text']
+					var returned_fact_number = response_dict['fact_number']
+					
+					if (format_violation_text == "") {
+						$("#format_violation" + returned_fact_number).attr("style", "display:none;");
+						$("#format_violation"  + returned_fact_number).popover('hide');
+						document.getElementById("attribute" + returned_fact_number).disabled = false; // this attribute won't be sent in the POST when pressing 'Next' - the backend thus knows that the fact is invalid
+					} else {
+						$("#format_violation" + returned_fact_number).attr("style", "display:block;");
+						document.getElementById("attribute" + returned_fact_number).disabled = true;
+						
+					}
+					
+					$("#format_violation" + returned_fact_number).attr("data-content", format_violation_text);
+				}
+			};
+			
+			xhttp.open("GET", "/tool/check_single_fact_format?fact_number=" + String(fact_number) + "&attribute_id=" + attribute_id + '&operator=' + operator + '&value=' + value, true);
+			xhttp.send();
+		}									
+	}
+	
+	
+	/*=============  RESET DROPDOWN SELECTION  ================================================================ */
+	function resetAttribute(attribute_number){
+		$('#attribute-name' + attribute_number).html('Attribute');
+		document.getElementById('attribute' + attribute_number).value = '';	
+		document.getElementById('operator' + attribute_number).selectedIndex = 0;
+		document.getElementById('value' + attribute_number).value = '';	
+		checkAdditionalFactFormats();
+	}
+	
+	
+</script>

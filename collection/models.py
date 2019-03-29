@@ -129,7 +129,14 @@ class Attribute(models.Model):
     description = models.TextField()
     format_specification = models.TextField()
     first_applicable_object = models.TextField()
-    behaviour_rules = models.TextField()
+
+class Rule(models.Model):
+	name = models.TextField()
+	attribute_id = models.IntegerField()
+	number_of_times_used = models.IntegerField()
+	used_attribute_ids = models.TextField()
+	used_attribute_names = models.TextField()
+	rule = models.TextField()
 
 
 

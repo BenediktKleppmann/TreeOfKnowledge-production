@@ -1,0 +1,760 @@
+<!--                 EDIT MODEL - SIMULATE                   -->
+<!-- This is used edit_model.html. It was extracted, because edit_model.html was getting a bit long  -->
+
+<style>
+
+	.left-panel-title {
+		background:rgb(226, 226, 226);
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 15.5px;
+		font-weight: 400;
+		padding: 6px 12px 6px 20px;
+		border: 1px solid rgb(180, 180, 180);
+	}
+	
+	.left-panel-body {
+		background-color: rgb(244, 244, 244);
+		padding: 19px 25px 2px 20px;
+		height: 100%;
+	}
+	
+	.left-panel-body .col-sm-3,
+	.left-panel-body .col-sm-4,
+	.left-panel-body .col-sm-5,
+	.left-panel-body .col-sm-7 { 
+		padding: 0px;
+	}
+	
+	.left-panel-body .row {
+		margin: 0px;
+	}
+	
+	.left-panel-body .form-group {
+		margin-bottom: 10px;
+	}
+	
+	.left-panel-body label {
+		font-weight: 200;
+		margin-top: 5px;
+		font-size: 15px;
+	}
+	
+	.left-panel-body .col-sm-3 {
+		padding-right: 5px;
+	}
+	
+	#run-button {
+		margin-top: 9px;
+		border-radius: 6px;
+		padding: 7px 15px;
+	}
+	/* --------------------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+	/* Choose Rule Modal --------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+	
+	.modal-dialog {
+		width: 700px;
+	}
+	
+	.modal-header {
+		margin: 0px;
+	}
+	
+	#modal-title {
+		margin: 0px;
+		margin-top: 2px;
+		font-size: 21px;
+	}
+	
+	.modal-body {
+		padding-left: 19px;
+		padding-right: 19px;
+		padding-top: 19px;
+		padding-bottom: 0px;
+	}
+	
+	#rule-modal-left {
+		width: 195px;
+		display: inline-block;
+		vertical-align: top;
+	}
+
+	#rule-modal-middle {
+		width: 417px;
+		padding-left: 15px;
+		display: inline-block;
+		vertical-align: top;
+		border-left: 1px solid rgb(202,202,202);
+		height: 378px;
+		margin-left: 6px;
+	}
+	
+	#rule-modal-right {
+		padding-left: 22px;
+		vertical-align: top;
+	}
+	
+	/* -------------------------------------------------------------------------------------------*/
+	/* Rule Modal Left  --------------------------------------------------------------------------*/
+	/* -------------------------------------------------------------------------------------------*/
+	
+	#selectOptionSearch {
+		width: 190px;
+	}
+	
+	#selection-options-frame {
+		margin-top: 8px;
+	}
+	
+	#selection-options {
+		margin-bottom:7px;
+	}
+	
+	.list-group-item {
+		padding: 0px;
+		margin:0px;
+		width: 190px;
+		border-style: none;
+		margin-bottom: 5px;
+	}
+	
+	.list-group-item > .btn{
+		width: 190px;
+		text-align: left;
+	}
+	
+	#no-rule-button {
+		width: 190px;
+		margin-bottom:5px;
+		text-align: left;
+	}
+	
+	#new-rule-button {
+		width: 190px;
+		text-align: left;
+	}
+	
+
+	/* --------------------------------------------------------------------------------------------------------*/
+	/* Rule Modal Middle  -------------------------------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------------------------------------*/
+	#rule-name {
+		margin-top: 0px;
+		margin-bottom: 22px;
+		text-align: center
+	}
+	
+	#rule-name-input {
+		width: 200px;
+		margin-left: 104px;
+		margin-bottom: 22px;
+	}
+	
+	/* Used Attribute Buttons ---*/
+	
+	#unique_identifier_selection {
+		margin-left:24px;
+		height: 44px;
+	}
+	
+	#used-attributes > .btn {
+		margin-right:7px;	
+		border: 1px solid black;
+		border-radius: 17px;
+		color:rgb(102, 102, 102);
+		background-color: rgb(252, 252, 255);
+		border-color: rgb(186, 187, 188);
+		margin-bottom: 5px;
+	  }
+	
+	
+	#used-attributes > .btn:last-child:not(:first-child), 
+	#used-attributes > .dropdown-toggle:not(:first-child),
+	#used-attributes > .btn:first-child:not(:last-child):not(.dropdown-toggle),
+	#used-attributes > .btn:not(:first-child):not(:last-child):not(.dropdown-toggle)	{
+		border-radius: 17px;
+	  }
+	  
+	#used-attributes > .btn:hover, 
+	#used-attributes > .active{
+		color:rgb(0, 0, 0);
+		background-color: rgb(156, 209, 183);
+		border-color: rgb(146, 147, 147);
+	}
+	
+	#used-attribute0:hover, #used-attribute0.active {background-color: rgb(96, 143, 202);}
+	#used-attribute1:hover, #used-attribute1.active {background-color: rgb(49, 148, 76);}
+	#used-attribute2:hover, #used-attribute2.active {background-color: rgb(147, 116, 209);}
+	#used-attribute3:hover, #used-attribute3.active {background-color: rgb(200, 91, 103);}
+	#used-attribute4:hover, #used-attribute4.active {background-color: rgb(198, 201, 92);}
+	#used-attribute5:hover, #used-attribute5.active {background-color: rgb(184, 61, 161);}
+	#used-attribute6:hover, #used-attribute6.active {background-color: rgb(190, 136, 63);}
+	#used-attribute7:hover, #used-attribute7.active {background-color: rgb(59, 176, 160);}
+	#used-attribute8:hover, #used-attribute8.active {background-color: rgb(193, 72, 69);}
+	#used-attribute9:hover, #used-attribute9.active {background-color: rgb(169, 99, 56);}
+	#used-attribute10:hover, #used-attribute10.active {background-color: rgb(129, 213, 170);}
+	#used-attribute11:hover, #used-attribute11.active {background-color: rgb(73, 106, 194);}
+	#used-attribute12:hover, #used-attribute12.active {background-color: =rgb(154, 51, 135);}
+
+	.hwt-content mark.color0 { background-color:rgb(96, 143, 202);}
+	.hwt-content mark.color1 { background-color:rgb(49, 148, 76);}
+	.hwt-content mark.color2 { background-color:rgb(147, 116, 209);}
+	.hwt-content mark.color3 { background-color:rgb(200, 91, 103);}
+	.hwt-content mark.color4 { background-color:rgb(198, 201, 92);}
+	.hwt-content mark.color5 { background-color:rgb(184, 61, 161);}
+	.hwt-content mark.color6 { background-color:rgb(190, 136, 63);}
+	.hwt-content mark.color7 { background-color:rgb(125, 195, 75);}
+	.hwt-content mark.color8 { background-color:rgb(193, 72, 69);}
+	.hwt-content mark.color9 { background-color:rgb(169, 99, 56);}
+	.hwt-content mark.color10 { background-color:rgb(129, 213, 170);}
+	.hwt-content mark.color11 { background-color:rgb(73, 106, 194);}
+	.hwt-content mark.color12 { background-color:rgb(154, 51, 135);}
+	
+	/*.hwt-container {
+		background-color: #f8f9fa;
+	}*/
+
+	.hwt-content {
+		width: 348.667px;
+		height: 91px;
+		padding: 6px 12px;
+		border: 1px solid rgb(204, 204, 204);
+		color: rgb(85, 85, 85);
+		font: 14px "Helvetica Neue", Helvetica, Arial, sans-serif;
+		border-radius:4px;
+		background: white;
+		line-height: 20px;
+	}
+	textarea.form-control {
+		height: 91px;
+	}
+	
+	/* --------------------------------------------------------------------------------------------------------*/
+	/* Rule Modal Right  --------------------------------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------------------------------------*/
+	
+	.available-variables-label {
+		margin-top: 19px;
+		font-weight: 700;
+		font-size: 15px;
+		color: rgb(110, 110, 110);
+	} 
+	
+	#selectAvailableVariable {
+		width: 179px;
+		margin-top: 2px;
+		margin-bottom: 5px;
+	}
+	
+	#available-variable-frame {
+		width: 195px;
+		border: 1px solid rgb(202, 202, 202);
+		height: 300px;
+		overflow: auto;
+	}
+	
+	.avail-var-item {
+		border-bottom: 1px solid rgb(202, 202, 202);
+		margin-bottom: 0px;
+	}
+
+	.avail-var-button {
+		background: white;
+		width: 195px;
+	}
+
+</style>
+
+	<!-- Choose Rule Modal -->
+	<div class="modal fade" id="chooseRuleModal" tabindex="-1" role="dialog" aria-labelledby="chooseRuleTitle" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header row">
+					<h4 class="modal-title col-md-11" id="modal-title">Choose Rule</h4>
+					<button id="rule-x-button" type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:2px; margin-right:19px;font-size:29px">
+						<span aria-hidden="true" >&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="container-fluid">
+						<div id="rule-modal-left">
+							<input type="text" class="form-control" id="selectOptionSearch" onkeyup="filterSelectionOptions();" placeholder=" Search">
+							<div id="selection-options-frame">
+								<ul id="selection-options" class="input-group list-group"></ul>
+							</div>
+							<button type="button" id="no-rule-button" class="btn btn-warning" onclick="noRule_buttonClick()" >No Rule (=constant var)</button>
+							<button type="button" id="new-rule-button" class="btn btn-success" onclick="openNewRuleForm()">Create New Rule</button>							
+						</div>
+						<div id="rule-modal-middle">
+							<div class="form">
+								<div id="rule-details"></div>
+							</div>	
+						</div>
+						<div id="rule-modal-right" style="display:none">
+							<div class="form">
+								<div id="rule-details"></div>
+							</div>	
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer" id="rule-modal-footer">
+					<button type="button" class="btn btn-secondary" id="chooseRuleCloseButton" data-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="chooseRule()">Choose Rule</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+	
+<script>
+	// GLOBAL VARIABLES:
+	var object_attribute_changes = {};
+	var rules_list = {};
+	var new_rule_cursor_position = {};
+	var new_rule_used_attribute_names = [];
+	var new_rule_used_attribute_ids = [];
+	var highlighted_words_dict = {};
+	
+	
+	//========================================================================
+	//================   SETUP	======================================
+	//========================================================================
+	
+	function getObjectData() {
+		for (var object_number = 1; object_number <= total_object_count; object_number++) {
+			
+			if (objects_dict[object_number]['get_new_object_data'] == true) {
+				var request_body = {};
+				request_body['object_number'] = object_number;
+				request_body['object_type_id'] = objects_dict[object_number]['object_type_id'];
+				request_body['filter_facts']  = objects_dict[object_number]['object_filter_facts'];
+				request_body['specified_start_time'] = simulation_start_time;
+				request_body['specified_end_time'] = simulation_end_time;
+				//request_body['specified_end_time'] =  simulation_start_time + Math.round((simulation_end_time - simulation_start_time)*0.33);
+				
+				var xmlhttp = new XMLHttpRequest();       
+				xmlhttp.onreadystatechange = function() {
+					if (this.readyState == 4 && this.status == 200) {
+						var response = JSON.parse(this.responseText);
+						var returned_object_number = response['object_number'];
+						objects_dict[returned_object_number]['object_attributes'] = response['attribute_values'];	
+					}
+				};
+
+				xmlhttp.open("POST", "/tool/get_data_from_random_object/");
+				xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+				xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+				xmlhttp.send(JSON.stringify(request_body));	
+				
+				objects_dict[object_number]['get_new_object_data'] = false;
+			}
+		}
+	}
+	
+	
+		
+	// Draw the Left Panel (For the Design-State)    =============================================================================
+	function drawLeftPanel__simulate() {
+		left_panel__simulate = 	'<div class="left-panel-title">Simulation</div>' +
+								'<div class="form left-panel-body">' +
+									'<div class="form-group row">' +
+										'<label for="max" class="col-sm-5">Start Time</label>' +
+										'<div class="col-sm-7">' +
+											'<input id="simulation-start-time" class="datetimepicker form-control" value="">' +
+										'</div>' +
+									'</div>' +
+									'<div class="form-group row">' +
+										'<label for="max" class="col-sm-5">End Time</label>' +
+										'<div class="col-sm-7">' +
+											'<input id="simulation-end-time" class="datetimepicker form-control" value="">' +
+										'</div>' +
+									'</div>' +
+									'<div class="form-group row">' +
+										'<label for="max" class="col-sm-5">Timestep (&Delta;t)</label>' +
+										'<div class="col-sm-3">' +
+											'<input type="text" class="form-control" id="number_of_timesteps" name="number_of_timesteps">' +
+										'</div>' +
+										'<div class="col-sm-4">' +
+											'<select class="form-control form-control-lg" id="timestep_unit" name="timestep_unit">' +
+												'<option value=31536000 selected>years</option>' +
+												'<option value=2419200>months</option>' +
+												'<option value=604800>weeks</option>' +
+												'<option value=86400>days</option>' +
+												'<option value=3600>hours</option>' +
+												'<option value=60>minutes</option>' +
+												'<option value=1>seconds</option>' +
+											'</select>' +
+										'</div>' +
+									'</div>' +
+									'<button id="run-button" class="btn btn-success pull-right" type="button" onclick="run()">Run</button>' +
+								'</div>';
+	
+		$("#left-panel").html(left_panel__simulate);	
+		
+		//make the datetimepickers
+		$('.datetimepicker').datetimepicker({
+			startView:'decade',
+			minView:'hour',
+			format: 'yyyy-mm-dd hh:ii',
+			autoclose:true
+		});
+		
+		// this showing and hiding makes sure that there are no open ones at the bottom of the page
+		$('.datetimepicker').datetimepicker('show');
+		$('.datetimepicker').datetimepicker('hide');
+		
+		// initialize the datetimepickers
+		var start_date = new Date(simulation_start_time*1000);
+		var end_date = new Date(simulation_end_time*1000);
+		var start_date_string = start_date.toISOString().replace('T', ' ').substring(0,16);
+		var end_date_string = end_date.toISOString().replace('T', ' ').substring(0,16);
+		$("#simulation-start-time").val(start_date_string);
+		$("#simulation-end-time").val(end_date_string);
+	
+		
+		// DATE CHANGE for DataTimePicker ---------------------------
+		$("#simulation-start-time").datetimepicker().on('changeDate', function(ev){
+			//link the start- and end- datetimepickers
+			$("#simulation-end-time").datetimepicker("setStartDate", '"' + ev.date.toISOString().substring(0,10) + '"');
+			simulation_start_time = Math.round(ev.date.getTime() / 1000);
+		});
+		
+		$("#simulation-end-time").datetimepicker().on('changeDate', function(ev){
+			$("#simulation-start-time").datetimepicker("setEndDate", '"' + ev.date.toISOString().substring(0,10) + '"');
+			simulation_end_time = Math.round(ev.date.getTime() / 1000);
+		});
+	}		
+	
+	
+	//========================================================================
+	//================   RIGHT SIDEBAR	======================================
+	//========================================================================
+	
+	// Draw Right Sidebar ==============================================================		
+	function drawObjectAttributeTable(object_number) {
+		var object_attributes = objects_dict[object_number]['object_attributes'];
+		var attribute_ids = Object.keys(object_attributes);
+		
+		if (attribute_ids.length ==0){
+			var object_type_name = objects_dict[object_number]['object_type_name'];
+			var object_name = objects_dict[object_number]['object_name'];
+			var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">No ' + object_type_name + ' found that satisfies ' + object_name + '\'s restrictions.</div>';
+			$("#right-sidebar-body").html(no_results_string);
+			
+		} else {		
+		
+			object_attributes_string = '<table id="object-attributes-table">';
+			for (var i = 0; i < attribute_ids.length ; i++) {
+				var attribute_id = attribute_ids[i];
+				object_attributes_string += '<tr>' +
+												'<td class="attribute-name">' + object_attributes[attribute_id]['attribute_name'] + '</td>' +
+												'<td class="attribute-value-box"><input class="form-control attribute-value" type="text" value="' + object_attributes[attribute_id]['attribute_value'] + '" onchange="attributeValueChange(' + object_number + ',' + attribute_id + ', this.value)"></td>' +
+												'<button type="button" id="format_violation' + 1 + '" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid value" style="display:none;" data-content="">!</button>' + 
+												'<td class="attribute-rule-box"><button type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">constant</button></td>' +
+											'</tr>';
+			}
+			object_attributes_string += '</table>';
+			$("#right-sidebar-body").html(object_attributes_string);
+		}		
+	}	
+	
+	function attributeValueChange(object_number, attribute_id , attribute_value) {
+		objects_dict[object_number]['object_attributes'][attribute_id]['attribute_value'] = attribute_value;
+		
+		//save object_attribute_change for potential use in mass-simulation
+		if (!(object_number in object_attribute_changes)) {
+			object_attribute_changes[object_number] = {};
+		}
+		object_attribute_changes[object_number][attribute_id] = attribute_value;
+	}
+	
+	
+	
+	
+	
+	
+	//========================================================================
+	//============    CHOOSE-RULE MODAL      =================================
+	//========================================================================
+
+	//===========
+	// Left Side  
+	//===========
+	
+	//== Create Rule Modal Left Side  =========================================================================================		  
+	function populateRuleModal(object_number,rules_attribute_id, rules_attribute_name) {
+	
+		$("#chooseRuleModal #modal-title").html('Choose Rule for ' + rules_attribute_name);
+		$("#no-rule-button").attr('onclick','noRule_buttonClick(\'' + rules_attribute_name + '\')');
+		$("#new-rule-button").attr('onclick','openNewRuleForm(' + rules_attribute_id + ', \'' + rules_attribute_name + '\',' + object_number + ')');			
+					
+					
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+
+				rules_list = JSON.parse(this.responseText);
+				rule_options_html_string = "";
+				
+				for (var i = 0; i < rules_list.length; i++) {
+					rule_options_html_string += 	'<li class="list-group-item narrow"><button class="btn btn-outline-secondary" type="button" onclick="inspectRule(' + i + ',\'' + rules_attribute_name + '\')" scope="col">' + rules_list[i]['name'] + '</button></li>';
+				}
+				$("#selection-options").html(rule_options_html_string);
+
+			}
+		};
+		xhttp.open('GET', '/tool/get_attribute_rules?attribute_id=' + rules_attribute_id , true);
+		xhttp.send();
+	
+	}
+	
+	//== Filter Rule Options =========================================================================================		  
+	function filterSelectionOptions(){	
+		var current_query = $('#selectOptionSearch').val().toLowerCase();
+		if (current_query !== "") {
+			$("#selection-options li").hide();
+			$("#selection-options li").each(function(){
+				var current_keyword = $(this).text().toLowerCase();
+				if (current_keyword.indexOf(current_query) >=0) {
+					$(this).show();    	 	
+				};
+			});    	
+		} else {
+			$("#selection-options li").show();
+		};
+	}
+	
+
+	//==========
+	// Middle  
+	//==========
+	
+	//== Inspect Rule =========================================================================================		  
+	function inspectRule(i, attribute_name) {
+		
+		$("#rule-modal-right").attr('style','display:none;');
+		$('.modal-dialog').animate({width: '700px'}, 200, 'linear');
+		
+		var rule_details_html_string = 	'<h3 id="rule-name">' + rules_list[i]['name'] + '</h3>' +
+										'<div class="form-group">' + 
+											'<label class="control-label" for="rule-text" style="margin-left:12px;margin-bottom:4px;font-size:15px;">' + attribute_name + ' (t + &Delta;t) = </label>' +
+											'<textarea cols="20" rows="5" class="form-control" id="rule-text">' + rules_list[i]['rule'] + '</textarea>' +
+										'</div>' + 
+										'<div id="used-attributes" class="btn-group" data-toggle="buttons">';
+									
+		var used_attribute_names = JSON.parse(rules_list[i]['used_attribute_names']);
+		for (var j = 0; j < used_attribute_names.length; j++) {			
+				rule_details_html_string +=	'<label id="used-attribute' + j + '" class="btn" onclick="usedAttributeButtonClick(\'' + used_attribute_names[j] + '\',' + j + ')">' +
+												'<input type="checkbox" autocomplete="off" id="used-attribute' + j + '">' + used_attribute_names[j] +
+											'</label>';
+		}
+		rule_details_html_string += '</div>';
+		
+		$("#rule-details").html(rule_details_html_string);
+		
+		
+		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="chooseRuleCloseButton" data-dismiss="modal">Cancel</button>' +
+										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="chooseRule(' + rules_list[i]['id'] + ')">Choose Rule</button>';
+		$('#rule-modal-footer').html(save_button_html_string);
+	}
+	
+	//== No Rule =========================================================================================	
+	function noRule_buttonClick(rules_attribute_name){
+		
+		$("#rule-modal-right").attr('style','display:none;');
+		$('.modal-dialog').animate({width: '700px'}, 200, 'linear');
+		
+		var rule_details_html_string = 	'<h3 id="rule-name">No Rule</h3>' +
+										'i.e. in the simulation the ' + rules_attribute_name + ' variable will remain constant.';		
+		$("#rule-details").html(rule_details_html_string);
+		
+		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="chooseRuleCloseButton" data-dismiss="modal">Cancel</button>' +
+										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="chooseRule()">Choose Rule</button>';
+		$('#rule-modal-footer').html(save_button_html_string);
+		
+		$("#chooseRuleSaveButton").attr('onclick','chooseRule(\'constant\')');
+	}
+	
+	//== Choose Rule =========================================================================================	
+	function chooseRule() {
+	
+	}
+	
+	//==========
+	// Right  
+	//==========
+	
+	function filterAvailableVariables() {
+		var current_query = $('#selectAvailableVariable').val().toLowerCase();
+		if (current_query !== "") {
+			$("#available-variables li").hide();
+			$("#available-variables li").each(function(){
+				var current_keyword = $(this).text().toLowerCase();
+				if (current_keyword.indexOf(current_query) >=0) {
+					$(this).show();    	 	
+				};
+			});    	
+		} else {
+			$("#available-variables li").show();
+		};
+	}
+	
+	
+	
+	//== Button - used attribute  =========================================================================================	
+	function usedAttributeButtonClick(used_attribute_name, used_attribute_number) {
+	
+		if (used_attribute_name in highlighted_words_dict){
+			delete highlighted_words_dict[used_attribute_name];
+		} else {
+			highlighted_words_dict[used_attribute_name] = used_attribute_number;
+		}
+		
+		var highlighted_words_list = [];
+		var attribute_names = Object.keys(highlighted_words_dict);
+		for (var i = 0; i < attribute_names.length; i++) {
+			var attribute_name = attribute_names[i];
+			var attribute_number = highlighted_words_dict[attribute_name];
+			highlighted_words_list.push({highlight: '[' + attribute_name + ']', className: 'color' + attribute_number});
+		}
+		
+		$("#rule-text").highlightWithinTextarea({highlight:highlighted_words_list});
+		
+	}
+	
+	
+	//==========
+	// New Rule  
+	//==========
+	
+	
+	//== New Rule =========================================================================================	
+	function openNewRuleForm(rules_attribute_id, rules_attribute_name, object_number) {
+	
+		var rule_details_html_string = 	'<input type="text" class="form-control" id="rule-name-input" placeholder="Rule Name" value="">' +
+										'<div class="form-group">' + 
+											'<label class="control-label" for="rule-text" style="margin-left:12px;margin-bottom:4px;font-size:15px;">' + rules_attribute_name + ' (t + &Delta;t) = </label>' +
+											'<textarea cols="20" rows="5" class="form-control" id="rule-text" onclick="rememberCursorPostion()" onchange="checkTextareaForVariables(' + object_number + ')"></textarea>' +
+										'</div>' + 
+										'<div id="used-attributes" class="btn-group" data-toggle="buttons">' +
+										'</div>';
+										
+		$("#rule-details").html(rule_details_html_string);
+		
+		
+		
+		available_variables_html_string = 	'<div class="available-variables-label">Available Variables:</div>' + 
+											'<input type="text" class="form-control" id="selectAvailableVariable" onkeyup="filterAvailableVariables();" placeholder=" Search">' + 
+											'<div id="available-variable-frame">' + 
+												'<ul id="available-variables" class="input-group list-group">';
+			
+		var object_attributes = objects_dict[object_number]['object_attributes'];
+		var attribute_ids = Object.keys(object_attributes);
+		for (var i = 0; i < attribute_ids.length ; i++) {
+			var attribute_id = attribute_ids[i];
+			var attribute_name = object_attributes[attribute_id]['attribute_name']
+			available_variables_html_string += 		'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+		}
+		
+		available_variables_html_string += 		'</ul>' + 
+											'</div>';
+		
+		$("#rule-modal-right").attr('style','display:inline-block;');
+		$("#rule-modal-right").html(available_variables_html_string);		
+		$('.modal-dialog').animate({width: '907px'}, 200, 'linear');
+		
+		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="cancelNewRuleButton" onclick="noRule_buttonClick()">Cancel</button>' +
+										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="saveNewRule(' + rules_attribute_id + ')">Save Rule</button>';
+		
+		$('#rule-modal-footer').html(save_button_html_string);
+
+	}	
+		
+	//== New Rule - Textarea stuff  =========================================================================================	
+	function rememberCursorPostion() {
+		var myElement = document.getElementById('rule-text');
+		var startPosition = myElement.selectionStart;
+		var endPosition = myElement.selectionEnd;
+		
+		new_rule_cursor_position = {'startPosition':startPosition, 'endPosition':endPosition};	
+	}
+	
+	
+	function selectAvailableVariable(object_number, attribute_name) {
+		var rule_text = document.getElementById('rule-text').value;
+		var new_rule_text = rule_text.substring(0, new_rule_cursor_position['startPosition']) + '[' + attribute_name + ']' + rule_text.substring(new_rule_cursor_position['endPosition'], rule_text.length);
+		document.getElementById('rule-text').value = new_rule_text;
+		
+		checkTextareaForVariables(object_number);
+	}
+	
+	
+	function checkTextareaForVariables(object_number) {
+		var rule_text = document.getElementById('rule-text').value;
+		new_rule_used_attribute_names = [];
+		new_rule_used_attribute_ids = [];
+		var used_attributes_html_string = '';
+		
+		
+		var object_attributes = objects_dict[object_number]['object_attributes'];
+		var attribute_ids = Object.keys(object_attributes);
+		for (var i = 0; i < attribute_ids.length ; i++) {
+			var attribute_id = attribute_ids[i];
+			var attribute_name = object_attributes[attribute_id]['attribute_name'];
+			if (rule_text.indexOf('[' + attribute_name + ']') !== -1) {
+				new_rule_used_attribute_ids.push(attribute_id);
+				new_rule_used_attribute_names.push(attribute_name);
+				
+				used_attributes_html_string +=	'<label id="used-attribute' + i + '" class="btn" onclick="usedAttributeButtonClick(\'' + attribute_name + '\',' + i + ')">' +
+													'<input type="checkbox" autocomplete="off" id="used-attribute' + i + '">' + attribute_name +
+												'</label>';
+			}
+		}
+		$('#used-attributes').html(used_attributes_html_string);
+	}
+
+	
+
+	//== Save New Rule  ================================================================================================================	
+	
+	function saveNewRule(rules_attribute_id) {
+		var rule_name = document.getElementById('rule-name-input').value;
+		var rule_text = document.getElementById('rule-text').value;
+		
+		if (rule_name.length == 0) {
+			alert('Rule Name required');
+			return
+		}
+		
+		if (rule_text.length == 0) {
+			alert('Rule required');
+			return
+		}
+		
+		request_body = {
+			'name': rule_name,
+			'attribute_id': rules_attribute_id,
+			'number_of_times_used': 0,
+			'used_attribute_ids': new_rule_used_attribute_ids,
+			'used_attribute_names': new_rule_used_attribute_names,
+			'rule': rule_text
+		}
+		
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.open("POST", "/tool/save_new_rule/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));	
+		
+		//clean and close the modal
+		noRule_buttonClick();
+		document.getElementById("rule-x-button").click();
+		
+	
+	}
+	
+	
+</script>

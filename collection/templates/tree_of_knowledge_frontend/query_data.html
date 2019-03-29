@@ -1011,12 +1011,12 @@
 		});
 		
 		// when you click outside the popover, close it
-		/*$('body').on('click', function (e) {
-			if (!$('#object_type').is(e.target) && document.activeElement.classList[0]=="jstree-anchor" ) {  // 
+		/*$('body').on('mousedown', function (e) {
+			if (!$('#object_type').is(e.target) && document.activeElement.classList[0]=="jstree-anchor" ) {  
 				$('#object_type').popover('hide');
 			}
-		});
-		*/
+		}); */
+		
 		
 		// PART 2: Initialize the DateTimePickers
 		// load js/datepicker/bootstrap-datetimepicker.min.js, because it doesn't load correctly if the document is not ready (no idea why!!!)

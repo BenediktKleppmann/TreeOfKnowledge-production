@@ -1,99 +1,67 @@
+{% extends 'layouts/base_tool.html' %}
 {% load staticfiles %}
 
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8"/>
+{% block title %}
+	Tree of Knowledge - Main Menu
+{% endblock %}
 
-        <title>Logic Circuits</title>
+{% block additionalcss %}
+	<script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script> 
+	<script type="text/javascript" src="{% static 'js/jquery.highlight-within-textarea.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'css/jquery.highlight-within-textarea.css' %}">
+	
+			<style>
+			.hwt-content mark.color0 { background-color:rgb(96, 143, 202);}
+			.hwt-content mark.color1 { background-color:rgb(49, 148, 76);}
+			.hwt-content mark.color2 { background-color:rgb(147, 116, 209);}
+			.hwt-content mark.color3 { background-color:rgb(200, 91, 103);}
+			.hwt-content mark.color4 { background-color:rgb(198, 201, 92);}
+			.hwt-content mark.color5 { background-color:rgb(184, 61, 161);}
+			.hwt-content mark.color6 { background-color:rgb(190, 136, 63);}
+			.hwt-content mark.color7 { background-color:rgb(125, 195, 75);}
+			.hwt-content mark.color8 { background-color:rgb(193, 72, 69);}
+			.hwt-content mark.color9 { background-color:rgb(169, 99, 56);}
+			.hwt-content mark.color10 { background-color:rgb(129, 213, 170);}
+			.hwt-content mark.color11 { background-color:rgb(73, 106, 194);}
+			.hwt-content mark.color12 { background-color:rgb(154, 51, 135);}
 
-        <link rel="stylesheet" type="text/css" href="{% static 'js/temp/joint.css' %}" />
-    </head>
-    <body>
-        <div id="paper"></div>
+		</style>
+{% endblock %}
 
-        <script src="{% static 'js/temp/jquery.js' %}"></script>
-        <script src="{% static 'js/temp/lodash.js' %}"></script>
-        <script src="{% static 'js/temp/backbone.js' %}"></script>
-        <script src="{% static 'js/temp/joint.js' %}"></script>
+{% block content %}
+
+	<div class="form">
+		<div class="form-group">
+			<label class="control-label" for="rule-text">Rule</label>
+			<textarea cols="20" rows="3" class="form-control" id="rule-text">This is some example text. bla bla bla.</textarea>
+		</div>
+	</div>
+	
+	<div class="form">
+		<div class="form-group">
+			<label class="control-label" for="rule-text2">Rule</label>
+			<textarea cols="20" rows="3" class="form-control" id="rule-text2">Potato potato tomato potato.</textarea>
+		</div>
+	</div>
 		
-		
-<!--<script src="src/logic.js"></script>-->
-<script>		
-	var graph = new joint.dia.Graph();
-	var paper = new joint.dia.Paper({
 
-		el: document.getElementById('paper'),
-		model: graph,
-		width: 1000,
-		height: 600,
-		gridSize: 5,
-		snapLinks: true,
-		linkPinning: false,
-		defaultLink: new joint.shapes.logic.Wire,
-
-		validateConnection: function(vs, ms, vt, mt, e, vl) {
-
-			if (e === 'target') {
-
-				// target requires an input port to connect
-				if (!mt || !mt.getAttribute('class') || mt.getAttribute('class').indexOf('input') < 0) return false;
-
-				// check whether the port is being already used
-				var portUsed = this.model.getLinks().some(function(link) {
-					return (link.id !== vl.model.id &&
-							link.get('target').id === vt.model.id &&
-							link.get('target').port === mt.getAttribute('port'));
+<script>
+	highlighted_words = [
+        {
+            highlight: 'bla',
+            className: 'color0'
+        },
+        {
+            highlight: 'This',
+            className: 'color1'
+        }
+    ]
+	$("#rule-text").highlightWithinTextarea({highlight:highlighted_words});
+	//$("#rule-text").highlightWithinTextarea({highlight:'This', className: 'blue'});
+	
+	$('#rule-text2').highlightWithinTextarea({
+					highlight: 'potato'
 				});
-
-				return !portUsed;
-
-			} else { // e === 'source'
-
-				// source requires an output port to connect
-				return ms && ms.getAttribute('class') && ms.getAttribute('class').indexOf('output') >= 0;
-			}
-		}
-	});
-
-	// zoom the viewport by 50%
-	paper.scale(1.5,1.5);
-
-
-	// diagramm setup
-
-	var gates = {
-		repeater: new joint.shapes.logic.Repeater({ position: { x: 410, y: 25 }}),
-		or: new joint.shapes.logic.Or({ position: { x: 550, y: 50 }}),
-		and: new joint.shapes.logic.And({ position: { x: 550, y: 150 }}),
-		not: new joint.shapes.logic.Not({ position: { x: 90, y: 140 }}),
-		nand: new joint.shapes.logic.Nand({ position: { x: 550, y: 250 }}),
-		nor: new joint.shapes.logic.Nor({ position: { x: 270, y: 190 }}),
-		xor: new joint.shapes.logic.Xor({ position: { x: 550, y: 200 }}),
-		xnor: new joint.shapes.logic.Xnor({ position: { x: 550, y: 100 }}),
-		input: new joint.shapes.logic.Input({ position: { x: 5, y: 45 }}),
-		output: new joint.shapes.logic.Output({ position: { x: 440, y: 290 }})
-	};
-
-
-	var wires = [
-		{ source: { id: gates.input.id, port: 'out' }, target: { id: gates.not.id, port: 'in' }},
-		{ source: { id: gates.not.id, port: 'out' }, target: { id: gates.nor.id, port: 'in1' }},
-		{ source: { id: gates.nor.id, port: 'out' }, target: { id: gates.repeater.id, port: 'in' }},
-		{ source: { id: gates.nor.id, port: 'out' }, target: { id: gates.output.id, port: 'in' }},
-		{ source: { id: gates.repeater.id, port: 'out' }, target: { id: gates.nor.id, port: 'in2' },
-			vertices: [{ x: 215, y: 100 }]
-		}
-	];
-
-	// add gates and wires to the graph
-	graph.addCells(joint.util.toArray(gates));
-	joint.util.forIn(wires, function(attributes) {
-		graph.addCell(paper.getDefaultLink().set(attributes));
-	});
-
-
-</script>
-
-    </body>
-</html>
+</script>		
+		
+{% endblock %}

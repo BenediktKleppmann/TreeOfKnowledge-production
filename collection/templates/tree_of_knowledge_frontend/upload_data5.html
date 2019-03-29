@@ -1123,14 +1123,7 @@
 
 					$("#attribute-options").html(this.responseText);
 					var attribute_options = JSON.parse(this.responseText)
-					
 					var selection_options_html_string = "";
-					
-				  
-					/*for (var i = 0; i < attribute_options.length; i++) {
-						selection_options_html_string += 	'<button class="btn btn-outline-secondary" type="button" onclick="inspectAttribute(' + i + ')" scope="col" data-attribute-id=' + attribute_options[i]["attribute_id"] + '>' + attribute_options[i]["attribute_name"] + '</button>' +
-															'<br>';
-					} */
 					
 					for (var i = 0; i < attribute_options.length; i++) {
 						selection_options_html_string += 	'<li class="list-group-item narrow"><button class="btn btn-outline-secondary" type="button" onclick="inspectAttribute(' + i + ')" scope="col" data-attribute-id=' + attribute_options[i]["attribute_id"] + '>' + attribute_options[i]["attribute_name"] + '</button></li>';
