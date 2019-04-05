@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from django.contrib.postgres.fields import JSONField
 import datetime
 import hashlib
+import traceback
 
 
 
@@ -49,7 +50,7 @@ class Newsletter_subscriber(models.Model):
 
 
 class Uploaded_dataset(models.Model):
-	# upload_data1
+    # upload_data1
     file_name = models.CharField(max_length=255)
     file_path = models.TextField()
     sep = models.CharField(max_length=3, blank=True, null=True)
@@ -130,24 +131,50 @@ class Attribute(models.Model):
     format_specification = models.TextField()
     first_applicable_object = models.TextField()
 
+
 class Rule(models.Model):
-	name = models.TextField()
-	attribute_id = models.IntegerField()
-	number_of_times_used = models.IntegerField()
-	used_attribute_ids = models.TextField()
-	used_attribute_names = models.TextField()
-	rule = models.TextField()
+    name = models.TextField()
+    attribute_id = models.IntegerField()
+    number_of_times_used = models.IntegerField()
+    used_attribute_ids = models.TextField()
+    used_attribute_names = models.TextField()
+    rule_text = models.TextField()
+    executable = models.TextField()
+
+    def run(self, input_values, timestep_size):
+        to_be_executed_code = self.executable
+
+        to_be_executed_code = to_be_executed_code.replace('delta_t', str(timestep_size))
+        for attribute_id in input_values.keys():
+            to_be_executed_code = to_be_executed_code.replace('attr' + str(attribute_id), str(input_values[attribute_id]))
+
+        try:
+            print("<><><><><><><><><><><><><<><><><><><><>")
+            print(to_be_executed_code)
+            print("<><><><><><><><><><><><><<><><><><><><>")
+            execution_results = {}
+            exec(to_be_executed_code, globals(), execution_results)
+            result = execution_results['result']
+            return result
+        except Exception as error:
+            traceback.print_exc()
+            return str(error)
 
 
 
 
 class Simulation_model(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    meta_data_facts = models.TextField(null=True)
+    objects_dict = models.TextField()
+    object_type_counts = models.TextField()
+    total_object_count= models.IntegerField()
+    number_of_additional_object_facts = models.IntegerField()
+    simulation_start_time = models.IntegerField()
+    simulation_end_time = models.IntegerField()
+    timestep_size = models.IntegerField(null=True)
+    object_timelines = models.TextField(null=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
     created = models.DateTimeField(editable=False)
     updated = models.DateTimeField(editable=False)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
     # is_private  = models.BooleanField(default=False)
     def save(self):
         if not self.id:

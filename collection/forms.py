@@ -27,11 +27,6 @@ class Subscriber_preferencesForm(forms.ModelForm):
 		# fields = ('email', 'userid', 'first_name', 'is_templar', 'is_alchemist', 'is_scholar', 'created', 'updated',)
 
 
-class Simulation_modelForm(forms.ModelForm):
-	class Meta:
-		model = Simulation_model
-		fields = ('name', )
-
 
 
 class UploadFileForm(forms.Form):

@@ -13,7 +13,7 @@
 	
 	Would you like to continue and
 	<ul>
-		<li><a href="{% url 'edit_model'  id=new_model_id %}">model the systen that generated the data?</a></li>
+		<li><a href="{% url 'edit_simulation'  simulation_id=new_model_id %}">model the systen that generated the data?</a></li>
 		<li><a href="{% url 'upload_data1_new' %}">query the data you just now uploaded?</a></li>
 	</ul>	
 	
@@ -23,9 +23,9 @@
 	<ul>
 		<li><a href="{% url 'query_data' %}">query data</a></li>
 		<li><a href="{% url 'upload_data1_new' %}">upload data</a></li>
-		<li><a href="{% url 'new_model' %}">new model</a></li>
-		{% for model in all_models %}
-			<li><a href="{% url 'edit_model' id=model.id %}">edit model {{ model.name }}</a></li>
+		<li><a href="{% url 'edit_simulation_new' %}">new simulation</a></li>
+		{% for simulation in all_simulation_models %}
+			<li><a href="{% url 'edit_simulation' simulation_id=simulation.id %}">edit simulation {{ simulation.id }}</a></li>
 		{% endfor %}
 	</ul>
 		

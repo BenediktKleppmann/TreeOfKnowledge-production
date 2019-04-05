@@ -32,7 +32,7 @@ def save_new_upload_details(request):
 
 
         table_header = list(data_table_df.columns)
-        table_body = data_table_df.to_dict('list')  
+        table_body = data_table_df.to_dict()  
         for column_number, column_name in enumerate(table_header): # change the table_body-dict to have column_numbers as keys instead of column_nmaes
             table_body[column_number] = table_body.pop(column_name)
         
@@ -203,7 +203,25 @@ def perform_uploading(uploaded_dataset, request):
                 data_point_record.save()
                 number_of_datapoints_saved += 1
 
-    simulation_model = Simulation_model(user=request.user, name="", description="", meta_data_facts=uploaded_dataset.meta_data_facts)
+
+    object_type_record = Object_types.objects.get(id=object_type_id)
+    objects_dict = {}
+    objects_dict[1] = { 'object_name':object_type_record.name + ' 1', 
+                        'object_type_id':object_type_id, 
+                        'object_type_name':object_type_record.name, 
+                        'object_icon':object_type_record.object_icon, 
+                        'object_attributes':{},
+                        'object_filter_facts':uploaded_dataset.meta_data_facts,
+                        'position':{'x':100, 'y':100},
+                        'get_new_object_data': True};
+    simulation_model = Simulation_model(user=request.user, 
+                                        objects_dict=json.dumps(objects_dict),
+                                        object_type_counts=json.dumps({object_type_id:1}),
+                                        total_object_count=0,
+                                        number_of_additional_object_facts=2,
+                                        simulation_start_time=946684800, 
+                                        simulation_end_time=1577836800, 
+                                        timestep_size=31536000)
     simulation_model.save()
     new_model_id = simulation_model.id
 

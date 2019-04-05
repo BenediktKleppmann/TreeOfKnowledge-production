@@ -159,7 +159,7 @@ def get_data_from_random_object(object_type_id, filter_facts, specified_start_ti
 
         for attribute_id in attribute_ids:
             attribute_record = Attribute.objects.get(id=attribute_id)
-            attribute_values[attribute_id] = {'attribute_value': broad_table_df[str(attribute_id)].iloc[0], 'attribute_name':attribute_record.name, 'attribute_data_type':attribute_record.data_type, 'attribute_rule': {}}
+            attribute_values[attribute_id] = {'attribute_value': broad_table_df[str(attribute_id)].iloc[0], 'attribute_name':attribute_record.name, 'attribute_data_type':attribute_record.data_type, 'attribute_rule': None}
 
     else: 
         attribute_values = {}

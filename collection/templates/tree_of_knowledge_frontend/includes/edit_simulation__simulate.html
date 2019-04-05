@@ -1,5 +1,5 @@
-<!--                 EDIT MODEL - SIMULATE                   -->
-<!-- This is used edit_model.html. It was extracted, because edit_model.html was getting a bit long  -->
+<!--                 EDIT SIMULATION - SIMULATE                   -->
+<!-- This is used edit_simulation.html. It was extracted, because edit_model.html was getting a bit long  -->
 
 <style>
 
@@ -82,7 +82,7 @@
 	}
 
 	#rule-modal-middle {
-		width: 417px;
+		width: 430px;
 		padding-left: 15px;
 		display: inline-block;
 		vertical-align: top;
@@ -94,6 +94,7 @@
 	#rule-modal-right {
 		padding-left: 22px;
 		vertical-align: top;
+		display: inline-block;
 	}
 	
 	/* -------------------------------------------------------------------------------------------*/
@@ -112,7 +113,7 @@
 		margin-bottom:7px;
 	}
 	
-	.list-group-item {
+	#selection-options-frame .list-group-item {
 		padding: 0px;
 		margin:0px;
 		width: 190px;
@@ -141,22 +142,51 @@
 	/* Rule Modal Middle  -------------------------------------------------------------------------------------*/
 	/* --------------------------------------------------------------------------------------------------------*/
 	#rule-name {
+		display: inline-block;
 		margin-top: 0px;
-		margin-bottom: 22px;
-		text-align: center
+		margin-bottom: 31px;
+		text-align: center;
+		width: 356px;
 	}
 	
 	#rule-name-input {
 		width: 200px;
 		margin-left: 104px;
-		margin-bottom: 22px;
+		margin-bottom: 29px;
 	}
+	
+
+	#edit-and-delete-rule-buttons {
+		display: inline-block;
+		vertical-align: text-top;
+		margin-top: -19px;
+	}
+	
+	.edit-rule-button {
+		background-color: rgb(249, 235, 214);
+		border-color: rgb(244, 229, 205);
+		float: right;
+		padding: 2px 7px;
+		margin-bottom: 3px;
+	}
+	
+	.delete-rule-button {
+		background-color: rgb(244, 215, 215);
+		border-color: rgb(242, 210, 210);
+		float: right;
+		padding: 2px 7px;
+	}
+						
 	
 	/* Used Attribute Buttons ---*/
 	
 	#unique_identifier_selection {
 		margin-left:24px;
 		height: 44px;
+	}
+	
+	#used-attributes {
+		margin-top: 5px
 	}
 	
 	#used-attributes > .btn {
@@ -180,7 +210,7 @@
 	#used-attributes > .btn:hover, 
 	#used-attributes > .active{
 		color:rgb(0, 0, 0);
-		background-color: rgb(156, 209, 183);
+		/*background-color: rgb(156, 209, 183);*/
 		border-color: rgb(146, 147, 147);
 	}
 	
@@ -227,9 +257,12 @@
 		background: white;
 		line-height: 20px;
 	}
-	textarea.form-control {
+	
+	#rule-text {
 		height: 91px;
+		width: 400px;
 	}
+	
 	
 	/* --------------------------------------------------------------------------------------------------------*/
 	/* Rule Modal Right  --------------------------------------------------------------------------------------*/
@@ -249,15 +282,17 @@
 	}
 	
 	#available-variable-frame {
-		width: 195px;
 		border: 1px solid rgb(202, 202, 202);
+		border-radius: 4px;
+		width: 195px;
 		height: 300px;
 		overflow: auto;
 	}
 	
-	.avail-var-item {
+	.list-group-item.avail-var-item{
 		border-bottom: 1px solid rgb(202, 202, 202);
 		margin-bottom: 0px;
+		padding:0px;
 	}
 
 	.avail-var-button {
@@ -292,7 +327,7 @@
 								<div id="rule-details"></div>
 							</div>	
 						</div>
-						<div id="rule-modal-right" style="display:none">
+						<div id="rule-modal-right">
 							<div class="form">
 								<div id="rule-details"></div>
 							</div>	
@@ -318,10 +353,11 @@
 	var new_rule_used_attribute_ids = [];
 	var highlighted_words_dict = {};
 	
+	var delta_t_list = ['delta_t (years)', 'delta_t (months)', 'delta_t (days)', 'delta_t (hours)', 'delta_t (minutes)', 'delta_t (seconds)'];
+	var timestep_units = [31536000, 2628000, 604800, 86400, 3600, 60, 1]
 	
-	//========================================================================
-	//================   SETUP	======================================
-	//========================================================================
+	
+
 	
 	function getObjectData() {
 		for (var object_number = 1; object_number <= total_object_count; object_number++) {
@@ -354,7 +390,9 @@
 		}
 	}
 	
-	
+	//========================================================================
+	//================   LEFT PANEL	======================================
+	//========================================================================
 		
 	// Draw the Left Panel (For the Design-State)    =============================================================================
 	function drawLeftPanel__simulate() {
@@ -375,12 +413,12 @@
 									'<div class="form-group row">' +
 										'<label for="max" class="col-sm-5">Timestep (&Delta;t)</label>' +
 										'<div class="col-sm-3">' +
-											'<input type="text" class="form-control" id="number_of_timesteps" name="number_of_timesteps">' +
+											'<input type="text" class="form-control" id="timestep_size" name="timestep_size">' +
 										'</div>' +
 										'<div class="col-sm-4">' +
 											'<select class="form-control form-control-lg" id="timestep_unit" name="timestep_unit">' +
 												'<option value=31536000 selected>years</option>' +
-												'<option value=2419200>months</option>' +
+												'<option value=2628000>months</option>' +
 												'<option value=604800>weeks</option>' +
 												'<option value=86400>days</option>' +
 												'<option value=3600>hours</option>' +
@@ -394,6 +432,18 @@
 	
 		$("#left-panel").html(left_panel__simulate);	
 		
+		
+		for (var i = 0; i < timestep_units.length; i++) {
+			if (timestep_size % timestep_units[i] == 0){
+				number_of_timestep_units = timestep_size / timestep_units[i];
+				document.getElementById('timestep_size').value = number_of_timestep_units;
+				document.getElementById('timestep_unit').value = timestep_units[i];
+				break;
+			}
+		}
+		
+		
+		// DATE TIME PICKERS ----------------------------------------------------------------------------
 		//make the datetimepickers
 		$('.datetimepicker').datetimepicker({
 			startView:'decade',
@@ -415,9 +465,8 @@
 		$("#simulation-end-time").val(end_date_string);
 	
 		
-		// DATE CHANGE for DataTimePicker ---------------------------
+		// Save the changed Date and Link the Start- and End- Time
 		$("#simulation-start-time").datetimepicker().on('changeDate', function(ev){
-			//link the start- and end- datetimepickers
 			$("#simulation-end-time").datetimepicker("setStartDate", '"' + ev.date.toISOString().substring(0,10) + '"');
 			simulation_start_time = Math.round(ev.date.getTime() / 1000);
 		});
@@ -428,6 +477,57 @@
 		});
 	}		
 	
+	function run() {
+		saveSimulation();
+		
+		form_html_string =	"<form role='form' action='' method='post' class='form' enctype='multipart/form-data'>" + 
+								"{% csrf_token %}" +
+							"</form>";
+		$(form_html_string).appendTo("body").submit();
+		
+	}
+	
+	function saveSimulation() {
+		// get simulation_id
+		var url_components = window.location.href.split("/");
+		var simulation_id = url_components[url_components.length - 2]
+			
+		
+		//update the object positions in objects_dict
+		var cells = graph.getCells();
+		for (var i = 0; i < cells.length; i++) {
+			var object_number = cells[i]['attributes']['object_number'];
+			objects_dict[object_number]['position']['x'] = cells[i]['attributes']['position']['x'];
+			objects_dict[object_number]['position']['y'] = cells[i]['attributes']['position']['y'];
+		}
+		
+		
+		var number_of_timestep_units = document.getElementById('timestep_size').value;	
+		if (isNaN(number_of_timestep_units)) {
+			alert("Please enter a number as Timestep (Δt)");
+			return
+		}
+		
+		var number_of_timestep_units = parseInt(number_of_timestep_units, 10) || null;
+		timestep_size = number_of_timestep_units * document.getElementById('timestep_unit').value;
+		
+		request_body = {
+			'simulation_id': simulation_id,
+			'objects_dict': objects_dict,
+			'object_type_counts': object_type_counts,
+			'total_object_count': total_object_count,
+			'number_of_additional_object_facts': number_of_additional_object_facts,
+			'simulation_start_time': simulation_start_time,
+			'simulation_end_time': simulation_end_time,
+			'timestep_size': timestep_size,
+		}
+		
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.open("POST", "/tool/save_changed_simulation/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));	
+	}
 	
 	//========================================================================
 	//================   RIGHT SIDEBAR	======================================
@@ -449,11 +549,19 @@
 			object_attributes_string = '<table id="object-attributes-table">';
 			for (var i = 0; i < attribute_ids.length ; i++) {
 				var attribute_id = attribute_ids[i];
+				var rule_id = objects_dict[object_number]['object_rules'][attribute_id]
+				if (rule_id == null) {
+					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">constant</button>'
+				} else {
+					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')" style="background-color:rgb(156, 209, 183);">changing</button>'
+				}
+				
+				
 				object_attributes_string += '<tr>' +
 												'<td class="attribute-name">' + object_attributes[attribute_id]['attribute_name'] + '</td>' +
 												'<td class="attribute-value-box"><input class="form-control attribute-value" type="text" value="' + object_attributes[attribute_id]['attribute_value'] + '" onchange="attributeValueChange(' + object_number + ',' + attribute_id + ', this.value)"></td>' +
 												'<button type="button" id="format_violation' + 1 + '" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid value" style="display:none;" data-content="">!</button>' + 
-												'<td class="attribute-rule-box"><button type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">constant</button></td>' +
+												'<td class="attribute-rule-box">' + attribute_rule_button_html + '</td>' +
 											'</tr>';
 			}
 			object_attributes_string += '</table>';
@@ -488,7 +596,7 @@
 	function populateRuleModal(object_number,rules_attribute_id, rules_attribute_name) {
 	
 		$("#chooseRuleModal #modal-title").html('Choose Rule for ' + rules_attribute_name);
-		$("#no-rule-button").attr('onclick','noRule_buttonClick(\'' + rules_attribute_name + '\')');
+		$("#no-rule-button").attr('onclick','noRule_buttonClick(' + object_number + ', ' + rules_attribute_id + ',\'' + rules_attribute_name + '\')');
 		$("#new-rule-button").attr('onclick','openNewRuleForm(' + rules_attribute_id + ', \'' + rules_attribute_name + '\',' + object_number + ')');			
 					
 					
@@ -500,15 +608,24 @@
 				rule_options_html_string = "";
 				
 				for (var i = 0; i < rules_list.length; i++) {
-					rule_options_html_string += 	'<li class="list-group-item narrow"><button class="btn btn-outline-secondary" type="button" onclick="inspectRule(' + i + ',\'' + rules_attribute_name + '\')" scope="col">' + rules_list[i]['name'] + '</button></li>';
+					rule_options_html_string += 	'<li class="list-group-item narrow"><button id="rule-inspection-button' + rules_list[i]['id'] + '" class="btn btn-outline-secondary" type="button" onclick="inspectRule(' + object_number + ',' + i + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\')" scope="col">' + rules_list[i]['name'] + '</button></li>';
 				}
 				$("#selection-options").html(rule_options_html_string);
+				
+				//if a rule has already been chosen -> select it
+				var rule_id = objects_dict[object_number]['object_rules'][rules_attribute_id]
+				if (rule_id == null) {
+					$("#rule-details").html('');
+				} else {
+					document.getElementById('rule-inspection-button' + rule_id).click();
+				}
 
 			}
 		};
 		xhttp.open('GET', '/tool/get_attribute_rules?attribute_id=' + rules_attribute_id , true);
 		xhttp.send();
-	
+		
+		$("#rule-modal-right").html('');
 	}
 	
 	//== Filter Rule Options =========================================================================================		  
@@ -533,15 +650,21 @@
 	//==========
 	
 	//== Inspect Rule =========================================================================================		  
-	function inspectRule(i, attribute_name) {
+	function inspectRule(object_number, i, rules_attribute_id, rules_attribute_name) {
 		
-		$("#rule-modal-right").attr('style','display:none;');
+		$("#rule-modal-right").html('');
 		$('.modal-dialog').animate({width: '700px'}, 200, 'linear');
 		
-		var rule_details_html_string = 	'<h3 id="rule-name">' + rules_list[i]['name'] + '</h3>' +
+		var rule_details_html_string = 	'<div id="rule-title-box">' + 
+											'<h3 id="rule-name">' + rules_list[i]['name'] + '</h3>' +
+											'<div id="edit-and-delete-rule-buttons">' +
+												'<button type="button" class="btn btn-warning edit-rule-button" onclick="editRule(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\',' + i + ')">Edit</button><br>' +
+												'<button type="button" class="btn btn-danger delete-rule-button" onclick="deleteRule(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\',' + rules_list[i]['id'] + ')">Delete</button>' +
+											'</div>' +
+										'</div>' +
 										'<div class="form-group">' + 
-											'<label class="control-label" for="rule-text" style="margin-left:12px;margin-bottom:4px;font-size:15px;">' + attribute_name + ' (t + &Delta;t) = </label>' +
-											'<textarea cols="20" rows="5" class="form-control" id="rule-text">' + rules_list[i]['rule'] + '</textarea>' +
+											'<label class="control-label" for="rule-text" style="margin-left:12px;margin-bottom:4px;font-size:15px;">' + rules_attribute_name + ' (t + &Delta;t) = </label>' +
+											'<textarea cols="20" rows="5" class="form-control" id="rule-text">' + rules_list[i]['rule_text'] + '</textarea>' +
 										'</div>' + 
 										'<div id="used-attributes" class="btn-group" data-toggle="buttons">';
 									
@@ -557,30 +680,39 @@
 		
 		
 		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="chooseRuleCloseButton" data-dismiss="modal">Cancel</button>' +
-										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="chooseRule(' + rules_list[i]['id'] + ')">Choose Rule</button>';
+										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="chooseRule(' + object_number + ',' + rules_attribute_id + ',' + rules_list[i]['id'] + ')">Choose Rule</button>';
 		$('#rule-modal-footer').html(save_button_html_string);
 	}
 	
 	//== No Rule =========================================================================================	
-	function noRule_buttonClick(rules_attribute_name){
+	function noRule_buttonClick(object_number, rules_attribute_id, rules_attribute_name){
 		
-		$("#rule-modal-right").attr('style','display:none;');
+		$("#rule-modal-right").html('');
 		$('.modal-dialog').animate({width: '700px'}, 200, 'linear');
 		
-		var rule_details_html_string = 	'<h3 id="rule-name">No Rule</h3>' +
+		var rule_details_html_string = 	'<h3 id="rule-name">No Rule</h3><br>' +
 										'i.e. in the simulation the ' + rules_attribute_name + ' variable will remain constant.';		
 		$("#rule-details").html(rule_details_html_string);
 		
 		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="chooseRuleCloseButton" data-dismiss="modal">Cancel</button>' +
-										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="chooseRule()">Choose Rule</button>';
+										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="chooseRule(' + object_number + ',' + rules_attribute_id +', null)">Choose Rule</button>';
 		$('#rule-modal-footer').html(save_button_html_string);
 		
-		$("#chooseRuleSaveButton").attr('onclick','chooseRule(\'constant\')');
 	}
 	
 	//== Choose Rule =========================================================================================	
-	function chooseRule() {
-	
+	function chooseRule(object_number, rules_attribute_id, rule_id) {
+		objects_dict[object_number]['object_rules'][rules_attribute_id] = rule_id;	
+		if (rule_id == null) {
+			$('#attribute-button' + rules_attribute_id).html('constant');
+			$('#attribute-button' + rules_attribute_id).attr('style','');
+		} else {
+			$('#attribute-button' + rules_attribute_id).html('changing');
+			$('#attribute-button' + rules_attribute_id).attr('style','background-color:rgb(156, 209, 183);');
+		}
+		document.getElementById("rule-x-button").click();
+		$("#rule-details").html('');
+
 	}
 	
 	//==========
@@ -658,16 +790,20 @@
 			var attribute_name = object_attributes[attribute_id]['attribute_name']
 			available_variables_html_string += 		'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
 		}
+		for (var i = 0; i < delta_t_list.length ; i++) {
+			var delta_t_name = delta_t_list[i];
+			available_variables_html_string += 		'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + delta_t_name + '\')" scope="col">' + delta_t_name + '</button></li>';
+		}
+		
 		
 		available_variables_html_string += 		'</ul>' + 
 											'</div>';
 		
-		$("#rule-modal-right").attr('style','display:inline-block;');
 		$("#rule-modal-right").html(available_variables_html_string);		
-		$('.modal-dialog').animate({width: '907px'}, 200, 'linear');
+		$('.modal-dialog').animate({width: '921px'}, 200, 'linear');
 		
-		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="cancelNewRuleButton" onclick="noRule_buttonClick()">Cancel</button>' +
-										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="saveNewRule(' + rules_attribute_id + ')">Save Rule</button>';
+		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="cancelNewRuleButton" onclick="noRule_buttonClick(' + object_number + ', ' + rules_attribute_id + ')">Cancel</button>' +
+										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="saveRule(null, ' + rules_attribute_id + ',\'' + rules_attribute_name + '\',' + object_number + ')">Save Rule</button>';
 		
 		$('#rule-modal-footer').html(save_button_html_string);
 
@@ -701,11 +837,17 @@
 		
 		var object_attributes = objects_dict[object_number]['object_attributes'];
 		var attribute_ids = Object.keys(object_attributes);
+		var attribute_names = []
 		for (var i = 0; i < attribute_ids.length ; i++) {
-			var attribute_id = attribute_ids[i];
-			var attribute_name = object_attributes[attribute_id]['attribute_name'];
+			attribute_names.push(object_attributes[attribute_ids[i]]['attribute_name']);
+		}
+		attribute_names = attribute_names.concat(delta_t_list);
+		for (var i = 0; i < attribute_names.length ; i++) {
+			var attribute_name = attribute_names[i];
 			if (rule_text.indexOf('[' + attribute_name + ']') !== -1) {
-				new_rule_used_attribute_ids.push(attribute_id);
+				if (!delta_t_list.includes(attribute_name)) {
+						new_rule_used_attribute_ids.push(attribute_ids[i]);
+				}
 				new_rule_used_attribute_names.push(attribute_name);
 				
 				used_attributes_html_string +=	'<label id="used-attribute' + i + '" class="btn" onclick="usedAttributeButtonClick(\'' + attribute_name + '\',' + i + ')">' +
@@ -720,41 +862,177 @@
 
 	//== Save New Rule  ================================================================================================================	
 	
-	function saveNewRule(rules_attribute_id) {
+	function saveRule(rule_id, rules_attribute_id, rules_attribute_name, object_number) {
 		var rule_name = document.getElementById('rule-name-input').value;
 		var rule_text = document.getElementById('rule-text').value;
 		
+		// basic checks
+		// I know it is idiotic to do security checks on the client side - I'll move this to the backend asap
 		if (rule_name.length == 0) {
 			alert('Rule Name required');
-			return
+			return;
+		} else if (rule_text.length >= 500) {
+			alert('The Rule is ' + rule_text.length + ' characters long. Maximally 500 are allowed.');
+			return;
 		}
 		
-		if (rule_text.length == 0) {
-			alert('Rule required');
-			return
+		// Checking the Rule Text - only the commands in permitted_substrings are allowed==================
+		//1 - removing/replacing delta_t
+		var executable = rule_text;
+		var stripped_rule_text = rule_text;
+		for (var i = 0; i < delta_t_list.length; i++) {
+			var search_value = '[' + delta_t_list[i] + ']';
+			executable = executable.split(search_value).join('(delta_t/' + timestep_units[i] +')');
+			stripped_rule_text = stripped_rule_text.split(search_value).join(' ');
 		}
 		
+		//2 - removing/replacing variables
+		for (var i = 0; i < new_rule_used_attribute_ids.length; i++) {
+			var search_value = '[' + new_rule_used_attribute_names[i] + ']';
+			var data_type = objects_dict[object_number]['object_attributes'][parseInt(new_rule_used_attribute_ids[i])]['attribute_data_type'];
+			if (['string', 'date'].includes(data_type)){
+				var replacement = '"attr' + String(new_rule_used_attribute_ids[i]) + '"';
+			} else {
+				var replacement = 'attr' + String(new_rule_used_attribute_ids[i]);
+			}
+			executable = executable.split(search_value).join(replacement);
+			stripped_rule_text = stripped_rule_text.split(search_value).join(' ');
+			//stripped_rule_text = stripped_rule_text.replace(new RegExp(search_value, 'g'), '');
+		}
+				
+		//3 - removing function-characters
+		var permitted_characters = ['\\(','\\)','\\[','\\]','\\{','\\}','\\+','\\*','\\.','-','/','%','.',',',':'] 
+		for (var i = 0; i < permitted_characters.length; i++) {
+			stripped_rule_text = stripped_rule_text.replace(new RegExp(permitted_characters[i], 'g'), ' ');
+		}
+		
+		//4 - removing permitted commands
+		var permitted_substrings = ['if','and','or']
+		for (var i = 0; i < permitted_substrings.length; i++) {
+			stripped_rule_text = stripped_rule_text.replace(new RegExp(permitted_substrings[i], 'g'), '');
+		}
+		
+		//5 - if there's still something remaining: ERROR
+		stripped_rule__remaining_words = stripped_rule_text.split(" ");
+		for (var i =0; i < stripped_rule__remaining_words.length; i++){
+			if (stripped_rule__remaining_words[i] == ''){
+				stripped_rule__remaining_words.splice(i, );
+			}
+		}
+		if (stripped_rule__remaining_words.length > 0) {
+			alert('The following commands are not permitted in the Rule: ' + stripped_rule__remaining_words.join(','));
+			return;
+		}
+		
+		
+		
+		// Save Rule in Backend  ==================
 		request_body = {
 			'name': rule_name,
 			'attribute_id': rules_attribute_id,
 			'number_of_times_used': 0,
 			'used_attribute_ids': new_rule_used_attribute_ids,
 			'used_attribute_names': new_rule_used_attribute_names,
-			'rule': rule_text
+			'rule_text': rule_text,
+			'executable': executable
 		}
 		
+		if (rule_id != null) {request_body['rule_id'] = rule_id;} //this triggers the exiting rule to be modified instead of a new rule to be created
+		
+		 
 		var xmlhttp = new XMLHttpRequest();       
-		xmlhttp.open("POST", "/tool/save_new_rule/");
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				
+				var response_message = this.responseText;
+				if (response_message == "success") {
+					populateRuleModal(object_number, rules_attribute_id, rules_attribute_name);
+					$("#rule-modal-right").html('');		
+					$('.modal-dialog').animate({width: '700px'}, 200, 'linear');
+				} else {
+					alert(response_message);
+				}
+			}
+		};
+		
+		xmlhttp.open("POST", "/tool/save_rule/");
 		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send(JSON.stringify(request_body));	
 		
-		//clean and close the modal
-		noRule_buttonClick();
-		document.getElementById("rule-x-button").click();
-		
 	
 	}
 	
+	//==========
+	// Edit Rule  
+	//==========
+	
+	function editRule(object_number, rules_attribute_id, rules_attribute_name, rule_number) {
+		
+		rule_id = rules_list[rule_number]['id'];
+		rule_name = rules_list[rule_number]['name'];
+		used_attribute_ids = rules_list[rule_number]['used_attribute_ids'];
+		used_attribute_names = rules_list[rule_number]['used_attribute_names'];
+		rule_text = rules_list[rule_number]['rule_text'];
+		
+		var rule_details_html_string = 	'<input type="text" class="form-control" id="rule-name-input" placeholder="Rule Name" value="' + rule_name + '">' +
+										'<div class="form-group">' + 
+											'<label class="control-label" for="rule-text" style="margin-left:12px;margin-bottom:4px;font-size:15px;">' + rules_attribute_name + ' (t + &Delta;t) = </label>' +
+											'<textarea cols="20" rows="5" class="form-control" id="rule-text" onclick="rememberCursorPostion()" onchange="checkTextareaForVariables(' + object_number + ')">' + rule_text + '</textarea>' +
+										'</div>' + 
+										'<div id="used-attributes" class="btn-group" data-toggle="buttons">' +
+										'</div>';
+										
+		$("#rule-details").html(rule_details_html_string);
+		
+		
+		
+		available_variables_html_string = 	'<div class="available-variables-label">Available Variables:</div>' + 
+											'<input type="text" class="form-control" id="selectAvailableVariable" onkeyup="filterAvailableVariables();" placeholder=" Search">' + 
+											'<div id="available-variable-frame">' + 
+												'<ul id="available-variables" class="input-group list-group">';
+			
+		var object_attributes = objects_dict[object_number]['object_attributes'];
+		var attribute_ids = Object.keys(object_attributes);
+		for (var i = 0; i < attribute_ids.length ; i++) {
+			var attribute_id = attribute_ids[i];
+			var attribute_name = object_attributes[attribute_id]['attribute_name']
+			available_variables_html_string += 		'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+		}
+		for (var i = 0; i < delta_t_list.length ; i++) {
+			var delta_t_name = delta_t_list[i];
+			available_variables_html_string += 		'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + delta_t_name + '\')" scope="col">' + delta_t_name + '</button></li>';
+		}
+		
+		available_variables_html_string += 		'</ul>' + 
+											'</div>';
+		
+		$("#rule-modal-right").html(available_variables_html_string);		
+		$('.modal-dialog').animate({width: '921px'}, 200, 'linear');
+		
+		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="cancelNewRuleButton" onclick="noRule_buttonClick(' + object_number + ', ' + rules_attribute_id + ')">Cancel</button>' +
+										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="saveRule(' + rule_id + ', ' + rules_attribute_id + ',\'' + rules_attribute_name + '\',' + object_number + ')">Save Rule</button>';
+		
+		$('#rule-modal-footer').html(save_button_html_string);
+		
+		checkTextareaForVariables(object_number);
+		
+	}
+	
+	
+	//==========
+	// Delete Rule  
+	//==========
+	function deleteRule(object_number, rules_attribute_id, rules_attribute_name, rule_id) {
+		
+		var xmlhttp = new XMLHttpRequest();       	
+		xmlhttp.open("POST", "/tool/delete_rule/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify({'rule_id': rule_id}));	
+		
+		populateRuleModal(object_number, rules_attribute_id, rules_attribute_name);
+	}
+
 	
 </script>

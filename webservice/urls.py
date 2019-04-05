@@ -76,10 +76,12 @@ urlpatterns = [
     url(r'^tool/save_edited_object_type/$', views.save_edited_object_type, name='save_edited_object_type'),
     url(r'^tool/save_new_attribute/$', views.save_new_attribute, name='save_new_attribute'),
     url(r'^tool/save_changed_attribute/$', views.save_changed_attribute, name='save_changed_attribute'),
-    url(r'^tool/save_new_rule/$', views.save_new_rule, name='save_new_rule'),
+    url(r'^tool/save_rule/$', views.save_rule, name='save_rule'),
+    url(r'^tool/save_changed_simulation/$', views.save_changed_simulation, name='save_changed_simulation'),
     # delete
     url(r'^tool/delete_object_type/$', views.delete_object_type, name='delete_object_type'),
     url(r'^tool/delete_attribute/$', views.delete_attribute, name='delete_attribute'),
+    url(r'^tool/delete_rule/$', views.delete_rule, name='delete_rule'),
     # process/edit
     url(r'^tool/edit_column/$', views.edit_column, name='edit_column'),
     # column format
@@ -87,21 +89,22 @@ urlpatterns = [
     url(r'^tool/get_columns_format_violations/$', views.get_columns_format_violations, name='get_columns_format_violations'),
     url(r'^tool/check_single_fact_format/$', views.check_single_fact_format, name='check_single_fact_format'),    
     
-    
-
-    # Simulation  -------------------------------------------------------------------------
+   
+    # Query Data  -------------------------------------------------------------------------
     url(r'^tool/query_data/$', views.query_data, name='query_data'),
     url(r'^tool/download_file1/$', views.download_file1, name='download_file1'),
     url(r'^tool/query_data/(?P<file_name>[-\d]+)-(?P<file_type>[a-z]+)/$', views.download_file2, name='download_file2'),
     
-    # url(r'^tool/download_file2_excel/$', views.download_file2_excel, name='download_file2_excel'),
-    # url(r'^tool/download_file2_csv/$', views.download_file2_csv, name='download_file2_csv'),
+
+	# Simulation  -------------------------------------------------------------------------    
+    url(r'^tool/edit_simulation/$', views.edit_simulation_new, name='edit_simulation_new'),
+    url(r'^tool/edit_simulation/(?P<simulation_id>[-\d]+)/$', views.edit_simulation, name='edit_simulation'),
+    url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/$', views.analyse_simulation, name='analyse_simulation'),
     
-    url(r'^tool/edit_model/$', views.new_model, name='new_model'),
-    url(r'^tool/edit_model/(?P<id>[-\d]+)/$', views.edit_model, name='edit_model'),
+
+	# catching missspellt urls...
     url(r'^main_menu/$', RedirectView.as_view(pattern_name='main_menu')),
     url(r'^edit_model/$', RedirectView.as_view(pattern_name='edit_model')),
-
 
     # Admin Pages  -------------------------------------------------------------------------
     url(r'^subscribers/$', views.newsletter_subscribers, name='subscribers'),
@@ -116,15 +119,3 @@ urlpatterns = [
 
 ]
 
-
-
-# # Alternative ---------------------------------------------------------------------
-# 
-# from django.urls import path
-# 
-# urlpatterns = [
-#     path('', views.index, name='home'),
-#     path('subscribers', views.newsletter_subscribers, name='subscribers'),
-#    path('admin/', admin.site.urls),
-# ]
-# # -----------------------------------------------------------------------------------

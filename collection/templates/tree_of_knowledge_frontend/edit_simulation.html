@@ -321,7 +321,7 @@
 		margin-top: 7px;
 	}
 	
-	.list-group-item {
+	#object_facts_list > .list-group-item {
 		width: 407px !important;
 		margin-bottom: 0px !important;
 	}
@@ -356,11 +356,15 @@
 		margin-top: 3px;
 	}
 	
+	.drop-down-display > .narrow {
+		padding: 2px 0px;
+	}
 	
 	#make-new-additional-fact-button {
 		margin-left: 6px;
 		width: 39px;
 	}
+	
 	
 </style>
 
@@ -419,26 +423,28 @@
 	
 	
 
-	{% include "tree_of_knowledge_frontend/includes/edit_model__simulate.html" %} 
+	{% include "tree_of_knowledge_frontend/includes/edit_simulation__simulate.html" %} 
 	{% include "tree_of_knowledge_frontend/includes/additional_facts_functions.html" %} 
 	
 
 <script>
 	// GLOBAL VARIABLES:
+	
 	var window_state = 'design';  // 'design' or 'simulate'
 	
-	var available_object_types = {{ available_object_types|safe }}
-	var object_icons = {{ object_icons|safe }}
-	var objects_dict = {};
-	var object_type_counts = {};
-	var total_object_count = 0;
-	var number_of_additional_object_facts = 2;
+	var available_object_types = {{ available_object_types|safe }};
+	var object_icons = {{ object_icons|safe }};
+	var objects_dict = {{ simulation_model.objects_dict|safe }};
+	var object_type_counts = {{ simulation_model.object_type_counts|safe }};
+	var total_object_count = {{ simulation_model.total_object_count|safe }};          
+	var number_of_additional_object_facts = {{ simulation_model.number_of_additional_object_facts|safe }};;
 	
 	var paper = null;
 	var graph = null;
 	
-	var simulation_start_time = 946684800;
-	var simulation_end_time =  1577836800;
+	var simulation_start_time = {{ simulation_model.simulation_start_time|safe }};
+	var simulation_end_time =  {{ simulation_model.simulation_end_time|safe }};
+	var timestep_size = {{ simulation_model.timestep_size|safe }};
 	
 	
 	
@@ -570,8 +576,10 @@
 			} else {
 				$('#design-button').attr('class','btn design-simulate-button');
 				$('#simulate-button').attr('class','btn design-simulate-button active');
-				getObjectData();
 				drawLeftPanel__simulate();
+				saveSimulation();
+				getObjectData();
+				
 			}
 		}
 	}
@@ -758,7 +766,6 @@
 														'<input type="text" class="search" id="dropDonwSearch1" onkeyup="filterAttributeDropDown(1)" placeholder=" Search">' +
 														'<ul id="drop-down-display1" class="list-group drop-down-display"></ul>									' +
 														'<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(1);">Reset</button>' +
-														'<button class="btn btn-success dropdown-item-button" type="button" data-toggle="modal" data-target="#createAttributeModal" onclick="loadListOfItsParentObjects();">Create New Attribute</button>' +
 													'</div>' +
 												'</div>' +
 											'</div>' +
@@ -786,7 +793,6 @@
 														'<input type="text" class="search" id="dropDonwSearch2" onkeyup="filterAttributeDropDown(2)" placeholder=" Search">' +
 														'<ul id="drop-down-display2" class="list-group drop-down-display"></ul>									' +
 														'<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(2);">Reset</button>' +
-														'<button class="btn btn-success dropdown-item-button" type="button" data-toggle="modal" data-target="#createAttributeModal" onclick="loadListOfItsParentObjects();">Create New Attribute</button>' +
 													'</div>' +
 												'</div>' +
 											'</div>' +
@@ -863,7 +869,6 @@
 															'<input type="text" class="search" id="dropDonwSearch' + fact_number + '" onkeyup="filterAttributeDropDown(' + fact_number + ')" placeholder=" Search">' +
 															'<ul id="drop-down-display' + fact_number + '" class="list list-group drop-down-display"></ul>' +															
 															'<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(' + fact_number + ');">Reset</button>' +
-															'<button class="btn btn-success dropdown-item-button" type="button" data-toggle="modal" data-target="#createAttributeModal" onclick="loadListOfItsParentObjects();">Create New Attribute</button>' +
 														'</div>' + 
 													'</div>' + 
 												'</div>' + 
@@ -918,22 +923,27 @@
 									'object_type_name':object_type_name, 
 									'object_icon':object_icon, 
 									'object_attributes':{},
+									'object_rules':{},
 									'object_filter_facts':[],
+									'position':{'x':x_coordinate, 'y':y_coordinate},
 									'get_new_object_data': true};
 		
-				
-		//Add Object to Paper  ======================================================================================
+		var object_number = total_object_count;
+		addObjectToPaper(x_coordinate, y_coordinate, object_icon, object_type_name, object_number);
+	}
+	
+	
+	//Add Object to Paper  ======================================================================================
+	function addObjectToPaper(x_coordinate, y_coordinate, object_icon, object_type_name, object_number) {
+					
 		//get svg_text from backend
 	  	var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 			
-
-			
 				//create new shape on Paper
 				var svg_text = this.responseText.replace(/\n/g, '');
 				
-
 				var new_shape = new joint.shapes.basic.Image({
 					  size: {
 						width: 43,
@@ -954,18 +964,15 @@
 					  }, label: {
 						text: object_type_name
 					  },
-					  object_number: total_object_count
+					  object_number: object_number
 					});
 
 				graph.addCells([new_shape]);
 
-
 			}
 		};
-
 		xhttp.open('GET', '{% static "images/object_icons/" %}' + object_icon + '.svg', true);
 		xhttp.send();
-	
 	}
 	
 	
@@ -1040,7 +1047,20 @@
 
 		drawLeftPanel__design();
 		
-		
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			var object_number = object_numbers[i];
+			
+			//add object to Paper
+			var x_coordinate = objects_dict[object_number]['position']['x'];
+			var y_coordinate = objects_dict[object_number]['position']['y'];
+			var object_icon = objects_dict[object_number]['object_icon'];
+			var object_type_name = objects_dict[object_number]['object_type_name'];
+			addObjectToPaper(x_coordinate, y_coordinate, object_icon, object_type_name, object_number);
+			
+			//make it get the object's data
+			objects_dict[object_number]['get_new_object_data'] = true;
+		}
 	};
 	
 	

@@ -3,9 +3,9 @@ from django.http import Http404
 from django.shortcuts import render, redirect
 from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Rule
 from django.db.models import Count
-from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, Simulation_modelForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
+from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
-from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_datapoints
+from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_datapoints, simulate
 from django.http import HttpResponse
 import json
 import traceback
@@ -72,8 +72,8 @@ def subscriber_page(request, userid):
 # ===== THE TOOL ===================================================================
 @login_required
 def main_menu(request):
-    models = Simulation_model.objects.all().order_by('id') 
-    return render(request, 'tree_of_knowledge_frontend/main_menu.html', {'models': models})
+    simulation_models = Simulation_model.objects.all().order_by('id') 
+    return render(request, 'tree_of_knowledge_frontend/main_menu.html', {'simulation_models': simulation_models})
 
 
 @login_required
@@ -345,8 +345,8 @@ def upload_data7(request, upload_id):
 
 @login_required
 def upload_data_success(request, number_of_datapoints_saved, new_model_id):
-    all_models = Simulation_model.objects.all().order_by('id') 
-    return render(request, 'tree_of_knowledge_frontend/upload_data_success.html', {'number_of_datapoints_saved':number_of_datapoints_saved, 'new_model_id':new_model_id, 'all_models': all_models})
+    all_simulation_models = Simulation_model.objects.all().order_by('id') 
+    return render(request, 'tree_of_knowledge_frontend/upload_data_success.html', {'number_of_datapoints_saved':number_of_datapoints_saved, 'new_model_id':new_model_id, 'all_simulation_models': all_simulation_models})
 
 
 
@@ -581,9 +581,9 @@ def save_new_attribute(request):
                                 data_type=request_body['data_type'], 
                                 expected_valid_period=request_body['expected_valid_period'], 
                                 description=request_body['description'], 
-                                first_applicable_object=request_body['first_applicable_object'], 
-                                format_specification=json.dumps(request_body['format_specification']), 
-                                behaviour_rules='[]')
+                                format_specification=json.dumps(request_body['format_specification']),
+                                first_applicable_object=request_body['first_applicable_object'])
+
             new_entry.save()
             return HttpResponse("success")
         except Exception as error:
@@ -619,18 +619,70 @@ def save_changed_attribute(request):
 
 
 @login_required
-def save_new_rule(request):
+def save_rule(request):
     if request.method == 'POST':
         try:
             request_body = json.loads(request.body)
 
-            new_entry = Rule(name=request_body['name'], 
-                            attribute_id=request_body['attribute_id'], 
-                            number_of_times_used=request_body['number_of_times_used'], 
-                            used_attribute_ids=json.dumps(request_body['used_attribute_ids']), 
-                            used_attribute_names=json.dumps(request_body['used_attribute_names']), 
-                            rule=json.dumps(request_body['rule']))
-            new_entry.save()
+            # complete building the executable 
+            attribute_data_type = Attribute.objects.get(id=request_body['attribute_id']).data_type
+            if attribute_data_type == "int":
+                executable = 'result = int(' + request_body['executable'] + ')'
+            elif attribute_data_type == "real":
+                executable = 'result = float(' + request_body['executable'] + ')'
+            else:
+                executable = "result = " + request_body['executable']
+
+
+
+            if ('rule_id' in request_body.keys()):
+                rule_record = Rule.objects.get(id=request_body['rule_id'])
+
+                rule_record.name = request_body['name']
+                rule_record.attribute_id = request_body['attribute_id']
+                rule_record.number_of_times_used = request_body['number_of_times_used']
+                rule_record.used_attribute_ids = json.dumps(request_body['used_attribute_ids'])
+                rule_record.used_attribute_names = json.dumps(request_body['used_attribute_names'])
+                rule_record.rule_text = request_body['rule_text']
+                rule_record.executable = executable
+                rule_record.save()
+
+            else:
+                new_entry = Rule(name=request_body['name'], 
+                                attribute_id=request_body['attribute_id'], 
+                                number_of_times_used=request_body['number_of_times_used'], 
+                                used_attribute_ids=json.dumps(request_body['used_attribute_ids']), 
+                                used_attribute_names=json.dumps(request_body['used_attribute_names']), 
+                                rule_text=request_body['rule_text'],
+                                executable=request_body['executable'])
+                new_entry.save()
+
+            return HttpResponse("success")
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
+
+
+# used in: edit_model.html  and edit_model__simulate.html
+@login_required
+def save_changed_simulation(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+
+            model_record = Simulation_model.objects.get(id=request_body['simulation_id'])
+            model_record.objects_dict = json.dumps(request_body['objects_dict'])
+            model_record.object_type_counts = json.dumps(request_body['object_type_counts'])
+            model_record.total_object_count = request_body['total_object_count']
+            model_record.number_of_additional_object_facts = request_body['number_of_additional_object_facts']
+            model_record.simulation_start_time = request_body['simulation_start_time']
+            model_record.simulation_end_time = request_body['simulation_end_time']
+            model_record.timestep_size = request_body['timestep_size']
+            model_record.save()
             return HttpResponse("success")
         except Exception as error:
             traceback.print_exc()
@@ -678,6 +730,24 @@ def delete_attribute(request):
 
             attribute = Attribute.objects.get(id=attribute_id)
             attribute.delete()
+            return HttpResponse("success")
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
+# used in: edit_simulation__simulate.html
+@login_required
+def delete_rule(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+            rule_id = request_body['rule_id']
+
+            rule = Rule.objects.get(id=rule_id)
+            rule.delete()
             return HttpResponse("success")
         except Exception as error:
             traceback.print_exc()
@@ -847,25 +917,18 @@ def check_single_fact_format(request):
 
 
 
+ # ===============================================================
+ #   ____                          _____        _        
+ #  / __ \                        |  __ \      | |       
+ # | |  | |_   _  ___ _ __ _   _  | |  | | __ _| |_ __ _ 
+ # | |  | | | | |/ _ \ '__| | | | | |  | |/ _` | __/ _` |
+ # | |__| | |_| |  __/ |  | |_| | | |__| | (_| | || (_| |
+ #  \___\_\\__,_|\___|_|   \__, | |_____/ \__,_|\__\__,_|
+ #                          __/ |                        
+ #                         |___/                         
+ # ===============================================================
 
 
-
-
-
-
-
-
-
-
- # ==========================================================================
- #   _____ _                 _       _   _             
- #  / ____(_)               | |     | | (_)            
- # | (___  _ _ __ ___  _   _| | __ _| |_ _  ___  _ __  
- #  \___ \| | '_ ` _ \| | | | |/ _` | __| |/ _ \| '_ \ 
- #  ____) | | | | | | | |_| | | (_| | |_| | (_) | | | |
- # |_____/|_|_| |_| |_|\__,_|_|\__,_|\__|_|\___/|_| |_|
- # 
- # ==========================================================================
 
 @login_required
 def query_data(request):
@@ -944,51 +1007,59 @@ def download_file2_csv(request):
         writer.writerow(row.tolist())
     return response
 
-# ==========
-# SIMULATION
-# ==========
+
+
+
+ # ==========================================================================
+ #   _____ _                 _       _   _             
+ #  / ____(_)               | |     | | (_)            
+ # | (___  _ _ __ ___  _   _| | __ _| |_ _  ___  _ __  
+ #  \___ \| | '_ ` _ \| | | | |/ _` | __| |/ _ \| '_ \ 
+ #  ____) | | | | | | | |_| | | (_| | |_| | (_) | | | |
+ # |_____/|_|_| |_| |_|\__,_|_|\__,_|\__|_|\___/|_| |_|
+ # 
+ # ==========================================================================
 
 @login_required
-def new_model(request):
-    
+def edit_simulation_new(request):    
+    simulation_model = Simulation_model(user=request.user, 
+                                        objects_dict=json.dumps({}), 
+                                        object_type_counts=json.dumps({}),
+                                        total_object_count=0,
+                                        number_of_additional_object_facts=2,
+                                        simulation_start_time=946684800, 
+                                        simulation_end_time=1577836800, 
+                                        timestep_size=31536000)
+    simulation_model.save()
+    new_simulation_id = simulation_model.id
+    return redirect('edit_simulation', simulation_id=new_simulation_id)
+
+
+
+@login_required
+def edit_simulation(request, simulation_id):
+    simulation_model = Simulation_model.objects.get(id=simulation_id)
+
     if request.method == 'POST':
-        form_class = Simulation_modelForm
-        form = form_class(data=request.POST)
+        the_simulator = simulate.Simulation(simulation_id)
+        the_simulator.run()
+        object_timelines = the_simulator.get_object_timelines()
+        object_timeline_dicts = {key:value.to_dict('list') for (key,value) in object_timelines.items()}
+        simulation_model.object_timelines = json.dumps(object_timeline_dicts)
+        simulation_model.save()
+        return redirect('analyse_simulation', simulation_id=simulation_id)
 
-        if form.is_valid():
-            model = form.save(commit=False)
-            model.user = request.user
-
-            model.save()
-            return redirect('edit_model', id= model.id)
-
-    form_class = Simulation_modelForm
-    form = form_class()
+    
     available_object_types = get_from_db.get_most_common_object_types()
     object_icons = [icon_name[:-4] for icon_name in os.listdir("collection/static/images/object_icons/")]
-    return render(request, 'tree_of_knowledge_frontend/edit_model.html', {'form': form, 'available_object_types': available_object_types, 'object_icons': object_icons})
+    return render(request, 'tree_of_knowledge_frontend/edit_simulation.html', {'simulation_model':simulation_model, 'available_object_types': available_object_types, 'object_icons': object_icons})
+
 
 
 @login_required
-def edit_model(request, id):
-    model = Simulation_model.objects.get(id=id)
-    form_class = Simulation_modelForm
-    form = form_class(data=request.POST, instance=model)
-
-    if model.is_private and (model.user != request.user):
-        raise Http404
-
-    if request.method == 'POST':
-        if form.is_valid():
-            model = form.save(commit=False)
-            model.user = request.user
-            model.save()
-
-    object_icons = [icon_name[:-4] for icon_name in os.listdir("collection/static/images/object_icons/")]
-    return render(request, 'tree_of_knowledge_frontend/edit_model.html', {'model':model, 'form': form, 'available_object_types': model.available_object_types, 'object_icons': object_icons})
-
-
-
+def analyse_simulation(request, simulation_id):
+    simulation_model = Simulation_model.objects.get(id=simulation_id)
+    return render(request, 'tree_of_knowledge_frontend/analyse_simulation.html', {'simulation_model':simulation_model})
 
 
 
@@ -1037,9 +1108,9 @@ def backup_database(request):
 
 
 def test_page1(request):
-    # bla = list(Rule.objects.all().values())
-    # return HttpResponse(json.dumps(bla))
-    return render(request, 'tree_of_knowledge_frontend/test_page1.html')
+    bla = list(Simulation_model.objects.filter(id=23).values())
+    return HttpResponse(bla)
+    # return render(request, 'tree_of_knowledge_frontend/test_page1.html')
 
 
 
@@ -1052,16 +1123,11 @@ def test_page2(request):
 
 
 def test_page3(request):
-    name = "Test Rule 1"
-    attribute_id = 24
-    number_of_times_used = 0
-    used_attribute_ids = "[24, 28]"
-    used_attribute_names = '["Population", "Population growth (%)"]'
-    rule = '[Population] + [Population growth (%)] * [delta_t] / 31536000'
+    simulation_model = Simulation_model.objects.get(id=37)
+    
+    # rule_record.test()
+    # rule_record_values = list(Rule.objects.all().values())
 
-    rule_record = Rule(name=name, attribute_id=attribute_id, number_of_times_used=number_of_times_used, used_attribute_ids=used_attribute_ids, used_attribute_names=used_attribute_names, rule=rule)
-    rule_record.save()
-
-    return HttpResponse("success")
+    return HttpResponse(simulation_model.objects_dict)
 
     
