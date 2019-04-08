@@ -1043,9 +1043,11 @@ def edit_simulation(request, simulation_id):
     if request.method == 'POST':
         the_simulator = simulate.Simulation(simulation_id)
         the_simulator.run()
-        object_timelines = the_simulator.get_object_timelines()
-        object_timeline_dicts = {key:value.to_dict('list') for (key,value) in object_timelines.items()}
-        simulation_model.object_timelines = json.dumps(object_timeline_dicts)
+        timeline_visualisation_data = the_simulator.get_timeline_visualisation_data()
+        # print('************************************************************')
+        # print(str(timeline_visualisation_data))
+        # print('************************************************************')
+        simulation_model.timeline_visualisation_data = json.dumps(timeline_visualisation_data)
         simulation_model.save()
         return redirect('analyse_simulation', simulation_id=simulation_id)
 
@@ -1108,16 +1110,19 @@ def backup_database(request):
 
 
 def test_page1(request):
-    bla = list(Simulation_model.objects.filter(id=23).values())
-    return HttpResponse(bla)
-    # return render(request, 'tree_of_knowledge_frontend/test_page1.html')
+    return render(request, 'tree_of_knowledge_frontend/test_page1.html')
 
 
 
 def test_page2(request):
-    # Rule.objects.all().delete()
-    # return HttpResponse("success")
+    path = "collection/static/webservice files/db_backup/attributes/"
+    backup_files = os.listdir(path)
+    with open(path + backup_files[-1], "r") as backup_file:
+        lines = backup_file.readlines()
+
+    attributes = json.loads(lines[0])
     return render(request, 'tree_of_knowledge_frontend/test_page2.html')
+    # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
 
     
 

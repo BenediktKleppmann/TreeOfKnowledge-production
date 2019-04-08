@@ -1,67 +1,87 @@
-{% extends 'layouts/base_tool.html' %}
 {% load staticfiles %}
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <!--<meta content="IE=edge" http-equiv="X-UA-Compatible">-->
+  <!--<meta content="width=device-width, initial-scale=1" name="viewport">-->
+  <title>Human Resource Chart</title>
+  <!--<link href="https://playground.anychart.com/gallery/Gantt_General_Features/Resource_Gantt_Chart_with_Adaptive_Labels_Format/iframe" rel="canonical">-->
+  <!--<meta content="AJAX Chart,Chart from JSON,Gantt Chart,Gantt Resource Chart,JSON Chart,JSON Plot,Project Management" name="keywords">-->
+  <!--<meta content="AnyChart - JavaScript Charts designed to be embedded and integrated" name="description">-->
+  <!--[if lt IE 9]>
+<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+<![endif]-->
+  <link href="https://cdn.anychart.com/releases/v8/css/anychart-ui.min.css?hcode=be5162d915534272a57d0bb781d27f2b" rel="stylesheet" type="text/css">
+  <link href="https://cdn.anychart.com/releases/v8/fonts/css/anychart-font.min.css?hcode=be5162d915534272a57d0bb781d27f2b" rel="stylesheet" type="text/css">
+  <style>html, body, #container {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}</style>
+ </head>
+ <body>
+  <div id="container"></div>
+  <script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+  <script src="https://cdn.anychart.com/releases/v8/js/anychart-ui.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+  <script src="https://cdn.anychart.com/releases/v8/js/anychart-exports.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+  <script src="https://cdn.anychart.com/releases/v8/js/anychart-gantt.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+  <script src="https://cdn.anychart.com/releases/v8/js/anychart-data-adapter.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+  <script type="text/javascript">anychart.onDocumentReady(function () {
 
-{% block title %}
-	Tree of Knowledge - Main Menu
-{% endblock %}
+    anychart.data.loadJsonFile('{% static "webservice files/anychart_test_data.json" %}', function (data) {
+        // create data tree
+        var treeData = anychart.data.tree(data, 'as-table');
 
-{% block additionalcss %}
-	<script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script> 
-	<script type="text/javascript" src="{% static 'js/jquery.highlight-within-textarea.js' %}"></script>
-	<link rel="stylesheet" href="{% static 'css/jquery.highlight-within-textarea.css' %}">
-	
-			<style>
-			.hwt-content mark.color0 { background-color:rgb(96, 143, 202);}
-			.hwt-content mark.color1 { background-color:rgb(49, 148, 76);}
-			.hwt-content mark.color2 { background-color:rgb(147, 116, 209);}
-			.hwt-content mark.color3 { background-color:rgb(200, 91, 103);}
-			.hwt-content mark.color4 { background-color:rgb(198, 201, 92);}
-			.hwt-content mark.color5 { background-color:rgb(184, 61, 161);}
-			.hwt-content mark.color6 { background-color:rgb(190, 136, 63);}
-			.hwt-content mark.color7 { background-color:rgb(125, 195, 75);}
-			.hwt-content mark.color8 { background-color:rgb(193, 72, 69);}
-			.hwt-content mark.color9 { background-color:rgb(169, 99, 56);}
-			.hwt-content mark.color10 { background-color:rgb(129, 213, 170);}
-			.hwt-content mark.color11 { background-color:rgb(73, 106, 194);}
-			.hwt-content mark.color12 { background-color:rgb(154, 51, 135);}
+        // create resource gantt chart
+        var chart = anychart.ganttResource();
 
-		</style>
-{% endblock %}
+        // set data for the chart
+        chart.data(treeData);
 
-{% block content %}
+        chart.rowSelectedFill('#D4DFE8')
+                .rowHoverFill('#EAEFF3')
+                // set start splitter position settings
+                .splitterPosition(150);
 
-	<div class="form">
-		<div class="form-group">
-			<label class="control-label" for="rule-text">Rule</label>
-			<textarea cols="20" rows="3" class="form-control" id="rule-text">This is some example text. bla bla bla.</textarea>
-		</div>
-	</div>
-	
-	<div class="form">
-		<div class="form-group">
-			<label class="control-label" for="rule-text2">Rule</label>
-			<textarea cols="20" rows="3" class="form-control" id="rule-text2">Potato potato tomato potato.</textarea>
-		</div>
-	</div>
-		
+        // get chart data grid link to set column settings
+        var dataGrid = chart.dataGrid();
 
-<script>
-	highlighted_words = [
-        {
-            highlight: 'bla',
-            className: 'color0'
-        },
-        {
-            highlight: 'This',
-            className: 'color1'
-        }
-    ]
-	$("#rule-text").highlightWithinTextarea({highlight:highlighted_words});
-	//$("#rule-text").highlightWithinTextarea({highlight:'This', className: 'blue'});
-	
-	$('#rule-text2').highlightWithinTextarea({
-					highlight: 'potato'
-				});
-</script>		
-		
-{% endblock %}
+        // set first column settings
+        dataGrid.column(0)
+                .title('#')
+                .width(30)
+                .labels({hAlign: 'center'});
+
+        // set second column settings
+        dataGrid.column(1)
+                .title('Person')
+                .width(120);
+
+        var tl = chart.getTimeline();
+        // set base stroke
+        tl.elements().stroke('0.5 black');
+        // set base labels settings
+        tl.elements().labels()
+                .enabled(true)
+                .fontColor('#fff')
+                // format labels
+                .format(function () {
+					var name = this.period.periodCustomName || ''; 
+					return name;
+                });
+
+        // set container id for the chart
+        chart.container('container');
+
+        // initiate chart drawing
+        chart.draw();
+
+        // zoom chart to specified date
+        chart.zoomTo(1191168000000, 1201795200000);
+    });
+});</script>
+ </body>
+</html>

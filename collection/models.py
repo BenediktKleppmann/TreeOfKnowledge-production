@@ -171,7 +171,7 @@ class Simulation_model(models.Model):
     simulation_start_time = models.IntegerField()
     simulation_end_time = models.IntegerField()
     timestep_size = models.IntegerField(null=True)
-    object_timelines = models.TextField(null=True)
+    timeline_visualisation_data = models.TextField(null=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
     created = models.DateTimeField(editable=False)
     updated = models.DateTimeField(editable=False)
