@@ -150,21 +150,27 @@ def get_data_from_random_object(object_type_id, filter_facts, specified_start_ti
 
 
     if broad_table_df is not None:
+
         broad_table_df.index = range(len(broad_table_df))
-        random_index = random.choice(list(broad_table_df.index))
-        object_record = broad_table_df.iloc[random_index]
+        found_object_ids = list(broad_table_df['object_id'])
+        chosen_object_id = random.choice(found_object_ids)
+        object_record = broad_table_df[broad_table_df['object_id'] == chosen_object_id ]
 
         attribute_values = {}
-        attribute_ids = [int(col) for col in object_record.index if col not in ['object_id','time']]
+        attribute_ids = [int(col) for col in object_record.columns if col not in ['object_id','time']]
 
         for attribute_id in attribute_ids:
             attribute_record = Attribute.objects.get(id=attribute_id)
             attribute_values[attribute_id] = {'attribute_value': broad_table_df[str(attribute_id)].iloc[0], 'attribute_name':attribute_record.name, 'attribute_data_type':attribute_record.data_type, 'attribute_rule': None}
 
     else: 
+        chosen_object_id = None
         attribute_values = {}
-    
-    return attribute_values
+
+    # print('### 1 #############################################')
+    # print(chosen_object_id)
+    # print('################################################')
+    return (chosen_object_id, attribute_values)
 
 
 
@@ -267,3 +273,50 @@ def filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start
     broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
     
     return broad_table_df
+
+
+
+def get_objects_true_timeline(object_id, simulated_timeline_df):
+
+    true_timeline_df = simulated_timeline_df.copy()
+    error_timeline_df = simulated_timeline_df.copy()
+    attribute_ids = [column for column in list(simulated_timeline_df.columns) if column not in ['start_time','end_time']]
+    attribute_data_types = {}
+    for attribute_id in attribute_ids:
+        attribute_data_types[attribute_id] = Attribute.objects.get(id=attribute_id).data_type
+        true_timeline_df[attribute_id] = np.nan
+        error_timeline_df[attribute_id] = np.nan
+
+    for index, row in true_timeline_df.iterrows():
+
+        if index == 0:
+            true_timeline_df.loc[index, attribute_id] = simulated_timeline_df.loc[index, attribute_id] 
+            error_timeline_df.loc[index, attribute_id] = 0
+
+        else:
+            for attribute_id in attribute_ids:
+                true_datapoint = Data_point.objects.filter(object_id=object_id, 
+                                                            attribute_id=attribute_id, 
+                                                            valid_time_start__lte=row['start_time'], 
+                                                            valid_time_end__gt=row['start_time']).order_by('-data_quality', '-valid_time_start').first()
+
+                simulated_value = simulated_timeline_df.loc[index, attribute_id]
+
+                if attribute_data_types[attribute_id]=='string':
+                    true_timeline_df.loc[index, attribute_id] = true_datapoint.string_value
+                    error_timeline_df.loc[index, attribute_id] = 1 if true_datapoint.string_value.lower() == simulated_value.lower() else 0
+
+                elif attribute_data_types[attribute_id] in ['real', 'int']:
+                    true_timeline_df.loc[index, attribute_id] = true_datapoint.numeric_value
+                    true_increase = true_timeline_df.loc[index, attribute_id] - true_timeline_df.loc[index-1, attribute_id]
+                    simulated_increase = simulated_timeline_df.loc[index, attribute_id] - simulated_timeline_df.loc[index-1, attribute_id]
+                    error_value = abs(simulated_increase - true_increase) / true_increase
+                    error_timeline_df.loc[index, attribute_id] = min(error_value, 1)
+
+                elif attribute_data_types[attribute_id] == 'boolean':
+                    true_timeline_df.loc[index, attribute_id] = true_datapoint.boolean_value
+                    error_timeline_df.loc[index, attribute_id] = 1 if true_datapoint.boolean_value == simulated_value else 0
+
+    return (true_timeline_df, error_timeline_df)
+
+

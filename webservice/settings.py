@@ -139,7 +139,8 @@ DEFAULT_FROM_EMAIL = 'Tree of Knowledge Team <noreply@treeofknowledge.ai>'
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'BenediktKleppmann'
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_PASSWORD = 'ACUp77vppoh4wHhUICeT'
 EMAIL_USE_TLS = False
 # EMAIL_USE_SSL = True
 

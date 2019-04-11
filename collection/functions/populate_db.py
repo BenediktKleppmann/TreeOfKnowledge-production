@@ -1,4 +1,4 @@
-from collection.models import Object_types, Attribute
+from collection.models import Object_types, Attribute, Data_point
 import json
 import datetime
 import os
@@ -108,3 +108,21 @@ def backup_attributes():
         file.write(json.dumps(result_list))
     return True
 
+
+# ===========================================================================
+# Clean Data ================================================================
+# ===========================================================================
+def remove_datapoints_with_the_wrong_datatype():
+    numeric_attribute_ids = list(Attribute.objects.filter(data_type__in=['real', 'int']).values_list('id', flat=True))
+    numeric_violating_datapoints = Data_point.objects.filter(attribute_id__in=numeric_attribute_ids).filter(numeric_value__isnull=True)
+    numeric_violating_datapoints.delete()
+
+    boolean_attribute_ids = list(Attribute.objects.filter(data_type='boolean').values_list('id', flat=True))
+    boolean_violating_datapoints = Data_point.objects.filter(attribute_id__in=boolean_attribute_ids).filter(boolean_value__isnull=True)
+    boolean_violating_datapoints.delete()
+
+    string_attribute_ids = list(Attribute.objects.filter(data_type='string').values_list('id', flat=True))
+    string_violating_datapoints = Data_point.objects.filter(attribute_id__in=string_attribute_ids).filter(string_value__isnull=True)
+    string_violating_datapoints.delete()
+
+    return 'success'

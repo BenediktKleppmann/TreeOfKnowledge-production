@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block content %}
-		<div id="container" style="width: 500px; height: 400px;"></div>
+		<div id="container" style="width: 100%; height: 400px;"></div>
 
 		{% include "tree_of_knowledge_frontend/includes/instruction_video_modal.html" with url="https://www.youtube-nocookie.com/embed/ZVlZMOB-Sq0" %} 
 		
@@ -34,48 +34,74 @@
 
 <script type="text/javascript">	
 	anychart.onDocumentReady(function () {
-		//anychart.data.loadJsonFile('{% static "webservice files/anychart_test_data.json" %}', function (data) {
-			// create data tree
-			var treeData = anychart.data.tree(timeline_visualisation_data, 'as-table');
 
-			// create resource gantt chart
+			// setup
 			var chart = anychart.ganttResource();
-
-			// set data for the chart
+			var treeData = anychart.data.tree(timeline_visualisation_data, 'as-table');
 			chart.data(treeData);
 
-			chart.rowSelectedFill('#D4DFE8')
-					.rowHoverFill('#EAEFF3')
-					// set start splitter position settings
-					.splitterPosition(150);
 
-			// get chart data grid link to set column settings
+			// Left Columns --------------------------------------------------------
 			var dataGrid = chart.dataGrid();
-
-			// set first column settings
 			dataGrid.column(0)
 					.title('#')
 					.width(30)
 					.labels({hAlign: 'center'});
 
-			// set second column settings
 			dataGrid.column(1)
-					.title('Person')
-					.width(120);
+					.title('Object Attributes')
+					.width(230);
+					
 
+			//hover text
+			var dgTooltip = dataGrid.tooltip();
+			dgTooltip.titleFormat(function () {
+				return this['name'];
+			});
+
+			dgTooltip.format(function () {
+				var average_error = this['maxPeriodDate'];
+				return average_error ? 'Average error: ' + average_error : '';
+			});
+
+
+
+			// Right Rows  --------------------------------------------------------
+			chart.rowSelectedFill('#D4DFE8')
+				 .rowHoverFill('#EAEFF3')
+				 .splitterPosition(150); // set start splitter position settings
+			
+			//period boxes
 			var tl = chart.getTimeline();
-			// set base stroke
 			tl.elements().stroke('0.5 black');
-			// set base labels settings
 			tl.elements().labels()
 					.enabled(true)
 					.fontColor('#fff')
-					// format labels
 					.format(function () {
 						var name = this.period.periodCustomName || ''; 
 						return name;
 					});
 
+
+
+			//hover text
+			var timeline = chart.getTimeline();
+			var tlTooltip = timeline.tooltip();
+			tlTooltip.format(function () {
+				var hoveredPeriod = this['period'];
+
+				if (hoveredPeriod) {
+				
+					// Getting period object's fields.
+					var simulated_value = hoveredPeriod['periodCustomName'];
+					var true_value = hoveredPeriod['trueValue'];
+					var error = hoveredPeriod['error'];
+
+					return 'Simulated Value: ' + simulated_value + '\nTrue Value: ' + true_value + '\nError: ' + error;
+				}
+			});
+		
+		
 			// set container id for the chart
 			chart.container('container');
 
@@ -83,7 +109,8 @@
 			chart.draw();
 
 			// zoom chart to specified date
-			chart.zoomTo(1191168000000, 1201795200000);
+			chart.fitAll();
+			//chart.zoomTo(1191168000000, 1201795200000);
 		//});
 	});
 </script>

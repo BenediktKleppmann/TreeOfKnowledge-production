@@ -455,8 +455,8 @@ def get_data_from_random_object(request):
     specified_start_time = request_body['specified_start_time']
     specified_end_time = request_body['specified_end_time']
 
-    attribute_values = query_datapoints.get_data_from_random_object(object_type_id, filter_facts, specified_start_time, specified_end_time)
-    response = {'object_number':object_number, 'attribute_values':attribute_values}
+    (object_id, attribute_values) = query_datapoints.get_data_from_random_object(object_type_id, filter_facts, specified_start_time, specified_end_time)
+    response = {'object_number':object_number, 'object_id':object_id, 'attribute_values':attribute_values}
     return HttpResponse(json.dumps(response))
 
 
@@ -1029,7 +1029,8 @@ def edit_simulation_new(request):
                                         number_of_additional_object_facts=2,
                                         simulation_start_time=946684800, 
                                         simulation_end_time=1577836800, 
-                                        timestep_size=31536000)
+                                        timestep_size=31536000,
+                                        runtime_value_correction=False)
     simulation_model.save()
     new_simulation_id = simulation_model.id
     return redirect('edit_simulation', simulation_id=new_simulation_id)
@@ -1128,11 +1129,11 @@ def test_page2(request):
 
 
 def test_page3(request):
-    simulation_model = Simulation_model.objects.get(id=37)
+    response_message = populate_db.remove_datapoints_with_the_wrong_datatype()
     
     # rule_record.test()
     # rule_record_values = list(Rule.objects.all().values())
 
-    return HttpResponse(simulation_model.objects_dict)
+    return HttpResponse(response_message)
 
     

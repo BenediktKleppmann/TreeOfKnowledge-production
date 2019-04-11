@@ -8,7 +8,6 @@ import hashlib
 import traceback
 
 
-
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     verbose = models.BooleanField(default=True)
@@ -146,7 +145,8 @@ class Rule(models.Model):
 
         to_be_executed_code = to_be_executed_code.replace('delta_t', str(timestep_size))
         for attribute_id in input_values.keys():
-            to_be_executed_code = to_be_executed_code.replace('attr' + str(attribute_id), str(input_values[attribute_id]))
+            search_term = attribute_id.replace('simulated_','attr')
+            to_be_executed_code = to_be_executed_code.replace(search_term, str(input_values[attribute_id]))
 
         try:
             print("<><><><><><><><><><><><><<><><><><><><>")
@@ -168,6 +168,7 @@ class Simulation_model(models.Model):
     object_type_counts = models.TextField()
     total_object_count= models.IntegerField()
     number_of_additional_object_facts = models.IntegerField()
+    runtime_value_correction = models.BooleanField()
     simulation_start_time = models.IntegerField()
     simulation_end_time = models.IntegerField()
     timestep_size = models.IntegerField(null=True)
