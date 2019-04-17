@@ -128,8 +128,8 @@ def upload_data1_new(request):
                 else:
                     return redirect('upload_data1', upload_id=upload_id)
 
-        # return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
-        return redirect('upload_data1', upload_id=upload_id, errors=errors)
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+        # return redirect('upload_data1', upload_id=upload_id, errors=errors)
     else:
         return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
 
@@ -683,6 +683,7 @@ def save_changed_simulation(request):
             model_record.simulation_end_time = request_body['simulation_end_time']
             model_record.timestep_size = request_body['timestep_size']
             model_record.save()
+
             return HttpResponse("success")
         except Exception as error:
             traceback.print_exc()
@@ -1029,8 +1030,7 @@ def edit_simulation_new(request):
                                         number_of_additional_object_facts=2,
                                         simulation_start_time=946684800, 
                                         simulation_end_time=1577836800, 
-                                        timestep_size=31536000,
-                                        runtime_value_correction=False)
+                                        timestep_size=31536000)
     simulation_model.save()
     new_simulation_id = simulation_model.id
     return redirect('edit_simulation', simulation_id=new_simulation_id)
@@ -1044,12 +1044,16 @@ def edit_simulation(request, simulation_id):
     if request.method == 'POST':
         the_simulator = simulate.Simulation(simulation_id)
         the_simulator.run()
+
+        # save simulation results in simulation object
         timeline_visualisation_data = the_simulator.get_timeline_visualisation_data()
-        # print('************************************************************')
-        # print(str(timeline_visualisation_data))
-        # print('************************************************************')
         simulation_model.timeline_visualisation_data = json.dumps(timeline_visualisation_data)
+        linegraph_data = the_simulator.get_linegraph_data()
+        simulation_model.linegraph_data = json.dumps(linegraph_data)
+        attribute_errors = the_simulator.get_attribute_errors()
+        simulation_model.attribute_errors = json.dumps(attribute_errors)
         simulation_model.save()
+
         return redirect('analyse_simulation', simulation_id=simulation_id)
 
     
@@ -1062,6 +1066,22 @@ def edit_simulation(request, simulation_id):
 @login_required
 def analyse_simulation(request, simulation_id):
     simulation_model = Simulation_model.objects.get(id=simulation_id)
+
+    if request.method == 'POST':
+        the_simulator = simulate.Simulation(simulation_id)
+        the_simulator.run()
+
+        # save simulation results in simulation object
+        timeline_visualisation_data = the_simulator.get_timeline_visualisation_data()
+        simulation_model.timeline_visualisation_data = json.dumps(timeline_visualisation_data)
+        linegraph_data = the_simulator.get_linegraph_data()
+        simulation_model.linegraph_data = json.dumps(linegraph_data)
+        attribute_errors = the_simulator.get_attribute_errors()
+        simulation_model.attribute_errors = json.dumps(attribute_errors)
+        simulation_model.save()
+
+        return redirect('analyse_simulation', simulation_id=simulation_id)
+
     return render(request, 'tree_of_knowledge_frontend/analyse_simulation.html', {'simulation_model':simulation_model})
 
 
@@ -1116,21 +1136,16 @@ def test_page1(request):
 
 
 def test_page2(request):
-    path = "collection/static/webservice files/db_backup/attributes/"
-    backup_files = os.listdir(path)
-    with open(path + backup_files[-1], "r") as backup_file:
-        lines = backup_file.readlines()
-
-    attributes = json.loads(lines[0])
-    return render(request, 'tree_of_knowledge_frontend/test_page2.html')
+    populate_db.remove_duplicates()
+    return HttpResponse('success')
     # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
 
     
 
 
 def test_page3(request):
-    response_message = populate_db.remove_datapoints_with_the_wrong_datatype()
-    
+    response_message = list(Data_point.objects.filter(attribute_id=24, object_id=4489).values())
+    bla = pd.DataFrame(response_message)
     # rule_record.test()
     # rule_record_values = list(Rule.objects.all().values())
 

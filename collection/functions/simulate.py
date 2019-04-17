@@ -5,6 +5,7 @@ import numpy as np
 from colour import Color
 from collection.functions import query_datapoints
 from math import log
+from collection.functions.generally_useful_functions import unix_timestamp_to_string
 
 
 # called from edit_model.html
@@ -18,15 +19,19 @@ class Simulation:
     rules = {}
     simulation_start_time = 946684800
     simulation_end_time = 1577836800
-    timestep_size = 31557600
+    timestep_size = 31622400
+
     objects_dict = {}
     runtime_value_correction = False
+    attribute_errors = {}
+    timeline_visualisation_data = []
+    linegraph_data = {}
 
 
 
     def __init__(self, simulation_id):
-        red = Color("green")
-        color_objects = list(red.range_to(Color("red"),1001))
+        green = Color("#14AA09")
+        color_objects = list(green.range_to(Color("#D5350B"),1001))
         self.colors = [color.hex for color in color_objects]
 
 
@@ -52,8 +57,6 @@ class Simulation:
 
                 attribute_record = Attribute.objects.get(id=attribute_id)
                 self.attribute_information[attribute_id] = {'data_type': Attribute.objects.get(id=attribute_id).data_type,
-                                                            'last_true_value':  attribute_value,
-                                                            'last_true_timestep': 0,
                                                             'valid_periods_per_timestep': attribute_record.expected_valid_period/self.timestep_size}
 
                 if attribute_id in self.objects_dict[str(object_number)]['object_rules']:
@@ -73,6 +76,8 @@ class Simulation:
         times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
         for timestep_number, time in enumerate(times):
             self.run_timestep(timestep_number, time)
+
+        self.__prepare_response_data()
 
 
 
@@ -96,6 +101,8 @@ class Simulation:
                     rule = self.rules[object_number][attribute_id]['rule']
                     used_attributes = ['simulated_' + str(attr) for attr in self.rules[object_number][attribute_id]['used_attributes']]
                     new_row['simulated_' + str(attribute_id)] = rule.run(new_row[used_attributes].to_dict(), self.timestep_size)
+                    new_row['true_' + str(attribute_id)] = None
+                    new_row['error_' + str(attribute_id)] = None
 
 
 
@@ -107,59 +114,115 @@ class Simulation:
                                                             valid_time_start__lte=new_row['start_time'], 
                                                             valid_time_end__gt=new_row['start_time']).order_by('-data_quality', '-valid_time_start').first()               
                 if true_datapoint is not None:
+
                     if self.attribute_information[attribute_id]['data_type'] =='string':
-                        new_row['true_' + str(attribute_id)] = true_datapoint.string_value
-                        new_row['error_' + str(attribute_id)] = 1.0 if true_datapoint.string_value.lower() == simulated_value.lower() else 0.0
+                        new_row['true_' + str(attribute_id)] = true_datapoint.string_value              
                         if self.runtime_value_correction:
                             new_row['simulated_' + str(attribute_id)] = true_datapoint.string_value
+                        else:
+                            new_row['error_' + str(attribute_id)] =  0.0 if true_datapoint.string_value.lower() == simulated_value.lower() else 1.0
+
 
                     elif self.attribute_information[attribute_id]['data_type'] == 'boolean':
                         new_row['true_' + str(attribute_id)] = true_datapoint.boolean_value
-                        new_row['error_' + str(attribute_id)] = 1.0 if true_datapoint.boolean_value == simulated_value else 0.0
                         if self.runtime_value_correction:
                             new_row['simulated_' + str(attribute_id)] = true_datapoint.boolean_value
+                        else: 
+                            new_row['error_' + str(attribute_id)] = 0.0 if true_datapoint.boolean_value == simulated_value else 1.0
+
+
 
                     elif self.attribute_information[attribute_id]['data_type'] in ['real', 'int']:
-                        last_true_value = self.attribute_information[attribute_id]['last_true_value'] 
-                        last_true_timestep = self.attribute_information[attribute_id]['last_true_timestep'] 
-
-
-                        true_increase_percentage = (true_datapoint.numeric_value - last_true_value)/last_true_value
-                        simulated_increase_percentage = (simulated_value - last_true_value)/last_true_value
-                        print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
-                        print(last_true_value)
-                        print(log(last_true_value, 10))
-                        print(log(last_true_value, 10)-1)
-                        print((log(last_true_value, 10)-1)/2)
-                        print(2**((log(last_true_value, 10)-1)/2))
-                        print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
-                        penalty_factor = (2**((log(last_true_value, 10)-1)/2))*10
-                        time_adjustment_factor = self.attribute_information[attribute_id]['valid_periods_per_timestep']*(timestep_number - last_true_timestep)
-                        error_value = min(abs(true_increase_percentage - simulated_increase_percentage)*time_adjustment_factor*penalty_factor, 1.)
-                        
-                        new_row['true_' + str(attribute_id)] = true_datapoint.numeric_value
-                        new_row['error_' + str(attribute_id)] = error_value
+                        true_value = true_datapoint.numeric_value
+                        new_row['true_' + str(attribute_id)] = true_value
                         if self.runtime_value_correction:
-                            new_row['simulated_' + str(attribute_id)] = true_datapoint.boolean_value
+                            new_row['simulated_' + str(attribute_id)] = true_value
+                        else:
+                            new_row['error_' + str(attribute_id)] = min(abs(simulated_value - true_value)*3/abs(true_value), 1.0)
+                            
 
-                        timeline_df.loc[(last_true_timestep+1):timestep_number, 'error_' + str(attribute_id)] = error_value
+                    
 
-                        last_true_value = true_datapoint.numeric_value
-                        last_true_timestep = timestep_number
+
+
+
 
             
             timeline_df = timeline_df.append(new_row)
 
-
-            # print("=======================================================")
-            # print("=======================================================")
-            # print(str(timeline_df[['start_time','end_time','24']]))
-            # print("=======================================================")
-            # print("=======================================================")
-
             self.object_timelines[object_number] = timeline_df
 
 
+
+    # ==========================================================================================
+    #  Prepare Response-Data
+    # ==========================================================================================
+
+    def __prepare_response_data(self):
+
+        self.timeline_visualisation_data = []
+        for object_number in self.object_numbers:
+            timeline_df = self.object_timelines[object_number]
+
+            self.timeline_visualisation_data.append({"id": str(object_number), 
+                                                "name": self.objects_dict[str(object_number)]['object_name']})
+            self.linegraph_data[object_number] = {}
+
+            attribute_ids = self.objects_dict[str(object_number)]['object_attributes'].keys()
+            for attribute_id in attribute_ids:
+
+                if len(timeline_df[timeline_df['error_' + str(attribute_id)].notnull()]) > 0:
+                    self.attribute_errors[attribute_id] = timeline_df['error_' + str(attribute_id)].mean()
+
+
+                attribute_timeline_dict = {  "id": str(object_number) + '_' + str(attribute_id),
+                                             "name": self.objects_dict[str(object_number)]['object_attributes'][str(attribute_id)]['attribute_name'],
+                                             "object_number": object_number,
+                                             "parent": str(object_number)}
+                
+                linegraph_attribute_data = []
+                periods = []
+                for period_number in timeline_df.index:
+
+                    simulated_value = timeline_df.loc[period_number, 'simulated_' + str(attribute_id)] 
+                    if simulated_value is not None:
+
+                        # this is a silly hack, because int is turned into int64 in dataframes, but int64 can't be json-ified
+                        if isinstance(simulated_value, np.int64):
+                            simulated_value = int(simulated_value)
+
+                        start_time = int(timeline_df.loc[period_number,'start_time'])
+                        end_time = int(timeline_df.loc[period_number,'end_time'])
+                        true_value = timeline_df.loc[period_number, 'true_' + str(attribute_id)]
+                        error_value = timeline_df.loc[period_number, 'error_' + str(attribute_id)]
+
+                        if error_value is None:
+                            fill_color = '#e2e0e0'
+                        else:
+                            fill_color = self.colors[int(timeline_df.loc[period_number,'error_' + str(attribute_id)]*1000)] 
+
+
+                        period_dict = { "id": str(object_number) + '_' + str(attribute_id) + '_' + str(period_number) ,
+                                        "start": start_time*1000,
+                                        "end": end_time*1000,
+                                        "periodCustomName": str(simulated_value),   
+                                        "trueValue": true_value,   
+                                        "error": error_value,
+                                        "fill": fill_color}
+                        periods.append(period_dict)
+
+                        linegraph_attribute_row = [unix_timestamp_to_string(start_time, self.timestep_size), simulated_value, true_value]
+                        linegraph_attribute_data.append(linegraph_attribute_row)
+
+                attribute_timeline_dict["periods"] = periods
+                self.timeline_visualisation_data.append(attribute_timeline_dict)
+                self.linegraph_data[object_number][attribute_id] = linegraph_attribute_data
+        
+        print('44444444444444444444444444444444444444444444444444444444444444444')
+        print(self.attribute_errors)
+        print('44444444444444444444444444444444444444444444444444444444444444444')
+
+        return self.timeline_visualisation_data
 
 
 
@@ -174,47 +237,15 @@ class Simulation:
         return object_timeline_dicts
 
     def get_timeline_visualisation_data(self):
-        timeline_visualisation_data = []
-        for object_number in self.object_numbers:
-            timeline_df = self.object_timelines[object_number]
+        return self.timeline_visualisation_data
 
-            timeline_visualisation_data.append({"id": str(object_number), 
-                                                "name": self.objects_dict[str(object_number)]['object_name']})
+    def get_linegraph_data(self):
+        return self.linegraph_data
 
-            attribute_ids = self.objects_dict[str(object_number)]['object_attributes'].keys()
-            for attribute_id in attribute_ids:
-                attribute_timeline_dict = {  "id": str(object_number) + '_' + str(attribute_id),
-                                             "name": self.objects_dict[str(object_number)]['object_attributes'][str(attribute_id)]['attribute_name'],
-                                             "averageError": timeline_df['error_' + str(attribute_id)].mean(),
-                                             "parent": str(object_number)}
+    def get_attribute_errors(self):
+        return self.attribute_errors
 
-                periods = []
-                for period_number in timeline_df.index:
-
-                    # print('88888888888888888888888888888888888888888888888888888888')
-                    # print(period_number)
-                    # print('simulated_' + str(attribute_id))
-                    # print()
-                    # print('88888888888888888888888888888888888888888888888888888888')
-                    simulated_value = timeline_df.loc[period_number, 'simulated_' + str(attribute_id)] 
-                    if simulated_value is not None:
-                        period_dict = { "id": str(object_number) + '_' + str(attribute_id) + '_' + str(period_number) ,
-                                        "start": int(timeline_df.loc[period_number,'start_time'])*1000,
-                                        "end": int(timeline_df.loc[period_number,'end_time'])*1000,
-                                        "periodCustomName": str(simulated_value),   
-                                        "trueValue": timeline_df.loc[period_number, 'true_' + str(attribute_id)],   
-                                        "error": timeline_df.loc[period_number, 'error_' + str(attribute_id)],
-                                        "fill": self.colors[int(timeline_df.loc[period_number,'error_' + str(attribute_id)]*1000)] }
-                        periods.append(period_dict)
-
-                attribute_timeline_dict["periods"] = periods
-                timeline_visualisation_data.append(attribute_timeline_dict)
-                
-        return timeline_visualisation_data
-
-
-
-
+   
 
 
 

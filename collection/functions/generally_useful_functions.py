@@ -1,4 +1,4 @@
-
+from datetime import datetime
 
 def intersections(row):
     """
@@ -32,4 +32,20 @@ def intersections(row):
         ri += 1
 
     return ranges
+
+
+
+def unix_timestamp_to_string(unix_timestamp, timestep_size):
+    
+    if unix_timestamp >= 31535998:
+        return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y')
+    elif unix_timestamp >= 2419198:
+        return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m')
+    elif unix_timestamp >= 86398:
+        return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d')
+    elif unix_timestamp >= 58:
+        return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M')
+    else:
+        return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M:%S')
+
 

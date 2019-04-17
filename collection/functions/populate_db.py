@@ -2,6 +2,7 @@ from collection.models import Object_types, Attribute, Data_point
 import json
 import datetime
 import os
+from django.db.models import Count, Max
 
 
 
@@ -126,3 +127,22 @@ def remove_datapoints_with_the_wrong_datatype():
     string_violating_datapoints.delete()
 
     return 'success'
+
+
+def remove_duplicates():
+    unique_fields = ['object_id', 'attribute_id', 'value_as_string', 'numeric_value', 'string_value', 'boolean_value', 'valid_time_start', 'valid_time_end', 'data_quality']
+
+    duplicates = (
+        Data_point.objects.values(*unique_fields)
+        .order_by()
+        .annotate(max_id=Max('id'), count_id=Count('id'))
+        .filter(count_id__gt=1)
+    )
+
+    for duplicate in duplicates:
+        (
+            Data_point.objects
+            .filter(**{x: duplicate[x] for x in unique_fields})
+            .exclude(id=duplicate['max_id'])
+            .delete()
+    )

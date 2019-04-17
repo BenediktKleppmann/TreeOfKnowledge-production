@@ -221,8 +221,7 @@ def perform_uploading(uploaded_dataset, request):
                                         number_of_additional_object_facts=2,
                                         simulation_start_time=946684800, 
                                         simulation_end_time=1577836800, 
-                                        timestep_size=31536000,
-                                        runtime_value_correction=False)
+                                        timestep_size=31536000)
     simulation_model.save()
     new_model_id = simulation_model.id
 

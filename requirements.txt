@@ -5,6 +5,7 @@ chardet==3.0.4
 colour==0.1.5
 conda==4.5.12
 cryptography==2.4.2
+cycler==0.10.0
 DateTime==4.3
 dj-database-url==0.5.0
 Django==2.0.8
@@ -12,6 +13,8 @@ django-bootstrap3==11.0.0
 django-registration-redux==2.5
 hellowebapp-deploy==1.0.2
 idna==2.8
+kiwisolver==1.0.1
+matplotlib==3.0.3
 menuinst==1.4.14
 numpy==1.15.4
 pandas==0.23.4
@@ -19,6 +22,7 @@ psycopg2==2.7.5
 pycosat==0.6.3
 pycparser==2.19
 pyOpenSSL==18.0.0
+pyparsing==2.4.0
 PySocks==1.6.8
 python-dateutil==2.7.5
 python-decouple==3.1
@@ -26,6 +30,8 @@ pytz==2018.6
 pywin32==223
 requests==2.21.0
 ruamel-yaml==0.15.46
+scipy==1.2.1
+seaborn==0.9.0
 six==1.11.0
 tdda==1.0.13
 urllib3==1.24.1

@@ -197,6 +197,7 @@
 		background-color: rgb(252, 252, 255);
 		border-color: rgb(186, 187, 188);
 		margin-bottom: 5px;
+		padding: 3px 8px;
 	  }
 	
 	
@@ -354,7 +355,7 @@
 	var highlighted_words_dict = {};
 	
 	var delta_t_list = ['delta_t (years)', 'delta_t (months)', 'delta_t (days)', 'delta_t (hours)', 'delta_t (minutes)', 'delta_t (seconds)'];
-	var timestep_units = [31536000, 2628000, 604800, 86400, 3600, 60, 1]
+	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1]
 	
 	
 
@@ -418,8 +419,8 @@
 										'</div>' +
 										'<div class="col-sm-4">' +
 											'<select class="form-control form-control-lg" id="timestep_unit" name="timestep_unit">' +
-												'<option value=31536000 selected>years</option>' +
-												'<option value=2628000>months</option>' +
+												'<option value=31622400 selected>years</option>' +
+												'<option value=2635200>months</option>' +
 												'<option value=604800>weeks</option>' +
 												'<option value=86400>days</option>' +
 												'<option value=3600>hours</option>' +
@@ -427,9 +428,6 @@
 												'<option value=1>seconds</option>' +
 											'</select>' +
 										'</div>' +
-									'</div>' +
-									'<div class="form-group">' +
-										'<input type="checkbox" id="runtime_value_correction" {% if simulation_model.runtime_value_correction %}checked{% endif %}>&nbsp;Runtime value correction (advanced)' +
 									'</div>' +
 									'<button id="run-button" class="btn btn-success pull-right" type="button" onclick="run()">Run</button>' +
 								'</div>';
@@ -523,8 +521,7 @@
 			'number_of_additional_object_facts': number_of_additional_object_facts,
 			'simulation_start_time': simulation_start_time,
 			'simulation_end_time': simulation_end_time,
-			'timestep_size': timestep_size,
-			'runtime_value_correction': document.getElementById("runtime_value_correction").checked
+			'timestep_size': timestep_size
 		}
 		
 		var xmlhttp = new XMLHttpRequest();       
