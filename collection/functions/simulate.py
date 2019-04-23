@@ -45,15 +45,15 @@ class Simulation:
         
         for object_number in self.object_numbers:
             self.rules[object_number] = {}
-            timeline_dict = {'start_time':simulation_model_record.simulation_start_time,
+            timeline_first_timestep = {'start_time':simulation_model_record.simulation_start_time,
                              'end_time':simulation_model_record.simulation_end_time}
 
             attribute_ids = self.objects_dict[str(object_number)]['object_attributes'].keys()
             for attribute_id in attribute_ids:
                 attribute_value = self.objects_dict[str(object_number)]['object_attributes'][str(attribute_id)]['attribute_value']
-                timeline_dict['simulated_' + str(attribute_id)] = attribute_value
-                timeline_dict['true_' + str(attribute_id)] = attribute_value
-                timeline_dict['error_' + str(attribute_id)] = 0.
+                timeline_first_timestep['simulated_' + str(attribute_id)] = attribute_value
+                timeline_first_timestep['true_' + str(attribute_id)] = attribute_value
+                timeline_first_timestep['error_' + str(attribute_id)] = 0.
 
                 attribute_record = Attribute.objects.get(id=attribute_id)
                 self.attribute_information[attribute_id] = {'data_type': Attribute.objects.get(id=attribute_id).data_type,
@@ -64,7 +64,7 @@ class Simulation:
                     rule_record = Rule.objects.get(id=rule_id)
                     self.rules[object_number][attribute_id] = {'rule':rule_record, 'used_attributes':json.loads(rule_record.used_attribute_ids)}
 
-            timeline_df = pd.DataFrame(timeline_dict, index=[0])
+            timeline_df = pd.DataFrame(timeline_first_timestep, index=[0])
             self.object_timelines[object_number] = timeline_df
             
             
@@ -82,13 +82,47 @@ class Simulation:
 
 
 
+    def get_true_values():
+        for object_number in self.object_numbers:
+            timeline_df = self.object_timelines[object_number]
+
+            new_row = timeline_df.iloc[timestep_number].copy()
+            timeline_df.loc[timestep_number, 'end_time'] = time
+
+            new_row['start_time'] = time
+            new_row.name = timestep_number + 1
+
+            attribute_ids = self.objects_dict[str(object_number)]['object_attributes'].keys()
+            for attribute_id in attribute_ids:
+
+                # Look for corresponding datapoint in Knowledgebase
+
+                object_id = self.objects_dict[object_number]['object_id']
+                true_datapoint = Data_point.objects.filter( object_id=object_id, 
+                                                            attribute_id=attribute_id, 
+                                                            valid_time_start__lte=new_row['start_time'], 
+                                                            valid_time_end__gt=new_row['start_time']).order_by('-data_quality', '-valid_time_start').first()               
+                
+                if true_datapoint is not None:
+                    if self.attribute_information[attribute_id]['data_type'] =='string':
+                        new_row['true_' + str(attribute_id)] = true_datapoint.string_value              
+
+                    elif self.attribute_information[attribute_id]['data_type'] == 'boolean':
+                        new_row['true_' + str(attribute_id)] = true_datapoint.boolean_value
+
+                    elif self.attribute_information[attribute_id]['data_type'] in ['real', 'int']:
+                        new_row['true_' + str(attribute_id)] = true_datapoint.numeric_value
+  
+
+
+
     def run_timestep(self, timestep_number, time):
 
         for object_number in self.object_numbers:
             timeline_df = self.object_timelines[object_number]
 
             new_row = timeline_df.iloc[timestep_number].copy()
-            timeline_df.at[timestep_number, 'end_time'] = time
+            timeline_df.loc[timestep_number, 'end_time'] = time
 
             new_row['start_time'] = time
             new_row.name = timestep_number + 1
