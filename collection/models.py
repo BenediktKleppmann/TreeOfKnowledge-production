@@ -142,14 +142,15 @@ class Rule(models.Model):
 
     def run(self, input_values, timestep_size):
         to_be_executed_code = self.executable
-
         to_be_executed_code = to_be_executed_code.replace('delta_t', str(timestep_size))
+    
         for attribute_id in input_values.keys():
             search_term = attribute_id.replace('simulated_','attr')
             to_be_executed_code = to_be_executed_code.replace(search_term, str(input_values[attribute_id]))
 
         try:
             print("<><><><><><><><><><><><><<><><><><><><>")
+            print(input_values)
             print(to_be_executed_code)
             print("<><><><><><><><><><><><><<><><><><><><>")
             execution_results = {}
@@ -171,6 +172,7 @@ class Simulation_model(models.Model):
     simulation_start_time = models.IntegerField()
     simulation_end_time = models.IntegerField()
     timestep_size = models.IntegerField(null=True)
+    selected_attribute = models.TextField(null=True)
     timeline_visualisation_data = models.TextField(null=True)
     linegraph_data = models.TextField(null=True)
     attribute_errors = models.TextField(null=True)
@@ -183,6 +185,28 @@ class Simulation_model(models.Model):
             self.created = datetime.datetime.today()
         self.updated = datetime.datetime.today()
         super(Simulation_model, self).save()
+
+
+
+class Learned_rule(models.Model):
+    object_type_id = models.TextField()
+    object_type_name = models.TextField()
+    attribute_id = models.IntegerField()
+    attribute_name = models.TextField()
+    object_filter_facts = models.TextField()
+    specified_factors = models.TextField(null=True)
+    valid_times = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
+    created = models.DateTimeField(editable=False)
+    updated = models.DateTimeField(editable=False)
+    # is_private  = models.BooleanField(default=False)
+    def save(self):
+        if not self.id:
+            self.created = datetime.datetime.today()
+        self.updated = datetime.datetime.today()
+        super(Learned_rule, self).save()
+
+
 
 
 # class Meta_data_constaint(models.Model):

@@ -73,19 +73,19 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
 
 
     broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)   
-    print("===================================================")
-    print("===================================================")
-    print("object_ids: " + str(object_ids))
-    print("----------------")
-    print("filter_facts: " + str(filter_facts))
-    print("----------------")
-    print("specified_start_time: " + str(specified_start_time))
-    print("----------------")
-    print("specified_end_time: " + str(specified_end_time))
-    print("----------------")
-    print(str(broad_table_df))
-    print("===================================================")
-    print("===================================================")
+    # print("===================================================")
+    # print("===================================================")
+    # print("object_ids: " + str(object_ids))
+    # print("----------------")
+    # print("filter_facts: " + str(filter_facts))
+    # print("----------------")
+    # print("specified_start_time: " + str(specified_start_time))
+    # print("----------------")
+    # print("specified_end_time: " + str(specified_end_time))
+    # print("----------------")
+    # print(str(broad_table_df))
+    # print("===================================================")
+    # print("===================================================")
 
 
     # prepare response
@@ -134,21 +134,6 @@ def get_data_from_random_object(object_type_id, filter_facts, specified_start_ti
 
     broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)   
 
-    print("===================================================")
-    print("===================================================")
-    print("object_ids: " + str(object_ids))
-    print("----------------")
-    print("filter_facts: " + str(filter_facts))
-    print("----------------")
-    print("specified_start_time: " + str(specified_start_time))
-    print("----------------")
-    print("specified_end_time: " + str(specified_end_time))
-    print("----------------")
-    print(str(broad_table_df))
-    print("===================================================")
-    print("===================================================")
-
-
     if broad_table_df is not None:
 
         broad_table_df.index = range(len(broad_table_df))
@@ -167,11 +152,29 @@ def get_data_from_random_object(object_type_id, filter_facts, specified_start_ti
         chosen_object_id = None
         attribute_values = {}
 
-    # print('### 1 #############################################')
-    # print(chosen_object_id)
-    # print('################################################')
     return (chosen_object_id, attribute_values)
 
+
+
+# used in learn_rule.py (triggered by learn_rule.html)
+def get_training_data(object_type_id, filter_facts, valid_times): 
+    
+        # basic filtering: object_type and specified time range
+    child_object_types = get_from_db.get_list_of_child_objects(object_type_id)
+    child_object_ids = [el['id'] for el in child_object_types]
+
+    with connection.cursor() as cursor:
+        query_string = 'SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);' % (', '.join('"{0}"'.format(object_type_id) for object_type_id in child_object_ids))
+        cursor.execute(query_string)
+        object_ids = [entry[0] for entry in cursor.fetchall()]
+
+    broad_table_df = pd.DataFrame()
+    for valid_time in valid_times:
+        broad_table_df.append(filter_and_make_df_from_datapoints(object_ids, filter_facts, valid_time[0], valid_time[1]))
+
+    broad_table_df.drop(columns=['object_id','time'])
+    broad_table_df.columns = ['attr'+ col for col in broad_table_df.columns]
+    return broad_table_df
 
 
 

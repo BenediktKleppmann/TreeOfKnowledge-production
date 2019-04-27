@@ -1,11 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Rule
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Rule, Learned_rule
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
-from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_datapoints, simulate
+from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_datapoints, simulate, learn_rule
 from django.http import HttpResponse
 import json
 import traceback
@@ -15,6 +15,7 @@ import xlwt
 from django.utils.encoding import smart_str
 import time
 import os
+from django.views.decorators.csrf import csrf_protect, csrf_exempt, requires_csrf_token
 
 
  # ===============================================================================
@@ -682,6 +683,7 @@ def save_changed_simulation(request):
             model_record.simulation_start_time = request_body['simulation_start_time']
             model_record.simulation_end_time = request_body['simulation_end_time']
             model_record.timestep_size = request_body['timestep_size']
+            model_record.selected_attribute = request_body['selected_attribute']
             model_record.save()
 
             return HttpResponse("success")
@@ -690,6 +692,30 @@ def save_changed_simulation(request):
             return HttpResponse(str(error))
     else:
         return HttpResponse("This must be a POST request.")
+
+
+
+
+# used in: learn_rule.html
+@login_required
+def save_learned_rule(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+
+            learned_rule_record = Learned_rule.objects.get(id=request_body['learned_rule_id'])
+            learned_rule_record.object_type_id = json.dumps(request_body['object_type_id'])
+            learned_rule_record.object_filter_facts = request_body['object_filter_facts']
+            learned_rule_record.specified_factors = request_body['specified_factors']
+            learned_rule_record.save()
+
+            return HttpResponse("success")
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
 
 # ==================
 # DELETE
@@ -757,9 +783,10 @@ def delete_rule(request):
         return HttpResponse("This must be a POST request.")
 
 # ==================
-# PROCESS/EDIT
+# PROCESS
 # ==================
 
+# used in upload_data5.html
 @login_required
 def edit_column(request): 
     request_body = json.loads(request.body)
@@ -773,8 +800,6 @@ def edit_column(request):
         subset_specification = subset_specification + " and "
 
     column = request_body['edited_column']
-    # column = column.replace('"','')
-
     edited_column = column
     errors = []
 
@@ -790,10 +815,22 @@ def edit_column(request):
     response = {}
     response['errors'] = errors
     response['edited_column'] = edited_column
-    # print("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
-    # print(response['edited_column'])
-    # print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
     return HttpResponse(json.dumps(response))
+
+
+
+# used in learn_rule.html
+@login_required
+def learn_rule_from_factors(request):
+
+    learned_rule_id = int(request.GET.get('learned_rule_id', 0))
+
+    if request.method == 'POST':
+        the_rule_learniner = learn_rule.Rule_Learner(learned_rule_id)
+        response = the_rule_learniner.run()
+        return HttpResponse(response)
+
 
 
 # ==================
@@ -1068,6 +1105,7 @@ def analyse_simulation(request, simulation_id):
     simulation_model = Simulation_model.objects.get(id=simulation_id)
 
     if request.method == 'POST':
+
         the_simulator = simulate.Simulation(simulation_id)
         the_simulator.run()
 
@@ -1079,13 +1117,50 @@ def analyse_simulation(request, simulation_id):
         attribute_errors = the_simulator.get_attribute_errors()
         simulation_model.attribute_errors = json.dumps(attribute_errors)
         simulation_model.save()
-
         return redirect('analyse_simulation', simulation_id=simulation_id)
+
 
     return render(request, 'tree_of_knowledge_frontend/analyse_simulation.html', {'simulation_model':simulation_model})
 
 
+@login_required
+def setup_rule_learning(request, simulation_id):
 
+    simulation_model = Simulation_model.objects.get(id=simulation_id)
+    objects_dict = json.loads(simulation_model.objects_dict)
+   
+    object_number = int(request.POST.get('object_number', ','))
+    attribute_id = int(request.POST.get('attribute_id', ','))
+
+    valid_times = []
+    times = np.arange(simulation_model.simulation_start_time + simulation_model.timestep_size, simulation_model.simulation_end_time, simulation_model.timestep_size)
+    for index in range(len(times)-1):
+        valid_times.append([times[index], times[index + 1]])
+    
+    learned_rule = Learned_rule(object_type_id=objects_dict[str(object_number)]['object_type_id'], 
+                                object_type_name=objects_dict[str(object_number)]['object_type_name'],
+                                attribute_id=attribute_id,
+                                attribute_name=objects_dict[str(object_number)]['object_attributes'][str(attribute_id)]['attribute_name'],
+                                object_filter_facts=objects_dict[str(object_number)]['object_filter_facts'],
+                                valid_times= json.dumps(valid_times),
+                                user=request.user)
+
+    learned_rule.save()
+    learned_rule_id = learned_rule.id
+    return redirect('learn_rule', learned_rule_id=learned_rule_id)
+
+
+
+@login_required
+def learn_rule(request, learned_rule_id):
+    learned_rule = Learned_rule.objects.get(id=learned_rule_id)
+
+    available_attributes = []
+    list_of_parent_objects = get_from_db.get_list_of_parent_objects(learned_rule.object_type_id)
+    for parent_object in list_of_parent_objects:
+        available_attributes.extend(list(Attribute.objects.filter(first_applicable_object=parent_object['id']).values('name', 'id', 'data_type')))
+
+    return render(request, 'tree_of_knowledge_frontend/learn_rule.html', {'learned_rule':learned_rule, 'available_attributes': available_attributes})
 
 
 

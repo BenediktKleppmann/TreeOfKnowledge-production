@@ -3,6 +3,12 @@
 
 <style>
 
+	/* --------------------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+	/* Left Panel ---------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+
 	.left-panel-title {
 		background:rgb(226, 226, 226);
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -48,6 +54,88 @@
 		border-radius: 6px;
 		padding: 7px 15px;
 	}
+	
+	/* --------------------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+	/* Right Panel --------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+		
+	/* Object Body ----------------------------------------------------------*/
+	#right-sidebar-body {
+		height: calc(100vh - 145px);
+		overflow:auto;
+	}
+	
+	#object-attributes-table {
+		border-collapse: collapse;
+	}
+	
+	.attribute-name {
+		width: 184px;
+		padding-left: 9px;
+		border: 1px solid rgb(202, 202, 202);
+		background: -moz-linear-gradient(
+			top,
+			#f5f5f2 0%,
+			#ebeae6);
+		background: -webkit-gradient(
+			linear, left top, left bottom,
+			from(#f5f5f2),
+			to(#ebeae6));
+		-moz-box-shadow:
+			inset 0px 0px 3px rgba(255,255,255,0.9);
+		-webkit-box-shadow:
+			inset 0px 0px 3px rgba(255,255,255,0.9);
+		box-shadow:
+			inset 0px 0px 3px rgba(255,255,255,0.9);
+			
+		color: black;
+	}
+
+
+	.attribute-value-box {
+		border: 1px solid rgb(202, 202, 202);
+		width: 121px;
+		padding: 0px;
+	}
+	
+	.attribute-value {
+		border-width: 0px;
+		border-radius: 0px;
+		color: rgb(51, 51, 51);
+	}
+	
+	.attribute-rule-box {
+		border: 1px solid rgb(202, 202, 202);
+		width: 87px;
+		background: white;
+	}
+	
+	.attribute-rule-button {
+		border: 1px solid rgb(202, 202, 202);
+		margin-left: 3px;
+		color: rgb(85, 85, 85);
+		padding: 4px 10px;
+		margin: 2px 4px;
+		width: 85px;
+	}
+	
+	
+	/* Object Footer ----------------------------------------------------------	
+	#object-footer {
+		background: rgb(226, 226, 226);
+		box-shadow: 0  -3px 6px 0 rgba(0, 0, 0, 0.20);
+		padding: 9px;
+		height: 51px;
+	}
+
+	#object-footer > .btn {
+		margin-left: 4px;
+	}
+	*/
+	
+	
 	/* --------------------------------------------------------------------------*/
 	/* --------------------------------------------------------------------------*/
 	/* Choose Rule Modal --------------------------------------------------------*/
@@ -123,6 +211,12 @@
 	
 	.list-group-item > .btn{
 		width: 190px;
+		text-align: left;
+	}
+	
+	#constant-value-button {
+		width: 190px;
+		margin-bottom:5px;
 		text-align: left;
 	}
 	
@@ -320,7 +414,8 @@
 							<div id="selection-options-frame">
 								<ul id="selection-options" class="input-group list-group"></ul>
 							</div>
-							<button type="button" id="no-rule-button" class="btn btn-warning" onclick="noRule_buttonClick()" >No Rule (=constant var)</button>
+							<button type="button" id="constant-value-button" class="btn btn-outline-secondary" onclick="constantValue_buttonClick()" >Constant Value</button>
+							<button type="button" id="no-rule-button" class="btn btn-primary" onclick="noRule_buttonClick()" >No Rule</button>
 							<button type="button" id="new-rule-button" class="btn btn-success" onclick="openNewRuleForm()">Create New Rule</button>							
 						</div>
 						<div id="rule-modal-middle">
@@ -379,9 +474,17 @@
 						var returned_object_number = response['object_number'];
 						objects_dict[returned_object_number]['object_attributes'] = response['attribute_values'];	
 						objects_dict[returned_object_number]['object_id'] = response['object_id'];	
+						
+						// set all attributes' rules to 'from_data'
+						var attribute_ids = Object.keys(objects_dict[returned_object_number]['object_attributes']);
+						for (var i = 0; i < attribute_ids.length ; i++) {
+							objects_dict[returned_object_number]['object_rules'][attribute_ids[i]] = 'from_data';
+						}
 					}
 				};
 
+
+				
 				xmlhttp.open("POST", "/tool/get_data_from_random_object/");
 				xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 				xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
@@ -521,7 +624,8 @@
 			'number_of_additional_object_facts': number_of_additional_object_facts,
 			'simulation_start_time': simulation_start_time,
 			'simulation_end_time': simulation_end_time,
-			'timestep_size': timestep_size
+			'timestep_size': timestep_size,
+			'selected_attribute': null
 		}
 		
 		var xmlhttp = new XMLHttpRequest();       
@@ -552,7 +656,9 @@
 			for (var i = 0; i < attribute_ids.length ; i++) {
 				var attribute_id = attribute_ids[i];
 				var rule_id = objects_dict[object_number]['object_rules'][attribute_id]
-				if (rule_id == null) {
+				if (rule_id == 'from_data') {
+					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">no rule</button>'
+				} else if (rule_id == null) {
 					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">constant</button>'
 				} else {
 					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')" style="background-color:rgb(156, 209, 183);">changing</button>'
@@ -598,6 +704,7 @@
 	function populateRuleModal(object_number,rules_attribute_id, rules_attribute_name) {
 	
 		$("#chooseRuleModal #modal-title").html('Choose Rule for ' + rules_attribute_name);
+		$("#constant-value-button").attr('onclick','constantValue_buttonClick(' + object_number + ', ' + rules_attribute_id + ',\'' + rules_attribute_name + '\')');
 		$("#no-rule-button").attr('onclick','noRule_buttonClick(' + object_number + ', ' + rules_attribute_id + ',\'' + rules_attribute_name + '\')');
 		$("#new-rule-button").attr('onclick','openNewRuleForm(' + rules_attribute_id + ', \'' + rules_attribute_name + '\',' + object_number + ')');			
 					
@@ -616,7 +723,7 @@
 				
 				//if a rule has already been chosen -> select it
 				var rule_id = objects_dict[object_number]['object_rules'][rules_attribute_id]
-				if (rule_id == null) {
+				if (rule_id == null || rule_id == 'from data') {
 					$("#rule-details").html('');
 				} else {
 					document.getElementById('rule-inspection-button' + rule_id).click();
@@ -686,6 +793,25 @@
 		$('#rule-modal-footer').html(save_button_html_string);
 	}
 	
+	
+	
+	//== Constant Value =========================================================================================	
+	function constantValue_buttonClick(object_number, rules_attribute_id, rules_attribute_name){
+		$("#rule-modal-right").html('');
+		$('.modal-dialog').animate({width: '700px'}, 200, 'linear');
+		
+		var rule_details_html_string = 	'<h3 id="rule-name">Constant Value</h3><br>' +
+										'i.e. ' + rules_attribute_name + ' (t + &Delta;t) =  ' + rules_attribute_name + ' (t)<br>' +
+										'Useful baseline for comparing other rules against.';		
+		$("#rule-details").html(rule_details_html_string);
+		
+		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="chooseRuleCloseButton" data-dismiss="modal">Cancel</button>' +
+										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="chooseRule(' + object_number + ',' + rules_attribute_id +', null)">Choose Rule</button>';
+		$('#rule-modal-footer').html(save_button_html_string);
+	
+	}
+	
+	
 	//== No Rule =========================================================================================	
 	function noRule_buttonClick(object_number, rules_attribute_id, rules_attribute_name){
 		
@@ -697,15 +823,18 @@
 		$("#rule-details").html(rule_details_html_string);
 		
 		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="chooseRuleCloseButton" data-dismiss="modal">Cancel</button>' +
-										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="chooseRule(' + object_number + ',' + rules_attribute_id +', null)">Choose Rule</button>';
+										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="chooseRule(' + object_number + ',' + rules_attribute_id +', \'from_data\')">Choose Rule</button>';
 		$('#rule-modal-footer').html(save_button_html_string);
 		
 	}
 	
 	//== Choose Rule =========================================================================================	
 	function chooseRule(object_number, rules_attribute_id, rule_id) {
-		objects_dict[object_number]['object_rules'][rules_attribute_id] = rule_id;	
-		if (rule_id == null) {
+		objects_dict[object_number]['object_rules'][rules_attribute_id] = rule_id;
+		if (rule_id == 'from_data') {
+			$('#attribute-button' + rules_attribute_id).html('no rule');
+			$('#attribute-button' + rules_attribute_id).attr('style','');
+		} else if (rule_id == null) {
 			$('#attribute-button' + rules_attribute_id).html('constant');
 			$('#attribute-button' + rules_attribute_id).attr('style','');
 		} else {

@@ -12,7 +12,6 @@
 <style>
 	.content {
 		padding: 0px;
-		height: 100%
 	}
 
 	/* Resizable Panels -------------------------------------------------*/
@@ -71,13 +70,23 @@
 		width: 100%;
 		background: rgb(226, 226, 226);
 		border-top: 1px solid rgb(202,202,202); 
+		position: relative;
+	}	
+
+	#vertically-centered {
+		margin: 0;
+		position: absolute;
+		top: 50%;
+		-ms-transform: translateY(-50%);
+		transform: translateY(-50%);
+		width: 100%;
 	}
-	
+
 	.inlude-zero-menu {
 		display: inline-block;
 		margin-left: 25px;
 		margin-right: 15px;
-		margin-top: 10px;
+		margin-top: 8px;
 	}
 	
 	.menu-bar-error-message {
@@ -86,8 +95,8 @@
 	}
 	
 	#run-button {
-		margin-right: 8px;
-		margin-top: 6px;
+		margin-right: 11px;
+		margin-top: 1px;
 	}
 								
 	/* --------------------------------------------------------------------------*/
@@ -120,6 +129,14 @@
 	
 	.form-group {
 		margin-bottom: 2px;
+	}
+	
+	h3 {
+		margin-top: 0px;
+	}
+	
+	.align-center {
+		text-align: center;
 	}
 	
 	/* Rule Selection DropDown ------------------------*/
@@ -342,13 +359,14 @@
  
 <script type="text/javascript">
 	// GLOBAL VARIABLES:
-	objects_dict = {{ simulation_model.objects_dict|safe }}
-	timeline_visualisation_data = {{ simulation_model.timeline_visualisation_data|safe }}
-	linegraph_data = {{ simulation_model.linegraph_data|safe }}
-	attribute_errors = {{ simulation_model.attribute_errors|safe }}
-	simulation_start_time = {{ simulation_model.simulation_start_time }}
-    simulation_end_time = {{ simulation_model.simulation_end_time }}
-    timestep_size = {{ simulation_model.timestep_size }}
+	objects_dict = {{ simulation_model.objects_dict|safe }};
+	timeline_visualisation_data = {{ simulation_model.timeline_visualisation_data|safe }};
+	linegraph_data = {{ simulation_model.linegraph_data|safe }};
+	attribute_errors = {{ simulation_model.attribute_errors|safe }};
+	simulation_start_time = {{ simulation_model.simulation_start_time }};
+    simulation_end_time = {{ simulation_model.simulation_end_time }};
+    timestep_size = {{ simulation_model.timestep_size }};
+	selected_attribute = '{{ simulation_model.selected_attribute }}';
 	
 	var rules_list = {};	
 	var new_rule_cursor_position = {};
@@ -356,7 +374,7 @@
 	var new_rule_used_attribute_ids = [];
 	var highlighted_words_dict = {};
 	var delta_t_list = ['delta_t (years)', 'delta_t (months)', 'delta_t (days)', 'delta_t (hours)', 'delta_t (minutes)', 'delta_t (seconds)'];
-	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1]
+	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1];
 	var inlcude_zero = false;
 	
 
@@ -374,13 +392,16 @@
 
 			// setup
 			var chart = anychart.ganttResource();
+			//var chart = anychart.ganttProject();
 			var treeData = anychart.data.tree(timeline_visualisation_data, 'as-table');
 			chart.data(treeData);
-			chart.splitterPosition(300); // <- this is sadly not working!!
+			chart.splitterPosition(235); 
+			
 
 
 			// Left Columns --------------------------------------------------------
 			var dataGrid = chart.dataGrid();
+			
 
 			dataGrid.column(0, false);
 					
@@ -417,8 +438,7 @@
 
 			// Right Rows  --------------------------------------------------------
 			chart.rowSelectedFill('#D4DFE8')
-				 .rowHoverFill('#EAEFF3')
-				 .splitterPosition(150); // set start splitter position settings
+				 .rowHoverFill('#EAEFF3'); // set start splitter position settings
 			
 			//period boxes
 			var tl = chart.getTimeline();
@@ -460,10 +480,10 @@
 					var attribute_id = row_id.split("_")[1];
 					var attribute_name = event['item'].get('name');
 					var object_number = event['item'].get('object_number');
-					var attributeError = event['item'].get('averageError');
 					
 					
-					displayTopPanel(object_number, attribute_name, object_id, attribute_id, attributeError);
+					displayTopPanel(object_number, attribute_name, object_id, attribute_id);
+					selected_attribute = object_number + '¬' + attribute_name + '¬' + object_id + '¬' + attribute_id;
 				//}
 				
 
@@ -477,7 +497,7 @@
 
 			// zoom chart to specified date
 			time_window_start = simulation_start_time *1000
-			time_window_end = Math.min(simulation_end_time, simulation_start_time + 10*timestep_size) * 1000
+			time_window_end = Math.min(simulation_end_time, simulation_start_time + 8*timestep_size) * 1000
 			chart.zoomTo(time_window_start, time_window_end);
 			//chart.fitAll();
 			
@@ -517,12 +537,14 @@
 		top_panel_html = '<div id="top-left-panel">' +
 							'<div id="linegraph-container"></div>' +
 							'<div id="top-left-menu-bar">' +
-								'<div class="inlude-zero-menu">' +
-									'<input type="checkbox" class="custom-control-input" id="inlcude-zero" onchange="displayNumericalAttribute(\'' + object_name + '\', \'' + attribute_name + '\', ' + object_id + ',' + attribute_id + ')">' +
-									'<label class="custom-control-label" for="inlcude-zero">&nbsp;Include 0 in Linegraph</label>' +
+								'<div id="vertically-centered">' +
+									'<div class="inlude-zero-menu">' +
+										'<input type="checkbox" class="custom-control-input" id="inlcude-zero" onchange="displayNumericalAttribute(' + object_number + ', \'' + object_name + '\', \'' + attribute_name + '\', ' + object_id + ',' + attribute_id + ')">' +
+										'<label class="custom-control-label" for="inlcude-zero">&nbsp;Include 0 in Linegraph</label>' +
+									'</div>' +
+									error_values_html_string +
+									'<button id="run-button" class="btn btn-primary pull-right" type="button" onclick="run()">Re-Run Simulation</button>' +
 								'</div>' +
-								error_values_html_string +
-								'<button id="run-button" class="btn btn-primary pull-right" type="button" onclick="run()">Re-Run Simulation</button>' +
 							'</div>' +
 						'</div>' +
 							'<div id="rule-display-main" class="form">' +
@@ -534,9 +556,10 @@
 												'<div id="ruleList">' +
 													'<input type="text" class="search form-control" id="dropDonwSearch" onkeyup="filterRuleDropDown(1)" placeholder=" Search">' +
 													'<ul id="drop-down-display" class="list-group drop-down-display"></ul>' +
-													'<button class="btn btn-outline-secondary dropdown-item-button no-rule-btn" type="button" data-toggle="modal" data-target="#createAttributeModal" onclick="noRule_buttonClick(' + object_number + ', ' + attribute_id + ')">No Rule (constant)</button>' +
-													'<button class="btn btn-outline-secondary dropdown-item-button no-rule-btn" type="button" data-toggle="modal" data-target="#createAttributeModal" onclick="noRule_buttonClick(' + object_number + ', ' + attribute_id + ')">No Rule (from data)</button>' +
-													'<button id="create-new-rule-btn" class="btn btn-success dropdown-item-button" type="button" data-toggle="modal" data-target="#createAttributeModal" onclick="openNewRuleForm(' + attribute_id + ', \'' + attribute_name + '\', ' + object_number + ')">Create New Rule</button>' +
+													'<button class="btn btn-outline-secondary dropdown-item-button no-rule-btn" type="button" onclick="constantValue_buttonClick(' + object_number + ', ' + attribute_id + ')">Constant value</button>' +
+													'<button class="btn btn-outline-secondary dropdown-item-button no-rule-btn" type="button" onclick="learnRule_buttonClick(' + object_number + ', ' + attribute_id + ')">Learn Rule</button>' +
+													'<button class="btn btn-outline-secondary dropdown-item-button no-rule-btn" type="button" onclick="noRule_buttonClick(' + object_number + ', ' + attribute_id + ')">No Rule (from data)</button>' +
+													'<button id="create-new-rule-btn" class="btn btn-success dropdown-item-button" type="button" onclick="openNewRuleForm(' + attribute_id + ', \'' + attribute_name + '\', ' + object_number + ')">Create New Rule</button>' +
 												'</div>' +
 											'</div>' +
 										'</div>' +
@@ -559,9 +582,9 @@
 		var attribute_name = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'];
 
 		if (['string','boolean'].includes(attribute_data_type)) {
-			displayCategoricalAttribute(object_name, attribute_name, object_id, attribute_id)
+			displayCategoricalAttribute(object_number, object_name, attribute_name, object_id, attribute_id)
 		} else {
-			displayNumericalAttribute(object_name, attribute_name, object_id, attribute_id)
+			displayNumericalAttribute(object_number, object_name, attribute_name, object_id, attribute_id)
 		}
 		
 		// fill in the Rules
@@ -571,10 +594,11 @@
 	
 	
 	
-	function displayNumericalAttribute(object_name, attribute_name, object_id, attribute_id) {
-	
+	function displayNumericalAttribute(object_number, object_name, attribute_name, object_id, attribute_id) {
+		// get the data
 		var attributes_linegraph_data = linegraph_data[String(object_id)][String(attribute_id)]
 		
+		// Include 0
 		$("#linegraph-container").html('');
 		var inlcude_zero = document.getElementById("inlcude-zero").checked;
 		var set_y_min_to_zero = false;
@@ -604,11 +628,10 @@
 			}
 		}
 
-
-
-		// draw the chart
-		anychart.onDocumentReady(function () {
 		
+
+
+		anychart.onDocumentReady(function () {
 			// load data
 			var dataSet = anychart.data.set(linegraph_data[String(object_id)][String(attribute_id)]);
 
@@ -639,10 +662,10 @@
 			
 
 
-			// create first series with mapped data
-			var series_1 = chart.line(dataSet.mapAs({'x': 0, 'value': 1}));
-			series_1.name('Simulation')
-					.stroke("2 #14AA09");
+			// create second series with mapped data
+			var series_1 = chart.jumpLine(dataSet.mapAs({'x': 0, 'value': 2}));
+			series_1.name('True values')
+					.stroke("3.5 blue");
 			series_1.hovered().markers()
 					.enabled(true)
 					.type('circle')
@@ -653,10 +676,11 @@
 					.offsetX(5)
 					.offsetY(5);
 
-			// create second series with mapped data
-			var series_2 = chart.jumpLine(dataSet.mapAs({'x': 0, 'value': 2}));
-			series_2.name('True values')
-					.stroke("2 blue");
+
+			// create first series with mapped data
+			var series_2 = chart.line(dataSet.mapAs({'x': 0, 'value': 1}));
+			series_2.name('Simulation')
+					.stroke("2 #14AA09");
 			series_2.hovered().markers()
 					.enabled(true)
 					.type('circle')
@@ -666,8 +690,11 @@
 					.anchor('left-center')
 					.offsetX(5)
 					.offsetY(5);
-
-
+			
+			if (objects_dict[object_number]['object_rules'][attribute_id] == 'from_data') {
+				series_2.name('Interpolated values');
+			}
+					
 			// turn the legend on
 			chart.legend()
 					.enabled(true)
@@ -685,7 +712,7 @@
 	
 	
 		
-	function displayCategoricalAttribute(object_name, attribute_name, object_id, attribute_id) {
+	function displayCategoricalAttribute(object_number, object_name, attribute_name, object_id, attribute_id) {
 	
 		var attributes_linegraph_data = linegraph_data[String(object_id)][String(attribute_id)]
 		
@@ -718,7 +745,7 @@
 			
 			ordinalYScale = anychart.scales.ordinal();
 			ordinalYScale.names(categories)
-			chart.yScale(myYScale);
+			chart.yScale(ordinalYScale);
 			
 
 			// set yAxis title
@@ -726,10 +753,10 @@
 			chart.xAxis().labels().padding(5);
 
 
-			// create first series with mapped data
-			var series_1 = chart.stepLine(dataSet.mapAs({'x': 0, 'value': 1}));
-			series_1.name('Simulation')
-					.stroke("2 green");
+			// create second series with mapped data
+			var series_1 = chart.jumpLine(dataSet.mapAs({'x': 0, 'value': 2}));
+			series_1.name('True values')
+					.stroke("3.5 blue");
 			series_1.hovered().markers()
 					.enabled(true)
 					.type('circle')
@@ -740,10 +767,11 @@
 					.offsetX(5)
 					.offsetY(5);
 
-			// create second series with mapped data
-			var series_2 = chart.jumpLine(dataSet.mapAs({'x': 0, 'value': 2}));
-			series_2.name('True values')
-					.stroke("2 blue");
+
+			// create first series with mapped data
+			var series_2 = chart.stepLine(dataSet.mapAs({'x': 0, 'value': 1}));
+			series_2.name('Simulation')
+					.stroke("2 #14AA09");
 			series_2.hovered().markers()
 					.enabled(true)
 					.type('circle')
@@ -754,6 +782,9 @@
 					.offsetX(5)
 					.offsetY(5);
 
+			if (objects_dict[object_number]['object_rules'][attribute_id] == 'from_data') {
+				series_2.name('Interpolated values');
+			}
 
 			// turn the legend on
 			chart.legend()
@@ -795,7 +826,7 @@
 				
 				//if a rule has already been chosen -> select it
 				var rule_id = objects_dict[object_number]['object_rules'][attribute_id]
-				if (rule_id == null) {
+				if (rule_id == null || rule_id == 'from_data') {
 					$("#rule-details").html('');
 				} else {
 					document.getElementById('rule-inspection-button' + rule_id).click();
@@ -859,23 +890,55 @@
 		rule_details_html_string += '</div>';
 		
 		$("#rule-details").html(rule_details_html_string);
+		
+		// set the rule  - so that it's used in the next simulation
+		rule_id = rules_list[i]['id'];
+		objects_dict[object_number]['object_rules'][rules_attribute_id] = rule_id;
 
 	}
 	
+	//== Constant Value =========================================================================================	
+	function constantValue_buttonClick(object_number, rules_attribute_id, rules_attribute_name){
 	
-	//== No Rule =========================================================================================	
-	function noRule_buttonClick(object_number, rules_attribute_id, rules_attribute_name){
-		
+		// clear up (in case it still was in edit-rule mode)
 		$("#rule-display-right").html('');
-		
-		//adjust width
 		var window_width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 		var new_width = String(window_width - 470) + 'px';
 		$('#top-left-panel').animate({width: new_width}, 200, 'linear');
 		
-		var rule_details_html_string = 	'<h3>No Rule</h3><br>' +
-										'i.e. in the simulation the ' + rules_attribute_name + ' variable will remain constant.';		
+		
+		// display text
+		$("#rule-name").html('Constant Value');
+		var rule_details_html_string = 	'<div class="align-center">' + 
+											rules_attribute_name + ' (t + &Delta;t) =  ' + rules_attribute_name + ' (t)<br>' +
+											'Useful baseline for comparing other rules against.' +
+										'</div>';		
 		$("#rule-details").html(rule_details_html_string);
+		
+
+	
+		// set the rule (to null)  - so that it's used in the next simulation
+		delete objects_dict[object_number]['object_rules'][rules_attribute_id];
+	}
+	
+	//== No Rule =========================================================================================	
+	function noRule_buttonClick(object_number, rules_attribute_id, rules_attribute_name){
+	
+		// clear up (in case it still was in edit-rule mode)
+		$("#rule-display-right").html('');
+		var window_width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+		var new_width = String(window_width - 470) + 'px';
+		$('#top-left-panel').animate({width: new_width}, 200, 'linear');
+		
+		// display text
+		$("#rule-name").html('No Rule');
+		var rule_details_html_string = 	'<div class="align-center">' + 
+											'In the simulation the values from the database will be used.' +
+										'</div>';		
+		$("#rule-details").html(rule_details_html_string);
+		
+		// set the rule  - so that it's used in the next simulation
+		objects_dict[object_number]['object_rules'][rules_attribute_id] = 'from_data';
 
 	}
 	
@@ -1270,17 +1333,20 @@
 	}
 	
 	
+
+	
 	function saveSimulation() {
 		
 		request_body = {
 			'simulation_id': {{ simulation_model.id }},
-			'objects_dict': {{ simulation_model.objects_dict|safe }},
+			'objects_dict': objects_dict,
 			'object_type_counts': {{ simulation_model.object_type_counts|safe }},
 			'total_object_count': {{ simulation_model.total_object_count|safe }},
 			'number_of_additional_object_facts': {{ simulation_model.number_of_additional_object_facts }},
 			'simulation_start_time': {{ simulation_model.simulation_start_time }},
 			'simulation_end_time': {{ simulation_model.simulation_end_time }},
-			'timestep_size': {{ simulation_model.timestep_size }}
+			'timestep_size': {{ simulation_model.timestep_size }},
+			'selected_attribute': selected_attribute
 		}
 		
 		var xmlhttp = new XMLHttpRequest();       
@@ -1291,6 +1357,21 @@
 	}
 	
 	
+	//========================================================================
+	//======================    Learn Rule      ==============================
+	//========================================================================
+	
+	function learnRule_buttonClick(object_number, attribute_id) {
+		
+		form_html_string =	"<form role='form' action='setup_rule_learning/' method='post' class='form' enctype='multipart/form-data'>" + 
+								'<input type="hidden" name="object_number" value="' + object_number + '">' +
+								'<input type="hidden" name="attribute_id" value="' + attribute_id + '">' +
+								"{% csrf_token %}" +
+							"</form>";
+							
+		$(form_html_string).appendTo("body").submit();
+		
+	}
 
 	//========================================================================
 	//========================    MAIN      ==================================
@@ -1312,7 +1393,14 @@
 	   resizeWidth: true
 	 });
 	 
-
+	 
+	if (selected_attribute != 'None') {
+		var object_number = selected_attribute.split("¬")[0];
+		var attribute_name = selected_attribute.split("¬")[1];
+		var object_id = selected_attribute.split("¬")[2];
+		var attribute_id = selected_attribute.split("¬")[3];
+		displayTopPanel(object_number, attribute_name, object_id, attribute_id);
+	}
 	 
 </script>
 

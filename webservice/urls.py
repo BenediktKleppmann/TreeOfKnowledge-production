@@ -78,12 +78,14 @@ urlpatterns = [
     url(r'^tool/save_changed_attribute/$', views.save_changed_attribute, name='save_changed_attribute'),
     url(r'^tool/save_rule/$', views.save_rule, name='save_rule'),
     url(r'^tool/save_changed_simulation/$', views.save_changed_simulation, name='save_changed_simulation'),
+    url(r'^tool/save_learned_rule/$', views.save_learned_rule, name='save_learned_rule'),
     # delete
     url(r'^tool/delete_object_type/$', views.delete_object_type, name='delete_object_type'),
     url(r'^tool/delete_attribute/$', views.delete_attribute, name='delete_attribute'),
     url(r'^tool/delete_rule/$', views.delete_rule, name='delete_rule'),
-    # process/edit
+    # process
     url(r'^tool/edit_column/$', views.edit_column, name='edit_column'),
+    url(r'^tool/learn_rule_from_factors/$', views.learn_rule_from_factors, name='learn_rule_from_factors'),
     # column format
     url(r'^tool/suggest_attribute_format/$', views.suggest_attribute_format, name='suggest_attribute_format'),
     url(r'^tool/get_columns_format_violations/$', views.get_columns_format_violations, name='get_columns_format_violations'),
@@ -100,6 +102,8 @@ urlpatterns = [
     url(r'^tool/edit_simulation/$', views.edit_simulation_new, name='edit_simulation_new'),
     url(r'^tool/edit_simulation/(?P<simulation_id>[-\d]+)/$', views.edit_simulation, name='edit_simulation'),
     url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/$', views.analyse_simulation, name='analyse_simulation'),
+    url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/setup_rule_learning/$', views.setup_rule_learning, name='setup_rule_learning'),
+    url(r'^tool/learn_rule/(?P<learned_rule_id>[-\d]+)/$', views.learn_rule, name='learn_rule'),
     
 
 	# catching missspellt urls...
