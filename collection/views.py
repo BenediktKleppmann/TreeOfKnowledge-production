@@ -5,7 +5,7 @@ from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
-from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_datapoints, simulate, learn_rule
+from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_datapoints, simulate, rule_learner
 from django.http import HttpResponse
 import json
 import traceback
@@ -16,6 +16,7 @@ from django.utils.encoding import smart_str
 import time
 import os
 from django.views.decorators.csrf import csrf_protect, csrf_exempt, requires_csrf_token
+import numpy as np
 
 
  # ===============================================================================
@@ -200,6 +201,9 @@ def upload_data3(request, upload_id):
 
     
     if request.method == 'POST':
+        print('******************************************************')
+        print(json.dumps(request.POST))
+        print('******************************************************')
         form3 = Uploaded_datasetForm3(data=request.POST, instance=uploaded_dataset)
         if not form3.is_valid():
             errors.append('Error: the form is not valid.')
@@ -427,6 +431,13 @@ def get_attribute_rules(request):
     return HttpResponse(json.dumps(rules_list)) 
 
 
+
+@login_required
+def get_object_hierachy_tree(request):
+    object_hierachy_tree = get_from_db.get_object_hierachy_tree()
+    return HttpResponse(object_hierachy_tree)
+
+
 # ==================
 # complex GET
 # ==================
@@ -434,12 +445,13 @@ def get_attribute_rules(request):
 # used in query_data.html
 @login_required
 def get_data_points(request):
-
+    print('1')
     request_body = json.loads(request.body)
     object_type_id = request_body['object_type_id']
     filter_facts = request_body['filter_facts']
     specified_start_time = int(request_body['specified_start_time'])
     specified_end_time = int(request_body['specified_end_time'])
+    print('2 - ' + str(request.body))
 
     response = query_datapoints.get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time)
     return HttpResponse(json.dumps(response))
@@ -501,18 +513,22 @@ def find_suggested_attributes2(request):
     attributes = Attribute.objects.all().filter(first_applicable_object__in=list_of_parent_object_ids)
     for attribute in attributes:
         concluding_format = get_from_db.get_attributes_concluding_format(attribute.id, object_type_id, upload_id)
-        response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'description': attribute.description, 'format': concluding_format['format_specification'], 'comments': concluding_format['comments']})
+        response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'description': attribute.description, 'format': concluding_format['format_specification'], 'comments': concluding_format['comments'], 'data_type': attribute.data_type, 'object_type_id_of_related_object': attribute.object_type_id_of_related_object})
     return HttpResponse(json.dumps(response))
 
 
 # used in: upload_data6 
 @login_required
 def find_matching_entities(request):
+    print('1')
     request_body = json.loads(request.body)
+    print('2')
     match_attributes = request_body['match_attributes']
+    print('3')
     match_values = request_body['match_values']
+    print('4')
     matching_objects_entire_list = query_datapoints.find_matching_entities(match_attributes, match_values)
-
+    print(matching_objects_entire_list)
     return HttpResponse(json.dumps(matching_objects_entire_list))
 
 
@@ -574,18 +590,27 @@ def save_edited_object_type(request):
 # used in: create_attribute_modal.html (i.e. upload_data3,4,5)
 @login_required
 def save_new_attribute(request):
+    print('1')
     if request.method == 'POST':
+        print('2')
         try:
+            print('3')
             request_body = json.loads(request.body)
+
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+            print(request_body)
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
             new_entry = Attribute(name=request_body['name'], 
                                 data_type=request_body['data_type'], 
                                 expected_valid_period=request_body['expected_valid_period'], 
                                 description=request_body['description'], 
                                 format_specification=json.dumps(request_body['format_specification']),
-                                first_applicable_object=request_body['first_applicable_object'])
-
+                                first_applicable_object=request_body['first_applicable_object'],
+                                object_type_id_of_related_object=request_body['object_type_id_of_related_object'])
+            print('4')
             new_entry.save()
+            print('5')
             return HttpResponse("success")
         except Exception as error:
             traceback.print_exc()
@@ -704,9 +729,9 @@ def save_learned_rule(request):
             request_body = json.loads(request.body)
 
             learned_rule_record = Learned_rule.objects.get(id=request_body['learned_rule_id'])
-            learned_rule_record.object_type_id = json.dumps(request_body['object_type_id'])
-            learned_rule_record.object_filter_facts = request_body['object_filter_facts']
-            learned_rule_record.specified_factors = request_body['specified_factors']
+            learned_rule_record.object_type_id = request_body['object_type_id']
+            learned_rule_record.object_filter_facts = json.dumps(request_body['object_filter_facts'])
+            learned_rule_record.specified_factors = json.dumps(request_body['specified_factors'])
             learned_rule_record.save()
 
             return HttpResponse("success")
@@ -823,13 +848,11 @@ def edit_column(request):
 # used in learn_rule.html
 @login_required
 def learn_rule_from_factors(request):
-
     learned_rule_id = int(request.GET.get('learned_rule_id', 0))
+    the_rule_learner = rule_learner.Rule_Learner(learned_rule_id)
+    response = the_rule_learner.run()
 
-    if request.method == 'POST':
-        the_rule_learniner = learn_rule.Rule_Learner(learned_rule_id)
-        response = the_rule_learniner.run()
-        return HttpResponse(response)
+    return HttpResponse(json.dumps(response))
 
 
 
@@ -902,9 +925,9 @@ def check_single_fact_format(request):
         response['format_violation_text'] = '"' + operator +'" is not a valid operator.'
         return HttpResponse(json.dumps(response))
 
-    if (operator == 'in') and ('allowed_values' not in format_specification['fields']['column'].keys()):
-        response['format_violation_text'] = 'The "in" operator is only permitted for categorical attributes.'
-        return HttpResponse(json.dumps(response))
+    # if (operator == 'in') and ('allowed_values' not in format_specification['fields']['column'].keys()):
+    #     response['format_violation_text'] = 'The "in" operator is only permitted for categorical attributes.'
+    #     return HttpResponse(json.dumps(response))
         
     if (operator in ['>', '<']) and (format_specification['fields']['column']['type'] not in ['int','real']):
         response['format_violation_text'] = 'The "<" and ">" operators are only permitted for attributes with type "real" or "int".'
@@ -1128,25 +1151,45 @@ def setup_rule_learning(request, simulation_id):
 
     simulation_model = Simulation_model.objects.get(id=simulation_id)
     objects_dict = json.loads(simulation_model.objects_dict)
-   
-    object_number = int(request.POST.get('object_number', ','))
-    attribute_id = int(request.POST.get('attribute_id', ','))
+
+    object_number = int(request.POST.get('object_number', None))
+    attribute_id = int(request.POST.get('attribute_id', None))
 
     valid_times = []
     times = np.arange(simulation_model.simulation_start_time + simulation_model.timestep_size, simulation_model.simulation_end_time, simulation_model.timestep_size)
     for index in range(len(times)-1):
-        valid_times.append([times[index], times[index + 1]])
+        valid_times.append([int(times[index]), int(times[index + 1])])
+
+    # initial_factors = []
+    # for factor_number, factor_attribute_id in enumerate(objects_dict[str(object_number)]['object_attributes'].keys()):
+    #     if factor_attribute_id != attribute_id:
+    #         attribute_name = objects_dict[str(object_number)]['object_attributes'][str(factor_attribute_id)]['attribute_name']
+    #         initial_factors.append({'factor_number': factor_number,
+    #                                 'factor_text': '[' + attribute_name + ']',
+    #                                 'factor_transformation': 'attr' + str(factor_attribute_id)})
+
+
     
     learned_rule = Learned_rule(object_type_id=objects_dict[str(object_number)]['object_type_id'], 
                                 object_type_name=objects_dict[str(object_number)]['object_type_name'],
                                 attribute_id=attribute_id,
                                 attribute_name=objects_dict[str(object_number)]['object_attributes'][str(attribute_id)]['attribute_name'],
-                                object_filter_facts=objects_dict[str(object_number)]['object_filter_facts'],
+                                object_filter_facts=json.dumps(objects_dict[str(object_number)]['object_filter_facts']),
+                                specified_factors = json.dumps({}),
+                                sorted_factor_numbers = json.dumps([]),
                                 valid_times= json.dumps(valid_times),
+                                min_score_contribution = 0.01,
+                                max_p_value = 0.05,
                                 user=request.user)
 
     learned_rule.save()
     learned_rule_id = learned_rule.id
+
+    # if you wanted the learn-rule-page to be initialized with the all the plain variables as factors: 
+    # the_rule_learner = rule_learner.Rule_Learner(learned_rule_id)
+    # response = the_rule_learner.run()
+
+
     return redirect('learn_rule', learned_rule_id=learned_rule_id)
 
 
@@ -1211,19 +1254,29 @@ def test_page1(request):
 
 
 def test_page2(request):
-    populate_db.remove_duplicates()
-    return HttpResponse('success')
+
+    # object_ids = list(set(list(data_point_records.values_list('object_id', flat=True))))
+    bla = list(Attribute.objects.all().values())
+    return HttpResponse(json.dumps(bla))
     # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
 
     
 
 
 def test_page3(request):
-    response_message = list(Data_point.objects.filter(attribute_id=24, object_id=4489).values())
-    bla = pd.DataFrame(response_message)
-    # rule_record.test()
-    # rule_record_values = list(Rule.objects.all().values())
+    object_type_id = 'j1_5'
+    filter_facts = [{'attribute': 'Surface area (km2)', 'attribute_id': '23', 'operation': '>', 'value': '10000000'}]
+    valid_times = [[1389398400, 1421020800]]
 
-    return HttpResponse(response_message)
+    broad_table_df= query_datapoints.get_training_data(object_type_id, filter_facts, valid_times)
+    return HttpResponse(json.dumps(broad_table_df.to_dict('list')))
+
+    # attribute_values_list = []
+    # for valid_time in valid_times:
+    #     specified_start_time = valid_time[0]
+    #     specified_end_time = valid_time[1]
+    #     (chosen_object_id, attribute_values) = query_datapoints.get_data_from_random_object(object_type_id, filter_facts, specified_start_time, specified_end_time)
+    #     attribute_values_list.append(attribute_values)
+    # return HttpResponse(json.dumps(attribute_values_list))
 
     

@@ -41,6 +41,27 @@
 	#type{
 		margin-top: -8px;
 	}
+	
+	
+	/* --- Choose Object Type Popover ----------------------------------- */
+	.popover {
+		max-width: 730px;
+	}
+	
+	.choose-object-type-content  {
+		width: 700px;
+	}
+	
+	#search-box{
+		width: 150px;
+		margin-bottom: 10px;
+	}
+	
+	.object-type-spec-box {
+		border: solid 1px grey;
+		height: calc(100vh - 345px);
+		overflow: auto;
+	}
 		
 </style>
 
@@ -111,11 +132,11 @@
 						<div class="col-sm-5">
 							<select class="form-control form-control-lg" id="type" name="type" onchange="loadDataTypeSpecificAttributeOptions()">
 								<option value="" selected></option>
-								<option value="string">string</option>
-								<option value="int">int</option>
-								<option value="real">real</option>
-								<option value="bool">bool</option>
-								<option value="date">date</option>
+								<option value="string">String</option>
+								<option value="int">Int</option>
+								<option value="real">Float</option>
+								<option value="bool">Bool</option>
+								<option value="relation">Relation</option>
 							</select>
 						</div>
 					</div>
@@ -136,7 +157,8 @@
 	
 <script>
 
-	
+	// GLOBAL VARIABLES:
+	var object_hierachy_tree_for_relation = {};
 
 	/*========================================================================*/
 	/*=================    CREATE ATTRIBUTE MODAL     ========================*/
@@ -175,7 +197,7 @@
 		var data_type = sel_element.options[sel_element.selectedIndex].value;
 		
 		var dataTypeSpecificOptions = ""
-		if (["int", "real", "date"].includes(data_type)) {
+		if (["int", "real"].includes(data_type)) {
 			dataTypeSpecificOptions += 	'<br>' +
 										'<div class="form-group row">' +
 											'<label for="min" class="col-sm-7">Minimum allowed value</label>' +
@@ -190,6 +212,7 @@
 												'<input type="text" class="form-control" id="max" name="max">' +
 											'</div>' +
 										'</div>';
+			$("#new-attribute-further-fields").html(dataTypeSpecificOptions);
 		}
 		
 		if (data_type == "string") {
@@ -220,10 +243,60 @@
 												'<input type="text" class="form-control" id="allowed_values" name="allowed_values" placeholder=' + "'" + '["value1","value2"]' + "'" + '>' +
 											'</div>' +
 										'</div>';
+			$("#new-attribute-further-fields").html(dataTypeSpecificOptions);
 
 		}
 		
-		$("#new-attribute-further-fields").html(dataTypeSpecificOptions);
+		if (data_type == "relation") {
+			dataTypeSpecificOptions += 	'<br>' +
+										'<div class="form-group row">' +
+											'<label for="min" class="col-sm-7">Object Type of Related Object</label>' +
+											'<div class="col-sm-5">' +
+												'<input type="text" id="object_type_of_related_object" class="form-control input-field" placeholder="Object Type">' +
+												'<input type="hidden" id="object_type_id_of_related_object">' +
+											'</div>' +
+										'</div>';
+			$("#new-attribute-further-fields").html(dataTypeSpecificOptions);
+											
+			// initialize popover
+			$('#object_type_of_related_object').popover({
+				container: 'body',
+				placement: 'bottom',
+				html: true,
+				content:"<div class='choose-object-type-content form'> " +
+							"<div class='object-type-spec-box'>" + 
+								"<div id='container-for-object-tree'></div>" + 
+							"</div>" + 
+						"</div>"
+			});
+			
+			// When the popover is opened, load the object hierachy tree
+			$('#object_type_of_related_object').on('shown.bs.popover', function () {
+				loadObjectHierachyTree();
+			});
+			
+			
+			// when you click outside the popover, close it
+			$('body').on('mousedown', function (e) {
+				if (!$('#object_type_of_related_object').is(e.target)) {  
+					$('#object_type_of_related_object').popover('hide');
+				}
+			}); 
+			
+			var xhttp = new XMLHttpRequest();       
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+
+					object_hierachy_tree_for_relation = JSON.parse(this.responseText);
+					
+				}
+			};
+			xhttp.open("GET", "/tool/get_object_hierachy_tree" , true);
+			xhttp.send();
+		
+		}
+		
+		
 		
 	}
 	
@@ -255,6 +328,7 @@
 		var min_length = $("#createAttributeModal #min_length").val();
 		var max_length = $("#createAttributeModal #max_length").val();
 		var allowed_values = $("#createAttributeModal #allowed_values").val();
+		var object_type_id_of_related_object = $("#createAttributeModal #object_type_id_of_related_object").val();
 		
 		message_body = {} 
 		message_body['name'] = name;
@@ -266,6 +340,7 @@
 		message_body['format_specification']['fields'] = {}
 		message_body['format_specification']['fields']['column'] = {}
 		message_body['format_specification']['fields']['column']['type'] = type;
+		message_body['object_type_id_of_related_object'] = null;
 		
 		if (name.length < 2) {
 			alert("Attribute Name too short");
@@ -297,22 +372,22 @@
 			min_length = parseInt(min_length);
 			max_length = parseInt(max_length);
 			
-			if (max_length <= min_length) {
-				alert("'Maximum string length' must be bigger than 'Minimum string length'");
+			if (max_length < min_length) {
+				alert("'Maximum string length' must be bigger or equal the 'Minimum string length'");
 				return;
 			}
 			
 			message_body['format_specification']['fields']['column']['min_length'] = min_length;
 			message_body['format_specification']['fields']['column']['max_length'] = max_length;
 			
-			if (($("#createAttributeModal #allowed-values-group").attr("style")=="display:block;") && (allowed_values_list != "")) {
+			if (($("#createAttributeModal #allowed-values-group").attr("style")=="display:block;") && (allowed_values != "")) {
 				try {
 					allowed_values_list  = JSON.parse(allowed_values)
 					if (!Array.isArray(allowed_values_list)) {
 						alert("Allowed Values - the value submitted here is not a list");
 						return;
 					} else {
-						message_body['format_specification']['fields']['column']['allowed_values'] = allowed_values;
+						message_body['format_specification']['fields']['column']['allowed_values'] = allowed_values_list;
 					}
 				}
 				catch(err) {
@@ -322,7 +397,7 @@
 			}
 		}
 		
-		if (["int", "real", "date"].includes(type)) {
+		if (["int", "real"].includes(type)) {
 			if (type == "int"){
 				if(isNaN(min) || min[0] == " " || min == ""){
 					alert("Min - this must be populated with an integer number");
@@ -336,8 +411,8 @@
 				min = parseInt(min);
 				max = parseInt(max);
 				
-				if (max <= min) {
-					alert("Max must be bigger than Min");
+				if (max < min) {
+					alert("Max must be bigger  or equal to Min");
 					return;
 				}
 				
@@ -358,8 +433,8 @@
 				min = parseFloat(min);
 				max = parseFloat(max);
 				
-				if (max <= min) {
-					alert("Max must be bigger than Min");
+				if (max < min) {
+					alert("Max must be bigger or equal to Min");
 					return;
 				}
 				
@@ -369,7 +444,19 @@
 			}
 			
 		}
-
+		
+		if (type == "relation") {
+			if (object_type_id_of_related_object == "") {
+				alert("Required Field: Object Type of Related Object");
+				return;
+			}
+		
+			message_body['object_type_id_of_related_object'] = object_type_id_of_related_object;
+			message_body['format_specification']['fields']['column']['min'] = 0;
+			message_body['format_specification']['fields']['column']['max'] = 10000000000;
+			message_body['format_specification']['fields']['column']['type'] = 'int';
+		}
+		
 		var xmlhttp = new XMLHttpRequest();  
 		xmlhttp.open("POST", "/tool/save_new_attribute/");
 		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -390,5 +477,71 @@
 		redrawAttributeSelections();
 
 	}
+	
+	
+	
+	
+	/*========================================================================*/
+	/*=================    OBJECT TYPE      ==================================*/
+	/*========================================================================*/
+
+	// Set up the Object Hierachy Tree =============================================================	
+	function loadObjectHierachyTree() {
+			
+		// search 
+		var to = false;
+		$('#object_type_of_related_object').keyup(function () {
+			if(to) { clearTimeout(to); }
+			to = setTimeout(function () {
+				var v = $('#object_type_of_related_object').val();
+				$('#container-for-object-tree').jstree(true).search(v);
+			}, 250);
+		});
+		
+		// display object hierachy tree
+		$('#container-for-object-tree').jstree({
+			'core' : {
+				"animation" : 0,
+				"check_callback" : true,
+				'force_text' : true,
+				"themes" : { "stripes" : false,
+							 "icons": false},	
+				'data' : object_hierachy_tree_for_relation
+			},
+			"types" : {
+				"root" : { "icon" : "/static/3.3.7/assets/images/tree_icon.png", "valid_children" : ["default"] },
+				"default" : { "valid_children" : ["default","file"] },
+				"file" : { "icon" : "glyphicon glyphicon-file", "valid_children" : [] }
+			},
+			"themes":{"icons":false},
+			"plugins" : [ "contextmenu", "dnd", "search", "state", "types" ]
+		});	
+
+		// Select node in object hierachy tree =======================================
+		$('#container-for-object-tree')
+			.on('select_node.jstree', function (e, data) {
+			  
+			var node_id = data.selected[0];
+			var object_type_name = data.instance.get_node(node_id).text;
+			$("#object_type_of_related_object").val(object_type_name);
+			$("#object_type_id_of_related_object").val(node_id);
+			
+			//for the "+"-button change it so that the new attribute-drop-downs will list the object-types attributes
+			$("#make-new-additional-fact-button").attr("onclick", "newAdditionalFactInput('" + node_id + "');")
+			
+			//For all Attribute-dropdowns: remove the old selection and load a list of possible_attributes 
+			for (var i = 1; i <= number_of_additional_object_facts; i++) {
+				resetAttribute(i);
+				makeObjectsAdditionalAttributesDropdown(node_id , i);
+			}
+			
+		});
+		
+		  
+	}
+	
+	
+
+	
 	
 </script>

@@ -150,10 +150,15 @@ class Simulation:
 
 
                 if attribute_id in self.attributes_to_interpolate[object_number]:
-                    if self.attribute_information[attribute_id]['data_type'] in ['int','real']:
-                        true_values = list(timeline_df.loc[timeline_df['true_' + str(attribute_id)].notnull(),'true_' + str(attribute_id)])
-                        true_times = list(timeline_df.loc[timeline_df['true_' + str(attribute_id)].notnull(),'start_time'])
-                        interpolated_fn = interp1d(true_times, true_values, kind='cubic', fill_value="extrapolate")           
+                    true_values = list(timeline_df.loc[timeline_df['true_' + str(attribute_id)].notnull(),'true_' + str(attribute_id)])
+                    true_times = list(timeline_df.loc[timeline_df['true_' + str(attribute_id)].notnull(),'start_time'])
+
+                    if self.attribute_information[attribute_id]['data_type'] in ['int','real'] and len(true_values) > 1:
+
+                        interpolated_fn = interp1d(true_times, true_values, fill_value="extrapolate")   
+                        if  len(true_values) > 3:
+                             interpolated_fn = interp1d(true_times, true_values, kind='cubic', fill_value="extrapolate")
+                             
                         interpolated_values = interpolated_fn(times)
                         timeline_df['simulated_' + str(attribute_id)] = interpolated_values
                         timeline_df['error_' + str(attribute_id)] = None

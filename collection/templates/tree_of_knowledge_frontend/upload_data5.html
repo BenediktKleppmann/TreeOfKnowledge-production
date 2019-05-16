@@ -226,7 +226,7 @@
 			text-align: left;
 		}
 
-		#attribute-choice {
+		#attribute-choice-header {
 			margin-top:12px;
 			margin-bottom: 15px;
 		}
@@ -321,7 +321,6 @@
 		<div class="modal-content">
 		  <div class="modal-header row" style="margin:0px; padding:15px 0px;">
 			<h5 class="modal-title col-md-11">Select the Column's Attribute</h5>
-			<div id="attribute-options" style="display:none;"></div>
 			<button type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:2px; margin-right:19px;font-size:29px">
 			  <span aria-hidden="true" >&times;</span>
 			</button>
@@ -330,7 +329,6 @@
 			  <div class="container-fluid">
 				<div class="row">
 				  <div class="col-md-4 form-group">
-					<span id="choose-attribute-attributenumber" style="display:none;"></span>
 					<input type="text" class="search form-control" id="selectOptionSearch" onkeyup="filterSelectionOptions();" placeholder=" Search">
 					<div id="selection-options-frame">
 						<!--<div class="input-group" id="selection-options" ></div>-->
@@ -439,13 +437,25 @@
 	var table_headers = data_table_json["table_header"]
 	var table_body = data_table_json["table_body"]
 	var edited_column = []
+		
+	var edited_column_number = null;
 	
-	var attribute_selection = []
-	var object_identifiers = []
+	var attribute_options = [];
+	var related_object_attribute_options = [];
+	var selected_attribute_number = null;
+	var selected_attribute_is_datetime = false;
+	var selected_attribute_number_of_relation = null;
+	
+	var attribute_selection = [];
+	var related_attribute_selection = [];
+	var object_identifiers = [];
+	
 	for (var i = 0; i < table_headers.length; i++) {
-		attribute_selection.push("")
-		object_identifiers.push(false)
+		attribute_selection.push("");
+		related_attribute_selection.push("");
+		object_identifiers.push(false);
 	}	
+	
 	
 	
 	//====================================================================================================
@@ -693,57 +703,172 @@
 	
 	//== Clicking on an Attribute in the Choose Attribute Modal =========================================================================================		  
 	function inspectAttribute(i) {
-		var attribute_details = JSON.parse($("#attribute-options").html())
-		var attribute_detail = attribute_details[i]
+	
+		var attribute_detail = attribute_options[i];
+		selected_attribute_number = i;
+		selected_attribute_is_datetime = false;
+		
+		if (attribute_detail['data_type'] != 'relation') {
+			
+			var attribute_detail_html_string = 	'<h3 id="attribute-choice-header">' + attribute_detail['attribute_name'] + '</h3>' +
+												'<input type="hidden" id="attribute-id" value="' + attribute_detail['attribute_id'] + '">' + 
+												'<div class="form-group">' + 
+													'<label class="control-label" for="attribute-description">Description</label>' +
+													'<textarea cols="20" rows="3" class="form-control" id="attribute-description">' + attribute_detail['description'] + '</textarea>' +
+												'</div>' + 
+												'<hr />';
+
+			var format_specifications = Object.keys(attribute_detail['format'])
+				
+			for (var j = 0; j < format_specifications.length; j++) {
+			
+				var specification_name = format_specifications[j];
+				var specification_value = attribute_detail['format'][format_specifications[j]];
+				if (specification_name == 'allowed_values') {
+					specification_value = JSON.stringify(specification_value);
+				}
+				
+				
+				if ( (format_specifications[j] in attribute_detail['comments']) && (attribute_detail['comments'][format_specifications[j]] != "")) {
+					// format_specification with comment
+				
+					attribute_detail_html_string += '<div class="form-group row">' +
+														'<label for="form-element" class="col-sm-4 col-form-label">' + specification_name + '</label>' +
+														'<div class="col-sm-8">' +
+															'<input type="text" readonly class="form-control" id="form-element" value="' + specification_value + '">' +
+														'</div>' +
+														'<button type="button" class="btn btn-default pull-left" data-container="body" data-toggle="popover" data-placement="right" data-html="true" title="Invalid fact" style="display:none;" data-content="' + attribute_detail['comments'][format_specifications[j]] + '"><span class="glyphicon glyphicon-info-sign"></span></button>' +
+													'</div>';
+				} else {
+					// format_specification without comment
+					attribute_detail_html_string += '<div class="form-group row">' +
+														'<label for="form-element" class="col-sm-4 col-form-label">' + specification_name + '</label>' +
+														'<div class="col-sm-8">' +
+															'<input type="text" readonly class="form-control" id="form-element" value="' + specification_value + '">' +
+														'</div>' +
+													'</div>';
+				}
+				
+				// save the data type in a not-displayed span beneath the "Choose Attribute" button
+				if (format_specifications[j] == "type") {
+					$("#column" + edited_column_number + "-data-type").html(attribute_detail['format'][format_specifications[j]])
+				}
+			}
+			$("#attribute-details").html(attribute_detail_html_string);
+			
+		} else { // if (attribute_detail['data_type'] == 'relation')
+			inspectAttribute_relation(attribute_detail['attribute_name'], attribute_detail['attribute_id'], attribute_detail['object_type_id_of_related_object']);
+		}
+	}
+
+
+	//=======================================================================================================================	
+	//=====  Related Variable   =============================================================================================	
+	//=======================================================================================================================		
+
+	function inspectAttribute_relation(attribute_name, attribute_id, object_type_id_of_related_object) {
+		
+		var request_body = {};
+		request_body['attributenumber'] = edited_column_number;
+		request_body['column_values'] = table_body[edited_column_number];
+		request_body['object_type_id'] = object_type_id_of_related_object;
+		request_body['upload_id'] = '{{ uploaded_dataset.id }}';
+			
+			
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+
+				var attribute_options = JSON.parse(this.responseText);
+				related_object_attribute_options = attribute_options;
+				var attribute_detail_html_string = 	'<h3 id="attribute-choice">' + attribute_name + '</h3>' +
+													'<div class="form-group row">' +
+														'<label for="form-element" class="col-sm-4 col-form-label">Variable</label>' +
+														'<div class="col-sm-8">' +
+															'<select class="form-control match-attribute-dropdown" id="related_attribute" name="related_attribute" onchange="displayRelatedAttribute(\'' + object_type_id_of_related_object + '\')">' +
+																'<option value="" selected></option>';
+				for (var i = 0; i < attribute_options.length; i++) {
+					attribute_detail_html_string +=				'<option value="' + i + '">' + attribute_options[i]['attribute_name'] + '</option>';
+				}
+				attribute_detail_html_string +=				'</select>' +
+														'</div>' +
+													'</div>' + 
+													'<div id="related-attribute-info"></div>';
+		
+				$("#attribute-details").html(attribute_detail_html_string);
+				
+			}
+		};
+
+		xmlhttp.open("POST", "/tool/find_suggested_attributes2/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));	
 		
 		
-		var attribute_detail_html_string = 	'<h3 id="attribute-choice">' + attribute_detail['attribute_name'] + '</h3>' +
-											'<input type="hidden" id="attribute-id" value="' + attribute_detail['attribute_id'] + '">' + 
+		
+	}
+	
+	
+	//=======================================================================================================================	
+	
+	
+	function displayRelatedAttribute(object_type_id_of_related_object) {
+		
+		selected_attribute_number_of_relation = $('#related_attribute').val();
+		related_attribute = related_object_attribute_options[selected_attribute_number_of_relation];
+		
+		var related_attribute_html_string = '<h3 id="attribute-choice-header">' + related_attribute['attribute_name'] + '</h3>' +
+											'<input type="hidden" id="attribute-id" value="' + related_attribute['attribute_id'] + '">' + 
 											'<div class="form-group">' + 
 												'<label class="control-label" for="attribute-description">Description</label>' +
-												'<textarea cols="20" rows="3" class="form-control" id="attribute-description">' + attribute_detail['description'] + '</textarea>' +
+												'<textarea cols="20" rows="3" class="form-control" id="attribute-description">' + related_attribute['description'] + '</textarea>' +
 											'</div>' + 
 											'<hr />';
 
-		var format_specifications = Object.keys(attribute_detail['format'])
+		var format_specifications = Object.keys(related_attribute['format'])
 			
 		for (var j = 0; j < format_specifications.length; j++) {
 			
-			if ( (format_specifications[j] in attribute_detail['comments']) && (attribute_detail['comments'][format_specifications[j]] != "")) {
+			var specification_name = format_specifications[j];
+			var specification_value = related_attribute['format'][format_specifications[j]];
+			
+			if ( (format_specifications[j] in related_attribute['comments']) && (related_attribute['comments'][format_specifications[j]] != "")) {
 				// format_specification with comment
-				attribute_detail_html_string += '<div class="form-group row">' +
-													'<label for="form-element" class="col-sm-4 col-form-label">' + format_specifications[j] + '</label>' +
+			
+				related_attribute_html_string += '<div class="form-group row">' +
+													'<label for="form-element" class="col-sm-4 col-form-label">' + specification_name + '</label>' +
 													'<div class="col-sm-8">' +
-														'<input type="text" readonly class="form-control" id="form-element" value="' + attribute_detail['format'][format_specifications[j]] + '">' +
+														'<input type="text" readonly class="form-control" id="form-element" value="' + specification_value + '">' +
 													'</div>' +
 													'<button type="button" class="btn btn-default pull-left" data-container="body" data-toggle="popover" data-placement="right" data-html="true" title="Invalid fact" style="display:none;" data-content="' + attribute_detail['comments'][format_specifications[j]] + '"><span class="glyphicon glyphicon-info-sign"></span></button>' +
 												'</div>';
 			} else {
 				// format_specification without comment
-				attribute_detail_html_string += '<div class="form-group row">' +
-													'<label for="form-element" class="col-sm-4 col-form-label">' + format_specifications[j] + '</label>' +
+				related_attribute_html_string += '<div class="form-group row">' +
+													'<label for="form-element" class="col-sm-4 col-form-label">' + specification_name + '</label>' +
 													'<div class="col-sm-8">' +
-														'<input type="text" readonly class="form-control" id="form-element" value="' + attribute_detail['format'][format_specifications[j]] + '">' +
+														'<input type="text" readonly class="form-control" id="form-element" value="' + specification_value + '">' +
 													'</div>' +
 												'</div>';
 			}
 			
-			// save the data type in a not-displayed span beneath the "Choose Attribute" button
-			if (format_specifications[j] == "type") {
-				var attributenumber = parseInt($("#choose-attribute-attributenumber").html());
-				$("#column" + attributenumber + "-data-type").html(attribute_detail['format'][format_specifications[j]])
-			}
+						
 		}
-		
-		$("#attribute-details").html(attribute_detail_html_string);
+			$("#related-attribute-info").html(related_attribute_html_string);
+	
 	}
+	
+	
+	
 
 	//===  Clicking on "Date/Time of Observation" in the Choose Attribute Modal   =========================================================================================		
 	function inspectDateTimeColumn() {
 	
 		$("#attribute-details").html(attribute_detail_html_string);
+		selected_attribute_is_datetime = true;
 		
-		var attribute_detail_html_string = 	'<h3 id="attribute-choice">DateTime of Observation</h3>' +
+		var attribute_detail_html_string = 	'<h3 id="attribute-choice-header">DateTime of Observation</h3>' +
 											'<br>' +
 											'<div class="form-group row">' +
 												'<label for="form-element" class="col-sm-4 col-form-label">Required Format:</label>' +
@@ -785,11 +910,10 @@
 	
 	//===  The "Reset" Button  =========================================================================================	
 	function resetAttributeSelection() {
-		var attributenumber = parseInt($("#choose-attribute-attributenumber").html());
 		
-		$("#attribute-button" + attributenumber).html("Choose Attribute");
-		$("#attribute-button" + attributenumber).attr("class", "btn btn-primary");
-		if (attribute_selection[attributenumber] == "DateTime of Observation") {
+		$("#attribute-button" + edited_column_number).html("Choose Attribute");
+		$("#attribute-button" + edited_column_number).attr("class", "btn btn-primary");
+		if (attribute_selection[edited_column_number] == "DateTime of Observation") {
 			$("#unique_identifier_selection").attr("style", "display:none;");
 			$("#attribute_selection").attr("style", "");
 			createObjectIdButtons();     // redraw the buttons so that they are all un-selected
@@ -798,23 +922,31 @@
 				object_identifiers.push(false)
 			}	
 		}
-		attribute_selection[attributenumber] == "";
+		attribute_selection[edited_column_number] == "";
 		
-		showColumnsFormatViolations(attributenumber);
+		showColumnsFormatViolations(edited_column_number);
 	}
 	
 	//===  The "Save" Button  =========================================================================================		  
 	function saveAttributeSelection() {
 
-		var attributenumber = parseInt($("#choose-attribute-attributenumber").html());
-		var attributechoice = $("#attribute-choice").html();
-		var attribute_id = $("#attribute-id").val();
-		
-		if (attributechoice == "DateTime of Observation") {
+/*	var attribute_options = [];
+	var related_object_attribute_options = [];
+	var selected_attribute_number = null;
+	var selected_attribute_is_datetime = false;
+	var selected_attribute_number_of_relation = null;
+*/
 
-			$("#attribute-button" + attributenumber).html("Current DateTime");
-			$("#attribute-button" + attributenumber).attr("class", "btn btn-light");
-			attribute_selection[attributenumber] = "DateTime of Observation";
+		var attribute_name = attribute_options[selected_attribute_number]['attribute_name'];
+		var attribute_id = attribute_options[selected_attribute_number]['attribute_id'];
+		
+		// DATETIME
+		if (selected_attribute_is_datetime == true) {
+
+			$("#attribute-button" + edited_column_number).html("Current DateTime");
+			$("#attribute-button" + edited_column_number).attr("class", "btn btn-light");
+			attribute_selection[edited_column_number] = "DateTime of Observation";
+			related_attribute_selection[edited_column_number] = "";
 			
 			if (document.getElementById("reoccuring").checked) {
 				$("#unique_identifier_selection").attr("style", "display:block;");
@@ -822,41 +954,75 @@
 			}	
 			
 		} else {
-		 
-		 
-			//create the new column (with the converted datatype)
-			var data_type = $("#column" + attributenumber + "-data-type").html()
+			
 			var new_column = []
 			
-			if (data_type == "int"){
-				for (var i = 0; i < table_body[attributenumber].length; i++) {
-					new_column.push(parseInt(table_body[attributenumber][i], 10) || null);
+			if (attribute_options[selected_attribute_number]['data_type'] == 'relation') {
+			
+				//RELATION
+				var related_attribute_name = related_object_attribute_options[selected_attribute_number_of_relation]['attribute_name'];
+				var related_attribute_id = related_object_attribute_options[selected_attribute_number_of_relation]['attribute_id'];
+				
+				var request_body = {'match_values': [table_body[edited_column_number]], 
+									'match_attributes': [{'attribute_id': related_attribute_id, 'attribute_name': related_attribute_name}]};
+				var xmlhttp = new XMLHttpRequest();       
+				xmlhttp.open("POST", "/tool/find_matching_entities/", false);
+				xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+				xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+				xmlhttp.send(JSON.stringify(request_body));	
+			
+				if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+						
+					var potential_matches = JSON.parse(xmlhttp.responseText)
+					
+					for (var i = 0; i < potential_matches.length; i++) {	
+						var potential_matches_row = potential_matches[i];
+						
+						if (potential_matches_row.length == 0){
+							new_column.push(null);
+						} else {
+							new_column.push(potential_matches_row[0]['object_id']);
+						}
+					}
 				}
-			} else if (data_type == "real"){
-				for (var i = 0; i < table_body[attributenumber].length; i++) {
-					new_column.push(parseFloat(table_body[attributenumber][i], 10) || null);
-				}
-			} else if (data_type == "string"){
-				for (var i = 0; i < table_body[attributenumber].length; i++) {
-					if (table_body[attributenumber][i] != null){
-						new_column.push(String(table_body[attributenumber][i]));
-					} 
-				}
-			} else if (data_type == "boolean"){
-				for (var i = 0; i < table_body[attributenumber].length; i++) {
-					if (table_body[attributenumber][i].toLowerCase() == "true"){
-						new_column.push(true);
-					} else if (table_body[attributenumber][i].toLowerCase() == "false"){
-						new_column.push(false);
-					} else {
-						new_column.push(null);
+			
+				
+			} else {
+				
+				// NORMAL COLUMN
+				//create the new column (with the converted datatype)
+				var data_type = $("#column" + edited_column_number + "-data-type").html()
+				
+				if (data_type == "int"){
+					for (var i = 0; i < table_body[edited_column_number].length; i++) {
+						new_column.push(parseInt(table_body[edited_column_number][i], 10) || null);
+					}
+				} else if (data_type == "real"){
+					for (var i = 0; i < table_body[edited_column_number].length; i++) {
+						new_column.push(parseFloat(table_body[edited_column_number][i], 10) || null);
+					}
+				} else if (data_type == "string"){
+					for (var i = 0; i < table_body[edited_column_number].length; i++) {
+						if (table_body[edited_column_number][i] != null){
+							new_column.push(String(table_body[edited_column_number][i]));
+						} 
+					}
+				} else if (data_type == "boolean"){
+					for (var i = 0; i < table_body[edited_column_number].length; i++) {
+						if (table_body[edited_column_number][i].toLowerCase() == "true"){
+							new_column.push(true);
+						} else if (table_body[edited_column_number][i].toLowerCase() == "false"){
+							new_column.push(false);
+						} else {
+							new_column.push(null);
+						}
 					}
 				}
 			}
 			
 			
 			//check if the user is ok with the abount of new nulls
-			var original_null_values = table_body[attributenumber].filter(function (el) {return el == null;});
+			var original_null_values = table_body[edited_column_number].filter(function (el) {return el == null;});
 			var new_null_values = new_column.filter(function (el) {return el == null;});
 			number_of_additional_null_values = new_null_values.length - original_null_values.length;
 			
@@ -868,18 +1034,39 @@
 			{% else %}{% endif %}
 
 			
-			table_body[attributenumber] = new_column
+			table_body[edited_column_number] = new_column
 		
-			//change the "Choose Attribute" button
-			$("#attribute-button" + attributenumber).html(attributechoice);
-			$("#attribute-button" + attributenumber).attr("class", "btn btn-light");
-			attribute_selection[attributenumber] = attribute_id;
-
 			
 			
-			// show the updated column
-			updateColumn(attributenumber)
-			showColumnsFormatViolations(attributenumber);
+			if (attribute_options[selected_attribute_number]['data_type'] == 'relation') {
+				//RELATION
+				var related_attribute_name = 	related_object_attribute_options[selected_attribute_number_of_relation]['attribute_name'];
+				var related_attribute_id = 	related_object_attribute_options[selected_attribute_number_of_relation]['attribute_id'];
+				var new_column_header = attribute_name + ' Id';
+				//change the "Choose Attribute" button
+				$("#attribute-button" + edited_column_number).html(new_column_header);
+				$("#attribute-button" + edited_column_number).attr("class", "btn btn-light");
+				attribute_selection[edited_column_number] = attribute_id;
+				related_attribute_selection[edited_column_number] = related_attribute_id;
+	
+				// show the updated column
+				updateColumn(edited_column_number)
+				showColumnsFormatViolations(edited_column_number);
+				
+				
+			} else {
+				// NORMAL COLUMN
+				//change the "Choose Attribute" button
+				$("#attribute-button" + edited_column_number).html(attribute_name);
+				$("#attribute-button" + edited_column_number).attr("class", "btn btn-light");
+				attribute_selection[edited_column_number] = attribute_id;
+				related_attribute_selection[edited_column_number] = "";
+	
+				// show the updated column
+				updateColumn(edited_column_number)
+				showColumnsFormatViolations(edited_column_number);
+			
+			}
 			
 		}
 	}
@@ -969,9 +1156,8 @@
 	
 	function redrawAttributeSelections() {
 		//close and re-open the choose-attribute modal in order for the new attribute to be loaded
-		var attributenumber = $("#choose-attribute-attributenumber").html();
 		document.getElementById("choose-attribute-close-button").click();
-		document.getElementById("attribute-button" + attributenumber).click();
+		document.getElementById("attribute-button" + edited_column_number).click();
 		
 	}
 	
@@ -981,9 +1167,8 @@
 		
 		loadListOfParentObjects('{{ uploaded_dataset.object_type_id }}')
 		
-		var attributenumber = parseInt($("#choose-attribute-attributenumber").html());
 		var request_body = {};
-		request_body['column_values'] = table_body[attributenumber];
+		request_body['column_values'] = table_body[edited_column_number];
 		
 		var xmlhttp = new XMLHttpRequest();       
 		xmlhttp.onreadystatechange = function() {
@@ -1106,13 +1291,13 @@
 		
 		
 			//PART 2: get the suggestions from ajax request and loadinto the modal
-			var attributenumber = $target.data('attributenumber');
+			edited_column_number = $target.data('attributenumber');
 			var url_components = window.location.href.split("/");
 			var upload_id = url_components[url_components.length - 2]
 			
 			var request_body = {};
-			request_body['attributenumber'] = attributenumber;
-			request_body['column_values'] = table_body[attributenumber];
+			request_body['attributenumber'] = edited_column_number;
+			request_body['column_values'] = table_body[edited_column_number];
 			request_body['object_type_id'] = '{{ uploaded_dataset.object_type_id }}';
 			request_body['upload_id'] = '{{ uploaded_dataset.id }}';
 			
@@ -1121,8 +1306,7 @@
 			xmlhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
 
-					$("#attribute-options").html(this.responseText);
-					var attribute_options = JSON.parse(this.responseText)
+					attribute_options = JSON.parse(this.responseText)
 					var selection_options_html_string = "";
 					
 					for (var i = 0; i < attribute_options.length; i++) {

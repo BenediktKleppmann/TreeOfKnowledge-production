@@ -89,14 +89,14 @@ class Uploaded_dataset(models.Model):
 
 
 class Data_point(models.Model):
-    object_id = models.IntegerField()
-    attribute_id = models.TextField()
-    value_as_string = models.TextField()
-    numeric_value = models.FloatField(null=True)
-    string_value = models.TextField(null=True)
+    object_id = models.IntegerField(db_index=True)
+    attribute_id = models.TextField(db_index=True)
+    value_as_string = models.TextField(db_index=True)
+    numeric_value = models.FloatField(null=True, db_index=True)
+    string_value = models.TextField(null=True, db_index=True)
     boolean_value = models.NullBooleanField() 
-    valid_time_start = models.IntegerField()
-    valid_time_end = models.IntegerField()
+    valid_time_start = models.IntegerField(db_index=True)
+    valid_time_end = models.IntegerField(db_index=True)
     data_quality = models.IntegerField()
 
 
@@ -129,6 +129,7 @@ class Attribute(models.Model):
     description = models.TextField()
     format_specification = models.TextField()
     first_applicable_object = models.TextField()
+    object_type_id_of_related_object = models.TextField(null=True)
 
 
 class Rule(models.Model):
@@ -189,13 +190,17 @@ class Simulation_model(models.Model):
 
 
 class Learned_rule(models.Model):
+    overall_score = models.FloatField(null=True)
     object_type_id = models.TextField()
     object_type_name = models.TextField()
     attribute_id = models.IntegerField()
     attribute_name = models.TextField()
     object_filter_facts = models.TextField()
-    specified_factors = models.TextField(null=True)
+    specified_factors = models.TextField()
+    sorted_factor_numbers = models.TextField()
     valid_times = models.TextField()
+    min_score_contribution = models.FloatField()
+    max_p_value = models.FloatField()
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
     created = models.DateTimeField(editable=False)
     updated = models.DateTimeField(editable=False)

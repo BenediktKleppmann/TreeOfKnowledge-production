@@ -1,7 +1,7 @@
 import json
 import traceback
 import pandas as pd
-from collection.models import Uploaded_dataset, Attribute, Simulation_model, Object, Data_point
+from collection.models import Uploaded_dataset, Attribute, Simulation_model, Object, Data_point, Object_types
 from django.utils.safestring import mark_safe
 import os
 from itertools import compress

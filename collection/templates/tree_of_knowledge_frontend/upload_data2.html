@@ -8,7 +8,7 @@
 
 {% block additionalcss %}
 
-
+<script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/datepicker/moment.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/datepicker/transition.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/datepicker/collapse.js' %}"></script>
@@ -174,7 +174,7 @@
 	
 	
 	function CreateDataSourceAutocompleteOptions() {
-		var known_data_sources = JSON.parse('{{ known_data_sources | safe }}')
+		var known_data_sources = {{ known_data_sources | safe }}
 		
 		var dataSourceList = document.getElementById('data-source-list');
 		
