@@ -280,6 +280,10 @@
 		display: inline-block;
 	}
 	
+	.related-attribute-dropdown {
+		margin-left: 15px;
+	}
+	
 	/*  --- Sort table triangles ---------------------------------------------------------------------------------------------------*/
 	
 	.sort-triangle-div {
@@ -421,7 +425,7 @@
 		</div>
 		
 		
-	</div>
+	</div>                                
 
 
 
@@ -432,12 +436,16 @@
 	
 <script>
 	// GLOBAL VARIABLES:
-	var object_hierachy_tree = {{ object_hierachy_tree|safe }}
-	var table_body = {}
-	var largest_dropdown_number = 0
-	var table_attributes = []
-	var selected_table_attributes = [{'attribute_id': 'time', 'attribute_name': 'Time'}]
-	var last_queried_object_id = null;
+	var object_hierachy_tree = {{ object_hierachy_tree|safe }};
+	var largest_dropdown_number = 0;
+	var last_queried_object_id = null;	
+	var table_attributes = [];
+	var table_body = {};
+	var selected_table_attributes = [{'attribute_id': 'time', 'attribute_name': 'Time'}];
+	
+	var related_table_attributes = [];
+	var related_table_body = {};
+	
 	
 	
 	
@@ -799,8 +807,14 @@
 		for (var i = 0; i < number_of_rows; i++) {
 			table_html_string +=  		'<tr>';
 			for (var j = 0; j < selected_table_attributes.length; j++) {
-				var attribute_id = selected_table_attributes[j]['attribute_id']
-				table_html_string +=  			'<td><span>f</span>' + table_body[attribute_id][i] + '</td>';
+				var attribute_id = selected_table_attributes[j]['attribute_id'];
+				if (selected_table_attributes[j]['attribute_is_relation']) {
+					var object_id = table_body[attribute_id][i];
+					var related_attribute_id = selected_table_attributes[j]['related_attribute_id']
+					table_html_string +=  			'<td><span>f</span>' + related_table_body[related_attribute_id][object_id] + '</td>';
+				} else {
+					table_html_string +=  			'<td><span>f</span>' + table_body[attribute_id][i] + '</td>';
+				}
 			}
 			table_html_string +=  		'</tr>';
 		}
@@ -820,12 +834,17 @@
 	//===  Draw the first Table Attribute Dropdown  =======================================================================================================================	
 	function drawTheFirstDropDown() {
 	
-		dropdown_html_string = 	'<select class="form-control table-attribute-dropdown" id="table_attribute0" name="table_attribute0" onchange="tableAttributeChange(0)">' +
-									'<option value="" selected></option>';
+		dropdown_html_string = 	'<div class="table-attribute-dropdown">' +
+									'<div>' +
+										'<select class="form-control" id="table_attribute0" name="table_attribute0" onchange="tableAttributeChange(0)">' +
+											'<option value="" selected></option>';
 		for (var i = 0; i < table_attributes.length; i++) {
-			dropdown_html_string +=	'<option value="' + table_attributes[i]['attribute_id'] + '">' + table_attributes[i]['attribute_name'] + '</option>';
+			dropdown_html_string +=			'<option value="' + table_attributes[i]['attribute_id'] + '">' + table_attributes[i]['attribute_name'] + '</option>';
 		}
-		dropdown_html_string +=	'</select>';
+		dropdown_html_string +=			'</select>' +
+									'</div>' +
+									'<div id="related-attribute-0"></div>' +
+								'</div>';
 		
 	
 		$(dropdown_html_string).insertBefore('#end-of-attribute-selection');
@@ -837,7 +856,17 @@
 
 		var dropdown = document.getElementById("table_attribute" + dropdown_number);
 		var new_attribute_id = dropdown[dropdown.selectedIndex].value;
-		var new_attribute_name = $('[value="' + new_attribute_id + '"]').html();
+		var new_attribute_name = "";
+		var new_attribute_is_relation = false;
+		var table_column_number = 0;
+		for (var i = 0; i < table_attributes.length; i++) {
+			if (table_attributes[i]['attribute_id'] == new_attribute_id) {
+				new_attribute_name = table_attributes[i]['attribute_name'];
+				if (table_attributes[i]['attribute_data_type']=='relation') {new_attribute_is_relation = true;}
+				table_column_number = i;
+			}
+		}
+		//var new_attribute_name = $('[value="' + new_attribute_id + '"]').html();
 		
 		
 		if (new_attribute_id == ""){
@@ -863,12 +892,17 @@
 			if (dropdown_number == largest_dropdown_number) {
 
 				largest_dropdown_number++;
-				dropdown_html_string = 	'<select class="form-control table-attribute-dropdown" id="table_attribute' + largest_dropdown_number + '" name="table_attribute' + largest_dropdown_number + '" onchange="tableAttributeChange(' + largest_dropdown_number + ')">' +
-											'<option value="" selected></option>';
+				dropdown_html_string = 	'<div class="table-attribute-dropdown">' +
+											'<div>' +
+												'<select class="form-control table-attribute-dropdown" id="table_attribute' + largest_dropdown_number + '" name="table_attribute' + largest_dropdown_number + '" onchange="tableAttributeChange(' + largest_dropdown_number + ')">' +
+													'<option value="" selected></option>';
 				for (var i = 0; i < table_attributes.length; i++) {
-					dropdown_html_string +=	'<option value="' + table_attributes[i]['attribute_id'] + '">' + table_attributes[i]['attribute_name'] + '</option>';
+					dropdown_html_string +=			'<option value="' + table_attributes[i]['attribute_id'] + '">' + table_attributes[i]['attribute_name'] + '</option>';
 				}
-				dropdown_html_string +=	'</select>';
+				dropdown_html_string +=			'</select>' +
+											'</div>' +
+											'<div id="related-attribute-' + largest_dropdown_number + '"></div>' +
+										'</div>';
 				
 				selected_table_attributes.push({'attribute_id': new_attribute_id, 'attribute_name': new_attribute_name});
 				
@@ -876,11 +910,75 @@
 				$(dropdown_html_string).insertBefore('#end-of-attribute-selection');
 			}
 			
+			
+			if (new_attribute_is_relation) {
+			
+				specified_start_time = $("#specified_start_time").val();
+				specified_end_time = $("#specified_end_time").val();
+				specified_start_time = new Date(specified_start_time).getTime() / 1000
+				specified_end_time = new Date(specified_end_time).getTime() / 1000
+		
+				request_body = {'object_ids': table_body[parseInt(new_attribute_id)],
+								'specified_start_time': specified_start_time,
+								'specified_end_time': specified_end_time}
+								
+				var xmlhttp = new XMLHttpRequest();       
+				xmlhttp.onreadystatechange = function() {
+					if (this.readyState == 4 && this.status == 200) {
+					
+						var response = JSON.parse(this.responseText);
+						
+						related_table_body = response['related_table_body'];
+						related_table_attributes = response['related_table_attributes'];
+						
+						related_attr_dropdown_string = 	'<select class="form-control related-attribute-dropdown" id="related_attribute' + dropdown_number + '" name="related_attribute' + dropdown_number + '" onchange="relatedAttributeChange(' + dropdown_number + ')">' +
+															'<option value="" selected></option>';
+						for (var i = 0; i < related_table_attributes.length; i++) {
+							related_attr_dropdown_string +=	'<option value="' + related_table_attributes[i]['attribute_id'] + '">' + related_table_attributes[i]['attribute_name'] + '</option>';
+						}
+						related_attr_dropdown_string +=	'</select>';
+						
+						$('#related-attribute-' + dropdown_number).html(related_attr_dropdown_string);
+					}
+					
+					
+				};
+				xmlhttp.open("POST", "/tool/get_data_from_related_objects/");
+				xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+				xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+				xmlhttp.send(JSON.stringify(request_body));	
+				
+		
+
+				
+			}
+			
 			selected_table_attributes[dropdown_number + 1] = {'attribute_id': new_attribute_id, 'attribute_name': new_attribute_name};	
 		}
 		
 		drawTheTable();
 
+	}
+	
+	
+	
+	function relatedAttributeChange(dropdown_number) {
+		var dropdown = document.getElementById("table_attribute" + dropdown_number);
+		var attribute_id = dropdown[dropdown.selectedIndex].value;
+		var attribute_name = dropdown.options[dropdown.selectedIndex].innerHTML;
+	
+		var rel_dropdown = document.getElementById("related_attribute" + dropdown_number);
+		var related_attribute_id = rel_dropdown[rel_dropdown.selectedIndex].value;
+		var related_attribute_name = rel_dropdown.options[rel_dropdown.selectedIndex].innerHTML;
+		
+		selected_table_attributes[dropdown_number + 1] = {  'attribute_id': attribute_id, 
+															'attribute_name': attribute_name + '.' + related_attribute_name, 
+															'attribute_is_relation':true, 
+															'related_attribute_id':related_attribute_id, 
+															'related_attribute_name':related_attribute_name};	
+		drawTheTable();
+		       
+	
 	}
 
 	
@@ -958,7 +1056,19 @@
 		displayed_table = {}
 		for (var i = 0; i < selected_table_attributes.length; i++) {
 			var attribute_id = selected_table_attributes[i]['attribute_id'];
-			displayed_table[selected_table_attributes[i]['attribute_name']] = table_body[attribute_id];
+			if (selected_table_attributes[i]['attribute_is_relation']){
+			
+				var related_object_ids = table_body[attribute_id]; 
+				var related_attribute_id = selected_table_attributes[i]['related_attribute_id'];	
+				var displayed_table_column = []
+				for (var j = 0; j < related_object_ids.length ; j++) {
+					displayed_table_column.push(related_table_body[related_attribute_id][related_object_ids[j]]);
+				}	
+				displayed_table[selected_table_attributes[i]['attribute_name']]	= displayed_table_column;
+					
+			} else {
+				displayed_table[selected_table_attributes[i]['attribute_name']] = table_body[attribute_id];
+			}
 		}
 		
 		var xmlhttp = new XMLHttpRequest();       
@@ -967,14 +1077,6 @@
 			
 				var filename = this.responseText;
 				window.location.href = filename + "-" + file_type;
-				/*var xhttp = new XMLHttpRequest();       
-				xhttp.onreadystatechange = function() {
-					if (this.readyState == 4 && this.status == 200) {
-					}
-				};
-				
-				xhttp.open("GET", "/tool/download_file2_excel?filename=" + filename, true);
-				xhttp.send();*/
 			}
 		};
 

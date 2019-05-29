@@ -62,7 +62,8 @@ def populate_attributes():
                                     expected_valid_period=attribute['expected_valid_period'], 
                                     description=attribute['description'], 
                                     format_specification=json.dumps(attribute['format_specification']), 
-                                    first_applicable_object=attribute['first_applicable_object'], )
+                                    first_applicable_object_type=attribute['first_applicable_object_type'],
+									first_relation_object_type=attribute['first_relation_object_type'],)
         attribute_record.save()
 
 
@@ -101,7 +102,8 @@ def backup_attributes():
                             'description':attribute.description, 
                             'expected_valid_period':attribute.expected_valid_period, 
                             'format_specification':json.loads(attribute.format_specification), 
-                            'first_applicable_object':attribute.first_applicable_object})
+                            'first_applicable_object_type':attribute.first_applicable_object_type,
+							'first_relation_object_type':attribute.first_relation_object_type})
 
     file_path = "collection/static/webservice files/db_backup/attributes/" + str(datetime.datetime.now()).replace(':','') + ".json"
     # file_path = str(datetime.datetime.now()).replace(':','') + ".json"
@@ -114,7 +116,7 @@ def backup_attributes():
 # Clean Data ================================================================
 # ===========================================================================
 def remove_datapoints_with_the_wrong_datatype():
-    numeric_attribute_ids = list(Attribute.objects.filter(data_type__in=['real', 'int']).values_list('id', flat=True))
+    numeric_attribute_ids = list(Attribute.objects.filter(data_type__in=['real', 'int', 'relation']).values_list('id', flat=True))
     numeric_violating_datapoints = Data_point.objects.filter(attribute_id__in=numeric_attribute_ids).filter(numeric_value__isnull=True)
     numeric_violating_datapoints.delete()
 

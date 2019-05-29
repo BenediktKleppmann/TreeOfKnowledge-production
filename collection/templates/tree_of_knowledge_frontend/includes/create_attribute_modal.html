@@ -34,7 +34,7 @@
 		margin-bottom:27px;
 	}
 	
-	#first_applicable_object {
+	#first_applicable_object_type {
 		margin-top:3px;
 	}
 	
@@ -120,9 +120,9 @@
 					</div>
 					<br>
 					<div class="form-group row">
-						<label for="first_applicable_object" class="col-sm-7">Most general Object Type for which it makes sence to have this attribute</label>
+						<label for="first_applicable_object_type" class="col-sm-7">Most general Object Type for which it makes sence to have this attribute</label>
 						<div class="col-sm-5">
-							<select class="form-control form-control-lg" id="first_applicable_object" name="first_applicable_object">
+							<select class="form-control form-control-lg" id="first_applicable_object_type" name="first_applicable_object_type">
 							</select>
 						</div>
 					</div>
@@ -181,7 +181,7 @@
 						options_html_string += '<option value="' + list_of_parent_objects[i]["id"] + '">' + list_of_parent_objects[i]["name"] + '</option>'
 					}
 				}
-				$("#createAttributeModal #first_applicable_object").html(options_html_string);
+				$("#createAttributeModal #first_applicable_object_type").html(options_html_string);
 			}
 		};
 		xhttp.open("GET", "/tool/get_list_of_parent_objects?object_type_id=" + object_type_id , true);
@@ -321,7 +321,7 @@
 		var name = $("#createAttributeModal #name").val();
 		var description = $("#createAttributeModal #description").val();
 		var expected_valid_period = $("#createAttributeModal #expected_valid_period").val();
-		var first_applicable_object = $("#createAttributeModal #first_applicable_object").val();
+		var first_applicable_object_type = $("#createAttributeModal #first_applicable_object_type").val();
 		var type = $("#createAttributeModal #type").val();
 		var min = $("#createAttributeModal #min").val();
 		var max = $("#createAttributeModal #max").val();
@@ -335,7 +335,7 @@
 		message_body['data_type'] = type;
 		message_body['description'] = description;
 		message_body['expected_valid_period'] = expected_valid_period;
-		message_body['first_applicable_object'] = first_applicable_object;
+		message_body['first_applicable_object_type'] = first_applicable_object_type;
 		message_body['format_specification'] = {}
 		message_body['format_specification']['fields'] = {}
 		message_body['format_specification']['fields']['column'] = {}

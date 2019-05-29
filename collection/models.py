@@ -128,8 +128,18 @@ class Attribute(models.Model):
     expected_valid_period = models.IntegerField()
     description = models.TextField()
     format_specification = models.TextField()
-    first_applicable_object = models.TextField()
-    object_type_id_of_related_object = models.TextField(null=True)
+    first_applicable_object_type = models.TextField()
+    first_relation_object_type = models.TextField(null=True)
+    # all_applicable_object_types = models.TextField()
+    # all_relation_object_types = models.TextField(null=True)
+    # def save(self):
+    #     # automatically fill in all_applicable_object_types & all_relation_object_types
+    #     list_of_applicable_object_types = get_from_db.get_list_of_child_objects(self.first_applicable_object_type)
+    #     all_applicable_object_types = json.loads(list_of_applicable_object_types)
+    #     if self.first_relation_object_type is not None:
+    #         list_of_relation_object_types = get_from_db.get_list_of_child_objects(self.first_relation_object_type)
+    #         all_relation_object_types = json.loads(list_of_relation_object_types)
+
 
 
 class Rule(models.Model):

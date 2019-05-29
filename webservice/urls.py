@@ -67,6 +67,8 @@ urlpatterns = [
     url(r'^tool/get_object_hierachy_tree/$', views.get_object_hierachy_tree, name='get_object_hierachy_tree'),
     url(r'^tool/get_data_points/$', views.get_data_points, name='get_data_points'),
     url(r'^tool/get_data_from_random_object/$', views.get_data_from_random_object, name='get_data_from_random_object'),
+    url(r'^tool/get_data_from_random_related_object/$', views.get_data_from_random_related_object, name='get_data_from_random_related_object'),
+    url(r'^tool/get_data_from_related_objects/$', views.get_data_from_related_objects, name='get_data_from_related_objects'),
     # find
     url(r'^tool/find_suggested_attributes/$', views.find_suggested_attributes, name='find_suggested_attributes'),
     url(r'^tool/find_suggested_attributes2/$', views.find_suggested_attributes2, name='find_suggested_attributes2'),

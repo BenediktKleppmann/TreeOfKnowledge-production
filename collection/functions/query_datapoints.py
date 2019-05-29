@@ -8,52 +8,127 @@ from django.db.models import Count
 from django.db import connection
 import json
 import sqlite3
+import itertools
+import math
 
 
 def find_matching_entities(match_attributes, match_values):
-    matching_objects_entire_list = []
 
-    for row_nb in range(len(match_values[0])):    
-        matching_objects_dict = {}
+    # print('=============================================================================')
+    # print(match_attributes)
+    # print('-------------------')
+    # print(match_values)
+    # print('=============================================================================')
+    with connection.cursor() as cursor:
 
-        # append all matching datapoints
-        found_datapoints = Data_point.objects.none()
-        for attribute_nb, attribute_details in enumerate(match_attributes):
-                
-            additional_datapoints = Data_point.objects.filter(attribute_id=attribute_details['attribute_id'], value_as_string=str(match_values[attribute_nb][row_nb]))
-            found_datapoints = found_datapoints.union(additional_datapoints)
-            # print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-            # print(attribute_details['attribute_id'])
-            # print(str(match_values[attribute_nb][row_nb]))
-            # print(len(found_datapoints)) 
-            # print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-
-        # get the object_ids  - those with most matching datapoints first
-        found_datapoints_df = pd.DataFrame(list(found_datapoints.values('object_id','attribute_id','value_as_string','data_quality')))
-        if len(found_datapoints_df)==0:
-            matching_objects_entire_list.append([])
-        else:
-            found_object_attributes_df = found_datapoints_df.groupby(['object_id','attribute_id','value_as_string']).aggregate({'object_id': 'first','attribute_id': 'first', 'value_as_string':'first', 'data_quality':np.sum})
-            object_scores_df = found_object_attributes_df.groupby('object_id').aggregate({'object_id':'first', 'attribute_id':'count', 'data_quality':np.sum})
-            
-
-            objects_df = found_object_attributes_df.pivot(index='object_id', columns='attribute_id', values='value_as_string')
-            objects_df['object_id'] = objects_df.index
-            objects_df = pd.merge(objects_df, object_scores_df, on='object_id', how='left')
-            objects_df = objects_df.sort_values(['attribute_id','data_quality'], ascending=[False, False])
-            objects_df = objects_df[:3]
-            object_columns = list(objects_df.columns)
-            attribute_ids = [attribute['attribute_id'] for attribute in match_attributes if (attribute['attribute_id'] in object_columns)]
-            objects_df = objects_df[['object_id'] + attribute_ids]
-            matching_objects_json = objects_df.to_json(orient='records')
-            if matching_objects_json is not None:
-                matching_objects_entire_list.append(json.loads(matching_objects_json))
-
-    return matching_objects_entire_list
+        # create table_to_match   ----------------------------------------
+        create_match_table = '''
+            CREATE TEMPORARY TABLE table_to_match (
+               row_number INT,
+               attribute_id INT, 
+               value_as_string TEXT
+            ); ''' 
+        cursor.execute(create_match_table)
 
 
+        # insert into table_to_match   ----------------------------------------
+        number_of_rows = len(match_values[0])
+        row_number_column = range(number_of_rows)
+        attribute_id_column = []
+        value_as_string_column = []
+        for column_number, match_attribute in enumerate(match_attributes):
+            attribute_id_column.extend( [match_attribute['attribute_id']] * number_of_rows)
+            value_as_string_column.extend([str(value) for value in match_values[column_number]])
+
+        table_rows = list(map(list, zip(*[row_number_column, attribute_id_column, value_as_string_column])))
 
 
+        number_of_chunks =  math.ceil(number_of_rows / 100)
+        for chunk_index in range(number_of_chunks):
+
+            rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
+            insert_statement = '''
+                INSERT INTO temp.table_to_match (row_number, attribute_id, value_as_string) 
+                VALUES ''' 
+            insert_statement += ','.join(['(%s, %s, %s)']*len(rows_to_insert))
+            cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+
+
+
+
+        # match table_to_match with collection_data_point   ----------------------------------------
+
+        matched_data_points_string = """
+            CREATE TEMPORARY TABLE matched_data_points AS
+                SELECT  row_number, 
+                        object_id, 
+                        dp.attribute_id, 
+                        dp.value_as_string, 
+                        '"' || dp.attribute_id || '":"' || dp.value_as_string || '"' AS dictionary_element,
+                        MAX(data_quality) AS data_quality
+                FROM temp.table_to_match AS ttm
+                LEFT JOIN collection_data_point AS dp
+                ON ttm.attribute_id = dp.attribute_id AND 
+                   ttm.value_as_string = dp.value_as_string 
+                GROUP BY row_number, object_id, dp.attribute_id, dp.value_as_string  
+        """
+
+        cursor.execute(matched_data_points_string)
+
+
+
+
+        matched_objects_string = """
+            CREATE TEMPORARY TABLE matched_objects AS
+                SELECT  row_number, 
+                        object_id, 
+                        '{"object_id":' || object_id || ', ' || group_concat(dictionary_element) || '}' AS object_dict, 
+                        COUNT(*) AS number_of_attributes_found,
+                        SUM(data_quality) AS data_quality,
+                        RANK () OVER (ORDER BY data_quality) AS match_number
+                FROM temp.matched_data_points
+                GROUP BY row_number, object_id
+        """
+        cursor.execute(matched_objects_string)
+
+        matched_rows_string = """
+            CREATE TEMPORARY TABLE matched_rows AS
+                SELECT 
+                    row_number, 
+                    '[' || group_concat(object_dict) || ']'  AS matching_objects_json
+                FROM temp.matched_objects
+                WHERE number_of_attributes_found > 0
+                  AND match_number <=3
+                GROUP BY row_number
+        """
+        cursor.execute(matched_rows_string)
+
+
+
+        row_number_string = """
+            CREATE TEMPORARY TABLE row_number AS
+                SELECT  row_number
+                FROM temp.table_to_match  
+        """
+        cursor.execute(row_number_string)
+
+
+
+        get_matching_objects_json = """
+            SELECT '[' || group_concat(matching_objects_json) || ']' AS matching_objects_json
+            FROM (
+                SELECT  COALESCE(mr.matching_objects_json, '[]') AS matching_objects_json
+                FROM temp.row_number AS rn
+                LEFT JOIN temp.matched_rows  AS mr
+                ON rn.row_number = mr.row_number
+                ORDER BY rn.row_number
+            )
+        """
+
+        result = cursor.execute(get_matching_objects_json)
+        matching_objects_entire_list_string = list(result)[0][0]
+
+    return matching_objects_entire_list_string
 
 
 
@@ -64,13 +139,11 @@ def find_matching_entities(match_attributes, match_values):
 
 def get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time):
 
-    print('3')
     # basic filtering: object_type and specified time range
     child_object_types = get_from_db.get_list_of_child_objects(object_type_id)
     child_object_ids = [el['id'] for el in child_object_types]
 
-    
-    print('4')
+
     with connection.cursor() as cursor:
         query_string = 'SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);' % (', '.join('"{0}"'.format(object_type_id) for object_type_id in child_object_ids))
         cursor.execute(query_string)
@@ -78,7 +151,6 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
 
     # object_ids = list(Object.objects.filter(object_type_id__in=child_object_ids).values_list('id', flat=True))
 
-    print('5')
     broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)   
     # print("===================================================")
     # print("===================================================")
@@ -96,7 +168,6 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
 
 
     # prepare response
-    print('6')
     if broad_table_df is not None:
 
         # for response: list of the tables' attributes sorted with best populated first
@@ -105,9 +176,8 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
         sorted_attribute_ids = [int(attribute_id) for attribute_id in list(sorted_attribute_ids) if attribute_id.isdigit()]
         for attribute_id in sorted_attribute_ids:
             attribute_record = Attribute.objects.get(id=attribute_id)
-            table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name})
+            table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name, 'attribute_data_type':attribute_record.data_type})
 
-        print('7')
         # sort broad_table_df (the best-populated entities to the top)
         broad_table_df = broad_table_df.loc[broad_table_df.isnull().sum(1).sort_values().index]
 
@@ -153,13 +223,132 @@ def get_data_from_random_object(object_type_id, filter_facts, specified_start_ti
 
         for attribute_id in attribute_ids:
             attribute_record = Attribute.objects.get(id=attribute_id)
-            attribute_values[attribute_id] = {'attribute_value': broad_table_df[str(attribute_id)].iloc[0], 'attribute_name':attribute_record.name, 'attribute_data_type':attribute_record.data_type, 'attribute_rule': None}
+            attribute_values[attribute_id] = {  'attribute_value': broad_table_df[str(attribute_id)].iloc[0], 
+                                                'attribute_name':attribute_record.name, 
+                                                'attribute_data_type':attribute_record.data_type, 
+                                                'attribute_rule': None}
 
     else: 
         chosen_object_id = None
         attribute_values = {}
 
     return (chosen_object_id, attribute_values)
+
+
+
+
+def get_data_from_random_related_object(objects_dict, specified_start_time, specified_end_time):
+    object_numbers = list(objects_dict.keys())
+
+
+    # PART1: create object_data_tables - i.e. get broad_table_df for everyobject_number
+    object_data_tables = {}
+    for object_number in object_numbers:
+        # get object_ids
+        object_type_id = objects_dict[object_number]['object_type_id']
+        filter_facts  = objects_dict[object_number]['object_filter_facts']
+        child_object_types = get_from_db.get_list_of_child_objects(object_type_id)
+        child_object_ids = [el['id'] for el in child_object_types]
+        with connection.cursor() as cursor:
+            query_string = 'SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);' % (', '.join('"{0}"'.format(object_type_id) for object_type_id in child_object_ids))
+            cursor.execute(query_string)
+            object_ids = [entry[0] for entry in cursor.fetchall()]
+
+         # get broad_table_df
+        broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)  
+        if broad_table_df is not None:
+            broad_table_df.columns = [str(object_number) + '-' + str(column) for column in broad_table_df.columns]
+            broad_table_df['cross_join_column'] = 1
+            object_data_tables[object_number] = broad_table_df
+
+
+
+    # PART2: merge the broad_table_dfs according to the relations
+    object_numbers = list(object_data_tables.keys())
+    merged_object_data_tables = object_data_tables[object_numbers[0]]
+    list_of_added_tables = [object_numbers[0]]
+
+    for object_number in object_numbers:
+        if object_number not in list_of_added_tables:
+            merged_object_data_tables = pd.merge(merged_object_data_tables , object_data_tables[object_number] , on='cross_join_column', how='inner')
+            list_of_added_tables.append(object_number)
+
+        
+        object_relations = objects_dict[object_number]['object_relations']
+        for relation in object_relations:
+            target_object_number = relation['target_object_number']
+            attribute_id_column = str(object_number) + '-' + str(relation['attribute_id'])           
+            merged_object_data_tables = pd.merge(merged_object_data_tables, object_data_tables[str(target_object_number)], left_on=attribute_id_column, right_on=str(target_object_number) + '-object_id', how='inner', suffixes=('-old', ''))
+            list_of_added_tables.append(str(target_object_number))
+            merged_object_data_tables = merged_object_data_tables[[column for column in merged_object_data_tables.columns if len(column.split('-')) <3]] # before it said "[[.. if column.split('-')[2] != 'old']]". This however causes an IndexOutOfBounds Error
+
+
+    if merged_object_data_tables is not None:
+        # PART3: chose random row
+        merged_object_data_tables.index = range(len(merged_object_data_tables))
+        chosen_row = random.choice(merged_object_data_tables.index)
+    
+
+        # PART4: prepare return values (all_attribute_values)
+        all_attribute_values = {}
+        for object_number in object_numbers:
+            all_attribute_values[object_number] = { 'object_id': int(merged_object_data_tables.loc[chosen_row, str(object_number) + '-object_id']),
+                                                    'object_attributes':{} }
+            object_columns = [column for column in merged_object_data_tables.columns if (column.split('-')[0]==str(object_number)) and (column.split('-')[1] not in ['object_id','time'])]
+
+            for object_column in object_columns:
+                attribute_id = object_column.split('-')[1]
+                attribute_record = Attribute.objects.get(id=attribute_id)
+                all_attribute_values[object_number]['object_attributes'][attribute_id] = {  'attribute_value': merged_object_data_tables[str(object_number) + '-' +str(attribute_id)].iloc[chosen_row], 
+                                                                                            'attribute_name':attribute_record.name, 
+                                                                                            'attribute_data_type':attribute_record.data_type, 
+                                                                                            'attribute_rule': None}
+
+    else: 
+        all_attribute_values = {}
+
+    return all_attribute_values
+
+
+
+
+
+
+# used in query_data.html
+def get_data_from_related_objects(object_ids, specified_start_time, specified_end_time):
+
+
+    filter_facts = []
+    broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)   
+
+    # prepare response
+    if broad_table_df is not None:
+
+        # for response: list of the tables' attributes sorted with best populated first
+        related_table_attributes = []
+        sorted_attribute_ids = broad_table_df.isnull().sum(0).sort_values(ascending=False).index
+        sorted_attribute_ids = [int(attribute_id) for attribute_id in list(sorted_attribute_ids) if attribute_id.isdigit()]
+        for attribute_id in sorted_attribute_ids:
+            attribute_record = Attribute.objects.get(id=attribute_id)
+            related_table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name, 'attribute_data_type':attribute_record.data_type})
+
+        # sort broad_table_df (the best-populated entities to the top)
+        broad_table_df = broad_table_df.loc[broad_table_df.isnull().sum(1).sort_values().index]
+        broad_table_df.index = broad_table_df['object_id']
+        # object_ids_df = pd.DataFrame({'object_id':object_ids})
+        # broad_table_df = pd.merge(object_ids_df, broad_table_df, on='object_id', how='left')
+
+        response = {}
+        response['related_table_body'] = broad_table_df.to_dict('dict')
+        response['related_table_attributes'] = related_table_attributes
+    else: 
+        response = {}
+        response['related_table_body'] = {}
+        response['related_table_attributes'] = []
+
+    return response
+
+
 
 
 
@@ -190,6 +379,8 @@ def get_training_data(object_type_id, filter_facts, valid_times):
 def filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time):
 
     with connection.cursor() as cursor:
+
+        cursor.execute('DROP TABLE IF EXISTS temp.unfiltered_object_ids')
         sql_string1 = '''
             CREATE TEMPORARY TABLE unfiltered_object_ids AS
                 SELECT DISTINCT object_id
@@ -250,6 +441,8 @@ def filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start
             return None
         sql_string3 = 'SELECT * FROM collection_data_point WHERE object_id IN (%s)' % (','.join(found_objects))
         long_table_df = pd.read_sql_query(sql_string3, connection)
+
+
         # found_objects = list(set(data_point_records.values_list('object_id', flat=True)))
         # all_data_points = Data_point.objects.filter(object_id__in=found_objects)    
         # long_table_df = pd.DataFrame(list(all_data_points.values()))
@@ -286,10 +479,11 @@ def filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start
             attribute_data_type = Attribute.objects.get(id=column[1]).data_type
             if attribute_data_type=='string' and column[0]=='string_value':
                 columns_to_keep.append(column)
-            elif attribute_data_type in ['real', 'int'] and column[0]=='numeric_value':
+            elif attribute_data_type in ['real', 'int', 'relation'] and column[0]=='numeric_value':
                 columns_to_keep.append(column)
             elif attribute_data_type == 'boolean' and column[0]=='boolean_value':
                 columns_to_keep.append(column)
+
 
         broad_table_df = broad_table_df[columns_to_keep]
         new_column_names = [column[1] for column in columns_to_keep]
@@ -302,6 +496,126 @@ def filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start
         broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
     
     return broad_table_df
+
+
+
+
+
+
+
+
+
+def get_objects_true_timeline(object_id, simulated_timeline_df):
+
+    true_timeline_df = simulated_timeline_df.copy()
+    error_timeline_df = simulated_timeline_df.copy()
+    attribute_ids = [column for column in list(simulated_timeline_df.columns) if column not in ['start_time','end_time']]
+    attribute_data_types = {}
+    for attribute_id in attribute_ids:
+        attribute_data_types[attribute_id] = Attribute.objects.get(id=attribute_id).data_type
+        true_timeline_df[attribute_id] = np.nan
+        error_timeline_df[attribute_id] = np.nan
+
+    for index, row in true_timeline_df.iterrows():
+
+        if index == 0:
+            true_timeline_df.loc[index, attribute_id] = simulated_timeline_df.loc[index, attribute_id] 
+            error_timeline_df.loc[index, attribute_id] = 0
+
+        else:
+            for attribute_id in attribute_ids:
+                true_datapoint = Data_point.objects.filter(object_id=object_id, 
+                                                            attribute_id=attribute_id, 
+                                                            valid_time_start__lte=row['start_time'], 
+                                                            valid_time_end__gt=row['start_time']).order_by('-data_quality', '-valid_time_start').first()
+
+                simulated_value = simulated_timeline_df.loc[index, attribute_id]
+
+                if attribute_data_types[attribute_id]=='string':
+                    true_timeline_df.loc[index, attribute_id] = true_datapoint.string_value
+                    error_timeline_df.loc[index, attribute_id] = 1 if true_datapoint.string_value.lower() == simulated_value.lower() else 0
+
+                elif attribute_data_types[attribute_id] in ['real', 'int', 'relation']:
+                    true_timeline_df.loc[index, attribute_id] = true_datapoint.numeric_value
+                    true_increase = true_timeline_df.loc[index, attribute_id] - true_timeline_df.loc[index-1, attribute_id]
+                    simulated_increase = simulated_timeline_df.loc[index, attribute_id] - simulated_timeline_df.loc[index-1, attribute_id]
+                    error_value = abs(simulated_increase - true_increase) / true_increase
+                    error_timeline_df.loc[index, attribute_id] = min(error_value, 1)
+
+                elif attribute_data_types[attribute_id] == 'boolean':
+                    true_timeline_df.loc[index, attribute_id] = true_datapoint.boolean_value
+                    error_timeline_df.loc[index, attribute_id] = 1 if true_datapoint.boolean_value == simulated_value else 0
+
+    return (true_timeline_df, error_timeline_df)
+
+
+
+
+ # ===================================================================================================================
+ #   ____  _     _                 _                             _   ______                _   _                 
+ #  / __ \| |   | |               | |                           | | |  ____|              | | (_)                
+ # | |  | | | __| |    _ __   ___ | |_ ______ _   _ ___  ___  __| | | |__ _   _ _ __   ___| |_ _  ___  _ __  ___ 
+ # | |  | | |/ _` |   | '_ \ / _ \| __|______| | | / __|/ _ \/ _` | |  __| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+ # | |__| | | (_| |_  | | | | (_) | |_       | |_| \__ \  __/ (_| | | |  | |_| | | | | (__| |_| | (_) | | | \__ \
+ #  \____/|_|\__,_( ) |_| |_|\___/ \__|       \__,_|___/\___|\__,_| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+ #                |/                                                                                             
+ # ===================================================================================================================
+
+
+
+
+
+
+
+
+def find_matching_entities_OLD(match_attributes, match_values):
+    matching_objects_entire_list = []
+
+    for row_nb in range(len(match_values[0])):    
+        matching_objects_dict = {}
+
+        # append all matching datapoints
+        found_datapoints = Data_point.objects.none()
+        for attribute_nb, attribute_details in enumerate(match_attributes):
+                
+            additional_datapoints = Data_point.objects.filter(attribute_id=attribute_details['attribute_id'], value_as_string=str(match_values[attribute_nb][row_nb]))
+            found_datapoints = found_datapoints.union(additional_datapoints)
+            # print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+            # print(attribute_details['attribute_id'])
+            # print(str(match_values[attribute_nb][row_nb]))
+            # print(len(found_datapoints)) 
+            # print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+
+        # get the object_ids  - those with most matching datapoints first
+        found_datapoints_df = pd.DataFrame(list(found_datapoints.values('object_id','attribute_id','value_as_string','data_quality')))
+        if len(found_datapoints_df)==0:
+            matching_objects_entire_list.append([])
+        else:
+            found_object_attributes_df = found_datapoints_df.groupby(['object_id','attribute_id','value_as_string']).aggregate({'object_id': 'first','attribute_id': 'first', 'value_as_string':'first', 'data_quality':np.sum})
+            object_scores_df = found_object_attributes_df.groupby('object_id').aggregate({'object_id':'first', 'attribute_id':'count', 'data_quality':np.sum})
+            
+
+            objects_df = found_object_attributes_df.pivot(index='object_id', columns='attribute_id', values='value_as_string')
+            objects_df['object_id'] = objects_df.index
+            objects_df = pd.merge(objects_df, object_scores_df, on='object_id', how='left')
+            objects_df = objects_df.sort_values(['attribute_id','data_quality'], ascending=[False, False])
+            objects_df = objects_df[:3]
+            object_columns = list(objects_df.columns)
+            attribute_ids = [attribute['attribute_id'] for attribute in match_attributes if (attribute['attribute_id'] in object_columns)]
+            objects_df = objects_df[['object_id'] + attribute_ids]
+            matching_objects_json = objects_df.to_json(orient='records')
+            if matching_objects_json is not None:
+                matching_objects_entire_list.append(json.loads(matching_objects_json))
+
+    return matching_objects_entire_list
+
+
+
+
+
+
+
+
 
 
 
@@ -390,7 +704,7 @@ def filter_and_make_df_from_datapoints_OLD(object_ids, filter_facts, specified_s
         attribute_data_type = Attribute.objects.get(id=column[1]).data_type
         if attribute_data_type=='string' and column[0]=='string_value':
             columns_to_keep.append(column)
-        elif attribute_data_type in ['real', 'int'] and column[0]=='numeric_value':
+        elif attribute_data_type in ['real', 'int','relation'] and column[0]=='numeric_value':
             columns_to_keep.append(column)
         elif attribute_data_type == 'boolean' and column[0]=='boolean_value':
             columns_to_keep.append(column)
@@ -406,50 +720,5 @@ def filter_and_make_df_from_datapoints_OLD(object_ids, filter_facts, specified_s
     broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
     
     return broad_table_df
-
-
-
-def get_objects_true_timeline(object_id, simulated_timeline_df):
-
-    true_timeline_df = simulated_timeline_df.copy()
-    error_timeline_df = simulated_timeline_df.copy()
-    attribute_ids = [column for column in list(simulated_timeline_df.columns) if column not in ['start_time','end_time']]
-    attribute_data_types = {}
-    for attribute_id in attribute_ids:
-        attribute_data_types[attribute_id] = Attribute.objects.get(id=attribute_id).data_type
-        true_timeline_df[attribute_id] = np.nan
-        error_timeline_df[attribute_id] = np.nan
-
-    for index, row in true_timeline_df.iterrows():
-
-        if index == 0:
-            true_timeline_df.loc[index, attribute_id] = simulated_timeline_df.loc[index, attribute_id] 
-            error_timeline_df.loc[index, attribute_id] = 0
-
-        else:
-            for attribute_id in attribute_ids:
-                true_datapoint = Data_point.objects.filter(object_id=object_id, 
-                                                            attribute_id=attribute_id, 
-                                                            valid_time_start__lte=row['start_time'], 
-                                                            valid_time_end__gt=row['start_time']).order_by('-data_quality', '-valid_time_start').first()
-
-                simulated_value = simulated_timeline_df.loc[index, attribute_id]
-
-                if attribute_data_types[attribute_id]=='string':
-                    true_timeline_df.loc[index, attribute_id] = true_datapoint.string_value
-                    error_timeline_df.loc[index, attribute_id] = 1 if true_datapoint.string_value.lower() == simulated_value.lower() else 0
-
-                elif attribute_data_types[attribute_id] in ['real', 'int']:
-                    true_timeline_df.loc[index, attribute_id] = true_datapoint.numeric_value
-                    true_increase = true_timeline_df.loc[index, attribute_id] - true_timeline_df.loc[index-1, attribute_id]
-                    simulated_increase = simulated_timeline_df.loc[index, attribute_id] - simulated_timeline_df.loc[index-1, attribute_id]
-                    error_value = abs(simulated_increase - true_increase) / true_increase
-                    error_timeline_df.loc[index, attribute_id] = min(error_value, 1)
-
-                elif attribute_data_types[attribute_id] == 'boolean':
-                    true_timeline_df.loc[index, attribute_id] = true_datapoint.boolean_value
-                    error_timeline_df.loc[index, attribute_id] = 1 if true_datapoint.boolean_value == simulated_value else 0
-
-    return (true_timeline_df, error_timeline_df)
 
 

@@ -75,7 +75,7 @@ def get_list_of_child_objects(object_type_id):
 def compare_facts_with_format_specification(list_of_facts, attribute_id, source_of_the_facts, format_specification, comments):
     for fact in list_of_facts:
             if (fact['attribute_id'] == attribute_id):
-                if (format_specification['type'] in ['int', 'real']) and (fact['operation'] in ['<', '>']):
+                if (format_specification['type'] in ['int', 'real', 'relation']) and (fact['operation'] in ['<', '>']):
                     # print("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
                     # print(format_specification)
                     # # print(type(fact['value']))
@@ -137,7 +137,7 @@ def convert_fact_values_to_the_right_format(facts):
     for fact in facts:
         attribute = Attribute.objects.get(id=fact['attribute_id'])
         data_type = json.loads(attribute.format_specification)['fields']['column']['type']
-        if data_type == 'int':
+        if data_type in ['int', 'relation']:
             fact['value'] = int(fact['value'])
         elif data_type == 'real':
             fact['value'] = float(fact['value'])
@@ -179,6 +179,17 @@ def get_most_common_object_types():
     return result
 
 
+# used in edit_model.html
+def get_available_relations():
+    relations = list(Attribute.objects.filter(data_type='relation').values())
+    relations_dict = {}
+    for relation in relations:
+        applicable_object_types_list = get_list_of_child_objects(relation['first_applicable_object_type'])
+        relation['all_applicable_object_types'] = [object_type['id'] for object_type in applicable_object_types_list]
+        relation_object_types_list = get_list_of_child_objects(relation['first_relation_object_type'])
+        relation['all_relation_object_types'] = [object_type['id'] for object_type in relation_object_types_list]
+        relations_dict[relation['id']] = relation
+    return relations_dict
 
 
 

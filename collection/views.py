@@ -17,6 +17,7 @@ import time
 import os
 from django.views.decorators.csrf import csrf_protect, csrf_exempt, requires_csrf_token
 import numpy as np
+import math
 
 
  # ===============================================================================
@@ -377,8 +378,11 @@ def get_possible_attributes(request):
     list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
     list_of_parent_object_ids = [el['id'] for el in list_of_parent_objects]
 
+
+
     response = []
-    attributes = Attribute.objects.all().filter(first_applicable_object__in=list_of_parent_object_ids)
+    attributes = Attribute.objects.all().filter(first_applicable_object_type__in=list_of_parent_object_ids)
+    
     for attribute in attributes:
         response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name})
     return HttpResponse(json.dumps(response))
@@ -413,7 +417,8 @@ def get_attribute_details(request):
                 'expected_valid_period':attribute_record.expected_valid_period,
                 'description':attribute_record.description,
                 'format_specification':json.loads(attribute_record.format_specification),
-                'first_applicable_object':attribute_record.first_applicable_object}
+				'first_applicable_object_type':attribute_record.first_applicable_object_type,
+                'first_relation_object_type':attribute_record.first_relation_object_type}
     print("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
     print(str(attribute_id))
     print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
@@ -445,13 +450,11 @@ def get_object_hierachy_tree(request):
 # used in query_data.html
 @login_required
 def get_data_points(request):
-    print('1')
     request_body = json.loads(request.body)
     object_type_id = request_body['object_type_id']
     filter_facts = request_body['filter_facts']
     specified_start_time = int(request_body['specified_start_time'])
     specified_end_time = int(request_body['specified_end_time'])
-    print('2 - ' + str(request.body))
 
     response = query_datapoints.get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time)
     return HttpResponse(json.dumps(response))
@@ -460,7 +463,6 @@ def get_data_points(request):
 # used in edit_model.html
 @login_required
 def get_data_from_random_object(request):
-
     request_body = json.loads(request.body)
     object_number = request_body['object_number']
     object_type_id = request_body['object_type_id']
@@ -471,6 +473,37 @@ def get_data_from_random_object(request):
     (object_id, attribute_values) = query_datapoints.get_data_from_random_object(object_type_id, filter_facts, specified_start_time, specified_end_time)
     response = {'object_number':object_number, 'object_id':object_id, 'attribute_values':attribute_values}
     return HttpResponse(json.dumps(response))
+
+
+# used in edit_model.html
+@login_required
+def get_data_from_random_related_object(request):
+    request_body = json.loads(request.body)
+    objects_dict = request_body['objects_dict']
+    specified_start_time = request_body['specified_start_time']
+    specified_end_time = request_body['specified_end_time']
+
+    all_attribute_values = query_datapoints.get_data_from_random_related_object(objects_dict, specified_start_time, specified_end_time)
+    return HttpResponse(json.dumps(all_attribute_values))
+
+
+# used in query_data.html
+@login_required
+def get_data_from_related_objects(request):
+    request_body = json.loads(request.body)
+    object_ids = request_body['object_ids']
+    specified_start_time = request_body['specified_start_time']
+    specified_end_time = request_body['specified_end_time']
+    print('*******************************************************')
+    print(request_body.keys())
+    print(request_body['object_ids'])
+    print(request_body['specified_start_time'])
+    print(request_body['specified_end_time'])
+    print('*******************************************************')
+
+    response = query_datapoints.get_data_from_related_objects(object_ids, specified_start_time, specified_end_time)   
+    return HttpResponse(json.dumps(response))
+
 
 
 # ==================
@@ -510,7 +543,7 @@ def find_suggested_attributes2(request):
     list_of_parent_object_ids = [el['id'] for el in list_of_parent_objects]
     
     response = []
-    attributes = Attribute.objects.all().filter(first_applicable_object__in=list_of_parent_object_ids)
+    attributes = Attribute.objects.all().filter(first_applicable_object_type__in=list_of_parent_object_ids)
     for attribute in attributes:
         concluding_format = get_from_db.get_attributes_concluding_format(attribute.id, object_type_id, upload_id)
         response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'description': attribute.description, 'format': concluding_format['format_specification'], 'comments': concluding_format['comments'], 'data_type': attribute.data_type, 'object_type_id_of_related_object': attribute.object_type_id_of_related_object})
@@ -520,16 +553,11 @@ def find_suggested_attributes2(request):
 # used in: upload_data6 
 @login_required
 def find_matching_entities(request):
-    print('1')
     request_body = json.loads(request.body)
-    print('2')
     match_attributes = request_body['match_attributes']
-    print('3')
     match_values = request_body['match_values']
-    print('4')
-    matching_objects_entire_list = query_datapoints.find_matching_entities(match_attributes, match_values)
-    print(matching_objects_entire_list)
-    return HttpResponse(json.dumps(matching_objects_entire_list))
+    matching_objects_entire_list_string = query_datapoints.find_matching_entities(match_attributes, match_values)
+    return HttpResponse(matching_objects_entire_list_string)
 
 
 
@@ -606,7 +634,7 @@ def save_new_attribute(request):
                                 expected_valid_period=request_body['expected_valid_period'], 
                                 description=request_body['description'], 
                                 format_specification=json.dumps(request_body['format_specification']),
-                                first_applicable_object=request_body['first_applicable_object'],
+                                first_applicable_object_type=request_body['first_applicable_object_type'],
                                 object_type_id_of_related_object=request_body['object_type_id_of_related_object'])
             print('4')
             new_entry.save()
@@ -631,7 +659,7 @@ def save_changed_attribute(request):
             attribute_record.data_type = request_body['data_type']
             attribute_record.expected_valid_period = request_body['expected_valid_period']
             attribute_record.description = request_body['description']
-            attribute_record.first_applicable_object = request_body['first_applicable_object']
+            attribute_record.first_applicable_object_type = request_body['first_applicable_object_type']
             attribute_record.format_specification = json.dumps(request_body['format_specification'])
             attribute_record.save()
             return HttpResponse("success")
@@ -1119,7 +1147,8 @@ def edit_simulation(request, simulation_id):
     
     available_object_types = get_from_db.get_most_common_object_types()
     object_icons = [icon_name[:-4] for icon_name in os.listdir("collection/static/images/object_icons/")]
-    return render(request, 'tree_of_knowledge_frontend/edit_simulation.html', {'simulation_model':simulation_model, 'available_object_types': available_object_types, 'object_icons': object_icons})
+    available_relations = get_from_db.get_available_relations()
+    return render(request, 'tree_of_knowledge_frontend/edit_simulation.html', {'simulation_model':simulation_model, 'available_object_types': available_object_types, 'object_icons': object_icons, 'available_relations':available_relations})
 
 
 
@@ -1201,7 +1230,7 @@ def learn_rule(request, learned_rule_id):
     available_attributes = []
     list_of_parent_objects = get_from_db.get_list_of_parent_objects(learned_rule.object_type_id)
     for parent_object in list_of_parent_objects:
-        available_attributes.extend(list(Attribute.objects.filter(first_applicable_object=parent_object['id']).values('name', 'id', 'data_type')))
+        available_attributes.extend(list(Attribute.objects.filter(first_applicable_object_type=parent_object['id']).values('name', 'id', 'data_type')))
 
     return render(request, 'tree_of_knowledge_frontend/learn_rule.html', {'learned_rule':learned_rule, 'available_attributes': available_attributes})
 
@@ -1249,34 +1278,39 @@ def backup_database(request):
 
 
 def test_page1(request):
-    return render(request, 'tree_of_knowledge_frontend/test_page1.html')
+    # object_type_id = "j1_12"
+    # filter_facts = []
+    # specified_start_time = 946684800
+    # specified_end_time = 1577836800
+    # response = query_datapoints.get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time)
+    # attributes = list(Attribute.objects.all().values())
+    list_of_child_objects = get_from_db.get_list_of_child_objects("j1_5")
+    return HttpResponse(json.dumps(list_of_child_objects))
+    # return render(request, 'tree_of_knowledge_frontend/test_page1.html')
 
 
 
 def test_page2(request):
-
-    # object_ids = list(set(list(data_point_records.values_list('object_id', flat=True))))
-    bla = list(Attribute.objects.all().values())
-    return HttpResponse(json.dumps(bla))
     # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
+    bla = list(Simulation_model.objects.filter(id=70).values())
+    print(bla)
+    return HttpResponse(json.dumps(bla))
+    
 
     
 
 
 def test_page3(request):
-    object_type_id = 'j1_5'
-    filter_facts = [{'attribute': 'Surface area (km2)', 'attribute_id': '23', 'operation': '>', 'value': '10000000'}]
-    valid_times = [[1389398400, 1421020800]]
+    return render(request, 'tree_of_knowledge_frontend/test_page3.html')
+    # county_objects = Object.objects.filter(object_type_id='j1_12')
+    # county_object_ids = [el['id'] for el in list(county_objects.values('id'))]
+    # number_of_chunks = math.ceil(len(county_object_ids)/100)
+    # for chunk_number in range(number_of_chunks):
+    #     current_object_ids = county_object_ids[chunk_number*100: chunk_number*100+100]
+    #     Data_point.objects.filter(object_id__in=current_object_ids).delete()
 
-    broad_table_df= query_datapoints.get_training_data(object_type_id, filter_facts, valid_times)
-    return HttpResponse(json.dumps(broad_table_df.to_dict('list')))
+    # county_objects.delete()
+    # return HttpResponse('success')
 
-    # attribute_values_list = []
-    # for valid_time in valid_times:
-    #     specified_start_time = valid_time[0]
-    #     specified_end_time = valid_time[1]
-    #     (chosen_object_id, attribute_values) = query_datapoints.get_data_from_random_object(object_type_id, filter_facts, specified_start_time, specified_end_time)
-    #     attribute_values_list.append(attribute_values)
-    # return HttpResponse(json.dumps(attribute_values_list))
 
     

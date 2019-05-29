@@ -7,6 +7,9 @@ import os
 from itertools import compress
 import dateutil.parser
 import time
+from django.db import connection
+import math
+import itertools
 
 # called from upload_data1
 def save_new_upload_details(request):
@@ -134,98 +137,123 @@ def perform_uploading(uploaded_dataset, request):
     """
         Main upload function for non-timeseries data.
     """
+    with connection.cursor() as cursor:
+        object_type_id = uploaded_dataset.object_type_id
+        data_quality = uploaded_dataset.correctness_of_data
+        attribute_selection = json.loads(uploaded_dataset.attribute_selection)
+        list_of_matches = json.loads(uploaded_dataset.list_of_matches)
+        valid_time_start = int(time.mktime(uploaded_dataset.data_generation_date.timetuple()))
+        data_table_json = json.loads(uploaded_dataset.data_table_json)
+        table_body = data_table_json["table_body"]
+        number_of_entities = len(table_body[list(table_body.keys())[0]])
+        
+        # make new_object_ids
+        not_matched_indexes = [index for index, match_id in enumerate(list_of_matches) if match_id is None]
+        maximum_object_id = Object.objects.all().order_by('-id').first().id
+        new_object_ids = range(maximum_object_id + 1, maximum_object_id + len(not_matched_indexes) + 1)
+
+        object_id_column = list_of_matches
+        if len(not_matched_indexes) > 0:
+            for not_matched_index, new_object_id in zip(not_matched_indexes, new_object_ids):
+                object_id_column[not_matched_index] = new_object_id
+
+            # create new object records        
+            table_rows = list(map(list, zip(*[new_object_ids, [object_type_id] * len(not_matched_indexes)])))
+            number_of_chunks =  math.ceil(len(not_matched_indexes) / 100)
+            for chunk_index in range(number_of_chunks):
+
+                rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
+                insert_statement = '''
+                    INSERT INTO collection_object (id, object_type_id) 
+                    VALUES ''' 
+                insert_statement += ','.join(['(%s, %s)']*len(rows_to_insert))
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+
+        # new_object_records = pd.DataFrame({
+        #     'id': new_object_ids,
+        #     'object_type_id': [object_type_id] * len(not_matched_indexes) })
+        # new_object_records.to_sql('collection_object', connection, if_exists='append', index=False, chunksize=40 )
 
 
-    number_of_datapoints_saved = 0;
 
-    object_type_id = uploaded_dataset.object_type_id
-
-    data_quality = uploaded_dataset.correctness_of_data
-    attribute_selection = json.loads(uploaded_dataset.attribute_selection)
-
-    list_of_matches = json.loads(uploaded_dataset.list_of_matches)
-
-    valid_time_start = int(time.mktime(uploaded_dataset.data_generation_date.timetuple()))
-    data_table_json = json.loads(uploaded_dataset.data_table_json)
-    table_body = data_table_json["table_body"]
-
-    number_of_entities = len(table_body[list(table_body.keys())[0]])
-     
-
-
-    # prepare list of data_types and of expected_valid_periods
-    data_types = []
-    valid_times_end = []
-    for attribute_id in attribute_selection:
-        attribute_record = Attribute.objects.get(id=attribute_id)
-        data_types.append(attribute_record.data_type)
-        valid_times_end.append(valid_time_start + attribute_record.expected_valid_period)
-
-
-    for entity_nb in range(number_of_entities):
-
-        if (list_of_matches[entity_nb] is not None):
-            object_id = list_of_matches[entity_nb]
-        else:
-            object_record = Object(object_type_id=object_type_id)
-            object_record.save()
-            object_id = object_record.id
-
+        # for every column: create and save new_datapoint_records
         for column_number, attribute_id in enumerate(attribute_selection):
-            value = table_body[str(column_number)][entity_nb]
-            valid_time_end = valid_times_end[column_number]
-
-            if value is not None:
-                value_as_string = str(value)
-
-                if data_types[column_number] == "string":             
-                    numeric_value = None
-                    string_value = value
-                    boolean_value = None
-                elif data_types[column_number] in ["int", "real"]: 
-                    numeric_value = value
-                    string_value = None
-                    boolean_value = None
-                elif data_types[column_number] == "bool": 
-                    numeric_value = value
-                    string_value = None
-                    boolean_value = None
-
-                data_point_record = Data_point( object_id=object_id, 
-                                                attribute_id=attribute_id, 
-                                                value_as_string=value_as_string, 
-                                                numeric_value=numeric_value, 
-                                                string_value=string_value, 
-                                                boolean_value=boolean_value, 
-                                                valid_time_start=valid_time_start, 
-                                                valid_time_end=valid_time_end, 
-                                                data_quality=data_quality)
-                data_point_record.save()
-                number_of_datapoints_saved += 1
+            attribute_record = Attribute.objects.get(id=attribute_id)
+            data_type = attribute_record.data_type
+            valid_time_end = valid_time_start + attribute_record.expected_valid_period
 
 
-    object_type_record = Object_types.objects.get(id=object_type_id)
-    objects_dict = {}
-    objects_dict[1] = { 'object_name':object_type_record.name + ' 1', 
-                        'object_type_id':object_type_id, 
-                        'object_type_name':object_type_record.name, 
-                        'object_icon':object_type_record.object_icon, 
-                        'object_attributes':{},
-                        'object_filter_facts':uploaded_dataset.meta_data_facts,
-                        'position':{'x':100, 'y':100},
-                        'get_new_object_data': True};
-    simulation_model = Simulation_model(user=request.user, 
-                                        objects_dict=json.dumps(objects_dict),
-                                        object_type_counts=json.dumps({object_type_id:1}),
-                                        total_object_count=0,
-                                        number_of_additional_object_facts=2,
-                                        simulation_start_time=946684800, 
-                                        simulation_end_time=1577836800, 
-                                        timestep_size=31536000)
-    simulation_model.save()
-    new_model_id = simulation_model.id
+            if data_type == "string":             
+                numeric_value_column = [None]*number_of_entities
+                string_value_column = table_body[str(column_number)]
+                boolean_value_column = [None]*number_of_entities
+            elif data_type in ["int", "real", "relation"]: 
+                numeric_value_column = table_body[str(column_number)]
+                string_value_column = [None]*number_of_entities
+                boolean_value_column = [None]*number_of_entities
+            elif data_type == "bool": 
+                numeric_value_column = table_body[str(column_number)]
+                string_value_column = [None]*number_of_entities
+                boolean_value_column = [None]*number_of_entities
+            
 
-    return (number_of_datapoints_saved, new_model_id)
+            attribute_id_column = [attribute_id]*number_of_entities
+            attribute_id_column = [str(attribute_id) for attribute_id in attribute_id_column]
+
+            new_datapoint_records = pd.DataFrame({'object_id':object_id_column,
+                            'attribute_id':[str(attribute_id)]*number_of_entities,
+                            'value_as_string':[str(value) for value in table_body[str(column_number)]],
+                            'numeric_value':numeric_value_column,
+                            'string_value':string_value_column,
+                            'boolean_value':boolean_value_column,
+                            'valid_time_start': [valid_time_start]*number_of_entities,
+                            'valid_time_end':[valid_time_end]*number_of_entities,
+                            'data_quality':[data_quality]*number_of_entities})
+
+
+            table_rows = new_datapoint_records.values.tolist()
+            number_of_chunks =  math.ceil(number_of_entities / 100)
+
+            for chunk_index in range(number_of_chunks):
+                rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
+                insert_statement = '''
+                    INSERT INTO collection_data_point (object_id, attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end, data_quality) 
+                    VALUES ''' 
+                insert_statement += ','.join(['(%s, %s, %s, %s, %s, %s, %s, %s, %s)']*len(rows_to_insert))
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+     
+            # new_datapoint_records.to_sql('collection_data_point', connection, if_exists='append', index=False)
+
+
+        # create new simulation_model
+        object_type_record = Object_types.objects.get(id=object_type_id)
+        objects_dict = {}
+        objects_dict[1] = { 'object_name':object_type_record.name + ' 1', 
+                            'object_type_id':object_type_id, 
+                            'object_type_name':object_type_record.name, 
+                            'object_icon':object_type_record.object_icon, 
+                            'object_attributes':{},
+                            'object_filter_facts':uploaded_dataset.meta_data_facts,
+                            'position':{'x':100, 'y':100},
+                            'get_new_object_data': True};
+
+        simulation_model = Simulation_model(user=request.user, 
+                                            objects_dict=json.dumps(objects_dict),
+                                            object_type_counts=json.dumps({object_type_id:1}),
+                                            total_object_count=0,
+                                            number_of_additional_object_facts=2,
+                                            simulation_start_time=946684800, 
+                                            simulation_end_time=1577836800, 
+                                            timestep_size=31536000)
+
+        simulation_model.save()
+        new_model_id = simulation_model.id
+
+        return (number_of_entities, new_model_id)
+
+
+
+
 
 
 # called from upload_data7
@@ -343,7 +371,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
                     numeric_value = None
                     string_value = value
                     boolean_value = None
-                elif data_types[column_number] in ["int", "real"]: 
+                elif data_types[column_number] in ["int", "real", "relation"]: 
                     numeric_value = value
                     string_value = None
                     boolean_value = None
@@ -367,6 +395,118 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 
 
     simulation_model = Simulation_model(user=request.user, name="", description="", meta_data_facts=uploaded_dataset.meta_data_facts)
+    simulation_model.save()
+    new_model_id = simulation_model.id
+
+    return (number_of_datapoints_saved, new_model_id)
+
+
+
+
+ # ===================================================================================================================
+ #   ____  _     _                 _                             _   ______                _   _                 
+ #  / __ \| |   | |               | |                           | | |  ____|              | | (_)                
+ # | |  | | | __| |    _ __   ___ | |_ ______ _   _ ___  ___  __| | | |__ _   _ _ __   ___| |_ _  ___  _ __  ___ 
+ # | |  | | |/ _` |   | '_ \ / _ \| __|______| | | / __|/ _ \/ _` | |  __| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+ # | |__| | | (_| |_  | | | | (_) | |_       | |_| \__ \  __/ (_| | | |  | |_| | | | | (__| |_| | (_) | | | \__ \
+ #  \____/|_|\__,_( ) |_| |_|\___/ \__|       \__,_|___/\___|\__,_| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+ #                |/                                                                                             
+ # ===================================================================================================================
+
+
+
+
+# called from upload_data7
+def perform_uploading_OLD(uploaded_dataset, request):
+    """
+        Main upload function for non-timeseries data.
+    """
+    object_type_id = uploaded_dataset.object_type_id
+    data_quality = uploaded_dataset.correctness_of_data
+    attribute_selection = json.loads(uploaded_dataset.attribute_selection)
+    list_of_matches = json.loads(uploaded_dataset.list_of_matches)
+    valid_time_start = int(time.mktime(uploaded_dataset.data_generation_date.timetuple()))
+    data_table_json = json.loads(uploaded_dataset.data_table_json)
+
+    table_body = data_table_json["table_body"]
+    number_of_entities = len(table_body[list(table_body.keys())[0]])
+     
+
+    # prepare list of data_types and of expected_valid_periods
+    data_types = []
+    valid_times_end = []
+    for attribute_id in attribute_selection:
+        attribute_record = Attribute.objects.get(id=attribute_id)
+        data_types.append(attribute_record.data_type)
+        valid_times_end.append(valid_time_start + attribute_record.expected_valid_period)
+
+
+    all_data_point_records = []
+    for entity_nb in range(number_of_entities):
+
+        if (list_of_matches[entity_nb] is not None):
+            object_id = list_of_matches[entity_nb]
+        else:
+            object_record = Object(object_type_id=object_type_id)
+            object_record.save()
+            object_id = object_record.id
+
+
+        for column_number, attribute_id in enumerate(attribute_selection):
+            value = table_body[str(column_number)][entity_nb]
+            valid_time_end = valid_times_end[column_number]
+
+            if value is not None:
+                value_as_string = str(value)
+
+                if data_types[column_number] == "string":             
+                    numeric_value = None
+                    string_value = value
+                    boolean_value = None
+                elif data_types[column_number] in ["int", "real", "relation"]: 
+                    numeric_value = value
+                    string_value = None
+                    boolean_value = None
+                elif data_types[column_number] == "bool": 
+                    numeric_value = value
+                    string_value = None
+                    boolean_value = None
+
+
+                data_point_record = Data_point( object_id=object_id, 
+                                                attribute_id=attribute_id, 
+                                                value_as_string=value_as_string, 
+                                                numeric_value=numeric_value, 
+                                                string_value=string_value, 
+                                                boolean_value=boolean_value, 
+                                                valid_time_start=valid_time_start, 
+                                                valid_time_end=valid_time_end, 
+                                                data_quality=data_quality)
+                all_data_point_records.append(data_point_record)
+
+    Data_point.objects.bulk_create(all_data_point_records)
+    number_of_datapoints_saved = len(all_data_point_records)
+
+    object_type_record = Object_types.objects.get(id=object_type_id)
+    objects_dict = {}
+    objects_dict[1] = { 'object_name':object_type_record.name + ' 1', 
+                        'object_type_id':object_type_id, 
+                        'object_type_name':object_type_record.name, 
+                        'object_icon':object_type_record.object_icon, 
+                        'object_attributes':{},
+                        'object_filter_facts':uploaded_dataset.meta_data_facts,
+                        'position':{'x':100, 'y':100},
+                        'get_new_object_data': True};
+
+    simulation_model = Simulation_model(user=request.user, 
+                                        objects_dict=json.dumps(objects_dict),
+                                        object_type_counts=json.dumps({object_type_id:1}),
+                                        total_object_count=0,
+                                        number_of_additional_object_facts=2,
+                                        simulation_start_time=946684800, 
+                                        simulation_end_time=1577836800, 
+                                        timestep_size=31536000)
+
     simulation_model.save()
     new_model_id = simulation_model.id
 

@@ -1,53 +1,282 @@
-{% extends 'layouts/base_tool.html' %}
+{% load staticfiles %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
 
-{% block title %}
-	Tree of Knowledge - Main Menu
-{% endblock %}
+        <title>Graph Shortest Path Finding</title>
 
-{% block additionalcss %}
-<style>
+       <link rel="stylesheet" type="text/css" href="https://resources.jointjs.com/demos/rappid/build/rappid.css">
+        <!-- <link rel="stylesheet" type="text/css" href="css/dijkstra.css" />-->
+
+    </head>
+    <body>
+
+        <script>
+            SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformToElement || function (toElement) {
+                return toElement.getScreenCTM().inverse().multiply(this.getScreenCTM());
+            };
+        </script>
+
+        <p>Click a node and hover over another one to see the shortest path between them.</p>
+
+        <div class="example shorter-path-finder">
+            <div class="options">
+                <label>Directed graph<input type="checkbox" id="opt-directed"/></label>
+                <label>Edit mode<input type="checkbox" id="opt-edit"/>
+                    <p id="edit-mode-help">
+                        Double-click a blank paper area to create new nodes.
+                        Drag the text of nodes to create new edges.
+                    </p>
+                </label>
+            </div>
+            <pre id="path"></pre>
+            <div id="paper" class="paper"></div>
+
+        </div><!--end example-->
+
+        <!-- Rappid/JointJS dependencies: -->
+			<script src="{% static 'js/jointjs/jquery.js' %}"></script>
+			<script src="{% static 'js/jointjs/lodash.js' %}"></script>
+			<script src="{% static 'js/jointjs/backbone.js' %}"></script>
+			<script src="{% static 'js/jointjs/joint.js' %}"></script>
+         <!-- <script src="https://resources.jointjs.com/demos/rappid/node_modules/jquery/dist/jquery.js"></script>
+        <script src="https://resources.jointjs.com/demos/rappid/node_modules/lodash/index.js"></script>
+        <script src="https://resources.jointjs.com/demos/rappid/node_modules/backbone/backbone.js"></script>
+        <script src="https://resources.jointjs.com/demos/rappid/build/rappid.js"></script> -->
+
+        <script>
+	// Adjacency list.
+	var m = {
+		a: ['b', 'c'],
+		b: ['d', 'e'],
+		c: ['f', 'g'],
+		f: ['b'],
+		e: ['c'],
+		h: ['f', 'g'],
+		i: ['h', 'a', 'd', 'g'],
+		j: ['a']
+	};
+
+	// Presentational attributes.
+	var attrs = {
+		elementDefault: {
+			text: { fill: '#fff', style: { 'text-shadow': '1px 1px 1px #999', 'text-transform': 'capitalize' }},
+			rect: { fill: '#feb663', 'fill-opacity':'0.2', stroke: 'white' }
+		},
+		elementSelected: {
+			rect: { fill: '#9687fe', 'fill-opacity':'0.2' }
+		},
+		elementHighlighted: {
+			rect: { fill: '#31d0c6', 'fill-opacity':'0.2' }
+		},
+		linkDefault: {
+			'.connection': { stroke: '#6a6c8a', 'stroke-width': 1 }
+		},
+		linkDefaultDirected: {
+			'.marker-target': { d: 'M 6 0 L 0 3 L 6 6 z' }
+		},
+		linkHighlighted: {
+			'.connection': { stroke: '#33334e', 'stroke-width': 3 }
+		}
+	};
+
+
+	var graph = new joint.dia.Graph;
+	var paper = new joint.dia.Paper({ el: $('#paper'), width: 800, height: 400, gridSize: 1, model: graph });
+	var svg_text = '<svg viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="si-glyph si-glyph-abacus"><title>642</title><defs class=""></defs><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g transform="translate(0.000000, 1.000000)" fill="#434343" class="si-glyph-fill"><path d="M14.194,13.958 L1.765,13.958 C0.316,13.958 0.036,12.808 0.036,11.394 L0.036,2.607 C0.036,1.193 0.315,0.043 1.765,0.043 L14.194,0.043 C15.642,0.043 15.922,1.193 15.922,2.607 L15.922,11.394 C15.922,12.808 15.643,13.958 14.194,13.958 L14.194,13.958 Z M1.923,1 C1.414,1 1,1.426 1,1.948 L1,12.052 C1,12.574 1.414,13 1.923,13 L14.077,13 C14.586,13 15,12.574 15,12.052 L15,1.948 C15,1.426 14.586,1 14.077,1 L1.923,1 L1.923,1 Z" class="si-glyph-fill"></path><rect x="3" y="0" width="0.948" height="13.068" class="si-glyph-fill"></rect><rect x="8" y="0" width="0.948" height="13.068" class="si-glyph-fill"></rect><rect x="12" y="0" width="0.948" height="13.068" class="si-glyph-fill"></rect><ellipse cx="3.438" cy="4.976" rx="1.438" ry="0.976" class="si-glyph-fill"></ellipse><ellipse cx="3.438" cy="7.976" rx="1.438" ry="0.976" class="si-glyph-fill"></ellipse><ellipse cx="3.438" cy="10.976" rx="1.438" ry="0.976" class="si-glyph-fill"></ellipse><ellipse cx="8.477" cy="2.976" rx="1.477" ry="0.976" class="si-glyph-fill"></ellipse><ellipse cx="8.477" cy="5.976" rx="1.477" ry="0.976" class="si-glyph-fill"></ellipse><ellipse cx="8.477" cy="10.976" rx="1.477" ry="0.976" class="si-glyph-fill"></ellipse><ellipse cx="12.435" cy="7.977" rx="1.435" ry="0.977" class="si-glyph-fill"></ellipse><ellipse cx="12.435" cy="10.977" rx="1.435" ry="0.977" class="si-glyph-fill"></ellipse></g></g></svg>'
+
+
+	joint.shapes.basic.ObjectImage = joint.shapes.basic.Rect.extend({
+		markup: '<g class="rotatable" draggable="false"><image draggable="false"/><text/><g class="scalable" draggable="false"><rect/></g></g>',
+		defaults: joint.util.deepSupplement({
+			type: 'basic.ObjectImage',
+			id: '23',
+			size: { width: 40, height: 40 },
+			attrs: {
+				text: { fill: '#fff', style: { 'text-shadow': '1px 1px 1px #999', 'text-transform': 'capitalize' }},
+				rect: { fill: '#feb663', 'fill-opacity':'0.2', stroke: 'white' },
+				image: {
+					width: 43,
+					height: 43,
+					'xlink:href': 'data:image/svg+xml;utf8,' + encodeURIComponent(svg_text),
+					preserveAspectRatio: 'none',
+					event: 'element:inspect',
+					//magnet: true,
+					//'text/pointer-events':'none'
+				}
+			}
+
+		}, joint.shapes.basic.Rect.prototype.defaults)
+	});
+	
+	
+
 
 	
-	#design-simulate-button-group {
-		position:absolute;
-		top: 58px;
-		left:45%;
+	// Create a node with `id` at the position `p`.
+	function n(id, p) {
+		//var node = (new joint.shapes.standard.EmbeddedImage({
+		var node = (new joint.shapes.basic.ObjectImage({
+			id: id,
+			position: { x: g.point(p).x, y: g.point(p).y },
+			size: { width: 40, height: 40 },
+			attrs: {
+				text: { fill: '#fff', style: { 'text-shadow': '1px 1px 1px #999', 'text-transform': 'capitalize' }},
+				rect: { fill: '#feb663', 'fill-opacity':'0.2', stroke: 'white' },
+				image: {
+					width: 43,
+					height: 43,
+					'xlink:href': 'data:image/svg+xml;utf8,' + encodeURIComponent(svg_text),
+					preserveAspectRatio: 'none',
+					event: 'element:inspect',
+					//magnet: true,
+					//'text/pointer-events':'none'
+				}
+			}
+		})).addTo(graph);
+		node.attr('text/text', id);
+		return node;
 	}
-	
-	.design-simulate-button {
-		border: 1px solid gray;
-		border-top-left-radius: 0px;
-		border-top-right-radius: 0px;
-		border-bottom-left-radius: 7px;
-		border-bottom-right-radius: 7px;
-		background: linear-gradient(180deg,rgb(252, 252, 252) 0%,rgb(233, 233, 233) 96.48217237937519%);
-		padding: 5px 18px;
+
+	// Create a link between a source element with id `s` and target element with id `t`.
+	function l(s, t) {
+		(new joint.dia.Link({
+			id: [s,t].sort().join(),
+			source: { id: s },
+			target: { id: t },
+			z: -1,
+			attrs: attrs.linkDefault
+		})).addTo(graph);
 	}
-	
-	.design-simulate-button.active {
-		background: linear-gradient(180deg,rgb(161, 161, 161) 0%,rgb(170, 170, 170) 96.48217237937519%);
-		box-shadow: inset 1px 1px 02px 01px rgba(0%,0%,0%,0.082);
+
+	// Create a random point in the specified area.
+	function r() {
+		return g.point.random(30, 600, 30, 300) + '';
 	}
-	
-</style>
-{% endblock %}
 
-{% block content %}
+	// Construct nodes and links based on teh adjancy list.
+	_.each(m, function(adjs, parent) {
+		n(parent, r());
+		_.each(adjs, function(adj) {
+			// Do not create the node if it's already in the graph.
+			if (!graph.getCell(adj)) n(adj, r());
+			l(parent, adj);
+		});
+	});
 
+	// When a new link is created via UI (in Edit mode), remove the previous link
+	// and create a new one that has the ID constructed as "nodeA,nodeB". The
+	// reason we're removing the old link below is that it is not a good idea
+	// to change ID's of any model in JointJS.
+	graph.on('change:source change:target', function(link, collection, opt) {
 
-	<div id="design-simulate-button-group" class="btn-group" data-toggle="buttons">		
-		<label class="btn design-simulate-button active" onclick="design()">
-			<input type="checkbox" autocomplete="off" id="design-button">Design
-		</label>
-		<label class="btn design-simulate-button" onclick="simulate()">
-			<input type="checkbox" autocomplete="off" id="design-button">Simulate
-		</label>
-	</div>
-		
-		
-		
-		{% include "tree_of_knowledge_frontend/includes/instruction_video_modal.html" with url="https://www.youtube-nocookie.com/embed/ZVlZMOB-Sq0" %} 
-		
-		
-{% endblock %}
+		var sourceId = link.get('source').id;
+		var targetId = link.get('target').id;
+		if (opt.ui && sourceId && targetId) {
+			link.remove();
+			l(sourceId, targetId);
+		}
+	});
 
+	// Interaction.
+	// ------------
+
+	// Select source.
+	var selected;
+	paper.on('cell:pointerdown', function(cellView) {
+
+		if (editMode || cellView.model.isLink()) return;
+		if (selected) selected.attr(attrs.elementDefault);
+		(selected = cellView.model).attr(attrs.elementSelected);
+		hidePath();
+	});
+
+	// Hover an element to select a target.
+	paper.on('cell:mouseover', function(cellView, evt) {
+
+		if (editMode || cellView.model.isLink() || cellView.model === selected) return;
+		if (selected) {
+			var path = graph.shortestPath(selected, cellView.model, { directed: directed });
+			showPath(path);
+			cellView.model.attr(attrs.elementHighlighted);
+		}
+	});
+
+	// Deselect target.
+	paper.on('cell:mouseout', function(cellView, evt) {
+
+		if (editMode || cellView.model.isLink() || cellView.model === selected) return;
+		cellView.model.attr(attrs.elementDefault);
+		hidePath();
+	});
+
+	// Helpers.
+
+	var pathLinks = [];
+
+	function hidePath() {
+
+		$('#path').text('');
+		_.each(pathLinks, function(link) {
+			link.attr(attrs.linkDefault);
+			link.set('labels', []);
+		});
+	}
+
+	function showPath(path) {
+
+		$('#path').text(path.join(' -> '));
+		for (var i = 0; i < path.length; i++) {
+			var curr = path[i];
+			var next = path[i + 1];
+			if (next) {
+				var link = graph.getCell([curr, next].sort().join());
+				link.label(0, { position: .5, attrs: {
+					text: { text: ' ' + (i + 1) + ' ', 'font-size': 10, fill: 'white' },
+					rect: { rx: 8, ry: 8, fill: 'black', stroke: 'black', 'stroke-width': 5 }
+				}});
+				pathLinks.push(link.attr(attrs.linkHighlighted));
+			}
+		}
+	}
+
+	// UI.
+
+	var directed = false;
+	$('#opt-directed').on('change', function(evt) {
+
+		directed = $(evt.target).is(':checked');
+		_.each(graph.getLinks(), function(link) {
+			if (directed) {
+				link.attr(attrs.linkDefaultDirected);
+			} else {
+				link.removeAttr('.marker-target');
+			}
+		});
+	});
+
+	var editMode;
+	$('#opt-edit').on('change', function(evt) {
+
+		editMode = $(evt.target).is(':checked');
+		_.each(graph.getElements(), function(el) {
+			if (editMode) {
+				el.attr('rect/magnet', true).attr('text/pointer-events', 'none');
+			} else {
+				el.removeAttr('rect/magnet').removeAttr('text/pointer-events');
+			}
+		});
+	});
+
+	paper.on('blank:pointerdblclick', function(evt, x, y) {
+
+		if (editMode) {
+			var node = n(_.uniqueId('n'), x + '@' + y);
+			node.attr('rect/magnet', true).attr('text/pointer-events', 'none');
+		}
+	});
+
+		</script>
+    </body>
+</html>

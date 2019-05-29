@@ -454,8 +454,45 @@
 	
 	
 
-	
 	function getObjectData() {
+		var request_body = {};
+		request_body['objects_dict']  = objects_dict;
+		request_body['specified_start_time'] = simulation_start_time;
+		request_body['specified_end_time'] = simulation_end_time;
+		
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var all_attribute_values = JSON.parse(this.responseText);
+				console.log('----------------------------')
+				console.log(objects_dict)
+				console.log('----------------------------')
+				object_numbers = Object.keys(all_attribute_values);
+				for (var i = 0; i < object_numbers.length ; i++) {
+					object_number = parseInt(object_numbers[i]);
+					objects_dict[object_number]['object_id'] = all_attribute_values[object_number]['object_id'];	
+					objects_dict[object_number]['object_attributes'] = all_attribute_values[object_number]['object_attributes'];
+					
+					// set all attributes' rules to 'from_data'
+					console.log('----------------------------')
+					console.log(objects_dict[object_number])
+					console.log('----------------------------')
+					var attribute_ids = Object.keys(objects_dict[object_number]['object_attributes']);
+					for (var j = 0; j < attribute_ids.length ; j++) {
+						objects_dict[object_number]['object_rules'][attribute_ids[j]] = 'from_data';
+					}
+				}		
+			}
+		};
+
+		xmlhttp.open("POST", "/tool/get_data_from_random_related_object/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));	
+	}
+
+	
+	function getObjectData__OLD() {
 		for (var object_number = 1; object_number <= total_object_count; object_number++) {
 			
 			if (objects_dict[object_number]['get_new_object_data'] == true) {
@@ -475,11 +512,7 @@
 						objects_dict[returned_object_number]['object_attributes'] = response['attribute_values'];	
 						objects_dict[returned_object_number]['object_id'] = response['object_id'];	
 						
-						// set all attributes' rules to 'from_data'
-						var attribute_ids = Object.keys(objects_dict[returned_object_number]['object_attributes']);
-						for (var i = 0; i < attribute_ids.length ; i++) {
-							objects_dict[returned_object_number]['object_rules'][attribute_ids[i]] = 'from_data';
-						}
+						
 					}
 				};
 
@@ -599,22 +632,32 @@
 			
 		
 		//update the object positions in objects_dict
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			object_number = object_numbers[i];
+			cell = graph.getCell(object_number);
+			objects_dict[object_number]['position']['x'] = cell['attributes']['position']['x'];
+			objects_dict[object_number]['position']['y'] = cell['attributes']['position']['y'];	
+		}
+/*
 		var cells = graph.getCells();
 		for (var i = 0; i < cells.length; i++) {
-			var object_number = cells[i]['attributes']['object_number'];
-			objects_dict[object_number]['position']['x'] = cells[i]['attributes']['position']['x'];
-			objects_dict[object_number]['position']['y'] = cells[i]['attributes']['position']['y'];
+			if (cells[i]['attributes']['type'] == "basic.ObjectImage") {
+				var object_number = cells[i]['attributes']['object_number'];
+				objects_dict[object_number]['position']['x'] = cells[i]['attributes']['position']['x'];
+				objects_dict[object_number]['position']['y'] = cells[i]['attributes']['position']['y'];
+			}
 		}
-		
-		
-		var number_of_timestep_units = document.getElementById('timestep_size').value;	
-		if (isNaN(number_of_timestep_units)) {
-			alert("Please enter a number as Timestep (Δt)");
-			return
+*/		
+		if($('#timestep_size').length){
+			var number_of_timestep_units = document.getElementById('timestep_size').value;	
+			if (isNaN(number_of_timestep_units)) {
+				alert("Please enter a number as Timestep (Δt)");
+				return
+			}
+			var number_of_timestep_units = parseInt(number_of_timestep_units, 10) || null;
+			timestep_size = number_of_timestep_units * document.getElementById('timestep_unit').value;
 		}
-		
-		var number_of_timestep_units = parseInt(number_of_timestep_units, 10) || null;
-		timestep_size = number_of_timestep_units * document.getElementById('timestep_unit').value;
 		
 		request_body = {
 			'simulation_id': simulation_id,

@@ -1,87 +1,204 @@
-{% extends 'layouts/base_tool.html' %}
-{% load bootstrap3 %}
 {% load staticfiles %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
 
-{% block title %}
-	Edit Simulation {{ model.name }}
-{% endblock %}
+        <title>Graph Shortest Path Finding</title>
 
-{% block additionalcss %}
+       <link rel="stylesheet" type="text/css" href="https://resources.jointjs.com/demos/rappid/build/rappid.css">
+        <!-- <link rel="stylesheet" type="text/css" href="css/dijkstra.css" />-->
 
+    </head>
+    <body>
 
-<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
-<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+        <script>
+            SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformToElement || function (toElement) {
+                return toElement.getScreenCTM().inverse().multiply(this.getScreenCTM());
+            };
+        </script>
 
+        <p>Click a node and hover over another one to see the shortest path between them.</p>
 
-		
-</style>
+        <div class="example shorter-path-finder">
+            <div class="options">
+                <label>Directed graph<input type="checkbox" id="opt-directed"/></label>
+                <label>Edit mode<input type="checkbox" id="opt-edit"/>
+                    <p id="edit-mode-help">
+                        Double-click a blank paper area to create new nodes.
+                        Drag the text of nodes to create new edges.
+                    </p>
+                </label>
+            </div>
+            <pre id="path"></pre>
+            <div id="paper" class="paper"></div>
 
-{% endblock %}
+        </div><!--end example-->
 
-{% block content %}
+        <!-- Rappid/JointJS dependencies: -->
+			<script src="{% static 'js/jointjs/jquery.js' %}"></script>
+			<script src="{% static 'js/jointjs/lodash.js' %}"></script>
+			<script src="{% static 'js/jointjs/backbone.js' %}"></script>
+			<script src="{% static 'js/jointjs/joint.js' %}"></script>
+         <!-- <script src="https://resources.jointjs.com/demos/rappid/node_modules/jquery/dist/jquery.js"></script>
+        <script src="https://resources.jointjs.com/demos/rappid/node_modules/lodash/index.js"></script>
+        <script src="https://resources.jointjs.com/demos/rappid/node_modules/backbone/backbone.js"></script>
+        <script src="https://resources.jointjs.com/demos/rappid/build/rappid.js"></script> -->
 
-	<h3 id="attribute-choice">DateTime of Observation</h3>
-	<br>
-	<div class="form-group row">
-		<label for="form-element" class="col-sm-4 col-form-label">Required Format:</label>
-		<div class="col-sm-8">
-			<input type="text" readonly class="form-control" id="form-element" value="2008-09-15 15:53:00">
-		</div>
-	</div>
-	<br>
-	<div class="form-group row">
-		<label for="verbose" class="col-sm-10">In the table: <br>Are there mutltiple records for the same entity? (e.g. timeseries)</label>
-		<div class="col-sm-2">
-			<input type="checkbox" id="verbose" name="verbose" data-toggle="toggle" > 
-		</div>
-	</div>
-	<div id="reoccuring-entities-group" class="row" style="display:none;">
-		Beneath the "Choose Attribute" buttons, another row of buttons will appear.<br>
-		Please use these buttons to select the column(s) that uniquely identify the entities.<br>
-		With this information, the different rows belonging to the same entity can be matched.<br>
-	</div>
+        <script>
+	// Adjacency list.
+	var m = {
+		a: ['b', 'c'],
+		b: ['d', 'e'],
+		c: ['f', 'g'],
+		f: ['b'],
+		e: ['c'],
+		h: ['f', 'g'],
+		i: ['h', 'a', 'd', 'g'],
+		j: ['a']
+	};
+
+	// Presentational attributes.
+	var attrs = {
+		elementDefault: {
+			text: { fill: '#fff', style: { 'text-shadow': '1px 1px 1px #999', 'text-transform': 'capitalize' }},
+			circle: { fill: '#feb663', stroke: 'white' }
+		},
+		elementSelected: {
+			circle: { fill: '#9687fe' }
+		},
+		elementHighlighted: {
+			circle: { fill: '#31d0c6' }
+		},
+		linkDefault: {
+			'.connection': { stroke: '#6a6c8a', 'stroke-width': 1 }
+		},
+		linkDefaultDirected: {
+			'.marker-target': { d: 'M 6 0 L 0 3 L 6 6 z' }
+		},
+		linkHighlighted: {
+			'.connection': { stroke: '#33334e', 'stroke-width': 3 }
+		}
+	};
+
+	var graph = new joint.dia.Graph;
+	var paper = new joint.dia.Paper({ el: $('#paper'), width: 800, height: 400, gridSize: 1, model: graph });
+	var svg_text = '<svg viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="si-glyph si-glyph-abacus"><title>642</title><defs class=""></defs><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g transform="translate(0.000000, 1.000000)" fill="#434343" class="si-glyph-fill"><path d="M14.194,13.958 L1.765,13.958 C0.316,13.958 0.036,12.808 0.036,11.394 L0.036,2.607 C0.036,1.193 0.315,0.043 1.765,0.043 L14.194,0.043 C15.642,0.043 15.922,1.193 15.922,2.607 L15.922,11.394 C15.922,12.808 15.643,13.958 14.194,13.958 L14.194,13.958 Z M1.923,1 C1.414,1 1,1.426 1,1.948 L1,12.052 C1,12.574 1.414,13 1.923,13 L14.077,13 C14.586,13 15,12.574 15,12.052 L15,1.948 C15,1.426 14.586,1 14.077,1 L1.923,1 L1.923,1 Z" class="si-glyph-fill"></path><rect x="3" y="0" width="0.948" height="13.068" class="si-glyph-fill"></rect><rect x="8" y="0" width="0.948" height="13.068" class="si-glyph-fill"></rect><rect x="12" y="0" width="0.948" height="13.068" class="si-glyph-fill"></rect><ellipse cx="3.438" cy="4.976" rx="1.438" ry="0.976" class="si-glyph-fill"></ellipse><ellipse cx="3.438" cy="7.976" rx="1.438" ry="0.976" class="si-glyph-fill"></ellipse><ellipse cx="3.438" cy="10.976" rx="1.438" ry="0.976" class="si-glyph-fill"></ellipse><ellipse cx="8.477" cy="2.976" rx="1.477" ry="0.976" class="si-glyph-fill"></ellipse><ellipse cx="8.477" cy="5.976" rx="1.477" ry="0.976" class="si-glyph-fill"></ellipse><ellipse cx="8.477" cy="10.976" rx="1.477" ry="0.976" class="si-glyph-fill"></ellipse><ellipse cx="12.435" cy="7.977" rx="1.435" ry="0.977" class="si-glyph-fill"></ellipse><ellipse cx="12.435" cy="10.977" rx="1.435" ry="0.977" class="si-glyph-fill"></ellipse></g></g></svg>'
+
+	// Create a node with `id` at the position `p`.
 	
-	
-	
-	
-		<div id="attribute-details"></div>
-	
-	
-	<script>
-	function inspectDateTimeColumn() {
-	
-		$("#attribute-details").html(attribute_detail_html_string);
-		
-		var attribute_detail_html_string = 	'<h3 id="attribute-choice2">DateTime of Observation</h3>' +
-											'<br>' +
-											'<div class="form-group row">' +
-												'<label for="form-element" class="col-sm-4 col-form-label">Required Format:</label>' +
-												'<div class="col-sm-8">' +
-													'<input type="text" readonly class="form-control" id="form-element2" value="2008-09-15 15:53:00">' +
-												'</div>' +
-											'</div>' +
-											'<br>' +
-											'<div class="form-group row">' +
-												'<label for="verbose" class="col-sm-10">In the table: <br>Are there mutltiple records for the same entity? (e.g. timeseries)</label>' +
-												'<div class="col-sm-2">' +
-													'<input type="checkbox" id="verbose2" name="verbose" data-toggle="toggle" >' + 
-												'</div>' +
-											'</div>' +
-											'<div id="reoccuring-entities-group2" class="row" style="display:none;">' +
-												'Beneath the "Choose Attribute" buttons, another row of buttons will appear.<br>' +
-												'Please use these buttons to select the column(s) that uniquely identify the entities.<br>' +
-												'With this information, the different rows belonging to the same entity can be matched.<br>' +
-											'</div>';
-		$("#attribute-details").html(attribute_detail_html_string);
+	joint.shapes.basic.ObjectImage = joint.shapes.basic.Generic.extend({
+		markup: '<g class="rotatable" draggable="false"><g class="scalable" draggable="false"><rect/></g><image draggable="false"/><text/></g>',
+		defaults: joint.util.deepSupplement({
+
+			type: 'basic.DecoratedRect',
+			size: { width: 50, height: 50 },
+			attrs: {
+				'rect': { fill: '#FFFFFF', stroke: 'black', width: 50, height: 50 },
+				image: {
+					width: 43,
+					height: 43,
+					'xlink:href': 'data:image/svg+xml;utf8,' + encodeURIComponent(svg_text),
+					preserveAspectRatio: 'none',
+					event: 'element:inspect',
+					//magnet: true,
+					//'text/pointer-events':'none'
+				},
+				text: {
+					text: 'object_name'
+				}
+		}
+
+		}, joint.shapes.basic.Generic.prototype.defaults)
+	});
+
+
+
+	function n(id, p) {
+		var node = (new joint.shapes.basic.ObjectImage({
+			id: id,
+			position: { x: g.point(p).x, y: g.point(p).y },
+			size: { width: 40, height: 40 },
+			attrs: {
+				image: {
+					width: 43,
+					height: 43,
+					'xlink:href': 'data:image/svg+xml;utf8,' + encodeURIComponent(svg_text),
+					preserveAspectRatio: 'none',
+					event: 'element:inspect',
+					//magnet: true,
+					//'text/pointer-events':'none'
+				},
+				text: {
+					text: 'object_name'
+				}
+			}
+		})).addTo(graph);
+		//node.attr('text/text', id);
+		return node;
 	}
-	
-	
-	
-	window.onload = function() {
-		
-		inspectDateTimeColumn();
-		+function(a){"use strict";function b(b){return this.each(function(){var d=a(this),e=d.data("bs.toggle"),f="object"==typeof b&&b;e||d.data("bs.toggle",e=new c(this,f)),"string"==typeof b&&e[b]&&e[b]()})}var c=function(b,c){this.$element=a(b),this.options=a.extend({},this.defaults(),c),this.render()};c.VERSION="2.2.0",c.DEFAULTS={on:"On",off:"Off",onstyle:"primary",offstyle:"default",size:"normal",style:"",width:null,height:null},c.prototype.defaults=function(){return{on:this.$element.attr("data-on")||c.DEFAULTS.on,off:this.$element.attr("data-off")||c.DEFAULTS.off,onstyle:this.$element.attr("data-onstyle")||c.DEFAULTS.onstyle,offstyle:this.$element.attr("data-offstyle")||c.DEFAULTS.offstyle,size:this.$element.attr("data-size")||c.DEFAULTS.size,style:this.$element.attr("data-style")||c.DEFAULTS.style,width:this.$element.attr("data-width")||c.DEFAULTS.width,height:this.$element.attr("data-height")||c.DEFAULTS.height}},c.prototype.render=function(){this._onstyle="btn-"+this.options.onstyle,this._offstyle="btn-"+this.options.offstyle;var b="large"===this.options.size?"btn-lg":"small"===this.options.size?"btn-sm":"mini"===this.options.size?"btn-xs":"",c=a('<label class="btn">').html(this.options.on).addClass(this._onstyle+" "+b),d=a('<label class="btn">').html(this.options.off).addClass(this._offstyle+" "+b+" active"),e=a('<span class="toggle-handle btn btn-default">').addClass(b),f=a('<div class="toggle-group">').append(c,d,e),g=a('<div class="toggle btn" data-toggle="toggle">').addClass(this.$element.prop("checked")?this._onstyle:this._offstyle+" off").addClass(b).addClass(this.options.style);this.$element.wrap(g),a.extend(this,{$toggle:this.$element.parent(),$toggleOn:c,$toggleOff:d,$toggleGroup:f}),this.$toggle.append(f);var h=this.options.width||Math.max(c.outerWidth(),d.outerWidth())+e.outerWidth()/2,i=this.options.height||Math.max(c.outerHeight(),d.outerHeight());c.addClass("toggle-on"),d.addClass("toggle-off"),this.$toggle.css({width:h,height:i}),this.options.height&&(c.css("line-height",c.height()+"px"),d.css("line-height",d.height()+"px")),this.update(!0),this.trigger(!0)},c.prototype.toggle=function(){this.$element.prop("checked")?this.off():this.on()},c.prototype.on=function(a){return this.$element.prop("disabled")?!1:(this.$toggle.removeClass(this._offstyle+" off").addClass(this._onstyle),this.$element.prop("checked",!0),void(a||this.trigger()))},c.prototype.off=function(a){return this.$element.prop("disabled")?!1:(this.$toggle.removeClass(this._onstyle).addClass(this._offstyle+" off"),this.$element.prop("checked",!1),void(a||this.trigger()))},c.prototype.enable=function(){this.$toggle.removeAttr("disabled"),this.$element.prop("disabled",!1)},c.prototype.disable=function(){this.$toggle.attr("disabled","disabled"),this.$element.prop("disabled",!0)},c.prototype.update=function(a){this.$element.prop("disabled")?this.disable():this.enable(),this.$element.prop("checked")?this.on(a):this.off(a)},c.prototype.trigger=function(b){this.$element.off("change.bs.toggle"),b||this.$element.change(),this.$element.on("change.bs.toggle",a.proxy(function(){this.update()},this))},c.prototype.destroy=function(){this.$element.off("change.bs.toggle"),this.$toggleGroup.remove(),this.$element.removeData("bs.toggle"),this.$element.unwrap()};var d=a.fn.bootstrapToggle;a.fn.bootstrapToggle=b,a.fn.bootstrapToggle.Constructor=c,a.fn.toggle.noConflict=function(){return a.fn.bootstrapToggle=d,this},a(function(){a("input[type=checkbox][data-toggle^=toggle]").bootstrapToggle()}),a(document).on("click.bs.toggle","div[data-toggle^=toggle]",function(b){var c=a(this).find("input[type=checkbox]");c.bootstrapToggle("toggle"),b.preventDefault()})}(jQuery);
+
+	// Create a link between a source element with id `s` and target element with id `t`.
+	function l(s, t) {
+		(new joint.dia.Link({
+			id: [s,t].sort().join(),
+			source: { id: s },
+			target: { id: t },
+			z: -1,
+			attrs: attrs.linkDefault
+		})).addTo(graph);
 	}
-	</script>
-{% endblock %}
+
+	// Create a random point in the specified area.
+	function r() {
+		return g.point.random(30, 600, 30, 300) + '';
+	}
+
+	// Construct nodes and links based on teh adjancy list.
+	_.each(m, function(adjs, parent) {
+		n(parent, r());
+		_.each(adjs, function(adj) {
+			// Do not create the node if it's already in the graph.
+			if (!graph.getCell(adj)) n(adj, r());
+			l(parent, adj);
+		});
+	});
+
+	// When a new link is created via UI (in Edit mode), remove the previous link
+	// and create a new one that has the ID constructed as "nodeA,nodeB". The
+	// reason we're removing the old link below is that it is not a good idea
+	// to change ID's of any model in JointJS.
+	graph.on('change:source change:target', function(link, collection, opt) {
+
+		var sourceId = link.get('source').id;
+		var targetId = link.get('target').id;
+		if (opt.ui && sourceId && targetId) {
+			link.remove();
+			l(sourceId, targetId);
+		}
+	});
+
+
+
+
+	// UI.
+
+	var editMode;
+	$('#opt-edit').on('change', function(evt) {
+
+		editMode = $(evt.target).is(':checked');
+		_.each(graph.getElements(), function(el) {
+			if (editMode) {
+				el.attr('image/magnet', true).attr('text/pointer-events', 'none');
+			} else {
+				el.removeAttr('image/magnet').removeAttr('text/pointer-events');
+			}
+		});
+	});
+
+
+
+		
+		</script>
+    </body>
+</html>
