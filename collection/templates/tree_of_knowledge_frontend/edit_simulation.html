@@ -399,7 +399,7 @@
 
 
 	
-	
+	 
 	
 	{% include "tree_of_knowledge_frontend/includes/edit_simulation__simulate.html" %} 
 	{% include "tree_of_knowledge_frontend/includes/additional_facts_functions.html" %} 
@@ -564,10 +564,11 @@
 				
 					related_object_type_name = available_object_types[the_relation['first_relation_object_type']]['name'];
 					relation_buttons_string += '<div class="relation-button btn-group" data-toggle="buttons">' +
-													'<label id="relation-button-label' + relation_ids[j] + '" class="btn" onchange="relationButtonClick(' + relation_ids[j] + ')" data-toggle="tooltip" title="' + the_relation['description']  + '">' +
+													'<label id="relation-button-label' + relation_ids[j] + '" class="btn" onclick="relationButtonClick(' + relation_ids[j] + ')" >' +          //data-toggle="tooltip" title="' + the_relation['description']  + '"
 														'<input type="checkbox" autocomplete="off" id="relation-button' + relation_ids[j] + '">--  ' + the_relation['name'] + ' --> ' + 
 													'</label>' +
-												'</div>';
+												'</div>' + 
+												'<input type="checkbox" autocomplete="off" id="relation-button' + relation_ids[j] + '-b">';
 				}
 			}
 			
@@ -579,7 +580,14 @@
 	}
 	
 	function relationButtonClick(relation_button_number) {
-		is_checked = $('#relation-button' + String(relation_button_number)).is(':checked');
+		relation_button_number = String(relation_button_number);
+		is_checked = $('#relation-button' + relation_button_number).is(':checked');
+		console.log('test');
+		var bla = $('#relation-button' + relation_button_number).html();
+		var text_string = '#relation-button' + relation_button_number;
+		var blu = $(text_string).html();
+		var blo = $('#relation-button44').val();
+		console.log('bla');
 		
 		if (is_checked) {
 			all_applicable_object_types = available_relations[relation_button_number]['all_applicable_object_types'];
@@ -706,7 +714,7 @@
 	paper.on('element:pointerup', function(elementView, evt) {
 		var object_number = elementView.model.get('object_number');
 		
-		if (Object.keys(objects_dict).includes(object_number)) {
+		if (Object.keys(objects_dict).includes(String(object_number))) {
 			//make the object on the paper purple
 			elementView.model.attr({rect: { fill: '#9687fe', 'fill-opacity':'0.2'}})
 			

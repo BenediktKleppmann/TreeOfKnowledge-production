@@ -443,6 +443,23 @@ def get_object_hierachy_tree(request):
     return HttpResponse(object_hierachy_tree)
 
 
+@login_required
+def get_available_variables(request):
+    object_type_id = request.GET.get('object_type_id', '')
+    available_variables = []
+    list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
+    # print('++++++++++++++++++++++++++++++++++++++')
+    # print(list_of_parent_objects)
+    # print('++++++++++++++++++++++++++++++++++++++')
+    for parent_object in list_of_parent_objects:
+        available_variables.extend(list(Attribute.objects.filter(first_applicable_object_type=parent_object['id']).values('name', 'id', 'data_type')))
+    # print('||||||||||||||||||||||||||||||||||||||||||')
+    # print(available_variables)
+    # print('||||||||||||||||||||||||||||||||||||||||||')
+    return HttpResponse(json.dumps(available_variables))
+    
+
+
 # ==================
 # complex GET
 # ==================
@@ -546,7 +563,7 @@ def find_suggested_attributes2(request):
     attributes = Attribute.objects.all().filter(first_applicable_object_type__in=list_of_parent_object_ids)
     for attribute in attributes:
         concluding_format = get_from_db.get_attributes_concluding_format(attribute.id, object_type_id, upload_id)
-        response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'description': attribute.description, 'format': concluding_format['format_specification'], 'comments': concluding_format['comments'], 'data_type': attribute.data_type, 'object_type_id_of_related_object': attribute.object_type_id_of_related_object})
+        response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'description': attribute.description, 'format': concluding_format['format_specification'], 'comments': concluding_format['comments'], 'data_type': attribute.data_type, 'object_type_id_of_related_object': attribute.first_relation_object_type})
     return HttpResponse(json.dumps(response))
 
 

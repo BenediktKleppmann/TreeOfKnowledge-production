@@ -140,6 +140,12 @@ class Attribute(models.Model):
     #         list_of_relation_object_types = get_from_db.get_list_of_child_objects(self.first_relation_object_type)
     #         all_relation_object_types = json.loads(list_of_relation_object_types)
 
+# class BehaviourRule(models.Model):
+#     attribute_id = models.IntegerField()
+#     if_clause = models.TextField()
+#     if_clause_variables = models.TextField()
+#     then_clause = models.TextField()
+#     then_clause_variables = models.TextField()
 
 
 class Rule(models.Model):
