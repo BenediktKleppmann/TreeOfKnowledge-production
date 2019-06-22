@@ -148,6 +148,7 @@ class Attribute(models.Model):
 #     then_clause_variables = models.TextField()
 
 
+
 class Rule(models.Model):
     name = models.TextField()
     attribute_id = models.IntegerField()
