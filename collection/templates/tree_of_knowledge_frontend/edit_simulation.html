@@ -122,6 +122,10 @@
 	
 	
 	/* Relations -----*/
+	#relations-card {
+		padding-bottom: 10px;
+	}
+	
 	.relation-button-box-header {
 		margin-left: -5px;
 		padding-top: 5px;
@@ -155,19 +159,13 @@
 		border-radius: 5px;
 	  }
 	  
-	.relation-button-box .btn-group > .btn:hover, 
-	.relation-button-box .btn-group > .btn:focus, 
-	.relation-button-box .btn-group > .btn:active  {
-		color:rgb(0, 0, 0);
-		background-color: rgb(156, 209, 183);
-		border-color: rgb(146, 147, 147);
+	.relation-button:hover, 
+	.relation-button.active  {
+		background: linear-gradient(180deg,rgb(161, 161, 161) 0%,rgb(170, 170, 170) 96.48217237937519%);
+		box-shadow: inset 1px 1px 02px 01px rgba(0%,0%,0%,0.082);
 	  }
 	  
-	.relation-button-box .btn-group > .active  {
-	   color:rgb(0, 0, 0);
-		background-color: rgb(156, 209, 183);
-		border-color: rgb(146, 147, 147);
-	  }
+
 	
 	/* ---------------------------------------------------------------*/
 	/* MIDDLE --------------------------------------------------------*/
@@ -402,6 +400,8 @@
 	 
 	
 	{% include "tree_of_knowledge_frontend/includes/edit_simulation__simulate.html" %} 
+	
+	<script type="text/javascript" src="{% static 'js/bootstrap-3.4.0.min.js' %}"></script>
 	{% include "tree_of_knowledge_frontend/includes/additional_facts_functions.html" %} 
 	
 
@@ -555,20 +555,28 @@
 		for (var i = 0; i < created_object_types.length; i++) {
 			object_type_id = created_object_types[i];
 			object_type_name = available_object_types[object_type_id]['name'];
+			
 			relation_buttons_string += '<div class="relation-button-box">' + 
-											'<div class="relation-button-box-header"><div class="relation-button-box-header-text">' + object_type_name + '</div><div class="hr"></div></div>';
+											'<div class="relation-button-box-header">' +
+												'<div class="relation-button-box-header-text">' + object_type_name + '</div>' +
+												'<div class="hr"></div>' +
+											'</div>';
 											
 			for (var j = 0; j < relation_ids.length; j++) {
 				the_relation = available_relations[relation_ids[j]];
 				if (the_relation['all_applicable_object_types'].includes(object_type_id)){
 				
 					related_object_type_name = available_object_types[the_relation['first_relation_object_type']]['name'];
-					relation_buttons_string += '<div class="relation-button btn-group" data-toggle="buttons">' +
+					
+					relation_buttons_string += '<button id="relation-button' + relation_ids[j] + '" class="relation-button btn" onclick="relationButtonClick(' + relation_ids[j] + ')">--  ' + the_relation['name'] + ' --> ' + '</button>';
+					
+					
+					/*relation_buttons_string += '<div class="relation-button btn-group" data-toggle="buttons">' +
 													'<label id="relation-button-label' + relation_ids[j] + '" class="btn" onclick="relationButtonClick(' + relation_ids[j] + ')" >' +          //data-toggle="tooltip" title="' + the_relation['description']  + '"
 														'<input type="checkbox" autocomplete="off" id="relation-button' + relation_ids[j] + '">--  ' + the_relation['name'] + ' --> ' + 
 													'</label>' +
 												'</div>' + 
-												'<input type="checkbox" autocomplete="off" id="relation-button' + relation_ids[j] + '-b">';
+												'<input type="checkbox" autocomplete="off" id="relation-button' + relation_ids[j] + '-b">';  */
 				}
 			}
 			
@@ -577,39 +585,40 @@
 		}
 		
 		$('#relations-card').html(relation_buttons_string);
+		
 	}
 	
 	function relationButtonClick(relation_button_number) {
 		relation_button_number = String(relation_button_number);
-		is_checked = $('#relation-button' + relation_button_number).is(':checked');
-		console.log('test');
-		var bla = $('#relation-button' + relation_button_number).html();
-		var text_string = '#relation-button' + relation_button_number;
-		var blu = $(text_string).html();
-		var blo = $('#relation-button44').val();
-		console.log('bla');
+		is_already_active =  $('#relation-button' + relation_button_number).hasClass("active");
 		
-		if (is_checked) {
-			all_applicable_object_types = available_relations[relation_button_number]['all_applicable_object_types'];
-			
-			_.each(graph.getElements(), function(el) {
-				object_type_id = el['attributes']['object_type_id']
-				if (all_applicable_object_types.includes(object_type_id)) {
-					el.attr('rect/magnet', true).attr('text/pointer-events', 'none');
-				}
-			});
-		} else {
+		if (is_already_active) {
+			//uncheck it and remove the linkability of the Paper elements
+			$('#relation-button' + relation_button_number).removeClass("active");
 			_.each(graph.getElements(), function(el) {
 				el.removeAttr('rect/magnet').removeAttr('text/pointer-events');
 			});
-		}
-		
-		
-		if (is_checked) {
-			active_relation_button = relation_button_number;
-		} else {
 			active_relation_button = null;
+		} else {
+			//deactivate other buttons and activate this one 
+			$('.relation-button').each(function() {
+				$(this).removeClass("active");
+			});
+			$('#relation-button' + relation_button_number).addClass("active")
+			
+			//allow the linkability for the right Paper elements
+			all_applicable_object_types = available_relations[relation_button_number]['all_applicable_object_types'];
+			_.each(graph.getElements(), function(el) {
+				object_type_id = el['attributes']['object_type_id'];
+				if (all_applicable_object_types.includes(object_type_id)) {
+					el.attr('rect/magnet', true).attr('text/pointer-events', 'none');
+				} else {
+				el.removeAttr('rect/magnet').removeAttr('text/pointer-events');
+				}
+			});			
+			active_relation_button = relation_button_number;
 		}
+		
 	}
 	
 	
@@ -769,33 +778,51 @@
 		// remove from paper
 		elementView.remove();
 		
-		// remove object from global variables
 		var object_number = elementView.model.get('object_number');
 		var object_type_id = objects_dict[object_number]['object_type_id']
-		delete objects_dict[object_number];
-		total_object_count -= 1;
-		object_type_counts[object_type_id] -= 1;
-		if (object_type_counts[object_type_id] == 0) {delete object_type_counts[object_type_id];}
 		
 		//remove incoming links
 		var object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length; i++) {
 			source_object_number = object_numbers[i];
 			object_relations = objects_dict[source_object_number]['object_relations']
-			for (var j = 0; j < object_relations.length; j++) { 
-				target_object_number = object_relations[j]['target_object_number'];
-				if (target_object_number == object_number) {
-					
-					relation_id = source_object_number + ',' + target_object_number;
-					// remove link from paper
-					graph.getCell(relation_id).remove();       
+			if (typeof object_relations != 'undefined') {
+				for (var j = 0; j < object_relations.length; j++) { 
+					target_object_number = object_relations[j]['target_object_number'];
+					if (target_object_number == object_number) {
+						
+						relation_id = source_object_number + ',' + target_object_number;
+						// remove link from paper
+						graph.getCell(relation_id).remove();       
 
-					// remove link from objects_dict					
-					objects_dict[source_object_number]['object_relations'].splice(j,1); 
-					
+						// remove link from objects_dict					
+						objects_dict[source_object_number]['object_relations'].splice(j,1); 
+						
+					}
 				}
 			}
 		}
+		
+		//remove outgoing links
+		object_relations = objects_dict[object_number]['object_relations']
+		if (typeof object_relations != 'undefined') {
+			for (var j = 0; j < object_relations.length; j++) { 
+				target_object_number = object_relations[j]['target_object_number'];
+				relation_id = object_number + ',' + target_object_number;
+				// remove link from paper
+				graph.getCell(relation_id).remove();       
+			}
+			objects_dict[object_number]['object_relations'] = [];
+		}
+		
+		// remove object from global variables
+		delete objects_dict[object_number];
+		total_object_count -= 1;
+		object_type_counts[object_type_id] -= 1;
+		if (object_type_counts[object_type_id] == 0) {delete object_type_counts[object_type_id];}
+		
+		
+
 	});
 
 	
@@ -926,27 +953,29 @@
 		var sourceId = link.get('source').id;
 		var targetId = link.get('target').id;
 		var taget_has_correct_type = false;
-		var target_object_type_id = objects_dict[targetId]['object_type_id']
-		taget_has_correct_type = available_relations[active_relation_button]['all_relation_object_types'].includes(target_object_type_id);
-		if (opt.ui && sourceId && targetId && taget_has_correct_type) {
-			new_relation = {'relation_name': available_relations[active_relation_button]['name'], 
-							'attribute_id': available_relations[active_relation_button]['id'], 
-							'target_object_number': targetId};
-			link.remove();
-			drawLink(sourceId, targetId);
-			objects_dict[sourceId]['object_relations'].push(new_relation);
+		if(typeof targetId != 'undefined') {
+			var target_object_type_id = objects_dict[targetId]['object_type_id'];
+			taget_has_correct_type = available_relations[active_relation_button]['all_relation_object_types'].includes(target_object_type_id);
 			
-		} else {
-			link.remove();
+			if (opt.ui && sourceId && targetId && taget_has_correct_type) {
+				new_relation = {'relation_name': available_relations[active_relation_button]['name'], 
+								'attribute_id': available_relations[active_relation_button]['id'], 
+								'target_object_number': targetId};
+				link.remove();
+				drawLink(sourceId, targetId, available_relations[active_relation_button]['id']);
+				objects_dict[sourceId]['object_relations'].push(new_relation);
+				
+			} else {
+				link.remove();
+			}
 		}
+
 	});
 	
 
 	
-	
-	
 	// Create a link 
-	function drawLink(source, target) {
+	function drawLink(source, target, attribute_id) {
 	
 		new_link = (new joint.shapes.standard.Link({
 			id: [source,target].join(),
@@ -954,7 +983,9 @@
 			target: { id: target },
 			labels: [{ position: .5, attrs: { text: {	text: available_relations[active_relation_button]['name'] || '', 
 														'font-weight': 'normal' } } }],
-			attrs:  { line: { strokeWidth: 1}},
+			attrs:  { line: { strokeWidth: 1}, 
+					  'linktype': 'relation',
+					  'attribute_id': attribute_id},
 			vertices: []
 		}))
 		new_link.addTo(graph);
@@ -963,13 +994,51 @@
 		linkView.addTools(toolsView);
 		
 		// uncheck the relation-button
-		$('#relation-button' + String(active_relation_button)).prop( "checked", false );
-		$('#relation-button-label' + String(active_relation_button)).removeClass("active");
-		relationButtonClick(active_relation_button);
+		$('#relation-button' + String(active_relation_button)).removeClass("active");
+		_.each(graph.getElements(), function(el) {
+			el.removeAttr('rect/magnet').removeAttr('text/pointer-events');
+		});
+		active_relation_button = null;
+
 	}
 	
 	
-
+	// Remove Link  ====================================================================================================
+	
+	// remove links that are missing either source or target
+	 paper.model.on('batch:stop', function () {
+            var links = paper.model.getLinks();
+            _.each(links, function (link) {
+                var source = link.get('source');
+                var target = link.get('target');
+                if (source.id === undefined || target.id === undefined) {
+                    link.remove();
+                }
+            });
+        });
+	
+	
+	// X-Button on the link -> remove link from data
+	graph.on('remove', function(cell, collection, opt) {
+		if (cell.isLink() && cell.attr('linktype')) {
+			var sourceId = cell.get('source').id;
+			var targetId = cell.get('target').id;
+			var attribute_id = cell.attr('attribute_id');
+			
+			var object_relations = objects_dict[sourceId]['object_relations'];
+			for (var j = 0; j < object_relations.length; j++) {
+				var index_to_remove = null;
+				if (object_relations[j]['target_object_number'] == targetId && object_relations[j]['attribute_id'] == attribute_id){
+					index_to_remove = j;
+				}
+				if (index_to_remove != null) {
+					object_relations.splice(index_to_remove,1);
+					objects_dict[sourceId]['object_relations'] = object_relations;
+				}
+			}
+		} 
+	})
+	
 
 
 	
@@ -1299,8 +1368,9 @@
 			var object_relations = objects_dict[object_number]['object_relations'];
 			for (var j = 0; j < object_relations.length; j++) {
 					var target_object_number = object_relations[j]['target_object_number'];
-					active_relation_button = object_relations[j]['attribute_id'];
-					drawLink(object_number, target_object_number);
+					attribute_id = object_relations[j]['attribute_id'];
+					active_relation_button = attribute_id;
+					drawLink(object_number, target_object_number, attribute_id);
 					active_relation_button = null;
 			}
 		}

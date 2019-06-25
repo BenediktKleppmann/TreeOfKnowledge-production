@@ -1309,7 +1309,7 @@ def test_page1(request):
 
 def test_page2(request):
     # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
-    bla = list(Simulation_model.objects.filter(id=70).values())
+    bla = list(Simulation_model.objects.filter(id=84).values())
     print(bla)
     return HttpResponse(json.dumps(bla))
     
