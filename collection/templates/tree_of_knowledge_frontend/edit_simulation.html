@@ -61,7 +61,7 @@
 	  width: 4px;  
 	  background: rgb(225, 225, 225);
 	  border: 1px solid rgb(200, 200, 200);
-	  cursor: col-resize; 
+	  cursor: col-resize;    
 	  box-shadow: 3px  0 6px 0 rgba(0, 0, 0, 0.19);
 	  z-index: 1;
 	}
@@ -397,7 +397,11 @@
 
 
 	
-	 
+	<!--<script src="{% static 'js/jquery.js' %}"></script>-->
+	<!--<script src="{% static 'js/jquery-1.12.5.min.js' %}"></script>-->
+	<!--<script src="{% static 'js/jquery-2.2.4.js' %}"></script>-->
+	<!--<script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>-->
+	
 	
 	{% include "tree_of_knowledge_frontend/includes/edit_simulation__simulate.html" %} 
 	
@@ -1318,7 +1322,8 @@
 	$.getScript( "{% static 'js/jquery.highlight-within-textarea.js' %}", function( data, textStatus, jqxhr ) {});
 	
 
-	 
+	
+	 // Remove the resizable-ness, because it only works in very few jquery versions, which in turn cause trouble elsewhere
 	// make the Left Panel resizable
 	 $("#left-panel").resizable({
 	   handleSelector: "#splitter",
@@ -1329,6 +1334,8 @@
 	   handleSelector: ".splitter-horizontal",
 	   resizeWidth: false
 	 });
+	 
+	 
 
 	// activate the Object Icon Popover
 	$(document).ready(function(){

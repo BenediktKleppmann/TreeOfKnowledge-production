@@ -1,4 +1,4 @@
-from collection.models import Simulation_model, Rule, Attribute, Data_point
+from collection.models import Simulation_model, Calculation_rule, Attribute, Data_point
 import json
 import pandas as pd
 import numpy as np
@@ -70,7 +70,7 @@ class Simulation:
                     if rule_id == 'from_data':
                         self.attributes_to_interpolate[object_number].append(attribute_id)
                     else:
-                        rule_record = Rule.objects.get(id=rule_id)
+                        rule_record = Calculation_rule.objects.get(id=rule_id)
                         self.rules[object_number][attribute_id] = {'rule':rule_record, 'used_attributes':json.loads(rule_record.used_attribute_ids)}
 
             timeline_df = pd.DataFrame(timeline_first_timestep, index=[0])

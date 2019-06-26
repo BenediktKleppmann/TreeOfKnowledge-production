@@ -88,6 +88,7 @@ class Uploaded_dataset(models.Model):
         super(Uploaded_dataset, self).save()
 
 
+
 class Data_point(models.Model):
     object_id = models.IntegerField(db_index=True)
     attribute_id = models.TextField(db_index=True)
@@ -101,6 +102,7 @@ class Data_point(models.Model):
 
 
 
+
 class Object_hierachy_tree_history(models.Model):
     object_hierachy_tree = models.TextField()
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
@@ -108,6 +110,9 @@ class Object_hierachy_tree_history(models.Model):
     def save(self):
         self.timestamp = datetime.datetime.today()
         super(Object_hierachy_tree_history, self).save()
+
+
+
 
 class Object_types(models.Model):
     id = models.TextField(primary_key=True)
@@ -118,8 +123,12 @@ class Object_types(models.Model):
     object_icon = models.TextField()
 
 
+
+
 class Object(models.Model):
     object_type_id = models.TextField()
+
+
 
 
 class Attribute(models.Model):
@@ -130,26 +139,63 @@ class Attribute(models.Model):
     format_specification = models.TextField()
     first_applicable_object_type = models.TextField()
     first_relation_object_type = models.TextField(null=True)
-    # all_applicable_object_types = models.TextField()
-    # all_relation_object_types = models.TextField(null=True)
-    # def save(self):
-    #     # automatically fill in all_applicable_object_types & all_relation_object_types
-    #     list_of_applicable_object_types = get_from_db.get_list_of_child_objects(self.first_applicable_object_type)
-    #     all_applicable_object_types = json.loads(list_of_applicable_object_types)
-    #     if self.first_relation_object_type is not None:
-    #         list_of_relation_object_types = get_from_db.get_list_of_child_objects(self.first_relation_object_type)
-    #         all_relation_object_types = json.loads(list_of_relation_object_types)
 
-# class BehaviourRule(models.Model):
-#     attribute_id = models.IntegerField()
-#     if_clause = models.TextField()
-#     if_clause_variables = models.TextField()
-#     then_clause = models.TextField()
-#     then_clause_variables = models.TextField()
+
+
+
+class Simulation_model(models.Model):
+    objects_dict = models.TextField()
+    object_type_counts = models.TextField()
+    total_object_count= models.IntegerField()
+    number_of_additional_object_facts = models.IntegerField()
+    simulation_start_time = models.IntegerField()
+    simulation_end_time = models.IntegerField()
+    timestep_size = models.IntegerField(null=True)
+    selected_attribute = models.TextField(null=True)
+    timeline_visualisation_data = models.TextField(null=True)
+    linegraph_data = models.TextField(null=True)
+    attribute_errors = models.TextField(null=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
+    created = models.DateTimeField(editable=False)
+    updated = models.DateTimeField(editable=False)
+    # is_private  = models.BooleanField(default=False)
+    def save(self):
+        if not self.id:
+            self.created = datetime.datetime.today()
+        self.updated = datetime.datetime.today()
+        super(Simulation_model, self).save()
 
 
 
 class Rule(models.Model):
+    changed_var_attribute_id = models.IntegerField()
+    condition_text = models.TextField(null=True)
+    condition_exec = models.TextField(null=True)
+    effect_text = models.TextField()
+    effect_exec = models.TextField()
+    effect_is_calculation = models.NullBooleanField() # if False, then the effect is just a value and if the rule is triggered, then the column_to_change will be set to this value
+    used_attribute_ids = models.TextField()
+    used_attribute_names = models.TextField()
+    is_conditionless = models.NullBooleanField()   #if true then this is a calculation rule i.e. the condition is 'True' and the effect is automatically triggered at every timestep
+    has_probability_1 = models.NullBooleanField()  #if true, then the rule is a certain fact and there will be no beta-distribution coefficients in Posterior_distributions
+    
+
+
+class Posterior_distributions():
+    rule_id = models.IntegerField()
+    simulation_id = models.IntegerField()
+    beta_distribution_a = models.FloatField()
+    beta_distribution_b = models.FloatField()
+
+
+
+
+
+# ========================================================================================
+# No Longer Used
+# ========================================================================================
+
+class Calculation_rule(models.Model):
     name = models.TextField()
     attribute_id = models.IntegerField()
     number_of_times_used = models.IntegerField()
@@ -181,31 +227,6 @@ class Rule(models.Model):
 
 
 
-
-class Simulation_model(models.Model):
-    objects_dict = models.TextField()
-    object_type_counts = models.TextField()
-    total_object_count= models.IntegerField()
-    number_of_additional_object_facts = models.IntegerField()
-    simulation_start_time = models.IntegerField()
-    simulation_end_time = models.IntegerField()
-    timestep_size = models.IntegerField(null=True)
-    selected_attribute = models.TextField(null=True)
-    timeline_visualisation_data = models.TextField(null=True)
-    linegraph_data = models.TextField(null=True)
-    attribute_errors = models.TextField(null=True)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
-    created = models.DateTimeField(editable=False)
-    updated = models.DateTimeField(editable=False)
-    # is_private  = models.BooleanField(default=False)
-    def save(self):
-        if not self.id:
-            self.created = datetime.datetime.today()
-        self.updated = datetime.datetime.today()
-        super(Simulation_model, self).save()
-
-
-
 class Learned_rule(models.Model):
     overall_score = models.FloatField(null=True)
     object_type_id = models.TextField()
@@ -228,21 +249,6 @@ class Learned_rule(models.Model):
         self.updated = datetime.datetime.today()
         super(Learned_rule, self).save()
 
-
-
-
-# class Meta_data_constaint(models.Model):
-#     simulation_model = models.ForeignKey(Simulation_model, on_delete=models.SET_NULL, blank=True, null=True,)
-#     attribute =  models.ForeignKey(Attribute, on_delete=models.SET_NULL, blank=True, null=True,)
-#     operation = models.CharField(max_length=2)
-#     value = models.TextField()
-
-
-# class Object_properties(models.Model):
-#     first_applicable_object = models.ForeignKey(Object_types, on_delete=models.SET_NULL, blank=True, null=True,)
-#     attribute =  models.ForeignKey(Attribute, on_delete=models.SET_NULL, blank=True, null=True,)
-#     operation = models.CharField(max_length=2)
-#     value = models.TextField()
 
 
 

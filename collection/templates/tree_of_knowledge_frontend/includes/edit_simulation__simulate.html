@@ -700,11 +700,14 @@
 				var attribute_id = attribute_ids[i];
 				var rule_id = objects_dict[object_number]['object_rules'][attribute_id]
 				if (rule_id == 'from_data') {
-					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">no rule</button>'
+					//attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">no rule</button>'
+					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">no rule</button>'
 				} else if (rule_id == null) {
-					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">constant</button>'
+					//attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">constant</button>'
+					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">constant</button>'
 				} else {
-					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')" style="background-color:rgb(156, 209, 183);">changing</button>'
+					//attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')" style="background-color:rgb(156, 209, 183);">changing</button>'
+					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')" style="background-color:rgb(156, 209, 183);">changing</button>'
 				}
 				
 				
@@ -753,10 +756,11 @@
 					
 					
 		var xhttp = new XMLHttpRequest();       
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-
-				rules_list = JSON.parse(this.responseText);
+		xhttp.open('GET', '/tool/get_attribute_rules?attribute_id=' + rules_attribute_id , false);
+		xhttp.send();
+		if (xhttp.readyState == 4 && xhttp.status == 200) {
+				console.log(xhttp.responseText);
+				rules_list = JSON.parse(xhttp.responseText);
 				rule_options_html_string = "";
 				
 				for (var i = 0; i < rules_list.length; i++) {
@@ -766,18 +770,16 @@
 				
 				//if a rule has already been chosen -> select it
 				var rule_id = objects_dict[object_number]['object_rules'][rules_attribute_id]
-				if (rule_id == null || rule_id == 'from data') {
+				if (rule_id == null || rule_id == 'from_data') {
 					$("#rule-details").html('');
 				} else {
 					document.getElementById('rule-inspection-button' + rule_id).click();
 				}
-
-			}
-		};
-		xhttp.open('GET', '/tool/get_attribute_rules?attribute_id=' + rules_attribute_id , true);
-		xhttp.send();
+		}
 		
 		$("#rule-modal-right").html('');
+		$('#chooseRuleModal').modal("hide");
+		$('#chooseRuleModal').modal("show"); // this is some silly bug-work around
 	}
 	
 	//== Filter Rule Options =========================================================================================		  

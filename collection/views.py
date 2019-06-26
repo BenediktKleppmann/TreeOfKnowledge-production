@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Rule, Learned_rule
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
@@ -431,7 +431,7 @@ def get_attribute_details(request):
 def get_attribute_rules(request):
     attribute_id = request.GET.get('attribute_id', '')
     attribute_id = int(attribute_id)
-    rule_records = Rule.objects.filter(attribute_id=attribute_id).order_by('-number_of_times_used')
+    rule_records = Calculation_rule.objects.filter(attribute_id=attribute_id).order_by('-number_of_times_used')
     rules_list = list(rule_records.values())
     return HttpResponse(json.dumps(rules_list)) 
 
@@ -707,7 +707,7 @@ def save_rule(request):
 
 
             if ('rule_id' in request_body.keys()):
-                rule_record = Rule.objects.get(id=request_body['rule_id'])
+                rule_record = Calculation_rule.objects.get(id=request_body['rule_id'])
 
                 rule_record.name = request_body['name']
                 rule_record.attribute_id = request_body['attribute_id']
@@ -719,7 +719,7 @@ def save_rule(request):
                 rule_record.save()
 
             else:
-                new_entry = Rule(name=request_body['name'], 
+                new_entry = Calculation_rule(name=request_body['name'], 
                                 attribute_id=request_body['attribute_id'], 
                                 number_of_times_used=request_body['number_of_times_used'], 
                                 used_attribute_ids=json.dumps(request_body['used_attribute_ids']), 
@@ -843,7 +843,7 @@ def delete_rule(request):
             request_body = json.loads(request.body)
             rule_id = request_body['rule_id']
 
-            rule = Rule.objects.get(id=rule_id)
+            rule = Calculation_rule.objects.get(id=rule_id)
             rule.delete()
             return HttpResponse("success")
         except Exception as error:
@@ -1309,7 +1309,7 @@ def test_page1(request):
 
 def test_page2(request):
     # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
-    bla = list(Simulation_model.objects.filter(id=84).values())
+    bla = list(Rule.objects.values())
     print(bla)
     return HttpResponse(json.dumps(bla))
     
