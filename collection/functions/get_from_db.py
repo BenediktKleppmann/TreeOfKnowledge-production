@@ -157,7 +157,7 @@ def get_most_common_object_types():
 
     top_object_groups = Object.objects.all().values('object_type_id').annotate(total=Count('object_type_id')).order_by('-total')[:8]
     top_object_type_ids = top_object_groups.values_list('object_type_id', flat=True)
-    top_object_types = list(Object_types.objects.filter(id__in=top_object_type_ids).values('id','name','object_icon'))
+    top_object_types = list(Object_types.objects.filter(id__in=top_object_type_ids).values('id','name','object_type_icon'))
 
     result = {}
     for object_type in top_object_types:

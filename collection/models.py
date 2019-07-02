@@ -120,7 +120,7 @@ class Object_types(models.Model):
     name = models.TextField()
     li_attr = models.TextField(null=True)
     a_attr = models.TextField(null=True)
-    object_icon = models.TextField()
+    object_type_icon = models.TextField()
 
 
 
@@ -178,6 +178,9 @@ class Rule(models.Model):
     used_attribute_names = models.TextField()
     is_conditionless = models.NullBooleanField()   #if true then this is a calculation rule i.e. the condition is 'True' and the effect is automatically triggered at every timestep
     has_probability_1 = models.NullBooleanField()  #if true, then the rule is a certain fact and there will be no beta-distribution coefficients in Posterior_distributions
+    probability = models.FloatField(null=True)
+    standard_dev = models.FloatField(null=True)
+
     
 
 

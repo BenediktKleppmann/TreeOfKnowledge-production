@@ -485,7 +485,7 @@
 				if (entry_number < object_type_ids.length) {
 					object_type_id = object_type_ids[entry_number];
 					object_name = available_object_types[object_type_id]['name']
-					object_icon = available_object_types[object_type_id]['object_icon']
+					object_icon = available_object_types[object_type_id]['object_type_icon']
 					left_panel__design += 			'<td>' +
 														'<div class="object-icon" draggable="true" ondragstart="drag(event, \'' + object_type_id + '\')" onclick="createObject(\'' + object_type_id + '\', 100, 100)" data-object-type-id="' + object_type_id + '"> ' +
 															'<img src="{% static "images/object_icons/" %}' + object_icon + '.svg">' +
@@ -843,7 +843,7 @@
 	function createObject(object_type_id, x_coordinate, y_coordinate) { 
 	
 		var object_type_name = available_object_types[object_type_id]['name'];
-		var object_icon = available_object_types[object_type_id]['object_icon'];
+		var object_icon = available_object_types[object_type_id]['object_type_icon'];
 		
 		if (object_type_id in object_type_counts) {
 			object_type_counts[object_type_id] += 1;
@@ -860,6 +860,7 @@
 									'object_id': null, 
 									'object_attributes':{},
 									'object_rules':{},
+									'not_used_object_rules':{},
 									'object_filter_facts':[],
 									'object_relations': [],
 									'position':{'x':x_coordinate, 'y':y_coordinate},
@@ -870,6 +871,18 @@
 		
 		// draw the object's relations at the left
 		listTheAvailableRelations();
+		
+		
+		//get the Object Rules
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				objects_dict[object_number]['object_rules'] = JSON.parse(this.responseText);
+			}
+		};
+		xhttp.open('GET', '/tool/get_object_rules?object_type_id=' + object_type_id , true);
+		xhttp.send();
+		
 	}
 	
 	
@@ -1057,9 +1070,9 @@
 		if ($('#right-sidebar').css('width') == '415px') {
 			var right_sidebar = document.getElementById('right-sidebar');
 			var popover = document.getElementsByClassName('popover');
-			var choose_rule_modal = document.getElementById('chooseRuleModal');
+			var edit_object_behaviour_modal = document.getElementById('editObjectBehaviourModal');
 			if (popover.length >0) {
-				if ( e.target !== right_sidebar && !right_sidebar.contains(e.target) && !popover[0].contains(e.target) && !choose_rule_modal.contains(e.target) ) {  
+				if ( e.target !== right_sidebar && !right_sidebar.contains(e.target) && !popover[0].contains(e.target) && !edit_object_behaviour_modal.contains(e.target) ) {  
 					var object_number = document.getElementById('object-number-field').value;
 					
 					hide_right_sidebar();
@@ -1070,7 +1083,7 @@
 					} 
 				}
 			} else {
-				if ( e.target !== right_sidebar && !right_sidebar.contains(e.target) && !choose_rule_modal.contains(e.target) ) {  
+				if ( e.target !== right_sidebar && !right_sidebar.contains(e.target) && !edit_object_behaviour_modal.contains(e.target) ) {  
 					var object_number = document.getElementById('object-number-field').value;
 					
 					hide_right_sidebar();
@@ -1393,6 +1406,7 @@
 
 
 {% include "tree_of_knowledge_frontend/includes/edit_object_type_behaviour_modal.html" %} 
+{% include "tree_of_knowledge_frontend/includes/edit_object_behaviour_modal.html" %} 
 	
 {% endblock %}
 

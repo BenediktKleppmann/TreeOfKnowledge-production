@@ -1,0 +1,820 @@
+<!--                 EDIT  OBJECT BEHAVIOUR MODAL                     -->
+<!-- This is used in edit_simulation -->
+
+{% load staticfiles %}
+<!--
+<link href="{% static 'css/contextmenu.min.css' %}" rel="stylesheet" />
+
+<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+<script src="{% static 'js/contextmenu.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+-->
+	
+		
+		
+<style>	
+	#editObjectBehaviourModal .modal-dialog {
+		width: 1444px;
+	}
+
+	#editObjectBehaviourModal #modal-title {
+		display: inline-block;
+		font-size: 22px;
+		margin-top: 16px;
+		margin-left: 19px;
+	}
+	
+	/* RULE PANELS -----------------------------------------*/
+	#editObjectBehaviourModal .learn-rule-title {
+	    margin-left: 569px;
+		margin-bottom: 3px;
+		font-weight: 700;
+	}
+	
+	#editObjectBehaviourModal #rule-panel {
+		display: inline-block;
+	}
+	
+	.rule-panel-body {
+		width: 700px;
+		height:calc(100vh - 260px);
+		overflow-y: auto;
+		padding: 2px;
+		-webkit-box-shadow: inset 1px 1px 9px 5px rgba(0,0,0,0.2);
+		-moz-box-shadow: inset 1px 1px 59px 5px rgba(0,0,0,0.2);
+		box-shadow: inset 1px 1px 9px 5px rgba(0,0,0,0.2);
+		background-color: rgb(190, 190, 190);
+		border-left: 5px solid rgb( 230, 230, 230);
+		border-top: 5px solid rgb( 218, 218, 218);
+		border-right: 5px solid rgb(250, 250, 250);
+		border-bottom: 5px solid rgb(250, 250, 250);
+	}
+	
+	#editObjectBehaviourModal #rules-list {
+		height: 340px;
+	}
+	
+	#editObjectBehaviourModal #not-used-rules-list {
+		height: 150px;
+	}
+	
+	#editObjectBehaviourModal #not-used-rules-title {
+		font-size: 15px;
+		margin-left: 5px;
+	}
+	
+	/* RULE PANEL ITEMS -----------------------------------------*/
+	
+	#editObjectBehaviourModal .rule-panel-body > .list-group-item {
+		height: 57px;
+		border-left: 9px solid rgb(252, 252, 252);
+		border-top: 9px solid rgb(255, 255, 255);
+		border-right: 9px solid rgb( 242, 242, 242);
+		border-bottom: 9px solid rgb( 235, 235, 235);
+		margin-bottom: 3px;
+		border-radius: 3px;
+		padding: 0px;
+		-webkit-box-shadow: 2px 4px 9px 3px rgba(0,0,0,0.18);
+		-moz-box-shadow: 2px 4px 9px 3px rgba(0,0,0,0.18);
+		box-shadow: 2px 4px 9px 3px rgba(0,0,0,0.18);
+		background-color: rgb(252, 252, 252);
+	}
+	
+	#editObjectBehaviourModal .rule-panel-body  img {
+		height: 33px;
+		width: 20px;
+		float: left;
+		margin-top: 2px;
+		display: inline-block;
+	}
+	
+	#editObjectBehaviourModal .rule-description {
+		width: 470px;
+	}
+	
+	#editObjectBehaviourModal .rule-probability {
+		display: inline-block;
+		margin-top: 7px;
+		margin-left: 9px;
+	}
+	
+	#editObjectBehaviourModal #is_certain_fact {
+	    margin-right: 7px;
+	}
+	/* RULE INFO -----------------------------------------*/
+	#editObjectBehaviourModal #rule-info {
+		display: inline-block;
+		float: right;
+	}
+	
+	#editObjectBehaviourModal #rule-details {
+		display: inline-block;
+		float: left;
+		width: 430px;
+		margin-right: 22px;
+		margin-top: 11px;
+	}
+	
+
+	
+	#editObjectBehaviourModal #rule_type {
+	   width: 200px;
+		margin-bottom: 20px;
+	}
+	
+	#editObjectBehaviourModal #is-certain-fact-field {
+		margin-top: 10px
+	}
+	
+	#editObjectBehaviourModal #rule-details .form-control {
+		border-radius: 5px;
+	}
+	
+	/* AVAILABLE VARIABLES -----------------------------------------*/
+	#editObjectBehaviourModal #available-variable-frame {
+	    height: 420px;
+	}
+	
+	
+	#editObjectBehaviourModal #available-variables-block {
+		display: inline-block;
+	}
+
+
+</style>
+
+
+	
+	<!-- Edit Object Behaviour Modal -->
+	<div class="modal fade" id="editObjectBehaviourModal" tabindex="-1" role="dialog" aria-labelledby="chooseAttributeTitle" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+		<div class="modal-content">
+		  <div class="modal-header row">
+			<div class="modal-title object-type-name" id="modal-title"></div>
+			<button id="x-button" type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close"  onclick="closeObjectBehaviourModal()">
+			  <span aria-hidden="true" >&times;</span>
+			</button>
+		  </div>
+		  <div class="modal-body">
+			  <div class="container-fluid">
+				<div class="form">
+
+					<div id="rule-panel">
+						<div class="learn-rule-title">Learn Probability</div>
+						<ul id="rules-list" class="list-group rule-panel-body">
+							<li id="plus-button-list-group-item"></li>
+						</ul>
+						<div id="not-used-rules-title">Not Used Rules</div>
+						<ul id="not-used-rules-list" class="list-group rule-panel-body"></ul>
+					</div>
+					<div id="rule-info">
+						<div id="rule-info-top">
+							<div id="rule-details"></div>
+							<div id="available-variables-block"></div>
+						</div>
+						<div id="save-cancel-rule-buttons"></div>
+					</div>
+						
+				</div>
+			</div>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-secondary" onclick="closeObjectTypeModal()" id="editAttributeCloseButton" data-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-primary" onclick="saveChanges()">Save Changes</button>
+			<button type="button" class="btn btn-danger" onclick="deleteAttribute()">Delete Attribute</button>
+		  </div>
+		  
+		</div>
+	  </div>
+	</div>
+	
+	
+
+	
+<script>
+
+//GLOBAL VARIABLES
+var selected_object_type_id = "n1";
+var maximum_b_rule_number = 0;
+var b_rules = {};
+
+	
+	
+	/*========================================================================*/
+	/*======================    BUILD THE MODAL     ==========================*/
+	/*========================================================================*/
+	
+	
+	
+	function openEditObjectBehaviourModal(object_number, rules_attribute_id, rules_attribute_name){
+	
+		$("#editObjectBehaviourModal").modal('show');
+
+
+		var object_name = objects_dict[object_number]['object_name'];
+		$("#editObjectBehaviourModal #modal-title").html('Rules for ' + rules_attribute_name + ' of ' + object_name);
+	
+	
+		// Populate the + BUTTON
+		plus_button_string = 	'<button id="plus-button" type="button" class="btn btn-outline-dark" onclick="newBehaviourRule(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\')" >' +
+									'<i class="fas fa-plus"></i>' +
+								'</button>';
+		$('#plus-button-list-group-item').html(plus_button_string)
+	
+	
+
+		// Populate the Rule Panel
+		var rules = objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules'];
+		var rule_ids = Object.keys(rules)
+		
+		for (var i = 0; i < rule_ids.length ; i++) {
+			var rule_id = rule_ids[i]
+
+			if (rules[rule_id]['is_conditionless']) {
+				rule_text = "At every timestep: [" + rules_attribute_name + "] = " + rules[rule_id]['effect_text'];
+			} else {
+				rule_text = "IF " +  rules[rule_id]['condition_text'] + " THEN [" + rules_attribute_name + "] = " + rules[rule_id]['effect_text'];
+			}
+			
+			if (rule_text.length > 75) {
+				rule_text = rule_text.substring(0, 72) + '...';
+			}
+			
+			if (rules[rule_id]['has_probability_1']) {
+				rule_info =	'<div class="rule-probability"> known fact</div>';
+				
+			} else if (!rules[rule_id]['has_probability_1'] && typeof rules[rule_id]['probability'] == 'undefined') {
+			
+				rule_info =	'<div class="rule-probability"> unknown</div>' + 
+							'<div class="learn-probabililty-checkbox">' +
+								'<input type="checkbox" id="learn-probabililty--rule' + rules[rule_id]['id'] + '" name="learn-probabililty--rule' + rules[rule_id]['id'] + '" checked>' +
+							'</div>';
+
+			} else {
+				rule_info =	'<div class="rule-probability"> ' + Math.round(rules[rule_id]['probability'] * 100) + ' ±' + Math.round(rules[rule_id]['standard_dev'] * 100) + ' %</div>' + 
+							'<div class="learn-probabililty-checkbox">' +
+								'<input type="checkbox" id="learn-probabililty--rule' + rules[rule_id]['id'] + '" name="learn-probabililty--rule' + rules[rule_id]['id'] + '" checked>' +
+							'</div>';
+			}
+			
+
+			
+			
+			rules_list_html_string = '<li class="list-group-item new" id="rule' + rule_id + '" data-object-number=' + object_number + ' data-attribute-id=' + rules_attribute_id + ' data-rule-id=' + rule_id + '>' +
+										'<img src="{% static "images/drag-grip1.png" %}">' +
+										'<div class="rule-description">' +
+											'<button class="btn btn-outline-secondary" onclick="inspectRule(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\',' + rule_id +')" >' + rule_text + '</button>' +
+										'</div>' +
+										rule_info +
+										'<button type="button" class="btn btn-secondary remove-rule-button" onclick="removeBehaviourRule(0)"><div class="remove-rule-button-text">&times;</div></button>' +
+									'</li>';
+									
+									
+								
+			$(rules_list_html_string).insertBefore('#plus-button-list-group-item');
+		}
+		
+
+	}
+	
+	
+	
+	
+	function inspectRule(object_number, attribute_id, attribute_name, rule_id) {
+		$("#editObjectBehaviourModal").modal('show');
+
+
+		// Populate the Modal
+		rule = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
+		
+		certain_fact_checked_string = rule['has_probability_1'] ? 'checked': '';
+		
+		if (rule['is_conditionless']) {	
+
+			rule_details_html = '<div class="form-group">' +
+									'<label for="rule_type">Rule Type</label>' +
+									'<select id="rule_type" class="form-control" onchange="changeRuleType(\'' + attribute_name + '\')">' +
+										'<option selected>Conditional Rule</option>' +
+										'<option>Continuous Change</option>' +
+									'</select>' +
+								'</div>' + 
+								'<div id="rule-details-main">' + 
+									'<div class="form-group">' + 
+										'<label for="rule-effect-text">' + attribute_name + ' = </label>' +
+										'<textarea cols="20" rows="5" class="form-control" id="rule-effect-text">' + rule['effect_text'] + '</textarea>' +
+									'</div>' +
+									'<div id="is-certain-fact-field">' +
+										'<input type="checkbox" class="form-check-input" id="is_certain_fact" ' + certain_fact_checked_string + '>' +
+										'<label class="form-check-label" for="is_certain_fact">Is Known Fact</label>' +
+									'</div>' +
+								'</div>';
+		} else {
+					rule_details_html = '<div class="form-group">' +
+									'<label for="rule_type">Rule Type</label>' +
+									'<select id="rule_type" class="form-control" onchange="changeRuleType(\'' + attribute_name + '\')">' +
+										'<option>Conditional Rule</option>' +
+										'<option selected>Continuous Change</option>' +
+									'</select>' +
+								'</div>' + 
+								'<div id="rule-details-main">' + 
+									'<div class="form-group">' + 
+										'<label for="rule-condition-text">IF</label>' +
+										'<textarea cols="20" rows="5" class="form-control" id="rule-condition-text">' + rule['condition_text'] + '</textarea>' +
+									'</div>' +
+									'<div class="form-group">' + 
+										'<label for="rule-effect-text">THEN ' + attribute_name + ' = </label>' +
+										'<textarea cols="20" rows="5" class="form-control" id="rule-effect-text">' + rule['effect_text'] + '</textarea>' +
+									'</div>' +
+									'<div id="is-certain-fact-field">' +
+										'<input type="checkbox" class="form-check-input" id="is_certain_fact" ' + certain_fact_checked_string + '>' +
+										'<label class="form-check-label" for="is_certain_fact">Is Known Fact</label>' +
+									'</div>' +
+								'</div>';
+		}
+							
+		
+		
+		$('#rule-details').html(rule_details_html);
+		
+
+		available_variables_html = 	'<div class="available-variables-label">Available Variables:</div>' + 
+											'<input type="text" class="form-control" id="selectAvailableVariable" onkeyup="filterAvailableVariables();" placeholder=" Search">' + 
+											'<div id="available-variable-frame">' + 
+												'<ul id="available-variables" class="input-group list-group">';
+			
+		var object_attributes = objects_dict[object_number]['object_attributes'];
+		var attribute_ids = Object.keys(object_attributes);
+		for (var i = 0; i < attribute_ids.length ; i++) {
+			var attribute_id = attribute_ids[i];
+			var attribute_name = object_attributes[attribute_id]['attribute_name']
+			available_variables_html += 		'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+		}
+		for (var i = 0; i < delta_t_list.length ; i++) {
+			var delta_t_name = delta_t_list[i];
+			available_variables_html += 		'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + delta_t_name + '\')" scope="col">' + delta_t_name + '</button></li>';
+		}
+		
+		
+		available_variables_html += 		'</ul>' + 
+											'</div>';
+
+		$('#available-variables-block').html(available_variables_html);
+		
+		
+		
+		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="cancelNewRuleButton" onclick="noRule_buttonClick(' + object_number + ', ' + attribute_id + ')">Cancel</button>' +
+										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="saveRule(null, ' + attribute_id + ',' + object_number + ')">Save Rule</button>';
+		
+		$('#save-cancel-rule-buttons').html(save_button_html_string);
+		
+
+					
+					
+	
+	}
+	
+	
+	function changeRuleType(attribute_name) {
+		var rule_type = $('#rule_type').find(":selected").text();
+		if (rule_type == 'Conditional Rule'){
+			rule_details_main_html = 	'<div class="form-group">' + 
+											'<label for="rule-effect-text">' + attribute_name + ' = </label>' +
+											'<textarea cols="20" rows="5" class="form-control" id="rule-effect-text"></textarea>' +
+										'</div>' +
+										'<div id="is-certain-fact-field">' +
+											'<input type="checkbox" class="form-check-input" id="is_certain_fact">' +
+											'<label class="form-check-label" for="is_certain_fact">Is Known Fact</label>' +
+										'</div>';
+				$('#rule-details-main').html(rule_details_main_html);
+		} else if (rule_type == 'Continuous Change'){
+			rule_details_main_html = 	'<div class="form-group">' + 
+											'<label for="rule-condition-text">IF</label>' +
+											'<textarea cols="20" rows="5" class="form-control" id="rule-condition-text"></textarea>' +
+										'</div>' +
+										'<div class="form-group">' + 
+											'<label for="rule-effect-text">THEN ' + attribute_name + ' = </label>' +
+											'<textarea cols="20" rows="5" class="form-control" id="rule-effect-text"></textarea>' +
+										'</div>' +
+										'<div id="is-certain-fact-field">' +
+											'<input type="checkbox" class="form-check-input" id="is_certain_fact" >' +
+											'<label class="form-check-label" for="is_certain_fact">Is Known Fact</label>' +
+										'</div>';
+			$('#rule-details-main').html(rule_details_main_html);
+		}
+	}
+	
+	
+	
+	
+	
+	// the '+'-Button
+	function newBehaviourRule(object_number, attribute_id, attribute_name) {
+
+
+
+		// Populate the Modal
+		rule_details_html = '<div class="form-group">' +
+								'<label for="rule_type">Rule Type</label>' +
+								'<select id="rule_type" class="form-control" onchange="changeRuleType(\'' + attribute_name + '\')">' +
+									'<option selected>Conditional Rule</option>' +
+									'<option>Continuous Change</option>' +
+								'</select>' +
+							'</div>' + 
+							'<div id="rule-details-main"></div>';
+
+		
+		$('#rule-details').html(rule_details_html);
+		
+
+		available_variables_html = 	'<div class="available-variables-label">Available Variables:</div>' + 
+											'<input type="text" class="form-control" id="selectAvailableVariable" onkeyup="filterAvailableVariables();" placeholder=" Search">' + 
+											'<div id="available-variable-frame">' + 
+												'<ul id="available-variables" class="input-group list-group">';
+			
+		var object_attributes = objects_dict[object_number]['object_attributes'];
+		var attribute_ids = Object.keys(object_attributes);
+		for (var i = 0; i < attribute_ids.length ; i++) {
+			var attribute_id = attribute_ids[i];
+			var attribute_name = object_attributes[attribute_id]['attribute_name']
+			available_variables_html += 		'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+		}
+		for (var i = 0; i < delta_t_list.length ; i++) {
+			var delta_t_name = delta_t_list[i];
+			available_variables_html += 		'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + delta_t_name + '\')" scope="col">' + delta_t_name + '</button></li>';
+		}
+		
+		
+		available_variables_html += 		'</ul>' + 
+											'</div>';
+
+		$('#available-variables-block').html(available_variables_html);
+		
+		
+		
+		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="cancelNewRuleButton" onclick="noRule_buttonClick(' + object_number + ', ' + attribute_id + ')">Cancel</button>' +
+										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="saveRule(null, ' + attribute_id + ',' + object_number + ')">Save Rule</button>';
+		
+		$('#save-cancel-rule-buttons').html(save_button_html_string);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		
+
+	
+	
+	
+
+
+
+	// X - Button
+	function removeBehaviourRule(b_rule_number) {
+		if (factor_number in specified_factors) {
+			if ('score' in specified_factors[factor_number]) {
+				 overall_score -= specified_factors[factor_number]['score'];
+			}
+		}
+
+		//remove from specified_factors
+		delete specified_factors[factor_number];
+
+		//remove from sorted_factor_numbers
+		var index = sorted_factor_numbers.indexOf(factor_number);
+		if (index > -1) {
+		   sorted_factor_numbers.splice(index, 1);
+		}
+	
+	
+		
+		//remove from html
+		var selected_factor = document.getElementById('factor' + factor_number);
+		selected_factor.parentNode.removeChild(selected_factor);
+		
+		
+		displayLearnedRuleAndScore();
+	}
+
+
+
+
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		
+	/*=============  ICON CHANGE  ================================================================ */
+	function changeObjectTypeIcon(object_type_id, object_type_icon) {
+		//change in Modal Header
+		$("#object-type-icon-button > img").attr('src','{% static "images/object_icons/" %}' + object_type_icon + '.svg');
+		
+		//change in available_object_types
+		available_object_types[object_type_id]['object_type_icon'] = object_type_icon;
+		
+		//change on Left Toolbar
+		$("#objects-table .object-icon ").each(function( index ) {
+			if ($(this).attr('data-object-type-id') == object_type_id) {
+				$(this).children().attr('src','{% static "images/object_icons/" %}' + object_type_icon + '.svg')
+			}
+		});
+		
+		
+		// Change the Object-Type's Icon in the backend
+		request_body = {'object_type_id': object_type_id,
+						'object_type_icon': object_type_icon}
+
+		var xmlhttp = new XMLHttpRequest();  
+		xmlhttp.open("POST", "/tool/save_changed_object_type_icon/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));
+		//change on Paper
+		/*
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			
+				var svg_text = this.responseText.replace(/\n/g, '');
+				cell = graph.getCell(object_number); 
+				cell.attr('image/xlink:href', 'data:image/svg+xml;utf8,' + encodeURIComponent(svg_text));
+			}
+		};
+		xhttp.open('GET', '{% static "images/object_icons/" %}' + object_type_icon + '.svg', true);
+		xhttp.send();
+		*/
+	}	
+		
+		
+		
+		
+	
+	
+	/*=============  'Save Changes' BUTTON  ================================================================ */	
+	function saveChanges() {
+		
+		var attribute_id = $("#attribute_id").val();
+		var name = $("#editAttributeModal #name").val();
+		var description = $("#editAttributeModal #description").val();
+		var expected_valid_period = $("#editAttributeModal #expected_valid_period").val();
+		var first_applicable_object_type = $("#editAttributeModal #first_applicable_object_type").val();
+		var type = $("#editAttributeModal #type_edit").val();
+		var min = $("#editAttributeModal #min").val();
+		var max = $("#editAttributeModal #max").val();
+		var min_length = $("#editAttributeModal #min_length").val();
+		var max_length = $("#editAttributeModal #max_length").val();
+		var allowed_values = $("#editAttributeModal #allowed_values").val();
+		
+		message_body = {} 
+		message_body['attribute_id'] = parseInt(attribute_id);
+		message_body['name'] = name;
+		message_body['data_type'] = type;
+		message_body['description'] = description;
+		message_body['expected_valid_period'] = expected_valid_period;
+		message_body['first_applicable_object_type'] = first_applicable_object_type;
+		message_body['format_specification'] = {}
+		message_body['format_specification']['fields'] = {}
+		message_body['format_specification']['fields']['column'] = {}
+		message_body['format_specification']['fields']['column']['type'] = type;
+		
+		if (name.length < 2) {
+			alert("Attribute Name too short");
+			return;
+		}
+		
+		if (expected_valid_period=="") {
+			alert("Please specify an estimated valid time (from the dropdown beneath 'Description')");
+			return;		
+		}
+		
+		
+		if (type == "") {
+			alert("Data Type required");
+			return;
+		}
+		
+		
+		if (type == "string") {
+			if (isNaN(min_length) || min_length[0] == " " || min_length == ""){
+				alert("Min Length - this must be populated with an integer number");
+				return;
+			}
+			if (isNaN(max_length) || max_length[0] == " " || max_length == ""){
+				alert("Max Length - this must be populated with an integer number");
+				return;
+			}
+
+			min_length = parseInt(min_length);
+			max_length = parseInt(max_length);
+			
+			if (max_length <= min_length) {
+				alert("'Maximum string length' must be bigger than 'Minimum string length'");
+				return;
+			}
+			
+			message_body['format_specification']['fields']['column']['min_length'] = min_length;
+			message_body['format_specification']['fields']['column']['max_length'] = max_length;
+			
+			if (($("#allowed-values-group").attr("style")=="display:block;") && (allowed_values_list != "")) {
+				try {
+					allowed_values_list  = JSON.parse(allowed_values)
+					if (!Array.isArray(allowed_values_list)) {
+						alert("Allowed Values - the value submitted here is not a list");
+						return;
+					} else {
+						message_body['format_specification']['fields']['column']['allowed_values'] = allowed_values;
+					}
+				}
+				catch(err) {
+					alert("Allowed Values - the value submitted here is not a list");
+					return;
+				}
+			}
+		}
+		
+		if (["int", "real", "date"].includes(type)) {
+			if (type == "int"){
+				if(isNaN(min) || min[0] == " " || min == ""){
+					alert("Min - this must be populated with an integer number");
+					return;
+				}
+				if (isNaN(max) || max[0] == " " || max == ""){
+					alert("Max - this must be populated with an integer number");
+					return;
+				}
+				
+				min = parseInt(min);
+				max = parseInt(max);
+				
+				if (max <= min) {
+					alert("Max must be bigger than Min");
+					return;
+				}
+				
+				message_body['format_specification']['fields']['column']['min'] = min;
+				message_body['format_specification']['fields']['column']['max'] = max;
+			}
+
+			if (type == "real"){
+				if(isNaN(min) || min[0] == " " || min == ""){
+					alert("Min - this must be populated with a decimal number");
+					return;
+				}
+				if (isNaN(max) || max[0] == " " || max == ""){
+					alert("Max - this must be populated with a decimal number");
+					return;
+				}
+				
+				min = parseFloat(min);
+				max = parseFloat(max);
+				
+				if (max <= min) {
+					alert("Max must be bigger than Min");
+					return;
+				}
+				
+				message_body['format_specification']['fields']['column']['min'] = min;
+				message_body['format_specification']['fields']['column']['max'] = max;
+				
+			}
+			
+		}
+
+		var xmlhttp = new XMLHttpRequest();  
+		xmlhttp.open("POST", "/tool/save_changed_attribute/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(message_body));
+	
+		// CLEAN UP -------------------------
+		// empty the input fields
+		$("#name").val("");
+		$("#description").val("");
+		$("#expected_valid_period").val("");
+		$("#type_edit").val("");
+		$("#edited-attribute-further-fields").html("");
+		
+		//close the modal
+		document.getElementById("editAttributeCloseButton").click();
+		
+		redrawAttributeSelections();
+	}
+	
+	
+	/*=============  'Delete Attribute' BUTTON  ================================================================ */	
+	function deleteAttribute() {
+		var attribute_id = $("#attribute_id").val();
+		
+		var xmlhttp = new XMLHttpRequest();  
+		xmlhttp.open("POST", "/tool/delete_attribute/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify({'attribute_id':parseInt(attribute_id)}));
+	
+	}
+	
+	/*=============  'Cancel' BUTTON (or the X) ================================================================ */	
+	function closeObjectBehaviourModal() {
+	
+		$("#editAttributeModal #name").val("");
+		$("#editAttributeModal #attribute_id").val("");
+		$("#editAttributeModal #description").html("");
+		$("#editAttributeModal #expected_valid_period").val("");
+		$("#editAttributeModal #first_applicable_object_type").val("");
+		$("#editAttributeModal #type_edit").val("");		
+		$("#edited-attribute-further-fields").html("");
+
+	}
+	
+	
+	
+	/*=============  CHEDKBOX "CATEGORICAL" -> TOGGLE ALLOWED VALUES  ================================================================ */
+	function toggleCategoricalField() {
+		var displayed = $("#allowed-values-group").attr("style")=="display:block;";
+		if (displayed) {
+			$("#allowed-values-group").attr("style","display:none;");
+			document.getElementById("allowed-values").disabled = true;
+		} else {
+			$("#allowed-values-group").attr("style","display:block;");
+			document.getElementById("allowed-values").disabled = false;
+		}
+	
+	}
+	
+	
+	
+	/*========================================================================*/
+	/*============================    MAIN     ===============================*/
+	/*========================================================================*/
+	
+	
+jQuery(document).ready(function($){
+    
+
+
+	
+	
+
+    
+});
+</script>
+
+
+
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+
+<script>
+	jQuery(document).ready(function($){
+		
+		/*---------------------------------------------------------------*\
+		 * Drag & Drop  - for Variable selection/sorting in left panel
+		\*---------------------------------------------------------------*/
+		$(function() {
+			$( ".rule-panel-body" ).sortable({
+				connectWith: ".list-group",
+				/*stop: function(event, ui) {
+					var item_sortable_list_id = $(this).attr('id');
+					console.log(ui);
+					//alert($(ui.sender).attr('id'))
+				},*/
+				receive: function(event, ui) {					
+					var object_number = ui.item[0].getAttribute('data-object-number')
+					var	attribute_id = ui.item[0].getAttribute('data-attribute-id')
+					var	rule_id = ui.item[0].getAttribute('data-rule-id')
+					var sender = ui.sender[0].id;
+					var receiver = this.id;
+					
+					if (receiver == 'not-used-rules-list' && sender == 'rules-list') {
+						objects_dict[object_number]['object_rules'][attribute_id]['not_used_rules'][rule_id] = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
+						delete objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
+					}
+					
+					if (receiver == 'rules-list' && sender == 'not-used-rules-list') {
+						objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id] = objects_dict[object_number]['object_rules'][attribute_id]['not_used_rules'][rule_id];
+						delete objects_dict[object_number]['object_rules'][attribute_id]['not_used_rules'][rule_id];
+					}
+				}         
+			}).disableSelection();
+		});
+		
+		
+	});
+</script>

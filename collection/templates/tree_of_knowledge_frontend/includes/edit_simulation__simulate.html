@@ -398,6 +398,7 @@
 </style>
 
 	<!-- Choose Rule Modal -->
+	<!-- 
 	<div class="modal fade" id="chooseRuleModal" tabindex="-1" role="dialog" aria-labelledby="chooseRuleTitle" aria-hidden="true">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
@@ -437,7 +438,7 @@
 			</div>
 		</div>
 	</div>
-	
+	-->
 	
 	
 <script>
@@ -472,15 +473,6 @@
 					object_number = parseInt(object_numbers[i]);
 					objects_dict[object_number]['object_id'] = all_attribute_values[object_number]['object_id'];	
 					objects_dict[object_number]['object_attributes'] = all_attribute_values[object_number]['object_attributes'];
-					
-					// set all attributes' rules to 'from_data'
-					console.log('----------------------------')
-					console.log(objects_dict[object_number])
-					console.log('----------------------------')
-					var attribute_ids = Object.keys(objects_dict[object_number]['object_attributes']);
-					for (var j = 0; j < attribute_ids.length ; j++) {
-						objects_dict[object_number]['object_rules'][attribute_ids[j]] = 'from_data';
-					}
 				}		
 			}
 		};
@@ -492,41 +484,7 @@
 	}
 
 	
-	function getObjectData__OLD() {
-		for (var object_number = 1; object_number <= total_object_count; object_number++) {
-			
-			if (objects_dict[object_number]['get_new_object_data'] == true) {
-				var request_body = {};
-				request_body['object_number'] = object_number;
-				request_body['object_type_id'] = objects_dict[object_number]['object_type_id'];
-				request_body['filter_facts']  = objects_dict[object_number]['object_filter_facts'];
-				request_body['specified_start_time'] = simulation_start_time;
-				request_body['specified_end_time'] = simulation_end_time;
-				//request_body['specified_end_time'] =  simulation_start_time + Math.round((simulation_end_time - simulation_start_time)*0.33);
-				
-				var xmlhttp = new XMLHttpRequest();       
-				xmlhttp.onreadystatechange = function() {
-					if (this.readyState == 4 && this.status == 200) {
-						var response = JSON.parse(this.responseText);
-						var returned_object_number = response['object_number'];
-						objects_dict[returned_object_number]['object_attributes'] = response['attribute_values'];	
-						objects_dict[returned_object_number]['object_id'] = response['object_id'];	
-						
-						
-					}
-				};
 
-
-				
-				xmlhttp.open("POST", "/tool/get_data_from_random_object/");
-				xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-				xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
-				xmlhttp.send(JSON.stringify(request_body));	
-				
-				objects_dict[object_number]['get_new_object_data'] = false;
-			}
-		}
-	}
 	
 	//========================================================================
 	//================   LEFT PANEL	======================================
@@ -639,16 +597,8 @@
 			objects_dict[object_number]['position']['x'] = cell['attributes']['position']['x'];
 			objects_dict[object_number]['position']['y'] = cell['attributes']['position']['y'];	
 		}
-/*
-		var cells = graph.getCells();
-		for (var i = 0; i < cells.length; i++) {
-			if (cells[i]['attributes']['type'] == "basic.ObjectImage") {
-				var object_number = cells[i]['attributes']['object_number'];
-				objects_dict[object_number]['position']['x'] = cells[i]['attributes']['position']['x'];
-				objects_dict[object_number]['position']['y'] = cells[i]['attributes']['position']['y'];
-			}
-		}
-*/		
+
+	
 		if($('#timestep_size').length){
 			var number_of_timestep_units = document.getElementById('timestep_size').value;	
 			if (isNaN(number_of_timestep_units)) {
@@ -698,24 +648,14 @@
 			object_attributes_string = '<table id="object-attributes-table">';
 			for (var i = 0; i < attribute_ids.length ; i++) {
 				var attribute_id = attribute_ids[i];
-				var rule_id = objects_dict[object_number]['object_rules'][attribute_id]
-				if (rule_id == 'from_data') {
-					//attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">no rule</button>'
-					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">no rule</button>'
-				} else if (rule_id == null) {
-					//attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">constant</button>'
-					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">constant</button>'
-				} else {
-					//attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" data-toggle="modal" data-target="#chooseRuleModal" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')" style="background-color:rgb(156, 209, 183);">changing</button>'
-					attribute_rule_button_html = '<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="populateRuleModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')" style="background-color:rgb(156, 209, 183);">changing</button>'
-				}
-				
-				
+
 				object_attributes_string += '<tr>' +
 												'<td class="attribute-name">' + object_attributes[attribute_id]['attribute_name'] + '</td>' +
 												'<td class="attribute-value-box"><input class="form-control attribute-value" type="text" value="' + object_attributes[attribute_id]['attribute_value'] + '" onchange="attributeValueChange(' + object_number + ',' + attribute_id + ', this.value)"></td>' +
 												'<button type="button" id="format_violation' + 1 + '" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid value" style="display:none;" data-content="">!</button>' + 
-												'<td class="attribute-rule-box">' + attribute_rule_button_html + '</td>' +
+												'<td class="attribute-rule-box">' + 
+													'<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="openEditObjectBehaviourModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">edit behaviour</button>'
+												'</td>' +
 											'</tr>';
 			}
 			object_attributes_string += '</table>';
@@ -756,7 +696,7 @@
 					
 					
 		var xhttp = new XMLHttpRequest();       
-		xhttp.open('GET', '/tool/get_attribute_rules?attribute_id=' + rules_attribute_id , false);
+		xhttp.open('GET', '/tool/get_attribute_rules_old?attribute_id=' + rules_attribute_id , false);
 		xhttp.send();
 		if (xhttp.readyState == 4 && xhttp.status == 200) {
 				console.log(xhttp.responseText);
@@ -764,7 +704,7 @@
 				rule_options_html_string = "";
 				
 				for (var i = 0; i < rules_list.length; i++) {
-					rule_options_html_string += 	'<li class="list-group-item narrow"><button id="rule-inspection-button' + rules_list[i]['id'] + '" class="btn btn-outline-secondary" type="button" onclick="inspectRule(' + object_number + ',' + i + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\')" scope="col">' + rules_list[i]['name'] + '</button></li>';
+					rule_options_html_string += 	'<li class="list-group-item narrow"><button id="rule-inspection-button' + rules_list[i]['id'] + '" class="btn btn-outline-secondary" type="button" onclick="inspectCalculationRule(' + object_number + ',' + i + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\')" scope="col">' + rules_list[i]['name'] + '</button></li>';
 				}
 				$("#selection-options").html(rule_options_html_string);
 				
@@ -804,7 +744,7 @@
 	//==========
 	
 	//== Inspect Rule =========================================================================================		  
-	function inspectRule(object_number, i, rules_attribute_id, rules_attribute_name) {
+	function inspectCalculationRule(object_number, i, rules_attribute_id, rules_attribute_name) {
 		
 		$("#rule-modal-right").html('');
 		$('.modal-dialog').animate({width: '700px'}, 200, 'linear');

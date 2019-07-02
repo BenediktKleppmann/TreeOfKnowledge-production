@@ -1,39 +1,20 @@
-<!--                 EDIT ATTRIBUTE MODAL                   -->
-<!-- This is used in upload_data3, upload_data4, upload_data5 -->
+<!--                 EDIT OBJECT TYPE BEHAVIOUR MODAL                   -->
+<!-- This is used in edit_simulation -->
 
 {% load staticfiles %}
 <!--<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" />-->
 <link href="{% static 'css/contextmenu.min.css' %}" rel="stylesheet" />
 
-<!--<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script> -->
 <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 <script src="{% static 'js/contextmenu.js' %}"></script>
 
 <script src="{% static 'js/bootstrap.min.js' %}"></script>
-		
-		
+
+	
 		
 		
 <style>	
 
-	@font-face { font-family: 'Aileron-Light'; src: url('{% static 'fonts/Aileron-Light.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-Thin'; src: url('{% static 'fonts/Aileron-Thin.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-UltraLightItalic'; src: url('{% static 'fonts/Aileron-UltraLightItalic.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-Black'; src: url('{% static 'fonts/Aileron-Black.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-BlackItalic'; src: url('{% static 'fonts/Aileron-BlackItalic.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-Bold'; src: url('{% static 'fonts/Aileron-Bold.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-BoldItalic'; src: url('{% static 'fonts/Aileron-BoldItalic.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-Heavy'; src: url('{% static 'fonts/Aileron-Heavy.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-HeavyItalic'; src: url('{% static 'fonts/Aileron-HeavyItalic.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-Light'; src: url('{% static 'fonts/Aileron-Light.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-LightItalic'; src: url('{% static 'fonts/Aileron-LightItalic.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-Regular'; src: url('{% static 'fonts/Aileron-Regular.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-SemiBold'; src: url('{% static 'fonts/Aileron-SemiBold.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-SemiBoldItalic'; src: url('{% static 'fonts/Aileron-SemiBoldItalic.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-Thin'; src: url('{% static 'fonts/Aileron-Thin.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-ThinItalic'; src: url('{% static 'fonts/Aileron-ThinItalic.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-UltraLight'; src: url('{% static 'fonts/Aileron-UltraLight.otf'%}') format('truetype'); }
-	@font-face { font-family: 'Aileron-UltraLightItalic'; src: url('{% static 'fonts/Aileron-UltraLightItalic.otf'%}') format('truetype'); }
 
 	/* --- Context Menu -------------------------------------------- */
 	
@@ -43,7 +24,7 @@
 	/* --- Edit Attribute Modal -------------------------------------------- */
 	
 	#editObjectTypeModal .modal-dialog {
-		width: 1000px;
+		width: 1200px;
 	}
 
 	#editObjectTypeModal .modal-header.row {
@@ -54,8 +35,8 @@
 	}
 	
 	#editObjectTypeModal .modal-body {
-		padding-top: 17px;
-		padding-left: 25px;
+		padding-top: 12px;
+		padding-left: 20px;
 		padding-right:25px;
 		padding-bottom: 0px;
 		height: calc(100vh - 230px);
@@ -80,20 +61,33 @@
 	/* ---------------------------------------------------------------------------*/
 	
 	/* Object Icon Popover -----------------------------------------*/
-	#editObjectTypeModal #object-icon-button {
-		display: inline-block;
-		margin-top: 7px;
-		margin-bottom: 6px;
-		
+	.popover {
+		z-index: 1050;
 	}
 	
-	#editObjectTypeModal.object-icon-box {
+	
+	#object-type-icon-button {
+		display: inline-block;
+		margin-top: 5px;
+		margin-left: 22px;
+		margin-bottom: 8px;
+		height: 49px;
+		width: 49px;		
+		//background: rgb(235, 235, 235);
+		border: 1px solid rgb(183, 183, 183);
+		border-radius: 4px;
+		padding-top: 5px;
+		padding-left: 5px;
+		padding-right: 3px;
+	}
+	
+	.object-type-icon-box {
 		height: 400px;
 		overflow: auto;
 		width: 265px;
 	}
 	
-	#editObjectTypeModal .small-object-icon {
+	.small-object-type-icon {
 		height: 25px;
 		width: 25px;
 		background: rgb(249, 249, 249);
@@ -108,7 +102,7 @@
 	}
 	
 	
-	 #editObjectTypeModal .small-object-icon:hover {
+	 #editObjectTypeModal .small-object-type-icon:hover {
 		background: rgb(235, 235, 235);
 	}
 	
@@ -122,52 +116,90 @@
 	
 
 	/* ---------------------------------------------------------------------------*/
-	/*  Behaviour Rules --------------------------------------------------------------*/
+	/*  Rules --------------------------------------------------------------*/
 	/* ---------------------------------------------------------------------------*/
 	
-	#behaviour-rule-block {}
+	#rule-block {}
 	
 	
 							
 	/* LEFT -----------------------------------------*/
-	#behaviour-left-panel {
+	#rule-left-panel {
 		display: inline-block;
 		float: left;
 	}
+
+	.rule-left-block-header {
+	    font-size: 16px;
+		margin-bottom: 3px;
+		margin-left: 5px;
+	}
 	
-	#editObjectTypeModal #available-variable-frame {
+	#editObjectTypeModal #included-variables {
 		border: 1px solid rgb(202, 202, 202);
 		border-radius: 4px;
 		width: 100%;
-		height: calc(100vh - 260px);
+		height: calc(100vh - 380px);
 		overflow: auto;
 	}
 	
-	#editObjectTypeModal .list-group-item.avail-var-item{
+	#editObjectTypeModal #remaining-variables {
+		border: 1px solid rgb(202, 202, 202);
+		border-radius: 4px;
+		width: 100%;
+		height: 140px;
+		overflow: auto;
+	}
+
+	
+	#editObjectTypeModal .list-group-item.listed-var-item{
 		border-bottom: 1px solid rgb(202, 202, 202);
 		margin-bottom: 0px;
 		padding:0px;
 	}
 
-	#editObjectTypeModal .avail-var-button {
+	#editObjectTypeModal .listed-var-button {
 		background: white;
+		padding-left: 0px;
+		margin-left: 6px;
+		min-width: 255px;
+		text-align: left;
 	}
 	
+	#editObjectTypeModal .listed-var-item > img {
+		height: 18px;
+		width: 12px;
+		margin-left: 4px;
+	}
+	
+
 	
 	
 	/* MIDDLE -----------------------------------------*/
 	
-	#behaviour-middle-panel {
+	#rule-middle-panel {
 		display: inline-block;	
 		margin-left: 10px;
 	}
 	
-	#behaviour-middle-panel h4 {
+	#rule-middle-panel h4 {
+		display: inline-block;
 	    margin-left: 11px;
+		width: 500px;
 	}
 	
+	#rule-block .learn-rule-title {
+	    display: inline-block;
+		float: right;
+		margin-right: 39px;
+		font-size: 16px;
+		font-weight: 600;
+		margin-top: 8px;
+	}
+	
+	
 	/* -- Rule Panels --*/
-	#b-rule-panel-body {
+	#rule-panel-body {
 		width: 700px;
 		height:calc(100vh - 260px);
 		overflow-y: auto;
@@ -176,20 +208,14 @@
 		-moz-box-shadow: inset 1px 1px 59px 5px rgba(0,0,0,0.2);
 		box-shadow: inset 1px 1px 9px 5px rgba(0,0,0,0.2);
 		background-color: rgb(190, 190, 190);
-		/* slightly darker:
-		border-left: 6px solid rgb(240, 240, 240);
-		border-top: 6px solid rgb(220, 220, 220);
-		border-right: 6px solid rgb(245, 245, 245);
-		border-bottom: 6px solid rgb(250, 250, 250);
-		*/
 		border-left: 5px solid rgb( 230, 230, 230);
 		border-top: 5px solid rgb( 218, 218, 218);
 		border-right: 5px solid rgb(250, 250, 250);
 		border-bottom: 5px solid rgb(250, 250, 250);
 	}
 	
-	#b-rules-list > .list-group-item {
-		height: 84px;
+	#rules-list > .list-group-item {
+		height: 57px;
 		border-left: 9px solid rgb(252, 252, 252);
 		border-top: 9px solid rgb(255, 255, 255);
 		border-right: 9px solid rgb( 242, 242, 242);
@@ -211,21 +237,49 @@
 		box-shadow: 2px 4px 9px 3px rgba(0,0,0,0.3);
 	}
 	
-	/* -- b-rule Panel Content --*/
+	/* -- rule Panel Content --*/
 	#plus-button-list-group-item {
 		background-color: rgba(256, 256, 256, 0);
 		padding: 17px;
 		padding-left: 25px;
 	}
 	
-	.b-rule-description {
-		width: 560px;
+	.rule-description {
+		width: 620px;
 		height: 46px;
 		display: inline-block;
 		float: left;
 	}
 	
-	.b-rule-text.form-control {
+	
+	.rule-description .btn {
+		display: inline-block;
+		background-color: rgb(252, 252, 252);
+		float: left;
+		padding-bottom: 11px;
+		width: 476px;
+	}
+	
+	.rule-description .rule-probability {
+		display: inline-block;
+		margin-left: 15px;
+		padding-top: 6px;
+		float: left;
+	}
+	
+	.rule-description .learn-probabililty-checkbox {
+		display: inline-block;
+		margin-left: 40px;
+	}
+	
+	.rule-description .learn-probabililty-checkbox > input{
+		margin-top: 10px;
+	}
+	
+	
+	
+	
+	.rule-text.form-control {
 		height: 47px;
 		width: 180px;
 		border: 1px solid rgb(242,242,242);
@@ -270,7 +324,7 @@
 	}
 													
 	
-	.remove-b-rule-button {
+	.remove-rule-button {
 		display: inline-block;
 		float: right;
 		height: 18px;
@@ -282,7 +336,7 @@
 		background-color: rgb(242, 242, 242);
 	}
 
-	.remove-b-rule-button-text {
+	.remove-rule-button-text {
 		margin-left: -1px;
 		margin-top: -2px;
 	}
@@ -292,7 +346,7 @@
 	
 
 	
-	#b-rules-list > .list-group-item.disabled {
+	#rules-list > .list-group-item.disabled {
 		background-color: rgb(240, 240, 240);
 		color: rgb(160, 160, 160);
 		border-right: 9px solid rgb(227, 227, 227);
@@ -301,7 +355,7 @@
 		border-top: 9px solid rgb( 247, 247, 247);
 	}
 	
-	.disabled .b-rule-text 
+	.disabled .rule-text 
 	{
 		background-color: rgb(252, 252, 252);
 		color: rgb(160, 160, 160);
@@ -322,7 +376,7 @@
 	  <div class="modal-dialog" role="document">
 		<div class="modal-content">
 		  <div class="modal-header row">
-			<button type="button" id="object-icon-button" class="btn pull-left" style="display:inline-block;" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" title="Choose icon" data-content=''>
+			<button type="button" id="object-type-icon-button" class="btn pull-left" style="display:inline-block;" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" title="Choose icon" data-content=''>
 				<img src="{% static "images/object_icons/" %}si-glyph-mustache.svg">
 			</button>
 			<div class="modal-title object-type-name" id="modal-title"></div>
@@ -333,13 +387,16 @@
 		  <div class="modal-body">
 			  <div class="container-fluid">
 				<div class="form">
-					<div id="behaviour-rule-block">
-						<div id="behaviour-left-panel">
-							<div id="available-variable-frame">
-								<ul id="available-variables" class="input-group list-group"></ul>
-							</div>
+					<div id="rule-block">
+						<div id="rule-left-panel">
+							<div class="rule-left-block-header">Use in Simulation:</div>
+							<ul id="included-variables" class="list-group object-type-variable-selection"></ul>
+							<div class="rule-left-block-header">Not Used:</div>
+							<ul id="remaining-variables" class="list-group object-type-variable-selection"></ul>
+
+
 						</div>
-						<div id="behaviour-middle-panel">
+						<div id="rule-middle-panel">
 
 						</div>
 					</div>
@@ -376,15 +433,15 @@ var b_rules = {};
 
 
 		var object_type_name = available_object_types[object_type_id]['name'];
-		var object_icon = available_object_types[object_type_id]['object_icon'];
+		var object_type_icon = available_object_types[object_type_id]['object_type_icon'];
 		
 		$(".object-type-name").each(function( index ) {
 			$(this).html(object_type_name);
 		});
-		$("#object-icon-button > img").attr('src','{% static "images/object_icons/" %}' + object_icon + '.svg');
+		$("#object-type-icon-button > img").attr('src','{% static "images/object_icons/" %}' + object_type_icon + '.svg');
 		
 		// draw the Icon Popover 
-		popover_content = 	'<div class="object-icon-box">' +
+		popover_content = 	'<div class="object-type-icon-box">' +
 								'<table>';
 		for (var row = 0; row < Math.ceil(object_icons.length/8) ; row++) {
 			popover_content += 	'<tr>';
@@ -392,7 +449,7 @@ var b_rules = {};
 				icon_number = row*8 + column;
 				if (icon_number < object_icons.length) {
 					popover_content += '<td>' + 
-											'<div class="small-object-icon" onclick="changeObjectTypeIcon(' + object_type_id + ', &#39;' + object_icons[icon_number] + '&#39;)">' +
+											'<div class="small-object-type-icon" onclick="changeObjectTypeIcon(\'' + object_type_id + '\', &#39;' + object_icons[icon_number] + '&#39;)">' +
 												'<img src="{% static "images/object_icons/" %}' + object_icons[icon_number] + '.svg" %}">' +
 											'</div>' +
 										'</td>';
@@ -402,7 +459,7 @@ var b_rules = {};
 		}
 		popover_content += 	'</table>' +
 						'</div>';
-		$("#object-icon-button").attr('data-content',popover_content);
+		$("#object-type-icon-button").attr('data-content',popover_content);
 			
 			
 		
@@ -411,17 +468,17 @@ var b_rules = {};
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 
-				available_variables = JSON.parse(this.responseText);
+				included_variables = JSON.parse(this.responseText);
 				
-				available_variables_html_string = '';
-				for (var i = 0; i < available_variables.length ; i++) {
-					var attribute_id = available_variables[i]['id'];
-					var attribute_name = available_variables[i]['name'];
-					available_variables_html_string += 	'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="inspectBehaviourRulesForAttribute(\'' + attribute_id + '\',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+				included_variables_html_string = '';
+				for (var i = 0; i < included_variables.length ; i++) {
+					var attribute_id = included_variables[i]['id'];
+					var attribute_name = included_variables[i]['name'];
+					included_variables_html_string += 	'<li class="list-group-item listed-var-item"><img src="{% static "images/drag-grip2.png" %}"><button class="btn btn-outline-secondary listed-var-button" type="button" onclick="inspectBehaviourRulesForAttribute(\'' + object_type_id + '\', \'' + attribute_id + '\',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
 					
 				}
 				
-				$('#available-variables').html(available_variables_html_string);	
+				$('#included-variables').html(included_variables_html_string);	
 
 			}
 		};
@@ -441,15 +498,16 @@ var b_rules = {};
 	/*========================================================================*/
 	
 	
-	$("#b-rules-list").sortable();
+
 	
 	// select variable on the left
-	function inspectBehaviourRulesForAttribute(attribute_id, attribute_name) {
+	function inspectBehaviourRulesForAttribute(object_type_id, attribute_id, attribute_name) {
 	
 		// draw rule panel
 		rule_panel_html = 		'<h4>Rules that change the ' + attribute_name + '</h4>' +
-								'<div id="b-rule-panel-body">' +
-								'<ul id="b-rules-list" class="list-group">' +
+								'<div class="learn-rule-title">Learn Rule</div>' +
+								'<div id="rule-panel-body">' +
+								'<ul id="rules-list" class="list-group">' +
 									'<li id="plus-button-list-group-item">' +
 										'<button id="plus-button" type="button" class="btn btn-outline-dark" onclick="newBehariourRule()" >' +
 											'<i class="fas fa-plus"></i>' +
@@ -457,7 +515,82 @@ var b_rules = {};
 									'</li>'
 								'</ul>' +
 							'</div>';
-		$("#behaviour-middle-panel").html(rule_panel_html);
+		$("#rule-middle-panel").html(rule_panel_html);
+		
+		
+		request_body = {
+			'filter_facts': '[]',
+			'attribute_id': attribute_id,
+			'object_type_id': object_type_id
+		}
+		 
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				
+				rules = JSON.parse(this.responseText);
+				
+				for (var i = 0; i < rules.length ; i++) {
+					//var attribute_id = rules[i]['id'];
+					//var attribute_name = rules[i]['name'];
+					if (rules[i]['is_conditionless']) {
+						rule_text = "At every timestep: [" + attribute_name + "] = " + rules[i]['effect_text'];
+					} else {
+						rule_text = "IF " +  rules[i]['condition_text'] + " THEN [" + attribute_name + "] = " + rules[i]['effect_text'];
+					}
+					
+					if (rule_text.length > 75) {
+						rule_text = rule_text.substring(0, 72) + '...';
+					}
+					
+					if (rules[i]['has_probability_1']) {
+						probability_text = " known fact";
+					} else if (!has_probability_1 && typeof rules[i]['probability'] == 'undefined') {
+						probability_text = " unknown";
+					} else {
+						probability_text =  Math.round(rules[i]['probability'] * 100) + " ±" + Math.round(rules[i]['standard_dev'] * 100) + " %";
+					}
+					
+					/*
+					var changed_var_attribute_id = rules[i]['id'];
+					var condition_text = ;
+					var condition_exec = rules[i]['id'];
+					var effect_text = rules[i]['id'];
+					var effect_exec = rules[i]['id'];
+					var effect_is_calculation = rules[i]['id'];
+					var used_attribute_ids = rules[i]['id'];
+					var used_attribute_names = rules[i]['id'];
+					var has_probability_1  = rules[i]['id'];*/
+					
+					
+					rules_list_html_string = '<li class="list-group-item new" id="rule0">' +
+												'<div class="rule-description">' +
+													'<button class="btn btn-outline-secondary" onclick="inspectRule(' + rules[i]['id'] + ')" >' + rule_text + '</button>' +
+													'<div class="rule-probability">' + probability_text + '</div>' + 
+													'<div class="learn-probabililty-checkbox">' +
+														'<input type="checkbox" id="learn-probabililty--rule' + rules[i]['id'] + '" name="learn-probabililty--rule' + rules[i]['id'] + '">' +
+													'</div>' +
+												'</div>' +
+												'<button type="button" class="btn btn-secondary remove-rule-button" onclick="removeBehaviourRule(0)"><div class="remove-rule-button-text">&times;</div></button>' +
+											'</li>';
+											
+											
+										
+					$(rules_list_html_string).insertBefore('#plus-button-list-group-item');
+				}
+				
+				
+				
+
+			}
+		};
+		
+		xmlhttp.open("POST", "/tool/get_attribute_rules/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));	
+		
+		
 		
 		/*
 		var xhttp = new XMLHttpRequest();       
@@ -466,41 +599,40 @@ var b_rules = {};
 
 				b_rules = JSON.parse(this.responseText);
 				
-				available_variables_html_string = '';
-				for (var i = 0; i < available_variables.length ; i++) {
-					var attribute_id = available_variables[i]['id'];
-					var attribute_name = available_variables[i]['name'];
-					available_variables_html_string += 	'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="inspectBehaviourRulesForAttribute(\'' + attribute_id + '\',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+				included_variables_html_string = '';
+				for (var i = 0; i < included_variables.length ; i++) {
+					var attribute_id = included_variables[i]['id'];
+					var attribute_name = included_variables[i]['name'];
+					included_variables_html_string += 	'<li class="list-group-item listed-var-item"><button class="btn btn-outline-secondary listed-var-button" type="button" onclick="inspectBehaviourRulesForAttribute(\'' + attribute_id + '\',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
 					
 				}
 				
-				$('#available-variables').html(available_variables_html_string);	
+				$('#included-variables').html(included_variables_html_string);	
 
 			}
 		};
 		xhttp.open('GET', '/tool/get_b_rules?attribute_id=' + attribute_id , true);
 		xhttp.send();
-	*/
-	
-	
-		additional_b_rule_html_string = 	'<li class="list-group-item new" id="b-rule0">' +
-												'<div class="b-rule-description">' +
+
+
+		additional_b_rule_html_string = 	'<li class="list-group-item new" id="rule0">' +
+												'<div class="rule-description">' +
 													'<div class="if-block">' +
 														'<div class="if-then-text">IF</div>' +
-														'<textarea class="b-rule-text form-control" id="b-rule-text-if0" cols="20" rows="3" class="form-control" onclick="rememberCursorPostion(0)" onchange="checkBehaviourRule()"></textarea>' +
+														'<textarea class="rule-text form-control" id="rule-text-if0" cols="20" rows="3" class="form-control" onclick="rememberCursorPostion(0)" onchange="checkBehaviourRule()"></textarea>' +
 													'</div>' +
 													'<div class="then-block">' +
 														'<div class="if-then-text">THEN</div>' +
 														'<div class="then-fomula-left">' + attribute_name + ' = </div>' +
-														'<textarea class="b-rule-text form-control" id="b-rule-text-then0" cols="20" rows="3" class="form-control" onclick="rememberCursorPostion(0)" onchange="checkBehaviourRule()"></textarea>' +
+														'<textarea class="rule-text form-control" id="rule-text-then0" cols="20" rows="3" class="form-control" onclick="rememberCursorPostion(0)" onchange="checkBehaviourRule()"></textarea>' +
 													'</div>' +
 												'</div>' +
-												'<button type="button" class="btn btn-secondary remove-b-rule-button" onclick="removeBehaviourRule(0)"><div class="remove-b-rule-button-text">&times;</div></button>' +
+												'<button type="button" class="btn btn-secondary remove-rule-button" onclick="removeBehaviourRule(0)"><div class="remove-rule-button-text">&times;</div></button>' +
 											'</li>';
 		
 		$(additional_b_rule_html_string).insertBefore('#plus-button-list-group-item');
 			
-
+	*/
 	
 	}
 	
@@ -576,14 +708,32 @@ var b_rules = {};
 	
 		
 	/*=============  ICON CHANGE  ================================================================ */
-	function changeObjectTypeIcon(object_number, object_icon) {
-		//change in Right Sidebar
-		$("#object-icon-button > img").attr('src','{% static "images/object_icons/" %}' + object_icon + '.svg');
+	function changeObjectTypeIcon(object_type_id, object_type_icon) {
+		//change in Modal Header
+		$("#object-type-icon-button > img").attr('src','{% static "images/object_icons/" %}' + object_type_icon + '.svg');
 		
-		//change in Object_Dict
-		objects_dict[object_number]['object_icon'] = object_icon;
+		//change in available_object_types
+		available_object_types[object_type_id]['object_type_icon'] = object_type_icon;
 		
+		//change on Left Toolbar
+		$("#objects-table .object-icon ").each(function( index ) {
+			if ($(this).attr('data-object-type-id') == object_type_id) {
+				$(this).children().attr('src','{% static "images/object_icons/" %}' + object_type_icon + '.svg')
+			}
+		});
+		
+		
+		// Change the Object-Type's Icon in the backend
+		request_body = {'object_type_id': object_type_id,
+						'object_type_icon': object_type_icon}
+
+		var xmlhttp = new XMLHttpRequest();  
+		xmlhttp.open("POST", "/tool/save_changed_object_type_icon/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));
 		//change on Paper
+		/*
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -593,8 +743,9 @@ var b_rules = {};
 				cell.attr('image/xlink:href', 'data:image/svg+xml;utf8,' + encodeURIComponent(svg_text));
 			}
 		};
-		xhttp.open('GET', '{% static "images/object_icons/" %}' + object_icon + '.svg', true);
+		xhttp.open('GET', '{% static "images/object_icons/" %}' + object_type_icon + '.svg', true);
 		xhttp.send();
+		*/
 	}	
 		
 		
@@ -803,7 +954,7 @@ var b_rules = {};
 jQuery(document).ready(function($){
     
 	// activate the Object Icon Popover
-	$('#object-icon-button').popover();   
+	$('#object-type-icon-button').popover();   
 
 	
 	
@@ -837,3 +988,34 @@ jQuery(document).ready(function($){
 });
 </script>
 
+
+
+
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+
+<script>
+	jQuery(document).ready(function($){
+		
+		/*---------------------------------------------------------------*\
+		 * Drag & Drop  - for Variable selection/sorting in left panel
+		\*---------------------------------------------------------------*/
+		$(function() {
+			$( ".object-type-variable-selection" ).sortable({
+				connectWith: ".object-type-variable-selection",
+				/*stop: function(event, ui) {
+					var item_sortable_list_id = $(this).attr('id');
+					console.log(ui);
+					//alert($(ui.sender).attr('id'))
+				},*/
+				receive: function(event, ui) {
+					alert("dropped on = "+this.id); // Where the item is dropped
+					  alert("sender = "+ui.sender[0].id); // Where it came from
+					  alert("item = "+ui.item[0].innerHTML); //Which item (or ui.item[0].id)
+				}         
+			}).disableSelection();
+		});
+		
+		
+	});
+</script>

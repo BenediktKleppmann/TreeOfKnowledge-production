@@ -428,7 +428,7 @@ def get_attribute_details(request):
 
 # used in edit_model.html
 @login_required
-def get_attribute_rules(request):
+def get_attribute_rules_old(request):
     attribute_id = request.GET.get('attribute_id', '')
     attribute_id = int(attribute_id)
     rule_records = Calculation_rule.objects.filter(attribute_id=attribute_id).order_by('-number_of_times_used')
@@ -459,6 +459,25 @@ def get_available_variables(request):
     return HttpResponse(json.dumps(available_variables))
     
 
+
+# used in edit_model.html
+@login_required
+def get_object_rules(request):
+    object_type_id = request.GET.get('object_type_id', '')
+
+    response = {}
+    list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
+    parent_object_type_ids = [obj['id'] for obj in list_of_parent_objects]
+    attributes = Attribute.objects.filter(first_applicable_object_type__in=parent_object_type_ids).values()
+    for attribute in attributes:
+        response[attribute['id']] = {'used_rules': {},
+                                    'not_used_rules':{},
+                                    'execution_order':[]}
+        rules_list = list(Rule.objects.filter(changed_var_attribute_id=attribute['id']).values())
+        for rule in rules_list:
+            response[attribute['id']]['used_rules'][rule['id']] = rule
+            response[attribute['id']]['execution_order'].append(rule['id'])
+    return HttpResponse(json.dumps(response)) 
 
 # ==================
 # complex GET
@@ -599,7 +618,7 @@ def save_new_object_type(request):
             request_body = json.loads(request.body)
             object_facts = request_body['li_attr']['attribute_values']
             request_body['li_attr']['attribute_values'] = get_from_db.convert_fact_values_to_the_right_format(object_facts)
-            new_entry = Object_types(id=request_body['id'], parent=request_body['parent'], name=request_body['text'], li_attr=json.dumps(request_body['li_attr']), a_attr=None, object_icon="si-glyph-square-dashed-2")
+            new_entry = Object_types(id=request_body['id'], parent=request_body['parent'], name=request_body['text'], li_attr=json.dumps(request_body['li_attr']), a_attr=None, object_type_icon="si-glyph-square-dashed-2")
             new_entry.save()
             return HttpResponse("success")
         except Exception as error:
@@ -785,6 +804,27 @@ def save_learned_rule(request):
             return HttpResponse(str(error))
     else:
         return HttpResponse("This must be a POST request.")
+
+
+# used in: learn_rule.html
+@login_required
+def save_changed_object_type_icon(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+
+            object_type = Object_types.objects.get(id=request_body['object_type_id'])
+            object_type.object_type_icon = request_body['object_type_icon']
+            object_type.save()
+
+            return HttpResponse("success")
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
 
 
 # ==================
@@ -1301,15 +1341,15 @@ def test_page1(request):
     # specified_end_time = 1577836800
     # response = query_datapoints.get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time)
     # attributes = list(Attribute.objects.all().values())
-    list_of_child_objects = get_from_db.get_list_of_child_objects("j1_5")
-    return HttpResponse(json.dumps(list_of_child_objects))
-    # return render(request, 'tree_of_knowledge_frontend/test_page1.html')
+    # list_of_child_objects = get_from_db.get_list_of_child_objects("j1_5")
+    # return HttpResponse(json.dumps(list_of_child_objects))
+    return render(request, 'tree_of_knowledge_frontend/test_page1.html')
 
 
 
 def test_page2(request):
     # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
-    bla = list(Rule.objects.values())
+    bla = get_from_db.get_list_of_parent_objects('j1_5')
     print(bla)
     return HttpResponse(json.dumps(bla))
     
