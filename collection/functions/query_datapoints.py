@@ -1,7 +1,7 @@
 from collection.models import Object_types, Attribute, Object, Data_point
 import numpy as np
 import pandas as pd
-from datetime import datetime
+import datetime
 from collection.functions import generally_useful_functions, get_from_db
 import random
 from django.db.models import Count
@@ -491,7 +491,11 @@ def filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start
 
         # clean up the broad table
         broad_table_df['object_id'] = [val[0] for val in broad_table_df.index]
-        broad_table_df['time'] = [datetime.fromtimestamp(val[1]).strftime('%Y-%m-%d') for val in broad_table_df.index] # this is the chosen satisfying_time_start for the object_id
+
+        # broad_table_df['time'] = [datetime.fromtimestamp(val[1]).strftime('%Y-%m-%d') for val in broad_table_df.index] # this is the chosen satisfying_time_start for the object_id
+        list_of_datetimes = [datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=(val[1])) for val in broad_table_df.index]
+        broad_table_df['time'] = [val.strftime('%Y-%m-%d') for val in list_of_datetimes]
+
         broad_table_df.reindex()
         broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
     
@@ -715,7 +719,7 @@ def filter_and_make_df_from_datapoints_OLD(object_ids, filter_facts, specified_s
 
     # clean up the broad table
     broad_table_df['object_id'] = [val[0] for val in broad_table_df.index]
-    broad_table_df['time'] = [datetime.fromtimestamp(val[1]).strftime('%Y-%m-%d') for val in broad_table_df.index] # this is the chosen satisfying_time_start for the object_id
+    broad_table_df['time'] = [datetime.datetime.fromtimestamp(val[1]).strftime('%Y-%m-%d') for val in broad_table_df.index] # this is the chosen satisfying_time_start for the object_id
     broad_table_df.reindex()
     broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
     

@@ -49,8 +49,12 @@
 		padding-right: 5px;
 	}
 	
+	#analysis-details-box {
+		margin-top: 22px;
+	}
+	
 	#run-button {
-		margin-top: 9px;
+		margin-top: 12px;
 		border-radius: 6px;
 		padding: 7px 15px;
 	}
@@ -96,7 +100,7 @@
 
 	.attribute-value-box {
 		border: 1px solid rgb(202, 202, 202);
-		width: 121px;
+		width: 109px;
 		padding: 0px;
 	}
 	
@@ -108,7 +112,7 @@
 	
 	.attribute-rule-box {
 		border: 1px solid rgb(202, 202, 202);
-		width: 87px;
+		width: 109px;
 		background: white;
 	}
 	
@@ -116,9 +120,9 @@
 		border: 1px solid rgb(202, 202, 202);
 		margin-left: 3px;
 		color: rgb(85, 85, 85);
-		padding: 4px 10px;
-		margin: 2px 4px;
-		width: 85px;
+		padding: 4px 7px;
+		margin: 3px 2px;
+		width: 105px;
 	}
 	
 	
@@ -445,7 +449,7 @@
 	// GLOBAL VARIABLES:
 	var object_attribute_changes = {};
 	var rules_list = {};
-	var new_rule_cursor_position = {};
+	//var new_rule_cursor_position = {};
 	var new_rule_used_attribute_names = [];
 	var new_rule_used_attribute_ids = [];
 	var highlighted_words_dict = {};
@@ -489,90 +493,124 @@
 	//========================================================================
 	//================   LEFT PANEL	======================================
 	//========================================================================
+	
+	
+								
 		
 	// Draw the Left Panel (For the Design-State)    =============================================================================
 	function drawLeftPanel__simulate() {
+	
+
+								
 		left_panel__simulate = 	'<div class="left-panel-title">Simulation</div>' +
 								'<div class="form left-panel-body">' +
 									'<div class="form-group row">' +
-										'<label for="max" class="col-sm-5">Start Time</label>' +
+										'<label for="analysis_type" class="col-sm-5">Analysis Type</label>' +
 										'<div class="col-sm-7">' +
-											'<input id="simulation-start-time" class="datetimepicker form-control" value="">' +
-										'</div>' +
-									'</div>' +
-									'<div class="form-group row">' +
-										'<label for="max" class="col-sm-5">End Time</label>' +
-										'<div class="col-sm-7">' +
-											'<input id="simulation-end-time" class="datetimepicker form-control" value="">' +
-										'</div>' +
-									'</div>' +
-									'<div class="form-group row">' +
-										'<label for="max" class="col-sm-5">Timestep (&Delta;t)</label>' +
-										'<div class="col-sm-3">' +
-											'<input type="text" class="form-control" id="timestep_size" name="timestep_size">' +
-										'</div>' +
-										'<div class="col-sm-4">' +
-											'<select class="form-control form-control-lg" id="timestep_unit" name="timestep_unit">' +
-												'<option value=31622400 selected>years</option>' +
-												'<option value=2635200>months</option>' +
-												'<option value=604800>weeks</option>' +
-												'<option value=86400>days</option>' +
-												'<option value=3600>hours</option>' +
-												'<option value=60>minutes</option>' +
-												'<option value=1>seconds</option>' +
+											'<select id="analysis_type" class="form-control col-sm-7" onchange="changeAnalysisType()">' +
+												'<option selected>Timeseries Analysis</option>' +
+												'<option>Cross-sectional Analysis</option>' +
 											'</select>' +
-										'</div>' +
-									'</div>' +
+										'</div>' + 
+									'</div>' + 
+									'<div id="analysis-details-box"></div>' + 
 									'<button id="run-button" class="btn btn-success pull-right" type="button" onclick="run()">Run</button>' +
 								'</div>';
 	
 		$("#left-panel").html(left_panel__simulate);	
 		
-		
-		for (var i = 0; i < timestep_units.length; i++) {
-			if (timestep_size % timestep_units[i] == 0){
-				number_of_timestep_units = timestep_size / timestep_units[i];
-				document.getElementById('timestep_size').value = number_of_timestep_units;
-				document.getElementById('timestep_unit').value = timestep_units[i];
-				break;
-			}
-		}
-		
-		
-		// DATE TIME PICKERS ----------------------------------------------------------------------------
-		//make the datetimepickers
-		$('.datetimepicker').datetimepicker({
-			startView:'decade',
-			minView:'hour',
-			format: 'yyyy-mm-dd hh:ii',
-			autoclose:true
-		});
-		
-		// this showing and hiding makes sure that there are no open ones at the bottom of the page
-		$('.datetimepicker').datetimepicker('show');
-		$('.datetimepicker').datetimepicker('hide');
-		
-		// initialize the datetimepickers
-		var start_date = new Date(simulation_start_time*1000);
-		var end_date = new Date(simulation_end_time*1000);
-		var start_date_string = start_date.toISOString().replace('T', ' ').substring(0,16);
-		var end_date_string = end_date.toISOString().replace('T', ' ').substring(0,16);
-		$("#simulation-start-time").val(start_date_string);
-		$("#simulation-end-time").val(end_date_string);
-	
-		
-		// Save the changed Date and Link the Start- and End- Time
-		$("#simulation-start-time").datetimepicker().on('changeDate', function(ev){
-			$("#simulation-end-time").datetimepicker("setStartDate", '"' + ev.date.toISOString().substring(0,10) + '"');
-			simulation_start_time = Math.round(ev.date.getTime() / 1000);
-		});
-		
-		$("#simulation-end-time").datetimepicker().on('changeDate', function(ev){
-			$("#simulation-start-time").datetimepicker("setEndDate", '"' + ev.date.toISOString().substring(0,10) + '"');
-			simulation_end_time = Math.round(ev.date.getTime() / 1000);
-		});
+		changeAnalysisType();
 	}		
 	
+	
+	// Fill-in the Left Panel (For the Design-State)    =============================================================================	
+	function changeAnalysisType() {
+	
+		var analysis_type = $('#analysis_type').find(":selected").text();
+		
+		if (analysis_type == 'Timeseries Analysis'){
+			analysis_details_html_string = 	'<div class="form-group row">' +
+												'<label for="max" class="col-sm-5">Start Time</label>' +
+												'<div class="col-sm-7">' +
+													'<input id="simulation-start-time" class="datetimepicker form-control" value="">' +
+												'</div>' +
+											'</div>' +
+											'<div class="form-group row">' +
+												'<label for="max" class="col-sm-5">End Time</label>' +
+												'<div class="col-sm-7">' +
+													'<input id="simulation-end-time" class="datetimepicker form-control" value="">' +
+												'</div>' +
+											'</div>' +
+											'<div class="form-group row">' +
+												'<label for="max" class="col-sm-5">Timestep (&Delta;t)</label>' +
+												'<div class="col-sm-3">' +
+													'<input type="text" class="form-control" id="timestep_size" name="timestep_size">' +
+												'</div>' +
+												'<div class="col-sm-4">' +
+													'<select class="form-control form-control-lg" id="timestep_unit" name="timestep_unit">' +
+														'<option value=31622400 selected>years</option>' +
+														'<option value=2635200>months</option>' +
+														'<option value=604800>weeks</option>' +
+														'<option value=86400>days</option>' +
+														'<option value=3600>hours</option>' +
+														'<option value=60>minutes</option>' +
+														'<option value=1>seconds</option>' +
+													'</select>' +
+												'</div>' +
+											'</div>';				
+			$('#analysis-details-box').html(analysis_details_html_string);
+			
+			// initialize DATE TIME PICKERS 
+			//make the datetimepickers
+			$('.datetimepicker').datetimepicker({
+				startView:'decade',
+				minView:'hour',
+				format: 'yyyy-mm-dd hh:ii',
+				autoclose:true
+			});
+			
+			// this showing and hiding makes sure that there are no open ones at the bottom of the page
+			$('.datetimepicker').datetimepicker('show');
+			$('.datetimepicker').datetimepicker('hide');
+			
+			// initialize the datetimepickers
+			var start_date = new Date(simulation_start_time*1000);
+			var end_date = new Date(simulation_end_time*1000);
+			var start_date_string = start_date.toISOString().replace('T', ' ').substring(0,16);
+			var end_date_string = end_date.toISOString().replace('T', ' ').substring(0,16);
+			$("#simulation-start-time").val(start_date_string);
+			$("#simulation-end-time").val(end_date_string);
+		
+			
+			// Save the changed Date and Link the Start- and End- Time
+			$("#simulation-start-time").datetimepicker().on('changeDate', function(ev){
+				$("#simulation-end-time").datetimepicker("setStartDate", '"' + ev.date.toISOString().substring(0,10) + '"');
+				simulation_start_time = Math.round(ev.date.getTime() / 1000);
+			});
+			
+			$("#simulation-end-time").datetimepicker().on('changeDate', function(ev){
+				$("#simulation-start-time").datetimepicker("setEndDate", '"' + ev.date.toISOString().substring(0,10) + '"');
+				simulation_end_time = Math.round(ev.date.getTime() / 1000);
+			});
+			
+			// initialize TIMESTEP (Δt)
+			for (var i = 0; i < timestep_units.length; i++) {
+				if (timestep_size % timestep_units[i] == 0){
+					number_of_timestep_units = timestep_size / timestep_units[i];
+					document.getElementById('timestep_size').value = number_of_timestep_units;
+					document.getElementById('timestep_unit').value = timestep_units[i];
+					break;
+				}
+			}
+			
+		} else if (analysis_type == 'Cross-sectional Analysis'){
+		
+			$('#analysis-details-box').html('');
+		}
+	}
+	
+
+
 	function run() {
 		saveSimulation();
 		
@@ -583,10 +621,12 @@
 		
 	}
 	
+	
 	function saveSimulation() {
 		// get simulation_id
 		var url_components = window.location.href.split("/");
-		var simulation_id = url_components[url_components.length - 2]
+		var simulation_id = url_components[url_components.length - 2];
+		var is_timeseries_analysis = ($('#analysis_type').find(":selected").text() == 'Timeseries Analysis');
 			
 		
 		//update the object positions in objects_dict
@@ -611,6 +651,7 @@
 		
 		request_body = {
 			'simulation_id': simulation_id,
+			'is_timeseries_analysis': is_timeseries_analysis,
 			'objects_dict': objects_dict,
 			'object_type_counts': object_type_counts,
 			'total_object_count': total_object_count,
@@ -926,6 +967,7 @@
 	}	
 		
 	//== New Rule - Textarea stuff  =========================================================================================	
+	/*
 	function rememberCursorPostion() {
 		var myElement = document.getElementById('rule-text');
 		var startPosition = myElement.selectionStart;
@@ -942,7 +984,7 @@
 		
 		checkTextareaForVariables(object_number);
 	}
-	
+	*/
 	
 	function checkTextareaForVariables(object_number) {
 		var rule_text = document.getElementById('rule-text').value;

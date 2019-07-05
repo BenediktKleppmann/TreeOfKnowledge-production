@@ -253,7 +253,7 @@
 											'<label for="min" class="col-sm-7">Object Type of Related Object</label>' +
 											'<div class="col-sm-5">' +
 												'<input type="text" id="object_type_of_related_object" class="form-control input-field" placeholder="Object Type">' +
-												'<input type="hidden" id="object_type_id_of_related_object">' +
+												'<input type="hidden" id="first_relation_object_type">' +
 											'</div>' +
 										'</div>';
 			$("#new-attribute-further-fields").html(dataTypeSpecificOptions);
@@ -328,7 +328,7 @@
 		var min_length = $("#createAttributeModal #min_length").val();
 		var max_length = $("#createAttributeModal #max_length").val();
 		var allowed_values = $("#createAttributeModal #allowed_values").val();
-		var object_type_id_of_related_object = $("#createAttributeModal #object_type_id_of_related_object").val();
+		var first_relation_object_type = $("#createAttributeModal #first_relation_object_type").val();
 		
 		message_body = {} 
 		message_body['name'] = name;
@@ -340,7 +340,7 @@
 		message_body['format_specification']['fields'] = {}
 		message_body['format_specification']['fields']['column'] = {}
 		message_body['format_specification']['fields']['column']['type'] = type;
-		message_body['object_type_id_of_related_object'] = null;
+		message_body['first_relation_object_type'] = null;
 		
 		if (name.length < 2) {
 			alert("Attribute Name too short");
@@ -446,12 +446,12 @@
 		}
 		
 		if (type == "relation") {
-			if (object_type_id_of_related_object == "") {
+			if (first_relation_object_type == "") {
 				alert("Required Field: Object Type of Related Object");
 				return;
 			}
 		
-			message_body['object_type_id_of_related_object'] = object_type_id_of_related_object;
+			message_body['first_relation_object_type'] = first_relation_object_type;
 			message_body['format_specification']['fields']['column']['min'] = 0;
 			message_body['format_specification']['fields']['column']['max'] = 10000000000;
 			message_body['format_specification']['fields']['column']['type'] = 'int';
@@ -524,7 +524,7 @@
 			var node_id = data.selected[0];
 			var object_type_name = data.instance.get_node(node_id).text;
 			$("#object_type_of_related_object").val(object_type_name);
-			$("#object_type_id_of_related_object").val(node_id);
+			$("#first_relation_object_type").val(node_id);
 			
 			//for the "+"-button change it so that the new attribute-drop-downs will list the object-types attributes
 			$("#make-new-additional-fact-button").attr("onclick", "newAdditionalFactInput('" + node_id + "');")

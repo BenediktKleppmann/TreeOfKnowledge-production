@@ -10,6 +10,7 @@ import time
 from django.db import connection
 import math
 import itertools
+import datetime
 
 # called from upload_data1
 def save_new_upload_details(request):
@@ -142,7 +143,8 @@ def perform_uploading(uploaded_dataset, request):
         data_quality = uploaded_dataset.correctness_of_data
         attribute_selection = json.loads(uploaded_dataset.attribute_selection)
         list_of_matches = json.loads(uploaded_dataset.list_of_matches)
-        valid_time_start = int(time.mktime(uploaded_dataset.data_generation_date.timetuple()))
+        valid_time_start = (uploaded_dataset.data_generation_date - datetime.date(1970, 1, 1)).days * 86400
+        # valid_time_start = int(time.mktime(uploaded_dataset.data_generation_date.timetuple()))
         data_table_json = json.loads(uploaded_dataset.data_table_json)
         table_body = data_table_json["table_body"]
         number_of_entities = len(table_body[list(table_body.keys())[0]])
@@ -231,9 +233,11 @@ def perform_uploading(uploaded_dataset, request):
         objects_dict[1] = { 'object_name':object_type_record.name + ' 1', 
                             'object_type_id':object_type_id, 
                             'object_type_name':object_type_record.name, 
-                            'object_icon':object_type_record.object_icon, 
+                            'object_icon':object_type_record.object_type_icon, 
                             'object_attributes':{},
-                            'object_filter_facts':uploaded_dataset.meta_data_facts,
+                            'object_rules':{},
+                            'object_relations': [],
+                            'object_filter_facts':json.loads(uploaded_dataset.meta_data_facts),
                             'position':{'x':100, 'y':100},
                             'get_new_object_data': True};
 

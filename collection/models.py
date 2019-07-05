@@ -144,6 +144,7 @@ class Attribute(models.Model):
 
 
 class Simulation_model(models.Model):
+    is_timeseries_analysis = models.BooleanField()
     objects_dict = models.TextField()
     object_type_counts = models.TextField()
     total_object_count= models.IntegerField()
@@ -175,7 +176,6 @@ class Rule(models.Model):
     effect_exec = models.TextField()
     effect_is_calculation = models.NullBooleanField() # if False, then the effect is just a value and if the rule is triggered, then the column_to_change will be set to this value
     used_attribute_ids = models.TextField()
-    used_attribute_names = models.TextField()
     is_conditionless = models.NullBooleanField()   #if true then this is a calculation rule i.e. the condition is 'True' and the effect is automatically triggered at every timestep
     has_probability_1 = models.NullBooleanField()  #if true, then the rule is a certain fact and there will be no beta-distribution coefficients in Posterior_distributions
     probability = models.FloatField(null=True)

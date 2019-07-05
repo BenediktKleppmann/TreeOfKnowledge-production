@@ -448,14 +448,8 @@ def get_available_variables(request):
     object_type_id = request.GET.get('object_type_id', '')
     available_variables = []
     list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
-    # print('++++++++++++++++++++++++++++++++++++++')
-    # print(list_of_parent_objects)
-    # print('++++++++++++++++++++++++++++++++++++++')
     for parent_object in list_of_parent_objects:
         available_variables.extend(list(Attribute.objects.filter(first_applicable_object_type=parent_object['id']).values('name', 'id', 'data_type')))
-    # print('||||||||||||||||||||||||||||||||||||||||||')
-    # print(available_variables)
-    # print('||||||||||||||||||||||||||||||||||||||||||')
     return HttpResponse(json.dumps(available_variables))
     
 
@@ -671,7 +665,7 @@ def save_new_attribute(request):
                                 description=request_body['description'], 
                                 format_specification=json.dumps(request_body['format_specification']),
                                 first_applicable_object_type=request_body['first_applicable_object_type'],
-                                object_type_id_of_related_object=request_body['object_type_id_of_related_object'])
+                                first_relation_object_type=request_body['first_relation_object_type'])
             print('4')
             new_entry.save()
             print('5')
@@ -713,41 +707,38 @@ def save_rule(request):
     if request.method == 'POST':
         try:
             request_body = json.loads(request.body)
-
-            # complete building the executable 
-            attribute_data_type = Attribute.objects.get(id=request_body['attribute_id']).data_type
-            if attribute_data_type == "int":
-                executable = 'result = int(' + request_body['executable'] + ')'
-            elif attribute_data_type == "real":
-                executable = 'result = float(' + request_body['executable'] + ')'
-            else:
-                executable = "result = " + request_body['executable']
+            rule_id = request_body['id']
 
 
-
-            if ('rule_id' in request_body.keys()):
-                rule_record = Calculation_rule.objects.get(id=request_body['rule_id'])
-
-                rule_record.name = request_body['name']
-                rule_record.attribute_id = request_body['attribute_id']
-                rule_record.number_of_times_used = request_body['number_of_times_used']
-                rule_record.used_attribute_ids = json.dumps(request_body['used_attribute_ids'])
-                rule_record.used_attribute_names = json.dumps(request_body['used_attribute_names'])
-                rule_record.rule_text = request_body['rule_text']
-                rule_record.executable = executable
+            if (rule_id is not None):
+                rule_record = Rule.objects.get(id=rule_id)
+                rule_record.changed_var_attribute_id = request_body['changed_var_attribute_id']
+                rule_record.condition_text = request_body['condition_text']
+                rule_record.condition_exec = request_body['condition_exec']
+                rule_record.effect_text = request_body['effect_text']
+                rule_record.effect_exec = request_body['effect_exec']
+                rule_record.effect_is_calculation = request_body['effect_is_calculation']
+                rule_record.used_attribute_ids = request_body['used_attribute_ids']
+                rule_record.is_conditionless = request_body['is_conditionless']
+                rule_record.has_probability_1 = request_body['has_probability_1']
                 rule_record.save()
 
             else:
-                new_entry = Calculation_rule(name=request_body['name'], 
-                                attribute_id=request_body['attribute_id'], 
-                                number_of_times_used=request_body['number_of_times_used'], 
-                                used_attribute_ids=json.dumps(request_body['used_attribute_ids']), 
-                                used_attribute_names=json.dumps(request_body['used_attribute_names']), 
-                                rule_text=request_body['rule_text'],
-                                executable=request_body['executable'])
+                new_entry = Rule(changed_var_attribute_id= request_body['changed_var_attribute_id'],
+                                condition_text= request_body['condition_text'],
+                                condition_exec= request_body['condition_exec'],
+                                effect_text= request_body['effect_text'],
+                                effect_exec= request_body['effect_exec'],
+                                effect_is_calculation= request_body['effect_is_calculation'],
+                                used_attribute_ids= request_body['used_attribute_ids'],
+                                is_conditionless= request_body['is_conditionless'],
+                                has_probability_1= request_body['has_probability_1'])
+
                 new_entry.save()
 
-            return HttpResponse("success")
+                rule_id = new_entry.id
+
+            return HttpResponse(rule_id)
         except Exception as error:
             traceback.print_exc()
             return HttpResponse(str(error))
@@ -765,6 +756,7 @@ def save_changed_simulation(request):
             request_body = json.loads(request.body)
 
             model_record = Simulation_model.objects.get(id=request_body['simulation_id'])
+            model_record.is_timeseries_analysis = json.dumps(request_body['is_timeseries_analysis'])
             model_record.objects_dict = json.dumps(request_body['objects_dict'])
             model_record.object_type_counts = json.dumps(request_body['object_type_counts'])
             model_record.total_object_count = request_body['total_object_count']
@@ -883,7 +875,7 @@ def delete_rule(request):
             request_body = json.loads(request.body)
             rule_id = request_body['rule_id']
 
-            rule = Calculation_rule.objects.get(id=rule_id)
+            rule = Rule.objects.get(id=rule_id)
             rule.delete()
             return HttpResponse("success")
         except Exception as error:
@@ -1349,7 +1341,7 @@ def test_page1(request):
 
 def test_page2(request):
     # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
-    bla = get_from_db.get_list_of_parent_objects('j1_5')
+    bla = list(Attribute.objects.all().values())
     print(bla)
     return HttpResponse(json.dumps(bla))
     
