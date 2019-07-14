@@ -238,6 +238,40 @@ def get_data_from_random_object(object_type_id, filter_facts, specified_start_ti
 
 
 def get_data_from_random_related_object(objects_dict, specified_start_time, specified_end_time):
+
+    object_numbers = list(objects_dict.keys())
+    merged_object_data_tables = get_data_from_related_objects(objects_dict, specified_start_time, specified_end_time)
+
+    if merged_object_data_tables is not None:
+        # chose random row
+        merged_object_data_tables.index = range(len(merged_object_data_tables))
+        chosen_row = random.choice(merged_object_data_tables.index)
+    
+
+        # prepare return values (all_attribute_values)
+        all_attribute_values = {}
+        for object_number in object_numbers:
+            all_attribute_values[object_number] = { 'object_id': int(merged_object_data_tables.loc[chosen_row, 'obj' + str(object_number) + 'attrobject_id']),
+                                                    'object_attributes':{} }
+            object_columns = [column for column in merged_object_data_tables.columns if (column.split('attr')[0][3:]==str(object_number)) and (column.split('attr')[1] not in ['object_id','time'])]
+
+            for object_column in object_columns:
+                attribute_id = object_column.split('attr')[1]
+                attribute_record = Attribute.objects.get(id=attribute_id)
+                all_attribute_values[object_number]['object_attributes'][attribute_id] = {  'attribute_value': merged_object_data_tables['obj' + str(object_number) + 'attr' + str(attribute_id)].iloc[chosen_row], 
+                                                                                            'attribute_name':attribute_record.name, 
+                                                                                            'attribute_data_type':attribute_record.data_type, 
+                                                                                            'attribute_rule': None}
+
+    else: 
+        all_attribute_values = {}
+
+    return all_attribute_values
+
+
+
+# used by simulation.py
+def get_data_from_related_objects(objects_dict, specified_start_time, specified_end_time):
     object_numbers = list(objects_dict.keys())
 
 
@@ -257,7 +291,7 @@ def get_data_from_random_related_object(objects_dict, specified_start_time, spec
          # get broad_table_df
         broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)  
         if broad_table_df is not None:
-            broad_table_df.columns = [str(object_number) + '-' + str(column) for column in broad_table_df.columns]
+            broad_table_df.columns = ['obj' + str(object_number) + 'attr' + str(column) for column in broad_table_df.columns]
             broad_table_df['cross_join_column'] = 1
             object_data_tables[object_number] = broad_table_df
 
@@ -277,45 +311,19 @@ def get_data_from_random_related_object(objects_dict, specified_start_time, spec
         object_relations = objects_dict[object_number]['object_relations']
         for relation in object_relations:
             target_object_number = relation['target_object_number']
-            attribute_id_column = str(object_number) + '-' + str(relation['attribute_id'])           
+            attribute_id_column = 'obj' + str(object_number) + 'attr' + str(relation['attribute_id'])           
             merged_object_data_tables = pd.merge(merged_object_data_tables, object_data_tables[str(target_object_number)], left_on=attribute_id_column, right_on=str(target_object_number) + '-object_id', how='inner', suffixes=('-old', ''))
             list_of_added_tables.append(str(target_object_number))
-            merged_object_data_tables = merged_object_data_tables[[column for column in merged_object_data_tables.columns if len(column.split('-')) <3]] # before it said "[[.. if column.split('-')[2] != 'old']]". This however causes an IndexOutOfBounds Error
+            # merged_object_data_tables = merged_object_data_tables[[column for column in merged_object_data_tables.columns if len(column.split('attr')) <3]]
 
-
-    if merged_object_data_tables is not None:
-        # PART3: chose random row
-        merged_object_data_tables.index = range(len(merged_object_data_tables))
-        chosen_row = random.choice(merged_object_data_tables.index)
-    
-
-        # PART4: prepare return values (all_attribute_values)
-        all_attribute_values = {}
-        for object_number in object_numbers:
-            all_attribute_values[object_number] = { 'object_id': int(merged_object_data_tables.loc[chosen_row, str(object_number) + '-object_id']),
-                                                    'object_attributes':{} }
-            object_columns = [column for column in merged_object_data_tables.columns if (column.split('-')[0]==str(object_number)) and (column.split('-')[1] not in ['object_id','time'])]
-
-            for object_column in object_columns:
-                attribute_id = object_column.split('-')[1]
-                attribute_record = Attribute.objects.get(id=attribute_id)
-                all_attribute_values[object_number]['object_attributes'][attribute_id] = {  'attribute_value': merged_object_data_tables[str(object_number) + '-' +str(attribute_id)].iloc[chosen_row], 
-                                                                                            'attribute_name':attribute_record.name, 
-                                                                                            'attribute_data_type':attribute_record.data_type, 
-                                                                                            'attribute_rule': None}
-
-    else: 
-        all_attribute_values = {}
-
-    return all_attribute_values
-
+    return merged_object_data_tables
 
 
 
 
 
 # used in query_data.html
-def get_data_from_related_objects(object_ids, specified_start_time, specified_end_time):
+def get_data_from_objects_behind_the_relation(object_ids, specified_start_time, specified_end_time):
 
 
     filter_facts = []

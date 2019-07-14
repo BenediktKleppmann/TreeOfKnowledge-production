@@ -28,7 +28,8 @@
 	
 	
 
-	
+		
+
 		
 	
 <style>
@@ -401,12 +402,16 @@
 	<!--<script src="{% static 'js/jquery-1.12.5.min.js' %}"></script>-->
 	<!--<script src="{% static 'js/jquery-2.2.4.js' %}"></script>-->
 	<!--<script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>-->
-	
+
 	
 	{% include "tree_of_knowledge_frontend/includes/edit_simulation__simulate.html" %} 
 	
 	<script type="text/javascript" src="{% static 'js/bootstrap-3.4.0.min.js' %}"></script>
 	{% include "tree_of_knowledge_frontend/includes/additional_facts_functions.html" %} 
+
+	{% include "tree_of_knowledge_frontend/includes/edit_object_behaviour_modal.html" %} 
+	{% include "tree_of_knowledge_frontend/includes/edit_object_type_behaviour_modal.html" %} 
+	
 	
 
 <script>
@@ -1066,7 +1071,7 @@
 	// hide the right sidebar if you click anywhere outside it   ----------
 	$('body').on('mousedown', function (e) {
 	
-		if ($('#right-sidebar').css('width') == '414px') {
+		if ($('#right-sidebar').css('width') == '415px') {
 			var right_sidebar = document.getElementById('right-sidebar');
 			var popover = document.getElementsByClassName('popover');
 			var edit_object_behaviour_modal = document.getElementById('editObjectBehaviourModal');
@@ -1404,8 +1409,7 @@
 </script>
 
 
-{% include "tree_of_knowledge_frontend/includes/edit_object_type_behaviour_modal.html" %} 
-{% include "tree_of_knowledge_frontend/includes/edit_object_behaviour_modal.html" %} 
+
 	
 {% endblock %}
 

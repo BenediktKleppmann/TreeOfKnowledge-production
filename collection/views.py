@@ -1,11 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule, Likelihood_fuction
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
-from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_datapoints, simulate, rule_learner
+from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_datapoints, simulate, simulation, rule_learner
 from django.http import HttpResponse
 import json
 import traceback
@@ -469,6 +469,17 @@ def get_object_rules(request):
                                     'execution_order':[]}
         rules_list = list(Rule.objects.filter(changed_var_attribute_id=attribute['id']).values())
         for rule in rules_list:
+
+            # calculate 'probability' and 'standard_dev'
+            histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule['id'])
+            rule['probability'] = mean
+            rule['standard_dev'] = standard_dev
+
+            # specify a default for 'learn_posterior'
+            rule['learn_posterior'] = False
+            if not rule['has_probability_1'] and rule['probability'] is None:
+                rule['learn_posterior'] = True
+
             response[attribute['id']]['used_rules'][rule['id']] = rule
             response[attribute['id']]['execution_order'].append(rule['id'])
     return HttpResponse(json.dumps(response)) 
@@ -519,7 +530,7 @@ def get_data_from_random_related_object(request):
 
 # used in query_data.html
 @login_required
-def get_data_from_related_objects(request):
+def get_data_from_objects_behind_the_relation(request):
     request_body = json.loads(request.body)
     object_ids = request_body['object_ids']
     specified_start_time = request_body['specified_start_time']
@@ -531,7 +542,7 @@ def get_data_from_related_objects(request):
     print(request_body['specified_end_time'])
     print('*******************************************************')
 
-    response = query_datapoints.get_data_from_related_objects(object_ids, specified_start_time, specified_end_time)   
+    response = query_datapoints.get_data_from_objects_behind_the_relation(object_ids, specified_start_time, specified_end_time)   
     return HttpResponse(json.dumps(response))
 
 
@@ -754,10 +765,10 @@ def save_changed_simulation(request):
     if request.method == 'POST':
         try:
             request_body = json.loads(request.body)
-
             model_record = Simulation_model.objects.get(id=request_body['simulation_id'])
-            model_record.is_timeseries_analysis = json.dumps(request_body['is_timeseries_analysis'])
+            model_record.is_timeseries_analysis = request_body['is_timeseries_analysis']
             model_record.objects_dict = json.dumps(request_body['objects_dict'])
+            model_record.y_value_attributes = json.dumps(request_body['y_value_attributes'])
             model_record.object_type_counts = json.dumps(request_body['object_type_counts'])
             model_record.total_object_count = request_body['total_object_count']
             model_record.number_of_additional_object_facts = request_body['number_of_additional_object_facts']
@@ -874,6 +885,9 @@ def delete_rule(request):
         try:
             request_body = json.loads(request.body)
             rule_id = request_body['rule_id']
+            print('[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
+            print(rule_id)
+            print('[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
 
             rule = Rule.objects.get(id=rule_id)
             rule.delete()
@@ -1161,6 +1175,7 @@ def download_file2_csv(request):
 @login_required
 def edit_simulation_new(request):    
     simulation_model = Simulation_model(user=request.user, 
+                                        is_timeseries_analysis=True,
                                         objects_dict=json.dumps({}), 
                                         object_type_counts=json.dumps({}),
                                         total_object_count=0,
@@ -1179,19 +1194,19 @@ def edit_simulation(request, simulation_id):
     simulation_model = Simulation_model.objects.get(id=simulation_id)
 
     if request.method == 'POST':
-        the_simulator = simulate.Simulation(simulation_id)
+        the_simulator = simulation.Simulator(simulation_id)
+        # the_simulator = simulate.Simulation(simulation_id)
         the_simulator.run()
 
-        # save simulation results in simulation object
-        timeline_visualisation_data = the_simulator.get_timeline_visualisation_data()
-        simulation_model.timeline_visualisation_data = json.dumps(timeline_visualisation_data)
-        linegraph_data = the_simulator.get_linegraph_data()
-        simulation_model.linegraph_data = json.dumps(linegraph_data)
-        attribute_errors = the_simulator.get_attribute_errors()
-        simulation_model.attribute_errors = json.dumps(attribute_errors)
-        simulation_model.save()
-
-        return redirect('analyse_simulation', simulation_id=simulation_id)
+        # # save simulation results in simulation object
+        # timeline_visualisation_data = the_simulator.get_timeline_visualisation_data()
+        # simulation_model.timeline_visualisation_data = json.dumps(timeline_visualisation_data)
+        # linegraph_data = the_simulator.get_linegraph_data()
+        # simulation_model.linegraph_data = json.dumps(linegraph_data)
+        # attribute_errors = the_simulator.get_attribute_errors()
+        # simulation_model.attribute_errors = json.dumps(attribute_errors)
+        # simulation_model.save()
+        # return redirect('analyse_simulation', simulation_id=simulation_id)
 
     
     available_object_types = get_from_db.get_most_common_object_types()
@@ -1340,9 +1355,16 @@ def test_page1(request):
 
 
 def test_page2(request):
-    # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
-    bla = list(Attribute.objects.all().values())
-    print(bla)
+    # likelihood_fuction = Likelihood_fuction(rule_id = 1, 
+    #                                         simulation_id = 1, 
+    #                                         beta_distribution_a=1.0,
+    #                                         beta_distribution_b=1.0)
+    # object_record =  Object(object_type_id = 'test')
+    # Likelihood_fuction.objects.all().delete()
+    bla = list(Likelihood_fuction.objects.all().values())
+    # bla = list(Simulation_model.objects.filter(id=107).values())
+    # print(bla)
+    # return HttpResponse('deleted')
     return HttpResponse(json.dumps(bla))
     
 

@@ -943,7 +943,7 @@
 					
 					
 				};
-				xmlhttp.open("POST", "/tool/get_data_from_related_objects/");
+				xmlhttp.open("POST", "/tool/get_data_from_objects_behind_the_relation/");
 				xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 				xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 				xmlhttp.send(JSON.stringify(request_body));	

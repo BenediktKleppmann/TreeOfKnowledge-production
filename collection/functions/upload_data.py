@@ -242,6 +242,7 @@ def perform_uploading(uploaded_dataset, request):
                             'get_new_object_data': True};
 
         simulation_model = Simulation_model(user=request.user, 
+                                            is_timeseries_analysis=False,
                                             objects_dict=json.dumps(objects_dict),
                                             object_type_counts=json.dumps({object_type_id:1}),
                                             total_object_count=0,
@@ -398,7 +399,9 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
                 number_of_datapoints_saved += 1
 
 
-    simulation_model = Simulation_model(user=request.user, name="", description="", meta_data_facts=uploaded_dataset.meta_data_facts)
+    simulation_model = Simulation_model(user=request.user,
+                                        is_timeseries_analysis=True,
+                                        name="", description="", meta_data_facts=uploaded_dataset.meta_data_facts)
     simulation_model.save()
     new_model_id = simulation_model.id
 

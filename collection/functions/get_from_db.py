@@ -1,6 +1,7 @@
-from collection.models import Uploaded_dataset, Object_types, Attribute, Object
+from collection.models import Uploaded_dataset, Object_types, Attribute, Object, Likelihood_fuction
 from django.db.models import Count
 import json
+import numpy as np
 
 
 
@@ -190,6 +191,53 @@ def get_available_relations():
         relation['all_relation_object_types'] = [object_type['id'] for object_type in relation_object_types_list]
         relations_dict[relation['id']] = relation
     return relations_dict
+
+
+# used in simulation.py
+def get_rules_pdf(rule_id):
+    likelihood_functions = list(Likelihood_fuction.objects.filter(rule_id=rule_id).values())
+
+    if len(likelihood_functions) > 0:
+        # multiply the likelihood functions of all different simulations/evidences to get a combined posterior
+        posterior_probabilities = np.array([1] * 100)
+        for likelihood_function in likelihood_functions:
+            likelihoods_probabilities = json.loads(likelihood_function['list_of_probabilities'])
+            posterior_probabilities = posterior_probabilities * likelihoods_probabilities           # multiply with likelihood function
+        
+        posterior_probabilities = posterior_probabilities * 100/ np.sum(posterior_probabilities) # re-normalisation
+        histogram = (posterior_probabilities, np.linspace(0,1,101))
+
+        x_values = np.linspace(0,0.99,100) + 0.005
+        mean = np.average(x_values, weights=posterior_probabilities)
+        standard_dev = np.sqrt(np.average((x_values - mean)**2, weights=posterior_probabilities))
+
+        return histogram, mean, standard_dev
+            
+    else:
+        return None, None, None
+
+
+def get_single_pdf(simulation_id, object_number, rule_id):
+    likelihood_functions = list(Likelihood_fuction.objects.filter(simulation_id=simulation_id, object_number=object_number, rule_id=rule_id).values())
+
+    if len(likelihood_functions) > 0:
+
+        list_of_probabilities = json.loads(likelihood_function['list_of_probabilities'])
+        histogram = (posterior_probabilities, np.linspace(0,1,101))
+
+        x_values = np.linspace(0,0.99,100) + 0.005
+        mean = np.average(x_values, weights=list_of_probabilities)
+        standard_dev = np.sqrt(np.average((x_values - mean)**2, weights=list_of_probabilities))
+
+        return histogram, mean, standard_dev
+
+    else:
+        return None, None, None
+
+
+    
+
+
 
 
 

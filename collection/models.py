@@ -146,6 +146,7 @@ class Attribute(models.Model):
 class Simulation_model(models.Model):
     is_timeseries_analysis = models.BooleanField()
     objects_dict = models.TextField()
+    y_value_attributes = models.TextField()
     object_type_counts = models.TextField()
     total_object_count= models.IntegerField()
     number_of_additional_object_facts = models.IntegerField()
@@ -184,11 +185,12 @@ class Rule(models.Model):
     
 
 
-class Posterior_distributions():
-    rule_id = models.IntegerField()
+class Likelihood_fuction(models.Model):
     simulation_id = models.IntegerField()
-    beta_distribution_a = models.FloatField()
-    beta_distribution_b = models.FloatField()
+    object_number = models.IntegerField()
+    rule_id = models.IntegerField()
+    list_of_probabilities = models.TextField()
+
 
 
 
