@@ -205,7 +205,7 @@ def get_rules_pdf(rule_id):
             posterior_probabilities = posterior_probabilities * likelihoods_probabilities           # multiply with likelihood function
         
         posterior_probabilities = posterior_probabilities * 100/ np.sum(posterior_probabilities) # re-normalisation
-        histogram = (posterior_probabilities, np.linspace(0,1,101))
+        histogram = (list(posterior_probabilities), list(np.linspace(0,1,101)))
 
         x_values = np.linspace(0,0.99,100) + 0.005
         mean = np.average(x_values, weights=posterior_probabilities)

@@ -775,7 +775,7 @@ def save_changed_simulation(request):
             model_record.simulation_start_time = request_body['simulation_start_time']
             model_record.simulation_end_time = request_body['simulation_end_time']
             model_record.timestep_size = request_body['timestep_size']
-            model_record.selected_attribute = request_body['selected_attribute']
+            # model_record.selected_attribute = request_body['selected_attribute']
             model_record.save()
 
             return HttpResponse("success")
@@ -1194,19 +1194,12 @@ def edit_simulation(request, simulation_id):
     simulation_model = Simulation_model.objects.get(id=simulation_id)
 
     if request.method == 'POST':
+        print('TEST 1')
         the_simulator = simulation.Simulator(simulation_id)
-        # the_simulator = simulate.Simulation(simulation_id)
+        print('TEST 2')
         the_simulator.run()
-
-        # # save simulation results in simulation object
-        # timeline_visualisation_data = the_simulator.get_timeline_visualisation_data()
-        # simulation_model.timeline_visualisation_data = json.dumps(timeline_visualisation_data)
-        # linegraph_data = the_simulator.get_linegraph_data()
-        # simulation_model.linegraph_data = json.dumps(linegraph_data)
-        # attribute_errors = the_simulator.get_attribute_errors()
-        # simulation_model.attribute_errors = json.dumps(attribute_errors)
-        # simulation_model.save()
-        # return redirect('analyse_simulation', simulation_id=simulation_id)
+        print('TEST 3')
+        return redirect('analyse_simulation', simulation_id=simulation_id)
 
     
     available_object_types = get_from_db.get_most_common_object_types()
@@ -1218,6 +1211,7 @@ def edit_simulation(request, simulation_id):
 
 @login_required
 def analyse_simulation(request, simulation_id):
+    print('TEST 4')
     simulation_model = Simulation_model.objects.get(id=simulation_id)
 
     if request.method == 'POST':
@@ -1253,16 +1247,6 @@ def setup_rule_learning(request, simulation_id):
     for index in range(len(times)-1):
         valid_times.append([int(times[index]), int(times[index + 1])])
 
-    # initial_factors = []
-    # for factor_number, factor_attribute_id in enumerate(objects_dict[str(object_number)]['object_attributes'].keys()):
-    #     if factor_attribute_id != attribute_id:
-    #         attribute_name = objects_dict[str(object_number)]['object_attributes'][str(factor_attribute_id)]['attribute_name']
-    #         initial_factors.append({'factor_number': factor_number,
-    #                                 'factor_text': '[' + attribute_name + ']',
-    #                                 'factor_transformation': 'attr' + str(factor_attribute_id)})
-
-
-    
     learned_rule = Learned_rule(object_type_id=objects_dict[str(object_number)]['object_type_id'], 
                                 object_type_name=objects_dict[str(object_number)]['object_type_name'],
                                 attribute_id=attribute_id,
