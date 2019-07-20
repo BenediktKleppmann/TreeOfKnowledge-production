@@ -28,6 +28,7 @@
 		background: rgb(226, 226, 226);
 	}
 	
+	/* Right */
 	.right-panel-container {
 		display: inline-block;
 		display: flex;
@@ -63,8 +64,48 @@
 	  width: 100%;
 	  height: 100%;
 	  overflow-x: scroll;
+	  background: rgb(255,255,255);
 	}
 	
+	/* Top Right */
+	
+	.top-right-panel-container {
+		height: 100%;
+		display: inline-block;
+		display: flex;
+		flex-direction: column;
+		border: 1px solid silver;
+		overflow: hidden;
+		xtouch-action: none; /* avoid browser level touch actions */
+		height:calc(100vh - 59px);
+	}
+
+	#graph-panel {
+	  flex: 0 0 auto;  /* only manually resize */
+	  height: 55%;
+	  min-height: 150px;
+	  width: 100%;
+	  //white-space: nowrap;
+	}
+
+	#top-splitter {
+	  flex: 0 0 auto;
+	  height: 4px;  
+	  background: rgb(225, 225, 225);
+	  border: 1px solid rgb(200, 200, 200);
+	  cursor: row-resize; 
+	  box-shadow: 3px  0 6px 0 rgba(0, 0, 0, 0.19);
+	  z-index: 1;
+	}
+
+	#triggered-rules-panel {
+	  flex: 1 1 auto;   /* resizable */
+	  padding-right: 10px;
+	  min-height: 200px;
+	  width: 100%;
+	  height: 100%;
+	  overflow-x: scroll;
+	}
 	
 	/* --------------------------------------------------------------------------*/
 	/* Left Panel ---------------------------------------------------------------*/
@@ -100,7 +141,7 @@
 	}
 	
 	/* --------------------------------------------------------------------------*/
-	/* Bottom Panel ---------------------------------------------------------------*/
+	/* Bottom Panel -------------------------------------------------------------*/
 	/* --------------------------------------------------------------------------*/
 
 	#bottom-object-items {
@@ -113,17 +154,27 @@
 	
 	.bottom-object-outer-box {
 		background: rgb(220, 227, 250);
-		padding-left: 9px;
+		padding-left: 4px;
 		border: 1px solid rgb(100, 100, 100);
+		padding-top: 3px;
+	}
+	
+	.bottom-object-icon {
+	    height: 17px;
+		float: left;
+		margin-top: 2px;
+		margin-right: 10px;
+		margin-left: 1px;
 	}
 	
 	.collapse-triangle {
+		font-size: 9px;
 		padding: 6px;
-		font-size: 10px;
+		padding-left: 7px;
 	}
 	
 	.bottom-object-inner-box {
-	    margin-left: 4px;
+	    margin-left: 10px;
 		margin-top: 3px;
 		background: rgb(255,255,255);
 		border-top: 1px solid rgb(100,100,100);
@@ -159,6 +210,52 @@
 		color: rgb(95, 95, 95);
 	}
 	
+	
+	/* --------------------------------------------------------------------------*/
+	/* Top Panel ----------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+	
+	#linegraph-container {
+	    height: 85%;
+	}
+	
+	#histogram-container {
+		height: 100%;
+	}
+	
+	#top-menu-bar {
+		height: 15%;
+		width: 100%;
+		background: rgb(226, 226, 226);
+		border-top: 1px solid rgb(202,202,202); 
+		position: relative;
+	}	
+
+	#vertically-centered {
+		margin: 0;
+		position: absolute;
+		top: 50%;
+		-ms-transform: translateY(-50%);
+		transform: translateY(-50%);
+		width: 100%;
+	}
+
+	.inlude-zero-menu {
+		display: inline-block;
+		margin-left: 25px;
+		margin-right: 15px;
+		margin-top: 8px;
+	}
+	
+	.menu-bar-error-message {
+		display: inline-block;
+		margin-left: 25px;
+	}
+	
+	#run-button {
+		margin-right: 11px;
+		margin-top: 1px;
+	}
 </style>	
 
 
@@ -169,30 +266,16 @@
 <div class="left-panel">
 	<div class="simulation-selection-area">
 		<div class="simulation-selection-box">
-			<button class="btn btn-light simulation-selection-button" type="button" onclick="selectAllSimulations()">All Simulations</button>
-			<button class="btn btn-light simulation-selection-button" type="button" onclick="selectCorrectSimulations()">Correct Simulations</button>
-			<button class="btn btn-light simulation-selection-button" type="button" onclick="selectFalseSimulations()">False Simulations</button>
+			<button id="all-simulations-button" class="btn btn-light simulation-selection-button" type="button" onclick="selectAllSimulations()">All Simulations</button>
+			<button id="correct-simulations-button" class="btn btn-light simulation-selection-button" type="button" onclick="selectCorrectSimulations()">Correct Simulations</button>
+			<button id="false-simulations-button" class="btn btn-light simulation-selection-button" type="button" onclick="selectFalseSimulations()">False Simulations</button>
 		</div>
 		<div id="initial-state-simulation-selection-buttons" class="simulation-selection-box"></div>
 		<div id="individual-simulation-selection-buttons" class="simulation-selection-box"></div>
 	</div>
 </div>
 <div class="right-panel-container">
-	<div id="top-panel">
-		<div id="linegraph-container"></div>
-			<!--<div id="top-left-menu-bar">
-				<div id="vertically-centered">
-					<div class="inlude-zero-menu">
-						<input type="checkbox" class="custom-control-input" id="inlcude-zero" onchange="displayNumericalAttribute(' + object_number + ', \'' + object_name + '\', \'' + attribute_name + '\', ' + object_id + ',' + attribute_id + ')">
-						<label class="custom-control-label" for="inlcude-zero">&nbsp;Include 0 in Linegraph</label>
-					</div>
-					error_values_html_string 
-					<button id="run-button" class="btn btn-primary pull-right" type="button" onclick="run()">Re-Run Simulation</button>
-				</div>
-			</div>-->
-		</div>
-	</div>
-
+	<div id="top-panel"></div>
 	<div id="splitter"></div>
 	<div id="bottom-panel">	
 		<ul id="bottom-object-items"></ul>
@@ -201,7 +284,13 @@
 
 
 
-
+		
+<script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+<script src="https://cdn.anychart.com/releases/v8/js/anychart-ui.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+<script src="https://cdn.anychart.com/releases/v8/js/anychart-exports.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+<script src="https://cdn.anychart.com/releases/v8/js/anychart-gantt.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+<script src="https://cdn.anychart.com/releases/v8/js/anychart-data-adapter.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+ 
 
 <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
 <script type="text/javascript" src="https://rawgit.com/RickStrahl/jquery-resizable/master/src/jquery-resizable.js"></script>
@@ -232,14 +321,12 @@
 
 	
 	var selected_simulations = new Set(); 
+	var selected_object_attribute = null;
 
 			
 	var clicked_selection_buttons = {'select_all_clicked': false, 'select_correct_clicked': false, 'select_false_clicked': false}
 	
 	/*
-
-
-	
 	var rules_list = {};	
 	var new_rule_cursor_position = {};
 	var new_rule_used_attribute_names = [];
@@ -247,7 +334,7 @@
 	var highlighted_words_dict = {};
 	var delta_t_list = ['delta_t (years)', 'delta_t (months)', 'delta_t (days)', 'delta_t (hours)', 'delta_t (minutes)', 'delta_t (seconds)'];
 	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1];
-	var inlcude_zero = false;
+	var include_zero = false;
 	*/
 
 
@@ -273,7 +360,7 @@
 		
 		var initial_state_selection_buttons = '';
 		for (var i = 0; i < initial_state_ids.length; i++) {
-			initial_state_selection_buttons += '<button class="btn btn-light simulation-selection-button" type="button" onclick="selectSimulationsWithInitialState(' + initial_state_ids[i] + ')">All with Intital State ' + initial_state_ids[i] + '</button>';
+			initial_state_selection_buttons += '<button id="initial-state-btn' + i + '" class="btn btn-light simulation-selection-button" type="button" onclick="selectSimulationsWithInitialState(' + initial_state_ids[i] + ')">All with Intital State ' + initial_state_ids[i] + '</button>';
 		}	
 		$('#initial-state-simulation-selection-buttons').html(initial_state_selection_buttons);
 		
@@ -287,15 +374,21 @@
 
 	
 	
+	
+	
+	
 	//All Simulations -------------------------------  
 	
 	function selectAllSimulations() {	
+		$('#all-simulations-button').toggleClass('active');
+
 		if (clicked_selection_buttons['select_all_clicked']) {
 			clicked_selection_buttons['select_all_clicked'] = false;
 			
 			selected_simulations = new Set()		
 			$('.simulation-toggle').removeClass('active');
 			$('#bottom-object-items').html('');
+			$('#graph-panel').html('');
 		} else {
 			clicked_selection_buttons['select_all_clicked'] = true;
 			
@@ -305,13 +398,13 @@
 			}		
 			$('.simulation-toggle').addClass('active');
 			
-			drawBottomPanel();
-			fillBottomPanel('mean');
+			refreshRestOfScreen();
 		}
 	}
 	
 	//Correct Simulations  -------------------------------
 	function selectCorrectSimulations() {
+		$('#correct-simulations-button').toggleClass('active');
 		if (clicked_selection_buttons['select_correct_clicked']) {
 			clicked_selection_buttons['select_correct_clicked'] = false;
 			
@@ -330,12 +423,12 @@
 				$('#selection-button-' + simulation_number).addClass('active');
 			}
 		}
-		drawBottomPanel();
-		fillBottomPanel('mean');
+		refreshRestOfScreen();
 	}
 	
 	//False Simulations  -------------------------------
 	function selectFalseSimulations() {
+		$('#false-simulations-button').toggleClass('active');
 		if (clicked_selection_buttons['select_false_clicked']) {
 			clicked_selection_buttons['select_false_clicked'] = false;
 			
@@ -354,12 +447,12 @@
 				$('#selection-button-' + simulation_number).addClass('active');
 			}
 		}
-		drawBottomPanel();
-		fillBottomPanel('mean');
+		refreshRestOfScreen();
 	}
 	
 	//All with Initial State X  -------------------------------
 	function selectSimulationsWithInitialState(initial_state_id) {
+		$('#initial-state-btn' + initial_state_id).toggleClass('active');
 		if (clicked_selection_buttons['select_initial_state' + initial_state_id +'_clicked']) {
 			clicked_selection_buttons['select_initial_state' + initial_state_id +'_clicked'] = false;
 			
@@ -381,8 +474,7 @@
 				}
 			}	
 		}
-		drawBottomPanel();
-		fillBottomPanel('mean');
+		refreshRestOfScreen();
 	}
 	
 	//Simulation X  -------------------------------
@@ -394,17 +486,27 @@
 			selected_simulations.add(simulation_number);
 			$('#selection-button-' + simulation_number).addClass('active');
 		}
-		drawBottomPanel();
-		fillBottomPanel('mean');
+		refreshRestOfScreen();
 	}
 	
 	
 	
 	
+	function refreshRestOfScreen() {
 	
-	
-	
-	
+		drawBottomPanel();
+		fillBottomPanel('mean');
+		if (selected_object_attribute != null) {
+			var object_number = selected_object_attribute['object_number']
+			var attribute_id = selected_object_attribute['attribute_id']
+			var period_number = selected_object_attribute['period_number']
+			if (period_number == null) {
+				plotAttribute(object_number, attribute_id);
+			} else {
+				plotAttributeValue(object_number, attribute_id, period_number);
+			}
+		}
+	}
 	
 	
 	
@@ -428,6 +530,7 @@
 				var object_number = object_numbers[i];
 				object_items_html = '<li class="bottom-object-item">' +
 										'<div class="bottom-object-outer-box">' + objects_dict[object_number]['object_name'] + 
+											'<img class="bottom-object-icon" src="{% static "images/object_icons/" %}' + objects_dict[object_number]['object_icon'] + '.svg">' +
 											'<span id="object-box-triangle-' + object_number + '" class="glyphicon glyphicon-triangle-top collapse-triangle" onclick="collapseExpandObjectInnerBox(' + object_number + ');"></span>' +
 											'<div id="object-inner-box' + object_number + '" class="bottom-object-inner-box">';
 				
@@ -436,11 +539,11 @@
 					var attribute_id = attribute_ids[j];
 					
 					object_items_html += 		'<div class="bottom-object-data-row" style="width:' + String(178 + 57*(number_of_periods)) + 'px;">' +
-													'<div class="bottom-attribute-name" onclick="displayLineGraph(' + object_number + ',' + attribute_id + ')">' + objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'] + '</div>' +
+													'<div class="bottom-attribute-name" onclick="plotAttribute(' + object_number + ',' + attribute_id + ')">' + objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'] + '</div>' +
 													'<div class="bottom-attribute-values">';
 						
 					for (var period_number = 0; period_number < number_of_periods; period_number++) {
-						object_items_html += 			'<div id="' + object_number + '-' + attribute_id + '-' + period_number + '" class="attribute-value"></div>';
+						object_items_html += 			'<div id="' + object_number + '-' + attribute_id + '-' + period_number + '" class="attribute-value" onclick="plotAttributeValue(' + object_number + ',' + attribute_id + ',' + period_number + ')"></div>';
 					}
 					object_items_html += 			'</div>	' +
 												'</div>';
@@ -477,7 +580,6 @@
 					for (var k = 0; k < selected_simulations_list.length; k++) {
 						var simulation_number = selected_simulations_list[k];
 						var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
-						console.log(String(k) + '-' + simulation_number + '-' + column_name + '-' + period_number);
 						values.push(simulation_data[simulation_number][column_name][period_number]);
 					}
 					
@@ -543,10 +645,320 @@
 	//========================================================================
 	//========================   TOP PANEL   =================================
 	//========================================================================
-		
-	function displayLineGraph(object_number, attribute_id) {
-		
+	
+	function splitTopPanelInTwo() {
+		if (! $('#top-right-panel-container').length ) {
+			$('#top-panel').html(	'<div id="top-right-panel-container">' +
+							'<div id="graph-panel"></div>' +
+							'<div id="top-splitter"></div>' +
+							'<div id="triggered-rules-panel"></div>' +
+						'</div>');
+		}
 	}
+
+		
+	function plotAttribute(object_number, attribute_id) {	
+		selected_object_attribute = {'object_number': object_number, 'attribute_id': attribute_id, 'period_number': null};
+		var attribute_name = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'];
+		var object_name = objects_dict[object_number]['object_name'];
+		var attribute_data_type = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
+		
+		splitTopPanelInTwo();
+		$("#graph-panel").html('');
+		
+		if (number_of_periods > 1) {
+			if (['real','int'].includes(attribute_data_type)) {
+				linegraph_data = prepareLineGraphData_Attribute(object_number, attribute_id);
+				plotLineGraph(false, object_name, attribute_name, linegraph_data);
+			
+			} else {
+				plotLineGraph(true, object_name, attribute_name, linegraph_data);
+			} 	
+		} else {
+			if (['real','int'].includes(attribute_data_type)) {
+				histogram_data = prepareHistogramData(false, object_number, attribute_id, 0);
+				plotHistogram(object_name, attribute_name, histogram_data);
+			} else {
+				histogram_data = prepareHistogramData(true, object_number, attribute_id, 0);
+				plotHistogram(object_name, attribute_name, histogram_data);
+			}
+		}
+		
+		plotAllTriggeredRules()
+	}
+	
+	
+	function plotAttributeValue(object_number, attribute_id, period_number) {
+		selected_object_attribute = {'object_number': object_number, 'attribute_id': attribute_id, 'period_number': period_number};
+		var attribute_name = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'];
+		var object_name = objects_dict[object_number]['object_name'];
+		var attribute_data_type = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
+		
+		splitTopPanelInTwo();
+		$("#graph-panel").html('');
+		
+		if (['real','int'].includes(attribute_data_type)) {
+			histogram_data = prepareHistogramData(false, object_number, attribute_id, period_number);
+			plotHistogram(object_name, attribute_name, histogram_data);
+		} else {
+			histogram_data = prepareHistogramData(true, object_number, attribute_id, period_number);
+			plotHistogram(object_name, attribute_name, histogram_data);
+		}
+	}
+
+	
+	
+	// Histogram Graph Data ===========================================================================	
+	function prepareHistogramData(is_categorical, object_number, attribute_id, period_number) {
+	
+		var selected_simulations_list = Array.from(selected_simulations);
+		var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
+		var histogram_data;
+		
+		if (is_categorical) {
+			// value_occurences
+			var value_occurences = {}
+			for (var i = 0; i < selected_simulations_list.length; i++) {
+				var value = simulation_data[selected_simulations_list[i]][column_name][period_number];
+				if (Object.keys(value_occurences).includes(value)) {
+					value_occurences[value] += 1;
+				} else {
+					value_occurences[value] = 0;
+				}
+			}
+			
+			// histogram_data
+			histogram_data = []
+			var distinct_values = Object.keys(value_occurences);
+			for (var i = 0; i < distinct_values.length; i++) {
+				var value = distinct_values[i];
+				histogram_data.push([value, String(value_occurences[value])]);
+			}
+			
+			
+		} else {
+			// overall value range
+			var minimum_overall_value = 100000;
+			var maximum_overall_value = -100000;
+			var all_simulations = Object.keys(simulation_data);
+			for (var i = 0; i < all_simulations.length; i++) {
+				for (var period_nb = 0; period_nb < number_of_periods; period_nb++) {
+					var value = simulation_data[all_simulations[i]][column_name][period_nb];
+					if (value > maximum_overall_value) {maximum_overall_value = value;}
+					if (value < minimum_overall_value) {minimum_overall_value = value;}
+				}
+			}
+			var bin_interval = (maximum_overall_value - minimum_overall_value)/40;
+			
+			// bin_occurences
+			bin_occurences = Array(40).fill(0);
+			for (var i = 0; i < selected_simulations_list.length; i++) {
+				var value = simulation_data[selected_simulations_list[i]][column_name][period_number];
+				var bin_number = Math.floor((value - minimum_overall_value)/bin_interval);
+				bin_occurences[bin_number] += 1;
+			}
+			
+			// histogram_data
+			histogram_data = []
+			for (var i = 0; i < bin_occurences.length; i++) {
+				var interval_central_value = (minimum_overall_value + i*bin_interval + bin_interval/2 ).toFixed(2)
+				histogram_data.push([String(interval_central_value), String(bin_occurences[i])])
+			}
+		}
+		
+		return histogram_data;
+	}
+	
+
+		
+			
+	// Plot Line Histogram  ===========================================================================
+	function plotHistogram(object_name, attribute_name, histogram_data) {
+		anychart.onDocumentReady(function () {
+
+			var chart = anychart.column();
+			chart.title(object_name + '.[' + attribute_name + ']');
+			//chart.animation(true);
+
+
+			var series = chart.column(histogram_data);
+
+			series.tooltip().titleFormat('{%X}');
+
+			series.tooltip()
+					.position('center-top')
+					.anchor('center-bottom')
+					.offsetX(0)
+					.offsetY(5)
+					.format('{%Value}{groupsSeparator: }');
+
+
+			chart.barGroupsPadding(0);
+			chart.yScale().minimum(0);
+			chart.yAxis().labels().format('{%Value}{groupsSeparator: }');
+			chart.tooltip().positionMode('point');
+			chart.interactivity().hoverMode('by-x');
+
+			chart.xAxis().title(attribute_name);
+			chart.yAxis().title('Count');
+
+			// set container id for the chart
+			chart.container('graph-panel');
+			chart.draw();
+		});
+	}
+	
+	
+	
+	
+	
+	function displayNumericalDistribution() {
+	
+	}
+	
+	
+	
+	function displayLineGraph(is_categorical, object_number, object_name, attribute_id, attribute_name) {
+	
+
+	}
+	
+	
+	
+	
+	
+	
+	// Line Graph Data ===========================================================================
+	function prepareLineGraphData_Attribute(object_number, attribute_id) {
+
+		var selected_simulations_list = Array.from(selected_simulations);
+		if (selected_simulations_list.length > 20) {
+			selected_simulations_list = selected_simulations_list.slice(0, 20);
+		}
+		
+		var linegraph_data = [];
+		var max_value = -1000;
+		var min_value = 1000;
+		for (var period_number = 0; period_number < number_of_periods; period_number++) {
+			
+			// Period's Time
+			var current_timestamp= simulation_start_time + (timestep_size * period_number);
+			var current_date = new Date(current_timestamp*1000);
+			var year = current_date.getFullYear();
+			var month = current_date.getMonth();
+			var day = current_date.getDate();
+			var hours = current_date.getHours();
+			var minutes = "0" + current_date.getMinutes();
+			var seconds = "0" + current_date.getSeconds();
+			
+			var date_string = '';
+			if (timestep_size >= 31535998) {
+				date_string = year;
+			} else if (timestep_size >= 2419198) {
+				date_string = year+'-'+month;
+			} else if (timestep_size >= 86398) {
+				date_string = year+'-'+month+'-'+day;
+			} else if (timestep_size >= 58) {
+				date_string = year+'-'+month+'-'+day+' '+hours + ':' + minutes.substr(-2);
+			} else {
+				date_string = year+'-'+month+'-'+day+' '+hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+			}
+			
+			var linegraph_data_row = [date_string];
+
+			// values
+			for (var k = 0; k < selected_simulations_list.length; k++) {
+				var simulation_number = selected_simulations_list[k];
+				var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
+				var value = simulation_data[simulation_number][column_name][period_number];
+				linegraph_data_row.push(value);
+				if (value < min_value) {min_value = value;}
+				if (value > max_value) {max_value = value;}
+			}
+			linegraph_data.push(linegraph_data_row);
+		}
+		
+		return linegraph_data;
+	}
+	
+	
+
+
+	// Plot Line Graph  ===========================================================================
+	function plotLineGraph(is_categorical, object_name, attribute_name, linegraph_data) {
+	
+		var selected_simulations_list = Array.from(selected_simulations);
+		anychart.onDocumentReady(function () {
+			// load data
+			var dataSet = anychart.data.set(linegraph_data);
+
+
+			// create line chart
+			var chart = anychart.line();
+			chart.title(object_name + '.[' + attribute_name + ']');
+			chart.animation(true);
+			chart.padding([10, 20, 5, 20]);
+			chart.crosshair()
+					.enabled(true)
+					.yLabel(false)
+					.yStroke(null);
+			chart.tooltip().positionMode('point');
+			chart.yAxis().title(attribute_name);
+			chart.xAxis().labels().padding(5);
+			
+			if (is_categorical) {
+				ordinalYScale = anychart.scales.ordinal();
+				ordinalYScale.names(categories)
+				chart.yScale(ordinalYScale);
+			}
+			
+			//var include_zero = false;
+			var include_zero = document.getElementById("include-zero").checked;
+			var yScale = chart.yScale();
+			if (include_zero & min_value > 0) {
+				yScale.minimum(0);
+			} else if (include_zero &  max_value < 0) {
+				yScale.maximum(0);
+			}
+
+
+			for (var i = 0; i < selected_simulations_list.length; i++) {
+				// create first series with mapped data
+				var series_2;
+				if (is_categorical) {
+					series_2 = chart.line(dataSet.mapAs({'x': 0, 'value': i+1}));
+				} else {
+					series_2 = chart.stepLine(dataSet.mapAs({'x': 0, 'value': i+1}));
+				}
+				series_2.name('Simulation' + i)
+						.stroke("2 #14AA09");
+				series_2.hovered().markers()
+						.enabled(true)
+						.type('circle')
+						.size(4);
+				series_2.tooltip()
+						.position('right')
+						.anchor('left-center')
+						.offsetX(5)
+						.offsetY(5);
+			}
+			
+			
+			// turn the legend on
+			chart.legend()
+					.enabled(true)
+					.fontSize(13)
+					.padding([0, 0, 10, 0])
+					.positionMode("inside")
+					.position("top");
+
+			// set container id for the chart
+			chart.container('graph-panel');
+			chart.draw();
+		});
+	}
+	
+	
 	
 	
 
@@ -562,12 +974,12 @@
 	   handleSelector: "#splitter",
 	   resizeHeight: true
 	 });
-
-	 $("#bottom-panel").resizable({
-	   handleSelector: ".splitter-horizontal",
-	   resizeWidth: true
-	 });
 	 
+	$("#graph-panel").resizable({
+	   handleSelector: "#top-splitter",
+	   resizeHeight: true
+	 });
+
 	
 	 
 </script>
