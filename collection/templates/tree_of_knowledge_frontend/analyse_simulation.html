@@ -80,33 +80,8 @@
 		height:calc(100vh - 59px);
 	}
 
-	#graph-panel {
-	  flex: 0 0 auto;  /* only manually resize */
-	  height: 55%;
-	  min-height: 150px;
-	  width: 100%;
-	  //white-space: nowrap;
-	}
 
-	#top-splitter {
-	  flex: 0 0 auto;
-	  height: 4px;  
-	  background: rgb(225, 225, 225);
-	  border: 1px solid rgb(200, 200, 200);
-	  cursor: row-resize; 
-	  box-shadow: 3px  0 6px 0 rgba(0, 0, 0, 0.19);
-	  z-index: 1;
-	}
-
-	#triggered-rules-panel {
-	  flex: 1 1 auto;   /* resizable */
-	  padding-right: 10px;
-	  min-height: 200px;
-	  width: 100%;
-	  height: 100%;
-	  overflow-x: scroll;
-	}
-	
+					
 	/* --------------------------------------------------------------------------*/
 	/* Left Panel ---------------------------------------------------------------*/
 	/* --------------------------------------------------------------------------*/
@@ -146,6 +121,8 @@
 
 	#bottom-object-items {
 		list-style-type: none;
+		padding-inline-start: 0px;
+		margin: 23px;
 	}
  
 	#bottom-object-items li {
@@ -215,16 +192,15 @@
 	/* Top Panel ----------------------------------------------------------------*/
 	/* --------------------------------------------------------------------------*/
 	
-	#linegraph-container {
-	    height: 85%;
+	#graph-panel {
+	  	height: calc(100% - 45px);
+		width: 100%;
 	}
 	
-	#histogram-container {
-		height: 100%;
-	}
+
 	
 	#top-menu-bar {
-		height: 15%;
+		height: 45px;
 		width: 100%;
 		background: rgb(226, 226, 226);
 		border-top: 1px solid rgb(202,202,202); 
@@ -240,7 +216,7 @@
 		width: 100%;
 	}
 
-	.inlude-zero-menu {
+	#inlude-zero-menu {
 		display: inline-block;
 		margin-left: 25px;
 		margin-right: 15px;
@@ -252,10 +228,103 @@
 		margin-left: 25px;
 	}
 	
+	#show-rules-button {
+	    background: rgb(248, 248, 248);
+		border: 1px solid rgb(210, 210, 210);
+		margin-left: 14px;
+		margin-top: 1px;
+	}
+	
 	#run-button {
 		margin-right: 11px;
 		margin-top: 1px;
 	}
+	
+	/* --------------------------------------------------------------------------*/
+	/* Top Panel - RULES --------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+	
+	.triggered.color0 { background: #22B0BE;}
+	.triggered.color1 { background: #229CBD;}
+	.triggered.color2 { background: #2288BD;}
+	.triggered.color3 { background: #2274BD;}
+	.triggered.color4 { background: #2260BD;}
+	.triggered.color5 { background: #214CBD;}
+	.triggered.color6 { background: #2138BC;}
+	.triggered.color7 { background: #2124BC;}
+	.triggered.color8 { background: #3221BC;}
+	.triggered.color9 { background: #4621BC;}
+	.triggered.color10 { background: #5A20BC;}
+	.triggered.color11 { background: #6D20BC;}
+	.triggered.color12 { background: #8120BB;}
+	.triggered.color13 { background: #9520BB;}
+	.triggered.color14 { background: #A920BB;}
+	.triggered.color15 { background: #BB1FB9;}
+	.triggered.color16 { background: #BB1FA5;}
+	.triggered.color17 { background: #BB1F91;}
+	.triggered.color18 { background: #BA1F7D;}
+	.triggered.color19 { background: #BA1F69;}
+	.triggered.color20 { background: #BA1E55;}
+	.triggered.color21 { background: #BA1E40;}
+	.triggered.color22 { background: #BA1E2C;}
+	.triggered.color23 { background: #BA241E;}
+	.triggered.color24 { background: #B9371E;}
+	.triggered.color25 { background: #B94B1D;}
+	.triggered.color26 { background: #B95F1D;}
+	.triggered.color27 { background: #B9731D;}
+	.triggered.color28 { background: #B9871D;}
+	.triggered.color29 { background: #B99A1C;}
+	.not-triggered.color0 { background: #B9D7DA;}
+	.not-triggered.color1 { background: #B9D2DA;}
+	.not-triggered.color2 { background: #B9CEDA;}
+	.not-triggered.color3 { background: #B9CADA;}
+	.not-triggered.color4 { background: #B9C6DA;}
+	.not-triggered.color5 { background: #BAC2DA;}
+	.not-triggered.color6 { background: #BABEDA;}
+	.not-triggered.color7 { background: #BABADA;}
+	.not-triggered.color8 { background: #BEBADA;}
+	.not-triggered.color9 { background: #C3BBDA;}
+	.not-triggered.color10 { background: #C7BBDB;}
+	.not-triggered.color11 { background: #CBBBDB;}
+	.not-triggered.color12 { background: #CFBBDB;}
+	.not-triggered.color13 { background: #D4BCDB;}
+	.not-triggered.color14 { background: #D8BCDB;}
+	.not-triggered.color15 { background: #DBBCDA;}
+	.not-triggered.color16 { background: #DBBCD6;}
+	.not-triggered.color17 { background: #DBBDD3;}
+	.not-triggered.color18 { background: #DBBDCF;}
+	.not-triggered.color19 { background: #DBBDCB;}
+	.not-triggered.color20 { background: #DCBDC7;}
+	.not-triggered.color21 { background: #DCBEC4;}
+	.not-triggered.color22 { background: #DCBEC0;}
+	.not-triggered.color23 { background: #DCC0BE;}
+	.not-triggered.color24 { background: #DCC4BE;}
+	.not-triggered.color25 { background: #DCC8BF;}
+	.not-triggered.color26 { background: #DCCCBF;}
+	.not-triggered.color27 { background: #DCD0BF;}
+	.not-triggered.color28 { background: #DCD4BF;}
+	.not-triggered.color29 { background: #DDD8C0;}
+
+	
+	
+	#triggerd-rules-panel {
+		height: 0px;
+		padding-left: 63px;
+		padding-right: 18px;
+	}
+	
+	.triggerd-rules-period {
+		padding: 0px 5px;
+	}
+	
+	.triggerd-rule {
+		padding-top: 2px;
+		border: 1px solid rgb(210, 210, 210);
+	}
+	
+	
+
+
 </style>	
 
 
@@ -339,10 +408,11 @@
 
 
 
-
-	//==================================================================================================
-	//==============================   LEFT PANEL      ===============================================
-	//==================================================================================================
+	//========================================================================
+	//========================================================================
+	//=========================   LEFT PANEL      ============================
+	//========================================================================
+	//========================================================================
 
 	
 
@@ -501,9 +571,9 @@
 			var attribute_id = selected_object_attribute['attribute_id']
 			var period_number = selected_object_attribute['period_number']
 			if (period_number == null) {
-				plotAttribute(object_number, attribute_id);
+				drawTopPanel_Attribute(object_number, attribute_id);
 			} else {
-				plotAttributeValue(object_number, attribute_id, period_number);
+				drawTopPanel_AttributeValue(object_number, attribute_id, period_number);
 			}
 		}
 	}
@@ -514,8 +584,11 @@
 	
 	
 	
+	
+	//========================================================================
 	//========================================================================
 	//=====================    BOTTOM PANEL      =============================
+	//========================================================================
 	//========================================================================
 	
 	
@@ -539,11 +612,11 @@
 					var attribute_id = attribute_ids[j];
 					
 					object_items_html += 		'<div class="bottom-object-data-row" style="width:' + String(178 + 57*(number_of_periods)) + 'px;">' +
-													'<div class="bottom-attribute-name" onclick="plotAttribute(' + object_number + ',' + attribute_id + ')">' + objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'] + '</div>' +
+													'<div class="bottom-attribute-name" onclick="drawTopPanel_Attribute(' + object_number + ',' + attribute_id + ')">' + objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'] + '</div>' +
 													'<div class="bottom-attribute-values">';
 						
 					for (var period_number = 0; period_number < number_of_periods; period_number++) {
-						object_items_html += 			'<div id="' + object_number + '-' + attribute_id + '-' + period_number + '" class="attribute-value" onclick="plotAttributeValue(' + object_number + ',' + attribute_id + ',' + period_number + ')"></div>';
+						object_items_html += 			'<div id="' + object_number + '-' + attribute_id + '-' + period_number + '" class="attribute-value" onclick="drawTopPanel_AttributeValue(' + object_number + ',' + attribute_id + ',' + period_number + ')"></div>';
 					}
 					object_items_html += 			'</div>	' +
 												'</div>';
@@ -641,31 +714,40 @@
 		}
 	}
 	
-		
+
+
+
+
+
+
+	//========================================================================
 	//========================================================================
 	//========================   TOP PANEL   =================================
 	//========================================================================
-	
-	function splitTopPanelInTwo() {
-		if (! $('#top-right-panel-container').length ) {
-			$('#top-panel').html(	'<div id="top-right-panel-container">' +
-							'<div id="graph-panel"></div>' +
-							'<div id="top-splitter"></div>' +
-							'<div id="triggered-rules-panel"></div>' +
-						'</div>');
-		}
-	}
+	//========================================================================
 
+	
+
+	//========================  DRAW TOP PANEL   =================================
 		
-	function plotAttribute(object_number, attribute_id) {	
+	function drawTopPanel_Attribute(object_number, attribute_id) {	
 		selected_object_attribute = {'object_number': object_number, 'attribute_id': attribute_id, 'period_number': null};
 		var attribute_name = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'];
 		var object_name = objects_dict[object_number]['object_name'];
 		var attribute_data_type = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
 		
-		splitTopPanelInTwo();
-		$("#graph-panel").html('');
-		
+		$('#top-panel').html(	'<div id="graph-panel"></div>' +
+								'<div id="triggerd-rules-panel"></div>' +
+								'<div id="top-menu-bar">' +
+									'<div id="vertically-centered">' +
+										'<button id="show-rules-button" class="btn btn-secondary" type="button" onclick="showHideRules(' + object_number + ',' + attribute_id + ', null)">Triggerd Rules<span id="triggerd-rules-triangle" class="glyphicon glyphicon-triangle-top collapse-triangle"></span></button>' +
+										'<div id="inlude-zero-menu"></div>' +
+										'<button id="run-button" class="btn btn-primary pull-right" type="button" onclick="run()">Re-Run Simulation</button>' +
+									'</div>' +
+								'</div>' +
+								'<div id="top-splitter"></div>' +
+								'<div id="triggered-rules-panel"></div>');
+
 		if (number_of_periods > 1) {
 			if (['real','int'].includes(attribute_data_type)) {
 				linegraph_data = prepareLineGraphData_Attribute(object_number, attribute_id);
@@ -684,18 +766,35 @@
 			}
 		}
 		
-		plotAllTriggeredRules()
 	}
 	
 	
-	function plotAttributeValue(object_number, attribute_id, period_number) {
+	function drawTopPanel_AttributeValue(object_number, attribute_id, period_number) {
 		selected_object_attribute = {'object_number': object_number, 'attribute_id': attribute_id, 'period_number': period_number};
 		var attribute_name = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'];
 		var object_name = objects_dict[object_number]['object_name'];
 		var attribute_data_type = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
 		
-		splitTopPanelInTwo();
-		$("#graph-panel").html('');
+		
+		$('#top-panel').html(	'<div id="graph-panel"></div>' +
+								'<div id="triggerd-rules-panel">' +
+									'<div class="triggerd-rules-period">' +
+										'<div class="triggerd-rule not-triggered color1">Rule ' + 1 + ' (prob=' + 56 + '%) => \'setosa\'</div>' +
+										'<div class="triggerd-rule triggered color3">Rule ' + 3 + ' (prob=' + 56 + '%) => \'setosa\'</div>' +
+										'<div class="triggerd-rule not-triggered color7">Rule ' + 7 + ' (certain) => \'setosa\'</div>' +
+										'<div class="triggerd-rule triggered color8">Rule ' + 8 + ' (certain) => \'setosa\'</div>' +
+									'</div>' +									
+								'</div>' +
+								'<div id="top-menu-bar">' +
+									'<div id="vertically-centered">' +
+										'<button id="show-rules-button" class="btn btn-secondary" type="button" onclick="showHideRules(' + object_number + ',' + attribute_id + ', null)">Triggerd Rules<span id="triggerd-rules-triangle" class="glyphicon glyphicon-triangle-top collapse-triangle"></span></button>' +
+										'<div id="inlude-zero-menu"></div>' +
+										'<button id="run-button" class="btn btn-primary pull-right" type="button" onclick="run()">Re-Run Simulation</button>' +
+									'</div>' +
+								'</div>' +
+								'<div id="top-splitter"></div>' +
+								'<div id="triggered-rules-panel"></div>');
+								
 		
 		if (['real','int'].includes(attribute_data_type)) {
 			histogram_data = prepareHistogramData(false, object_number, attribute_id, period_number);
@@ -705,10 +804,13 @@
 			plotHistogram(object_name, attribute_name, histogram_data);
 		}
 	}
+	
 
 	
 	
-	// Histogram Graph Data ===========================================================================	
+	//========================  PREPARE DATA - TOP PANEL   =================================
+	
+	// Histogram Graph Data ------------------------
 	function prepareHistogramData(is_categorical, object_number, attribute_id, period_number) {
 	
 		var selected_simulations_list = Array.from(selected_simulations);
@@ -769,66 +871,9 @@
 		return histogram_data;
 	}
 	
-
-		
-			
-	// Plot Line Histogram  ===========================================================================
-	function plotHistogram(object_name, attribute_name, histogram_data) {
-		anychart.onDocumentReady(function () {
-
-			var chart = anychart.column();
-			chart.title(object_name + '.[' + attribute_name + ']');
-			//chart.animation(true);
-
-
-			var series = chart.column(histogram_data);
-
-			series.tooltip().titleFormat('{%X}');
-
-			series.tooltip()
-					.position('center-top')
-					.anchor('center-bottom')
-					.offsetX(0)
-					.offsetY(5)
-					.format('{%Value}{groupsSeparator: }');
-
-
-			chart.barGroupsPadding(0);
-			chart.yScale().minimum(0);
-			chart.yAxis().labels().format('{%Value}{groupsSeparator: }');
-			chart.tooltip().positionMode('point');
-			chart.interactivity().hoverMode('by-x');
-
-			chart.xAxis().title(attribute_name);
-			chart.yAxis().title('Count');
-
-			// set container id for the chart
-			chart.container('graph-panel');
-			chart.draw();
-		});
-	}
 	
 	
-	
-	
-	
-	function displayNumericalDistribution() {
-	
-	}
-	
-	
-	
-	function displayLineGraph(is_categorical, object_number, object_name, attribute_id, attribute_name) {
-	
-
-	}
-	
-	
-	
-	
-	
-	
-	// Line Graph Data ===========================================================================
+	// Line Graph Data ------------------------------------
 	function prepareLineGraphData_Attribute(object_number, attribute_id) {
 
 		var selected_simulations_list = Array.from(selected_simulations);
@@ -882,9 +927,51 @@
 	}
 	
 	
+	
+
+	//========================  PLOT GRAPH - TOP PANEL   =================================
+			
+	// Plot Line Histogram  -------------------------------------
+	function plotHistogram(object_name, attribute_name, histogram_data) {
+		anychart.onDocumentReady(function () {
+
+			var chart = anychart.column();
+			chart.title(object_name + '.[' + attribute_name + ']');
+			//chart.animation(true);
 
 
-	// Plot Line Graph  ===========================================================================
+			var series = chart.column(histogram_data);
+
+			series.tooltip().titleFormat('{%X}');
+
+			series.tooltip()
+					.position('center-top')
+					.anchor('center-bottom')
+					.offsetX(0)
+					.offsetY(5)
+					.format('{%Value}{groupsSeparator: }');
+
+
+			chart.barGroupsPadding(0);
+			chart.yScale().minimum(0);
+			chart.yAxis().labels().format('{%Value}{groupsSeparator: }');
+			chart.tooltip().positionMode('point');
+			chart.interactivity().hoverMode('by-x');
+
+			chart.xAxis().title(attribute_name);
+			chart.yAxis().title('Count');
+
+			// set container id for the chart
+			chart.container('graph-panel');
+			chart.draw();
+		});
+		
+	}
+	
+	
+
+
+	// Plot Line Graph  ----------------------------------
 	function plotLineGraph(is_categorical, object_name, attribute_name, linegraph_data) {
 	
 		var selected_simulations_list = Array.from(selected_simulations);
@@ -956,14 +1043,72 @@
 			chart.container('graph-panel');
 			chart.draw();
 		});
+		
+		$('#inlude-zero-menu').html('<input type="checkbox" class="custom-control-input" id="inlcude-zero" onchange="refreshRestOfScreen()">' +
+									'<label class="custom-control-label" for="inlcude-zero">&nbsp;Include 0 in Linegraph</label>');
 	}
+	
+	
+	//========================================================================
+	//=====================    TRIGGERD RULES      ===========================
+	//========================================================================
+	
+	
+	function showHideRules(object_number, attribute_id, period_number) {
+	
+		if ($('#triggerd-rules-triangle').hasClass('glyphicon-triangle-top')) {
+			// format
+			$('#triggerd-rules-triangle').removeClass('glyphicon-triangle-top');
+			$('#triggerd-rules-triangle').addClass('glyphicon-triangle-bottom');
+			$('#triggerd-rules-panel').css('border', '1px solid rgb(210, 210, 210)');
+			$('#triggerd-rules-panel').animate({height: '150px'}, 200, 'linear');
+			$('#graph-panel').css('height','calc(100% - 195px)');
+			
+			var triggerd_rules_html = '';
+			if (period_number != null) {
+				
+			
+			}
+			
+			
+			/*triggerd_rules_html = '';
+			
+			var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
+			var selected_simulations_list = Array.from(selected_simulations);
+			for (var i = 0; i < selected_simulations_list.length; i++) {
+				var value = simulation_data[selected_simulations_list[i]][column_name][period_number];
+				if (Object.keys(value_occurences).includes(value)) {
+					value_occurences[value] += 1;
+				} else {
+					value_occurences[value] = 0;
+				}
+			}
+			
+			
+			$('#triggerd-rules-panel').html(triggerd_rules_html);*/
+		
+		} else {
+			$('#triggerd-rules-triangle').removeClass('glyphicon-triangle-bottom');
+			$('#triggerd-rules-triangle').addClass('glyphicon-triangle-top');
+			$('#triggerd-rules-panel').css('border', '0px');
+			$('#triggerd-rules-panel').animate({height: '0px'}, 200, 'linear');
+			$('#graph-panel').css('height','calc(100% - 45px)');
+			
+			
+		
+		}
+	}
+	
+	
 	
 	
 	
 	
 
 	//========================================================================
+	//========================================================================
 	//========================    MAIN      ==================================
+	//========================================================================
 	//========================================================================
 	
 	drawLeftPanel();
