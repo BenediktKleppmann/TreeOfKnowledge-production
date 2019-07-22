@@ -197,8 +197,6 @@
 		width: 100%;
 	}
 	
-
-	
 	#top-menu-bar {
 		height: 45px;
 		width: 100%;
@@ -244,6 +242,7 @@
 	/* Top Panel - RULES --------------------------------------------------------*/
 	/* --------------------------------------------------------------------------*/
 	
+	/*
 	.triggered.color0 { background: #22B0BE;}
 	.triggered.color1 { background: #229CBD;}
 	.triggered.color2 { background: #2288BD;}
@@ -273,37 +272,37 @@
 	.triggered.color26 { background: #B95F1D;}
 	.triggered.color27 { background: #B9731D;}
 	.triggered.color28 { background: #B9871D;}
-	.triggered.color29 { background: #B99A1C;}
-	.not-triggered.color0 { background: #B9D7DA;}
-	.not-triggered.color1 { background: #B9D2DA;}
-	.not-triggered.color2 { background: #B9CEDA;}
-	.not-triggered.color3 { background: #B9CADA;}
-	.not-triggered.color4 { background: #B9C6DA;}
-	.not-triggered.color5 { background: #BAC2DA;}
-	.not-triggered.color6 { background: #BABEDA;}
-	.not-triggered.color7 { background: #BABADA;}
-	.not-triggered.color8 { background: #BEBADA;}
-	.not-triggered.color9 { background: #C3BBDA;}
-	.not-triggered.color10 { background: #C7BBDB;}
-	.not-triggered.color11 { background: #CBBBDB;}
-	.not-triggered.color12 { background: #CFBBDB;}
-	.not-triggered.color13 { background: #D4BCDB;}
-	.not-triggered.color14 { background: #D8BCDB;}
-	.not-triggered.color15 { background: #DBBCDA;}
-	.not-triggered.color16 { background: #DBBCD6;}
-	.not-triggered.color17 { background: #DBBDD3;}
-	.not-triggered.color18 { background: #DBBDCF;}
-	.not-triggered.color19 { background: #DBBDCB;}
-	.not-triggered.color20 { background: #DCBDC7;}
-	.not-triggered.color21 { background: #DCBEC4;}
-	.not-triggered.color22 { background: #DCBEC0;}
-	.not-triggered.color23 { background: #DCC0BE;}
-	.not-triggered.color24 { background: #DCC4BE;}
-	.not-triggered.color25 { background: #DCC8BF;}
-	.not-triggered.color26 { background: #DCCCBF;}
-	.not-triggered.color27 { background: #DCD0BF;}
-	.not-triggered.color28 { background: #DCD4BF;}
-	.not-triggered.color29 { background: #DDD8C0;}
+	.triggered.color29 { background: #B99A1C;} */
+	.color0 { background: #B9D7DA;}
+	.color1 { background: #B9D2DA;}
+	.color2 { background: #B9CEDA;}
+	.color3 { background: #B9CADA;}
+	.color4 { background: #B9C6DA;}
+	.color5 { background: #BAC2DA;}
+	.color6 { background: #BABEDA;}
+	.color7 { background: #BABADA;}
+	.color8 { background: #BEBADA;}
+	.color9 { background: #C3BBDA;}
+	.color10 { background: #C7BBDB;}
+	.color11 { background: #CBBBDB;}
+	.color12 { background: #CFBBDB;}
+	.color13 { background: #D4BCDB;}
+	.color14 { background: #D8BCDB;}
+	.color15 { background: #DBBCDA;}
+	.color16 { background: #DBBCD6;}
+	.color17 { background: #DBBDD3;}
+	.color18 { background: #DBBDCF;}
+	.color19 { background: #DBBDCB;}
+	.color20 { background: #DCBDC7;}
+	.color21 { background: #DCBEC4;}
+	.color22 { background: #DCBEC0;}
+	.color23 { background: #DCC0BE;}
+	.color24 { background: #DCC4BE;}
+	.color25 { background: #DCC8BF;}
+	.color26 { background: #DCCCBF;}
+	.color27 { background: #DCD0BF;}
+	.color28 { background: #DCD4BF;}
+	.color29 { background: #DDD8C0;}
 
 	
 	
@@ -311,6 +310,7 @@
 		height: 0px;
 		padding-left: 63px;
 		padding-right: 18px;
+		overflow-y: scroll;
 	}
 	
 	.triggerd-rules-period {
@@ -319,8 +319,36 @@
 	
 	.triggerd-rule {
 		padding-top: 2px;
-		border: 1px solid rgb(210, 210, 210);
+		/*border: 1px solid rgb(210, 210, 210);*/
+		max-width: 265px;
+		text-align: center;
+		margin-top: 2px; 
+		margin-left: auto;
+		margin-right: auto;
+		border-radius: 6px;
 	}
+	
+	
+	.triggerd-rule .rule-name {
+		display: inline-block;
+		font-weight: 600;
+	}
+	
+	.triggerd-rule .rule-prob-tick {
+		display: inline-block;
+		font-size: 11.5px;
+	}
+	
+	.triggerd-rule .rule-prob-x {
+		display: inline-block;
+		font-size: 11.5px;
+		text-decoration: line-through;
+	}
+	
+	.triggerd-rule .rule-value {
+		display: inline-block;
+	}
+	
 	
 	
 
@@ -740,13 +768,12 @@
 								'<div id="triggerd-rules-panel"></div>' +
 								'<div id="top-menu-bar">' +
 									'<div id="vertically-centered">' +
-										'<button id="show-rules-button" class="btn btn-secondary" type="button" onclick="showHideRules(' + object_number + ',' + attribute_id + ', null)">Triggerd Rules<span id="triggerd-rules-triangle" class="glyphicon glyphicon-triangle-top collapse-triangle"></span></button>' +
+										'<button id="show-rules-button"  style="display:none;" class="btn btn-secondary" type="button" onclick="showHideRules(' + object_number + ',' + attribute_id + ', null)">Triggerd Rules<span id="triggerd-rules-triangle" class="glyphicon glyphicon-triangle-top collapse-triangle"></span></button>' +
 										'<div id="inlude-zero-menu"></div>' +
 										'<button id="run-button" class="btn btn-primary pull-right" type="button" onclick="run()">Re-Run Simulation</button>' +
 									'</div>' +
 								'</div>' +
-								'<div id="top-splitter"></div>' +
-								'<div id="triggered-rules-panel"></div>');
+								'<div id="top-splitter"></div>');
 
 		if (number_of_periods > 1) {
 			if (['real','int'].includes(attribute_data_type)) {
@@ -766,6 +793,8 @@
 			}
 		}
 		
+		drawRulePanel(object_number, attribute_id, attribute_name,  null);
+		
 	}
 	
 	
@@ -779,21 +808,20 @@
 		$('#top-panel').html(	'<div id="graph-panel"></div>' +
 								'<div id="triggerd-rules-panel">' +
 									'<div class="triggerd-rules-period">' +
-										'<div class="triggerd-rule not-triggered color1">Rule ' + 1 + ' (prob=' + 56 + '%) => \'setosa\'</div>' +
-										'<div class="triggerd-rule triggered color3">Rule ' + 3 + ' (prob=' + 56 + '%) => \'setosa\'</div>' +
-										'<div class="triggerd-rule not-triggered color7">Rule ' + 7 + ' (certain) => \'setosa\'</div>' +
-										'<div class="triggerd-rule triggered color8">Rule ' + 8 + ' (certain) => \'setosa\'</div>' +
+										'<div class="triggerd-rule not-triggered color1" data-toggle="tooltip" title="Hooray!"><span class="rule-name">Rule ' + 1 + '</span> <span class="rule-prob-tick">(prob=' + 56 + '%) &#10004;</span><span class="rule-value"> => \'setosa\'</span></div>' +
+										'<div class="triggerd-rule triggered color3" data-toggle="tooltip" title="Hooray!"><span class="rule-name">Rule ' + 3 + '</span> <span class="rule-prob-x">(prob=' + 56 + '%) &#10008;</span></div>' +
+										'<div class="triggerd-rule not-triggered color7" data-toggle="tooltip" title="Hooray!"><span class="rule-name">Rule ' + 7 + '</span> <span class="rule-prob-tick">(prob=' + 56 + '%) &#10004;</span><span class="rule-value"> => \'setosa\'</span></div>' +
+										'<div class="triggerd-rule triggered color8" data-toggle="tooltip" title="Hooray!"><span class="rule-name">Rule ' + 8 + '</span> <span class="rule-prob-tick">(prob=' + 56 + '%) &#10004;</span><span class="rule-value"> => \'setosa\'</span></div>' +
 									'</div>' +									
 								'</div>' +
 								'<div id="top-menu-bar">' +
 									'<div id="vertically-centered">' +
-										'<button id="show-rules-button" class="btn btn-secondary" type="button" onclick="showHideRules(' + object_number + ',' + attribute_id + ', null)">Triggerd Rules<span id="triggerd-rules-triangle" class="glyphicon glyphicon-triangle-top collapse-triangle"></span></button>' +
+										'<button id="show-rules-button" style="display:none;" class="btn btn-secondary" type="button" onclick="showHideRules(' + object_number + ',' + attribute_id + ', null)">Triggerd Rules<span id="triggerd-rules-triangle" class="glyphicon glyphicon-triangle-top collapse-triangle"></span></button>' +
 										'<div id="inlude-zero-menu"></div>' +
 										'<button id="run-button" class="btn btn-primary pull-right" type="button" onclick="run()">Re-Run Simulation</button>' +
 									'</div>' +
 								'</div>' +
-								'<div id="top-splitter"></div>' +
-								'<div id="triggered-rules-panel"></div>');
+								'<div id="top-splitter"></div>');
 								
 		
 		if (['real','int'].includes(attribute_data_type)) {
@@ -803,6 +831,8 @@
 			histogram_data = prepareHistogramData(true, object_number, attribute_id, period_number);
 			plotHistogram(object_name, attribute_name, histogram_data);
 		}
+		
+		drawRulePanel(object_number, attribute_id, attribute_name,  period_number);
 	}
 	
 
@@ -1053,49 +1083,87 @@
 	//=====================    TRIGGERD RULES      ===========================
 	//========================================================================
 	
+	function drawRulePanel(object_number, attribute_id, attribute_name,  period_number){
 	
-	function showHideRules(object_number, attribute_id, period_number) {
+		var selected_simulations_list = Array.from(selected_simulations);
+		if (selected_simulations_list.length = 1) {
+			$('#show-rules-button').css('display', 'inline-block');
+			var simulation_id = selected_simulations_list;
+		
+			if (period_number == null) {
+				triggerd_rules_html = '';
+				for (var period_number = 0; period_number < number_of_periods; period_number++) {
+					triggerd_rules_html += getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number);
+				}
+				$('#triggerd-rules-panel').html(triggerd_rules_html);
+				$('.triggerd-rules-period').css('width', Math.round(100/number_of_periods) + '%');
+			} else {
+				triggerd_rules_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  0);
+				$('#triggerd-rules-panel').html(triggerd_rules_html);
+			}
+		}
+
+	}
 	
+	
+	
+	function getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number){
+	
+		triggerd_rules_period_html  = '<div class="triggerd-rules-period">';
+		
+		var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
+		var triggered_rule_infos = triggered_rules[simulation_id][column_name][period_number];
+		for (var i = 0; i < triggered_rule_infos.length; i++) {
+			var triggered_rule_info = triggered_rule_infos[i];
+			var rule_id = triggered_rule_info['id'];
+			var rule = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
+			if (rule['is_conditionless']) {
+				rule_text = "At every timestep: [" + attribute_name + "] = " + rule['effect_text'];
+			} else {
+				rule_text = "IF " +  rule['condition_text'] + " THEN [" + attribute_name + "] = " + rule['effect_text'];
+			}
+			
+			if (triggered_rule_info['probability_triggered']) {
+				probability_html = '<span class="rule-prob-tick">(prob=' + Math.round(triggered_rule_info['trigger_probability']*100) + '%) &#10004;</span>';
+			} else {
+				probability_html = '<span class="rule-prob-x">(prob=' + Math.round(triggered_rule_info['trigger_probability']) + '%) &#10008;</span>';
+			}
+			
+			if (['real','int'].includes(objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'])) {
+				new_value_html = '<span class="rule-value"> => ' + triggered_rule_info['new_value'] + '</span>';
+			} else {
+				new_value_html = '<span class="rule-value"> => \'' + triggered_rule_info['new_value'] + '\'</span>';
+			}
+			
+			rule_number = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].indexOf(rule_id) + 1;
+			triggerd_rules_period_html  += 	'<div class="triggerd-rule color' + rule_number + '" data-toggle="tooltip" title="' + rule_text + '">' +
+												'<span class="rule-name">Rule ' + rule_number + '</span>' +
+												probability_html +
+												new_value_html +
+											'</div>';
+		}
+		
+		triggerd_rules_period_html += 	'</div>';
+		return triggerd_rules_period_html;	
+	}
+	
+	
+	
+	
+	function showHideRules() {
 		if ($('#triggerd-rules-triangle').hasClass('glyphicon-triangle-top')) {
 			// format
 			$('#triggerd-rules-triangle').removeClass('glyphicon-triangle-top');
 			$('#triggerd-rules-triangle').addClass('glyphicon-triangle-bottom');
 			$('#triggerd-rules-panel').css('border', '1px solid rgb(210, 210, 210)');
-			$('#triggerd-rules-panel').animate({height: '150px'}, 200, 'linear');
-			$('#graph-panel').css('height','calc(100% - 195px)');
-			
-			var triggerd_rules_html = '';
-			if (period_number != null) {
-				
-			
-			}
-			
-			
-			/*triggerd_rules_html = '';
-			
-			var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
-			var selected_simulations_list = Array.from(selected_simulations);
-			for (var i = 0; i < selected_simulations_list.length; i++) {
-				var value = simulation_data[selected_simulations_list[i]][column_name][period_number];
-				if (Object.keys(value_occurences).includes(value)) {
-					value_occurences[value] += 1;
-				} else {
-					value_occurences[value] = 0;
-				}
-			}
-			
-			
-			$('#triggerd-rules-panel').html(triggerd_rules_html);*/
-		
+			$('#triggerd-rules-panel').css('height','120px');
+			$('#graph-panel').css('height','calc(100% - 165px)');
 		} else {
 			$('#triggerd-rules-triangle').removeClass('glyphicon-triangle-bottom');
 			$('#triggerd-rules-triangle').addClass('glyphicon-triangle-top');
 			$('#triggerd-rules-panel').css('border', '0px');
-			$('#triggerd-rules-panel').animate({height: '0px'}, 200, 'linear');
+			$('#triggerd-rules-panel').css('height','0px');
 			$('#graph-panel').css('height','calc(100% - 45px)');
-			
-			
-		
 		}
 	}
 	

@@ -148,25 +148,52 @@ class Simulator:
                 # Apply Rule  =======================================================
                 if rule['is_conditionless']:
                     satisfying_rows = [True] * batch_size
+                    condition_satisfying_rows = [True] * batch_size
                 else:
                     df['randomNumber'] = np.random.random(batch_size)
                     satisfying_rows = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']) + '  & ' + str(rule['condition_exec']))
+                    condition_satisfying_rows = pd.eval(str(rule['condition_exec']))
                     
 
                 if rule['effect_is_calculation']:
-                    new_values = pd.eval(rule['effect_exec'])
+                    all_new_values = pd.eval(rule['effect_exec'])
                 else:
-                    new_values = json.loads(rule['effect_exec'])
+                    all_new_values = [json.loads(rule['effect_exec'])] * batch_size
+                new_values = [value for value, satisfying in zip(all_new_values,satisfying_rows) if satisfying]
 
                 df.loc[satisfying_rows,rule['column_to_change']] = new_values
 
+
                 # Save the Simulation State  =======================================================
+
                 # triggered rules
+                trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
+                triggered_rule_infos = []
+
+                # print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+                # print(len(satisfying_rows))
+                # print(satisfying_rows)
+                # print('-------------------')
+                # print(len(trigger_thresholds))
+                # print(trigger_thresholds)
+                # print('-------------------')
+                # print(len(new_values))
+                # print(new_values)
+                # print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+                for index in range(len(satisfying_rows)):
+                    if condition_satisfying_rows[index]:
+                        triggered_rule_infos.append({   'id':rule['id'], 
+                                                        'probability_triggered': satisfying_rows[index], 
+                                                        'trigger_probability': trigger_thresholds[index],
+                                                        'new_value': all_new_values[index]})
+                    else: 
+                        triggered_rule_infos.append(None)
+
                 currently_triggered_rules = pd.DataFrame({  'initial_state_id':df.index,
                                                             'batch_number':[batch_number]*batch_size,
                                                             'attribute_id':[rule['column_to_change']]*batch_size,
                                                             'period':[0]*batch_size,
-                                                            'rule_id': [rule['id'] if satisfying else None for satisfying in satisfying_rows]})
+                                                            'triggered_rule': triggered_rule_infos})
 
                 triggered_rules_df = triggered_rules_df.append(currently_triggered_rules)
 
@@ -190,22 +217,34 @@ class Simulator:
 
     def __post_process_data(self, simulation_data_df, triggered_rules_df, errors_df):
 
-        # rule_infos
-        triggered_rules_df = triggered_rules_df[triggered_rules_df['rule_id'].notnull()]
-        rule_info_list = list(Rule.objects.filter(id__in=list(triggered_rules_df['rule_id'].unique())).values())
+
+
+        triggered_rules_df = triggered_rules_df[triggered_rules_df['triggered_rule'].notnull()]
+        rule_ids = [triggered_rule_info['id'] for triggered_rule_info  in list(triggered_rules_df['triggered_rule'])]
+        rule_ids = list(set(rule_ids))
+        rule_info_list = list(Rule.objects.filter(id__in=rule_ids).values())
         rule_infos = {}
         for rule in rule_info_list:
             rule_infos[rule['id']] = rule
         
+        # rule_infos
+        # triggered_rules_df = triggered_rules_df[triggered_rules_df['triggered_rule'].notnull()]
+        # rule_ids = [rule_info['id'] for rule_info  in list(triggered_rules_df['triggered_rule'])]
+        # rule_ids
+        # rule_info_list = list(Rule.objects.filter(id__in=rule_ids)).values())
+        # rule_infos = {}
+        # for rule in rule_info_list:
+        #     rule_infos[rule['id']] = rule
+        
 
 
         # triggered_rules
-        triggered_rules_df['rule_id'] = triggered_rules_df['rule_id'].astype(np.int32)
+        triggered_rules_df['triggered_rule'] = triggered_rules_df['triggered_rule']
         triggered_rules_per_period = triggered_rules_df.groupby(['batch_number','initial_state_id','attribute_id','period']).aggregate({'initial_state_id':'first',
                                                                                                         'batch_number':'first',
                                                                                                         'attribute_id':'first',
                                                                                                         'period':'first',
-                                                                                                        'rule_id':list})  
+                                                                                                        'triggered_rule':list})  
 
         attribute_dict = {attribute_id: {} for attribute_id in triggered_rules_df['attribute_id'].unique().tolist()}
         triggered_rules = {}
@@ -215,7 +254,7 @@ class Simulator:
 
 
         for index, row in triggered_rules_per_period.iterrows():
-            triggered_rules[str(row['initial_state_id']) + '-' + str(row['batch_number'])][row['attribute_id']][int(row['period'])] = row['rule_id']
+            triggered_rules[str(row['initial_state_id']) + '-' + str(row['batch_number'])][row['attribute_id']][int(row['period'])] = row['triggered_rule']
 
 
 
@@ -252,6 +291,9 @@ class Simulator:
         simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
         simulation_model_record.just_learned_rules = json.dumps(self.just_learned_rules)
         simulation_model_record.rule_infos = json.dumps(rule_infos)
+        print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+        print(triggered_rules)
+        print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
         simulation_model_record.triggered_rules = json.dumps(triggered_rules)
         simulation_model_record.simulation_data = json.dumps(simulation_data)
         simulation_model_record.errors = json.dumps(errors)
