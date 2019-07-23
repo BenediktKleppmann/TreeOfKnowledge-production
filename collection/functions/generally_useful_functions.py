@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 def intersections(row):
     """
         I got this function from https://stackoverflow.com/questions/40367461/intersection-of-two-lists-of-ranges-in-python/40368017
@@ -37,15 +38,17 @@ def intersections(row):
 
 def unix_timestamp_to_string(unix_timestamp, timestep_size):
     
-    if unix_timestamp >= 31535998:
+    if timestep_size >= 31535998:
         return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y')
-    elif unix_timestamp >= 2419198:
+    elif timestep_size >= 2419198:
         return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m')
-    elif unix_timestamp >= 86398:
+    elif timestep_size >= 86398:
         return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d')
-    elif unix_timestamp >= 58:
+    elif timestep_sizeord >= 58:
         return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M')
     else:
         return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M:%S')
+
+
 
 

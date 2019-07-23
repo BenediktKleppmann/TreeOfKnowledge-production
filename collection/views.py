@@ -1345,11 +1345,12 @@ def test_page2(request):
     #                                         beta_distribution_b=1.0)
     # object_record =  Object(object_type_id = 'test')
     # Likelihood_fuction.objects.all().delete()
-    bla = list(Likelihood_fuction.objects.all().values())
+    simulation_model_record = Simulation_model.objects.get(id=126)
+    
     # bla = list(Simulation_model.objects.filter(id=107).values())
     # print(bla)
     # return HttpResponse('deleted')
-    return HttpResponse(json.dumps(bla))
+    return HttpResponse(simulation_model_record.triggered_rules)
     
 
     

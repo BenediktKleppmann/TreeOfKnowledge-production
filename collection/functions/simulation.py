@@ -11,6 +11,7 @@ from scipy.stats import rv_histogram
 import matplotlib.pyplot as plt
 import seaborn as sns
 import math
+from copy import deepcopy
 
 # called from edit_model.html
 class Simulator:
@@ -151,7 +152,7 @@ class Simulator:
                     condition_satisfying_rows = [True] * batch_size
                 else:
                     df['randomNumber'] = np.random.random(batch_size)
-                    satisfying_rows = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']) + '  & ' + str(rule['condition_exec']))
+                    satisfying_rows = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']) + '  & ' + str(rule['condition_exec'])).tolist()
                     condition_satisfying_rows = pd.eval(str(rule['condition_exec']))
                     
 
@@ -170,16 +171,6 @@ class Simulator:
                 trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
                 triggered_rule_infos = []
 
-                # print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-                # print(len(satisfying_rows))
-                # print(satisfying_rows)
-                # print('-------------------')
-                # print(len(trigger_thresholds))
-                # print(trigger_thresholds)
-                # print('-------------------')
-                # print(len(new_values))
-                # print(new_values)
-                # print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
                 for index in range(len(satisfying_rows)):
                     if condition_satisfying_rows[index]:
                         triggered_rule_infos.append({   'id':rule['id'], 
@@ -218,7 +209,7 @@ class Simulator:
     def __post_process_data(self, simulation_data_df, triggered_rules_df, errors_df):
 
 
-
+        # rule_infos
         triggered_rules_df = triggered_rules_df[triggered_rules_df['triggered_rule'].notnull()]
         rule_ids = [triggered_rule_info['id'] for triggered_rule_info  in list(triggered_rules_df['triggered_rule'])]
         rule_ids = list(set(rule_ids))
@@ -227,19 +218,10 @@ class Simulator:
         for rule in rule_info_list:
             rule_infos[rule['id']] = rule
         
-        # rule_infos
-        # triggered_rules_df = triggered_rules_df[triggered_rules_df['triggered_rule'].notnull()]
-        # rule_ids = [rule_info['id'] for rule_info  in list(triggered_rules_df['triggered_rule'])]
-        # rule_ids
-        # rule_info_list = list(Rule.objects.filter(id__in=rule_ids)).values())
-        # rule_infos = {}
-        # for rule in rule_info_list:
-        #     rule_infos[rule['id']] = rule
-        
+
 
 
         # triggered_rules
-        triggered_rules_df['triggered_rule'] = triggered_rules_df['triggered_rule']
         triggered_rules_per_period = triggered_rules_df.groupby(['batch_number','initial_state_id','attribute_id','period']).aggregate({'initial_state_id':'first',
                                                                                                         'batch_number':'first',
                                                                                                         'attribute_id':'first',
@@ -250,12 +232,10 @@ class Simulator:
         triggered_rules = {}
         for batch_number in triggered_rules_df['batch_number'].unique().tolist():
             for initial_state_id in triggered_rules_df['initial_state_id'].unique().tolist():
-                triggered_rules[str(initial_state_id) + '-' + str(batch_number)] = attribute_dict
-
+                triggered_rules[str(initial_state_id) + '-' + str(batch_number)] = deepcopy(attribute_dict)
 
         for index, row in triggered_rules_per_period.iterrows():
             triggered_rules[str(row['initial_state_id']) + '-' + str(row['batch_number'])][row['attribute_id']][int(row['period'])] = row['triggered_rule']
-
 
 
         # simulation_data
@@ -291,9 +271,9 @@ class Simulator:
         simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
         simulation_model_record.just_learned_rules = json.dumps(self.just_learned_rules)
         simulation_model_record.rule_infos = json.dumps(rule_infos)
-        print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-        print(triggered_rules)
-        print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+        print('@ 3 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        print(triggered_rules['50-0']["obj1attr56"][0])
+        print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
         simulation_model_record.triggered_rules = json.dumps(triggered_rules)
         simulation_model_record.simulation_data = json.dumps(simulation_data)
         simulation_model_record.errors = json.dumps(errors)
