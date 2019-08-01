@@ -53,7 +53,7 @@
 	  background: rgb(225, 225, 225);
 	  border: 1px solid rgb(200, 200, 200);
 	  cursor: row-resize; 
-	  box-shadow: 3px  0 6px 0 rgba(0, 0, 0, 0.19);
+	  //box-shadow: 0px  -2px 6px 0 rgba(0, 0, 0, 0.14);
 	  z-index: 1;
 	}
 
@@ -131,31 +131,36 @@
 	
 	.bottom-object-outer-box {
 		background: rgb(220, 227, 250);
-		padding-left: 4px;
-		border: 1px solid rgb(100, 100, 100);
+		border: 1px solid rgb(202, 202, 202);
 		padding-top: 3px;
+		background: rgb(226, 226, 226);
+		box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.20);
+	}
+	
+	.bottom-object-name {
+		display: inline-block;
 	}
 	
 	.bottom-object-icon {
-	    height: 17px;
-		float: left;
-		margin-top: 2px;
+		height: 33px;
+		margin-top: 4px;
 		margin-right: 10px;
-		margin-left: 1px;
+		margin-left: 12px;
+		border: 1px solid rgb(183, 183, 183);
+		border-radius: 4px;
 	}
 	
 	.collapse-triangle {
 		font-size: 9px;
-		padding: 6px;
-		padding-left: 7px;
+		padding: 12px;
+		padding-right: 18px;
+		float: right;
 	}
 	
 	.bottom-object-inner-box {
-	    margin-left: 10px;
 		margin-top: 3px;
 		background: rgb(255,255,255);
-		border-top: 1px solid rgb(100,100,100);
-		border-left: 1px solid rgb(100,100,100);
+		border-top: 1px solid rgb(202,202,202);
 		overflow: hidden;
 	}
 	
@@ -166,12 +171,16 @@
 	
 	.bottom-attribute-name {
 		display: inline-block;
-		padding: 1px 5px 1px 5px;
+		padding: 6px 0px 6px 8px;
 		background: rgb(242, 242, 242);
 		height: 100%;
-		border-right: 1px solid rgb(190, 190, 190);
-		border-bottom: 1px solid rgb(190, 190, 190);
+		border-right: 1px solid rgb(202, 202, 202);
+		/*border-bottom: 1px solid rgb(202, 202, 202);*/
 		width: 175px;
+		background: -webkit-gradient( linear, left top, left bottom, from(#f5f5f2), to(#ebeae6));
+					-moz-box-shadow: inset 0px 0px 3px rgba(255,255,255,0.9);
+					-webkit-box-shadow: inset 0px 0px 3px rgba(255,255,255,0.9);
+		box-shadow: inset 0px 0px 3px rgba(255,255,255,0.9);
 	}
 	
 	.bottom-attribute-values {
@@ -183,7 +192,7 @@
 		display: inline-block;
 		text-align: center;
 		border-right: 1px solid rgb(190, 190, 190);
-		padding: 1px 0px 1px 0px;
+		padding: 6px 0px 6px 0px;
 		color: rgb(95, 95, 95);
 	}
 	
@@ -242,37 +251,6 @@
 	/* Top Panel - RULES --------------------------------------------------------*/
 	/* --------------------------------------------------------------------------*/
 	
-	/*
-	.triggered.color0 { background: #22B0BE;}
-	.triggered.color1 { background: #229CBD;}
-	.triggered.color2 { background: #2288BD;}
-	.triggered.color3 { background: #2274BD;}
-	.triggered.color4 { background: #2260BD;}
-	.triggered.color5 { background: #214CBD;}
-	.triggered.color6 { background: #2138BC;}
-	.triggered.color7 { background: #2124BC;}
-	.triggered.color8 { background: #3221BC;}
-	.triggered.color9 { background: #4621BC;}
-	.triggered.color10 { background: #5A20BC;}
-	.triggered.color11 { background: #6D20BC;}
-	.triggered.color12 { background: #8120BB;}
-	.triggered.color13 { background: #9520BB;}
-	.triggered.color14 { background: #A920BB;}
-	.triggered.color15 { background: #BB1FB9;}
-	.triggered.color16 { background: #BB1FA5;}
-	.triggered.color17 { background: #BB1F91;}
-	.triggered.color18 { background: #BA1F7D;}
-	.triggered.color19 { background: #BA1F69;}
-	.triggered.color20 { background: #BA1E55;}
-	.triggered.color21 { background: #BA1E40;}
-	.triggered.color22 { background: #BA1E2C;}
-	.triggered.color23 { background: #BA241E;}
-	.triggered.color24 { background: #B9371E;}
-	.triggered.color25 { background: #B94B1D;}
-	.triggered.color26 { background: #B95F1D;}
-	.triggered.color27 { background: #B9731D;}
-	.triggered.color28 { background: #B9871D;}
-	.triggered.color29 { background: #B99A1C;} */
 	.color0 { background: #B9D7DA;}
 	.color1 { background: #B9D2DA;}
 	.color2 { background: #B9CEDA;}
@@ -307,14 +285,30 @@
 	
 	
 	#triggerd-rules-panel {
-		height: 0px;
-		padding-left: 63px;
+		max-height: 146px;
 		padding-right: 18px;
+	}
+	
+	#triggerd-rules-title {
+		width: 50px;
+		height: 66px;
+		display: inline-block;
+		writing-mode: vertical-rl;
+		transform: rotate(180deg);
+		padding-right: 6px;
+		text-align: center;
+		float: left;
+	}
+	
+	#triggerd-rule-periods {
+		display: inline-block;
+		text-align: center;
+		width: calc(100% - 63px);
 		overflow-y: scroll;
 	}
 	
 	.triggerd-rules-period {
-		padding: 0px 5px;
+		padding: 2px 5px 0px 5px;
 	}
 	
 	.triggerd-rule {
@@ -630,8 +624,9 @@
 			for (var i = 0; i < object_numbers.length; i++) {
 				var object_number = object_numbers[i];
 				object_items_html = '<li class="bottom-object-item">' +
-										'<div class="bottom-object-outer-box">' + objects_dict[object_number]['object_name'] + 
+										'<div class="bottom-object-outer-box">' + 
 											'<img class="bottom-object-icon" src="{% static "images/object_icons/" %}' + objects_dict[object_number]['object_icon'] + '.svg">' +
+											'<div class="bottom-object-name">' + objects_dict[object_number]['object_name'] + '</div>' + 
 											'<span id="object-box-triangle-' + object_number + '" class="glyphicon glyphicon-triangle-top collapse-triangle" onclick="collapseExpandObjectInnerBox(' + object_number + ');"></span>' +
 											'<div id="object-inner-box' + object_number + '" class="bottom-object-inner-box">';
 				
@@ -693,6 +688,9 @@
 							sum_of_values += values[l];
 						}
 						resulting_value = sum_of_values/selected_simulations_list.length;
+						if (resulting_value % 0.001 !== 0 ){
+							resulting_value = resulting_value.toFixed(3);
+						}
 					}
 					
 					if (['string', 'relation', 'bool'].includes(datatype)) {  // -> most common value
@@ -765,10 +763,13 @@
 		var attribute_data_type = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
 		
 		$('#top-panel').html(	'<div id="graph-panel"></div>' +
-								'<div id="triggerd-rules-panel"></div>' +
+								'<div id="triggerd-rules-panel">' + 
+									'<div id="triggerd-rules-title">Triggered Rules</div>' +
+									'<div id="triggerd-rule-periods"></div>' + 
+								'</div>' +
 								'<div id="top-menu-bar">' +
 									'<div id="vertically-centered">' +
-										'<button id="show-rules-button"  style="display:none;" class="btn btn-secondary" type="button" onclick="showHideRules(' + object_number + ',' + attribute_id + ', null)">Triggerd Rules<span id="triggerd-rules-triangle" class="glyphicon glyphicon-triangle-top collapse-triangle"></span></button>' +
+										//'<button id="show-rules-button"  style="display:none;" class="btn btn-secondary" type="button" onclick="showHideRules(' + object_number + ',' + attribute_id + ', null)">Triggerd Rules<span id="triggerd-rules-triangle" class="glyphicon glyphicon-triangle-top collapse-triangle"></span></button>' +
 										'<div id="inlude-zero-menu"></div>' +
 										'<button id="run-button" class="btn btn-primary pull-right" type="button" onclick="run()">Re-Run Simulation</button>' +
 									'</div>' +
@@ -806,17 +807,14 @@
 		
 		
 		$('#top-panel').html(	'<div id="graph-panel"></div>' +
-								'<div id="triggerd-rules-panel">' +
-									'<div class="triggerd-rules-period">' +
-										'<div class="triggerd-rule not-triggered color1" data-toggle="tooltip" title="Hooray!"><span class="rule-name">Rule ' + 1 + '</span> <span class="rule-prob-tick">(prob=' + 56 + '%) &#10004;</span><span class="rule-value"> => \'setosa\'</span></div>' +
-										'<div class="triggerd-rule triggered color3" data-toggle="tooltip" title="Hooray!"><span class="rule-name">Rule ' + 3 + '</span> <span class="rule-prob-x">(prob=' + 56 + '%) &#10008;</span></div>' +
-										'<div class="triggerd-rule not-triggered color7" data-toggle="tooltip" title="Hooray!"><span class="rule-name">Rule ' + 7 + '</span> <span class="rule-prob-tick">(prob=' + 56 + '%) &#10004;</span><span class="rule-value"> => \'setosa\'</span></div>' +
-										'<div class="triggerd-rule triggered color8" data-toggle="tooltip" title="Hooray!"><span class="rule-name">Rule ' + 8 + '</span> <span class="rule-prob-tick">(prob=' + 56 + '%) &#10004;</span><span class="rule-value"> => \'setosa\'</span></div>' +
-									'</div>' +									
+								'<div id="triggerd-rules-panel">' + 
+									'<div id="triggerd-rules-title">Triggered Rules</div>' +
+									'<div id="triggerd-rule-periods">' + 
+									'</div>' +
 								'</div>' +
 								'<div id="top-menu-bar">' +
 									'<div id="vertically-centered">' +
-										'<button id="show-rules-button" style="display:none;" class="btn btn-secondary" type="button" onclick="showHideRules(' + object_number + ',' + attribute_id + ', null)">Triggerd Rules<span id="triggerd-rules-triangle" class="glyphicon glyphicon-triangle-top collapse-triangle"></span></button>' +
+										//'<button id="show-rules-button" style="display:none;" class="btn btn-secondary" type="button" onclick="showHideRules(' + object_number + ',' + attribute_id + ', null)">Triggerd Rules<span id="triggerd-rules-triangle" class="glyphicon glyphicon-triangle-top collapse-triangle"></span></button>' +
 										'<div id="inlude-zero-menu"></div>' +
 										'<button id="run-button" class="btn btn-primary pull-right" type="button" onclick="run()">Re-Run Simulation</button>' +
 									'</div>' +
@@ -1085,22 +1083,41 @@
 	
 	function drawRulePanel(object_number, attribute_id, attribute_name,  period_number){
 	
+		var max_number_of_rules = 0;
 		var selected_simulations_list = Array.from(selected_simulations);
-		if (selected_simulations_list.length = 1) {
-			$('#show-rules-button').css('display', 'inline-block');
-			var simulation_id = selected_simulations_list;
+		if (selected_simulations_list.length == 1) {
+			var simulation_id = selected_simulations_list[0];
 		
 			if (period_number == null) {
 				triggerd_rules_html = '';
 				for (var period_number = 0; period_number < number_of_periods; period_number++) {
-					triggerd_rules_html += getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number);
+					var triggerd_rules_period_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number);
+					triggerd_rules_html += triggerd_rules_period_html[0];
+					if (triggerd_rules_period_html[1] > max_number_of_rules) {max_number_of_rules = triggerd_rules_period_html[1];}
 				}
-				$('#triggerd-rules-panel').html(triggerd_rules_html);
+				$('#triggerd-rule-periods').html(triggerd_rules_html);
 				$('.triggerd-rules-period').css('width', Math.round(100/number_of_periods) + '%');
 			} else {
 				triggerd_rules_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  0);
-				$('#triggerd-rules-panel').html(triggerd_rules_html);
+				$('#triggerd-rule-periods').html(triggerd_rules_html[0]);
+				if (triggerd_rules_html[1] > max_number_of_rules) {max_number_of_rules = triggerd_rules_html[1];}
 			}
+			
+			var rule_height = Math.max(24 * max_number_of_rules, 66);
+			$('#triggerd-rules-panel').css('border', '1px solid rgb(210, 210, 210)');
+			$('#triggerd-rules-panel').css('height', rule_height + 'px');
+			$('#triggerd-rules-title').css('display', 'inline-block');
+			$('#triggerd-rule-periods').css('height', rule_height + 'px');
+			$('#graph-panel').css('height','calc(100% - ' + (45 + rule_height) + 'px)');
+			
+			
+		} else {
+			$('#triggerd-rule-periods').html('');
+			$('#triggerd-rules-panel').css('height', '0px');
+			$('#triggerd-rules-panel').css('border', '0px');
+			$('#triggerd-rules-title').css('display', 'none');
+			$('#triggerd-rule-periods').css('height', '0px');
+			$('#graph-panel').css('height','calc(100% - 45px)');
 		}
 
 	}
@@ -1109,47 +1126,59 @@
 	
 	function getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number){
 	
-		triggerd_rules_period_html  = '<div class="triggerd-rules-period">';
-		
+		var number_of_rules = 0;
 		var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
-		var triggered_rule_infos = triggered_rules[simulation_id][column_name][period_number];
-		for (var i = 0; i < triggered_rule_infos.length; i++) {
-			var triggered_rule_info = triggered_rule_infos[i];
-			var rule_id = triggered_rule_info['id'];
-			var rule = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
-			if (rule['is_conditionless']) {
-				rule_text = "At every timestep: [" + attribute_name + "] = " + rule['effect_text'];
+		triggerd_rules_period_html  = '<div class="triggerd-rules-period">';
+		if (Object.keys(triggered_rules[simulation_id]).includes(column_name)) {
+			if (Object.keys(triggered_rules[simulation_id][column_name]).includes(String(period_number))) {
+				var triggered_rule_infos = triggered_rules[simulation_id][column_name][period_number];
+				for (var i = 0; i < triggered_rule_infos.length; i++) {
+					var triggered_rule_info = triggered_rule_infos[i];
+					var rule_id = triggered_rule_info['id'];
+					var rule = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
+					if (rule['is_conditionless']) {
+						rule_text = "At every timestep: [" + attribute_name + "] = " + rule['effect_text'];
+					} else {
+						rule_text = "IF " +  rule['condition_text'] + " THEN [" + attribute_name + "] = " + rule['effect_text'];
+					}
+					
+					if (triggered_rule_info['probability_triggered']) {
+						probability_html = '<span class="rule-prob-tick">(prob=' + Math.round(triggered_rule_info['trigger_probability']*100) + '%) &#10004;</span>';
+						if (['real','int'].includes(objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'])) {
+							new_value_html = '<span class="rule-value"> => ' + triggered_rule_info['new_value'] + '</span>';
+						} else {
+							new_value_html = '<span class="rule-value"> => \'' + triggered_rule_info['new_value'] + '\'</span>';
+						}
+					} else {
+						probability_html = '<span class="rule-prob-x">(prob=' + Math.round(triggered_rule_info['trigger_probability']) + '%) &#10008;</span>';
+						new_value_html = '';
+					}
+					
+
+					rule_number = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].indexOf(rule_id) + 1;
+					triggerd_rules_period_html  += 	'<div class="triggerd-rule color' + rule_number + '" data-toggle="tooltip" title="' + rule_text + '">' +
+														'<span class="rule-name">Rule ' + rule_number + '</span>' +
+														probability_html +
+														new_value_html +
+													'</div>';
+					number_of_rules += 1;
+				}
+				
+				triggerd_rules_period_html += 	'</div>';
+
+				return [triggerd_rules_period_html, number_of_rules];
+				
 			} else {
-				rule_text = "IF " +  rule['condition_text'] + " THEN [" + attribute_name + "] = " + rule['effect_text'];
+				return ['<div class="triggerd-rules-period"></div>', 0];
 			}
-			
-			if (triggered_rule_info['probability_triggered']) {
-				probability_html = '<span class="rule-prob-tick">(prob=' + Math.round(triggered_rule_info['trigger_probability']*100) + '%) &#10004;</span>';
-			} else {
-				probability_html = '<span class="rule-prob-x">(prob=' + Math.round(triggered_rule_info['trigger_probability']) + '%) &#10008;</span>';
-			}
-			
-			if (['real','int'].includes(objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'])) {
-				new_value_html = '<span class="rule-value"> => ' + triggered_rule_info['new_value'] + '</span>';
-			} else {
-				new_value_html = '<span class="rule-value"> => \'' + triggered_rule_info['new_value'] + '\'</span>';
-			}
-			
-			rule_number = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].indexOf(rule_id) + 1;
-			triggerd_rules_period_html  += 	'<div class="triggerd-rule color' + rule_number + '" data-toggle="tooltip" title="' + rule_text + '">' +
-												'<span class="rule-name">Rule ' + rule_number + '</span>' +
-												probability_html +
-												new_value_html +
-											'</div>';
+		} else {
+			return ['<div class="triggerd-rules-period"></div>', 0];
 		}
-		
-		triggerd_rules_period_html += 	'</div>';
-		return triggerd_rules_period_html;	
 	}
 	
 	
 	
-	
+	/*
 	function showHideRules() {
 		if ($('#triggerd-rules-triangle').hasClass('glyphicon-triangle-top')) {
 			// format
@@ -1165,7 +1194,7 @@
 			$('#triggerd-rules-panel').css('height','0px');
 			$('#graph-panel').css('height','calc(100% - 45px)');
 		}
-	}
+	}*/
 	
 	
 	

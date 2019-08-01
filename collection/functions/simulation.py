@@ -45,20 +45,43 @@ class Simulator:
         self.simulation_start_time = simulation_model_record.simulation_start_time
         self.simulation_end_time = simulation_model_record.simulation_end_time
         self.timestep_size = simulation_model_record.timestep_size  
-        object_numbers = self.objects_dict.keys()
-
+        self.is_timeseries_analysis = simulation_model_record.is_timeseries_analysis
+        
+        #  --- y0_columns ---
         y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
         for y_value_attribute in y_value_attributes:
             column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
             self.y0_columns.append(column_name)
         self.y0_columns = self.y0_columns[0]  # PLEASE REMOVE - this is a temporary bug fix
-        # self.y0_columns = 'obj1attr56' # ='species'
 
+
+        #  --- df ---
         self.df = query_datapoints.get_data_from_related_objects(self.objects_dict, self.simulation_start_time, self.simulation_end_time)
         self.df.index = range(len(self.df))
 
-        
+
+        #  --- y0_values ---
+        self.y0_values = []
+        if self.is_timeseries_analysis:
+            merging_columns =  ['obj' + obj_num + 'attrobject_id' for obj_num in self.objects_dict.keys()]
+            merged_periods_df = pd.DataFrame(columns= merging_columns)
+            times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
+            for period in range(len(times)-1):
+                period_df = query_datapoints.get_data_from_related_objects(self.objects_dict, times[period], times[period + 1])
+                period_df = period_df[self.y0_columns]
+                merged_periods_df = pd.merge(merged_periods_df, period_df, on=merging_columns, how='outer', suffixes=['','period' + period])
+            self.correct_values_list = [row for index, row in sorted(merged_periods_df.to_dict('index').items())]
+
+        else:
+            df_copy = self.df[self.y0_columns].copy()
+            df_copy.columns = [col + 'period0' for col in df_copy.columns]
+            self.correct_values_list = [row for index, row in sorted(df_copy.to_dict('index').items())]
+           
+
+
+        #  --- Rules ---
         number_of_priors = 0
+        object_numbers = self.objects_dict.keys()
         for object_number in object_numbers:
 
             attribute_ids = self.objects_dict[str(object_number)]['object_attributes'].keys()
@@ -90,8 +113,10 @@ class Simulator:
                             histogram, mean, standard_dev= get_from_db.get_rules_pdf(rule_id)
                         rule['histogram'] = histogram
 
-
                     self.rules.append(rule)
+
+
+
 
 
 
