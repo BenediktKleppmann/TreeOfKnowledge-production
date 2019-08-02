@@ -272,10 +272,15 @@ def get_data_from_random_related_object(objects_dict, specified_start_time, spec
 
 # used by simulation.py
 def get_data_from_related_objects(objects_dict, specified_start_time, specified_end_time):
+    print('##########################################################')
+    print(specified_start_time)
+    print(specified_end_time)
+    print(objects_dict)
+    print('##########################################################')
     object_numbers = list(objects_dict.keys())
 
 
-    # PART1: create object_data_tables - i.e. get broad_table_df for everyobject_number
+    # PART1: create object_data_tables - i.e. get broad_table_df for every object_number
     object_data_tables = {}
     for object_number in object_numbers:
         # get object_ids

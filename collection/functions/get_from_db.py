@@ -205,7 +205,7 @@ def get_rules_pdf(rule_id):
             posterior_probabilities = posterior_probabilities * likelihoods_probabilities           # multiply with likelihood function
         
         posterior_probabilities = posterior_probabilities * 100/ np.sum(posterior_probabilities) # re-normalisation
-        histogram = (list(posterior_probabilities), list(np.linspace(0,1,101)))
+        histogram = (posterior_probabilities.tolist(), np.linspace(0,1,101).tolist())
 
         x_values = np.linspace(0,0.99,100) + 0.005
         mean = np.average(x_values, weights=posterior_probabilities)
@@ -222,8 +222,8 @@ def get_single_pdf(simulation_id, object_number, rule_id):
 
     if len(likelihood_functions) > 0:
 
-        list_of_probabilities = json.loads(likelihood_function['list_of_probabilities'])
-        histogram = (posterior_probabilities, np.linspace(0,1,101))
+        list_of_probabilities = json.loads(likelihood_functions[0]['list_of_probabilities'])
+        histogram = (list(list_of_probabilities), list(np.linspace(0,1,101)))
 
         x_values = np.linspace(0,0.99,100) + 0.005
         mean = np.average(x_values, weights=list_of_probabilities)
