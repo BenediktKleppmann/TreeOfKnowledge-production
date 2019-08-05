@@ -328,16 +328,12 @@
 		font-weight: 600;
 	}
 	
-	.triggerd-rule .rule-prob-tick {
+	.triggerd-rule .rule-prob {
 		display: inline-block;
 		font-size: 11.5px;
 	}
 	
-	.triggerd-rule .rule-prob-x {
-		display: inline-block;
-		font-size: 11.5px;
-		text-decoration: line-through;
-	}
+
 	
 	.triggerd-rule .rule-value {
 		display: inline-block;
@@ -386,6 +382,7 @@
 <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
 <script type="text/javascript" src="https://rawgit.com/RickStrahl/jquery-resizable/master/src/jquery-resizable.js"></script>
 
+{% include "tree_of_knowledge_frontend/includes/edit_object_behaviour_modal.html" %} 
 
  
 <script type="text/javascript">
@@ -415,18 +412,11 @@
 	var selected_object_attribute = null;
 
 			
-	var clicked_selection_buttons = {'select_all_clicked': false, 'select_correct_clicked': false, 'select_false_clicked': false}
-	
-	/*
-	var rules_list = {};	
-	var new_rule_cursor_position = {};
-	var new_rule_used_attribute_names = [];
-	var new_rule_used_attribute_ids = [];
-	var highlighted_words_dict = {};
+	var clicked_selection_buttons = {'select_all_clicked': false, 'select_correct_clicked': false, 'select_false_clicked': false};
 	var delta_t_list = ['delta_t (years)', 'delta_t (months)', 'delta_t (days)', 'delta_t (hours)', 'delta_t (minutes)', 'delta_t (seconds)'];
 	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1];
-	var include_zero = false;
-	*/
+	
+
 
 
 
@@ -700,14 +690,15 @@
 							if (Object.keys(value_occurences).includes(value)) {
 								value_occurences[value] += 1;
 							} else {
-								value_occurences[value] = 0;
+								value_occurences[value] = 1;
 							}
 						}
 						
 						var max_count = 0;
 						var distinct_values = Object.keys(value_occurences);
+						
 						for (var l = 0; l < distinct_values.length; l++) {
-							if (distinct_values[distinct_values[l]] > max_count) {
+							if (value_occurences[distinct_values[l]] > max_count) {
 								resulting_value = distinct_values[l];
 								max_count = distinct_values[distinct_values[l]];
 							}
@@ -853,7 +844,7 @@
 				if (Object.keys(value_occurences).includes(value)) {
 					value_occurences[value] += 1;
 				} else {
-					value_occurences[value] = 0;
+					value_occurences[value] = 1;
 				}
 			}
 			
@@ -1131,7 +1122,7 @@
 		triggerd_rules_period_html  = '<div class="triggerd-rules-period">';
 		if (Object.keys(triggered_rules[simulation_id]).includes(column_name)) {
 			if (Object.keys(triggered_rules[simulation_id][column_name]).includes(String(period_number))) {
-				var triggered_rule_infos = triggered_rules[simulation_id][column_name][period_number];
+				var triggered_rule_infos = triggered_rules[simulation_id][column_name][period_number]['rules'];
 				for (var i = 0; i < triggered_rule_infos.length; i++) {
 					var triggered_rule_info = triggered_rule_infos[i];
 					var rule_id = triggered_rule_info['id'];
@@ -1141,23 +1132,26 @@
 					} else {
 						rule_text = "IF " +  rule['condition_text'] + " THEN [" + attribute_name + "] = " + rule['effect_text'];
 					}
+					rule_text += "&#013;---&#013;current value=|" + triggered_rule_info['new_value'] + "|  vs.  correct value=|" + String(triggered_rules[simulation_id][column_name][period_number]['correct_value']) + "|";
 					
 					if (triggered_rule_info['probability_triggered']) {
-						probability_html = '<span class="rule-prob-tick">(prob=' + Math.round(triggered_rule_info['trigger_probability']*100) + '%) &#10004;</span>';
+						text_decoration = '';
+						probability_html = '<span class="rule-prob" ' + text_decoration + '>(prob=' + Math.round(triggered_rule_info['trigger_probability']*100) + '%) &#10004;</span>';
 						if (['real','int'].includes(objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'])) {
 							new_value_html = '<span class="rule-value"> => ' + triggered_rule_info['new_value'] + '</span>';
 						} else {
 							new_value_html = '<span class="rule-value"> => \'' + triggered_rule_info['new_value'] + '\'</span>';
 						}
 					} else {
-						probability_html = '<span class="rule-prob-x">(prob=' + Math.round(triggered_rule_info['trigger_probability']) + '%) &#10008;</span>';
+						text_decoration = ' style="text-decoration: line-through;" ';
+						probability_html = ' <span class="rule-prob" ' + text_decoration + '> (prob=' + Math.round(triggered_rule_info['trigger_probability']) + '%) &#10008;</span>';
 						new_value_html = '';
 					}
 					
 
 					rule_number = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].indexOf(rule_id) + 1;
-					triggerd_rules_period_html  += 	'<div class="triggerd-rule color' + rule_number + '" data-toggle="tooltip" title="' + rule_text + '">' +
-														'<span class="rule-name">Rule ' + rule_number + '</span>' +
+					triggerd_rules_period_html  += 	'<div class="triggerd-rule" style="background: '+ triggered_rule_info['colour'] +'" data-toggle="tooltip" title="' + rule_text + '" onclick="openEditObjectBehaviourModal(' + object_number + ', ' + attribute_id + ', \'' + attribute_name + '\', ' + triggered_rule_info['id'] + ')">' +
+														'<span class="rule-name" ' + text_decoration + '>Rule ' + rule_number + ' </span>' +
 														probability_html +
 														new_value_html +
 													'</div>';
@@ -1165,6 +1159,7 @@
 				}
 				
 				triggerd_rules_period_html += 	'</div>';
+				
 
 				return [triggerd_rules_period_html, number_of_rules];
 				

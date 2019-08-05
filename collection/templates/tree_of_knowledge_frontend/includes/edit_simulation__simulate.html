@@ -455,7 +455,7 @@
 	var highlighted_words_dict = {};
 	
 	var delta_t_list = ['delta_t (years)', 'delta_t (months)', 'delta_t (days)', 'delta_t (hours)', 'delta_t (minutes)', 'delta_t (seconds)'];
-	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1]
+	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1];
 	
 	
 
@@ -695,7 +695,7 @@
 												'<td class="attribute-value-box"><input class="form-control attribute-value" type="text" value="' + object_attributes[attribute_id]['attribute_value'] + '" onchange="attributeValueChange(' + object_number + ',' + attribute_id + ', this.value)"></td>' +
 												'<button type="button" id="format_violation' + 1 + '" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid value" style="display:none;" data-content="">!</button>' + 
 												'<td class="attribute-rule-box">' + 
-													'<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="openEditObjectBehaviourModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\')">edit behaviour</button>'
+													'<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="openEditObjectBehaviourModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\', null)">edit behaviour</button>'
 												'</td>' +
 											'</tr>';
 			}

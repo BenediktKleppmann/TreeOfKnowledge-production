@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import math
 from copy import deepcopy
+from colour import Color
 
 # called from edit_model.html
 class Simulator:
@@ -47,7 +48,13 @@ class Simulator:
         self.simulation_end_time = simulation_model_record.simulation_end_time
         self.timestep_size = simulation_model_record.timestep_size  
         self.is_timeseries_analysis = simulation_model_record.is_timeseries_analysis
-        
+
+
+        #  --- colors ---
+        green = Color("#97CF99")
+        color_objects = list(green.range_to(Color("#D1A19C"),1001))
+        self.colors = [color.hex for color in color_objects]
+
 
         #  --- df ---
         self.df = query_datapoints.get_data_from_related_objects(self.objects_dict, self.simulation_start_time, self.simulation_end_time)
@@ -60,11 +67,6 @@ class Simulator:
             column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
             self.y0_columns.append(column_name)
             self.y0_column_dt[column_name] = Attribute.objects.get(id=y_value_attribute['attribute_id']).data_type
-        # self.y0_columns = self.y0_columns[0]  # PLEASE REMOVE - this is a temporary bug fix
-
-
-        #  --- y0_attribute_info ---
-        
 
 
 
@@ -228,21 +230,28 @@ class Simulator:
                     trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
                     triggered_rule_infos = []
 
+                    calculated_values = list(df[rule['column_to_change']])
                     for index in range(len(satisfying_rows)):
                         if condition_satisfying_rows[index]:
+                            error = self.error_of_single_value(np.array(calculated_values), rule['column_to_change'], index, period)
                             triggered_rule_infos.append({   'id':rule['id'], 
                                                             'probability_triggered': satisfying_rows[index], 
                                                             'trigger_probability': trigger_thresholds[index],
-                                                            'new_value': all_new_values[index],
-                                                            'error': error_of_single_value(np.array(all_new_values), rule['column_to_change'], index, period)})
+                                                            'new_value': calculated_values[index],
+                                                            'error': error,
+                                                            'colour': self.colors[int(min(error,1.)*1000)] 
+                                                            })
                         else: 
                             triggered_rule_infos.append(None)
+
 
                     currently_triggered_rules = pd.DataFrame({  'initial_state_id':df.index,
                                                                 'batch_number':[batch_number]*batch_size,
                                                                 'attribute_id':[rule['column_to_change']]*batch_size,
                                                                 'period':[period]*batch_size,
-                                                                'triggered_rule': triggered_rule_infos})
+                                                                'triggered_rule': triggered_rule_infos, 
+                                                                'correct_value': list(pd.DataFrame(self.y0_values)[rule['column_to_change'] + 'period' + str(period)]) 
+                                                                })
 
                     triggered_rules_df = triggered_rules_df.append(currently_triggered_rules)
 
@@ -290,7 +299,8 @@ class Simulator:
                                                                                                         'batch_number':'first',
                                                                                                         'attribute_id':'first',
                                                                                                         'period':'first',
-                                                                                                        'triggered_rule':list})  
+                                                                                                        'triggered_rule':list,
+                                                                                                        'correct_value':'first',})  
 
         attribute_dict = {attribute_id: {} for attribute_id in triggered_rules_df['attribute_id'].unique().tolist()}
         triggered_rules = {}
@@ -299,7 +309,7 @@ class Simulator:
                 triggered_rules[str(initial_state_id) + '-' + str(batch_number)] = deepcopy(attribute_dict)
 
         for index, row in triggered_rules_per_period.iterrows():
-            triggered_rules[str(row['initial_state_id']) + '-' + str(row['batch_number'])][row['attribute_id']][int(row['period'])] = row['triggered_rule']
+            triggered_rules[str(row['initial_state_id']) + '-' + str(row['batch_number'])][row['attribute_id']][int(row['period'])] = {'rules': row['triggered_rule'], 'correct_value': row['correct_value']}
 
 
         # simulation_data
@@ -456,7 +466,7 @@ class Simulator:
         return total_error/dimensionality
             
 
-    def error_of_single_value(all_calculated_values, column_name, row_index, period):
+    def error_of_single_value(self, all_calculated_values, column_name, row_index, period):
         calculated_value = all_calculated_values[row_index]
         correct_value = self.y0_values[row_index][column_name + 'period' + str(period)]
         all_correct_values = np.array(pd.DataFrame(self.y0_values)[column_name + 'period' + str(period)])
@@ -469,7 +479,7 @@ class Simulator:
             error_in_value_range = residuals/(np.max(all_correct_values) - np.min(all_correct_values))
             error_in_error_range =  residuals/np.max(all_residuals)
             error += error_in_value_range + error_in_error_range   
-            
+
         return error
 
 

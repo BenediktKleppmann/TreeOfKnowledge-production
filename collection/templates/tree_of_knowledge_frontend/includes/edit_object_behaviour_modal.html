@@ -7,7 +7,7 @@
 		
 <style>	
 	#editObjectBehaviourModal .modal-dialog {
-		width: 1471px;
+		width: 1488px;
 		position: initial;
 	}
 
@@ -18,7 +18,18 @@
 		margin-left: 19px;
 	}
 	
+	#editObjectBehaviourModal #x-button {
+	    display: inline-block;
+		float: right;
+		margin-top: 4px;
+		margin-right: 24px;
+		font-size: 29px;
+	}
+	
+	/* -----------------------------------------------------*/
 	/* RULE PANELS -----------------------------------------*/
+	/* -----------------------------------------------------*/
+	
 	#editObjectBehaviourModal .learn-rule-title {
 	    margin-left: 569px;
 		margin-bottom: 3px;
@@ -30,7 +41,7 @@
 	}
 	
 	.rule-panel-body {
-		width: 700px;
+		width: 696px;
 		height:calc(100vh - 260px);
 		overflow-y: auto;
 		padding: 2px;
@@ -45,19 +56,21 @@
 	}
 	
 	#editObjectBehaviourModal #rules-list {
-		height: 340px;
+		height: 375px;
 	}
 	
 	#editObjectBehaviourModal #not-used-rules-list {
-		height: 150px;
+		height: 180px;
 	}
 	
 	#editObjectBehaviourModal #not-used-rules-title {
-		font-size: 15px;
+		font-size: 17px;
 		margin-left: 5px;
 	}
 	
+	/* ----------------------------------------------------------*/
 	/* RULE PANEL ITEMS -----------------------------------------*/
+	/* ----------------------------------------------------------*/
 	
 	#editObjectBehaviourModal .rule-panel-body > .list-group-item {
 		height: 57px;
@@ -84,6 +97,9 @@
 	
 	#editObjectBehaviourModal .rule-description {
 		width: 470px;
+		height: 46px;
+		display: inline-block;
+		float: left;
 	}
 	
 	#editObjectBehaviourModal .rule-description .btn {
@@ -109,7 +125,47 @@
 	#editObjectBehaviourModal #is_certain_fact {
 	    margin-right: 7px;
 	}
-	/* RULE DETAILS -----------------------------------------*/
+	
+	
+	#editObjectBehaviourModal .remove-rule-button {
+		display: inline-block;
+		float: right;
+		height: 18px;
+		width: 18px;
+		padding: 0px;
+		margin-top: 3px;
+		margin-right: 2px;
+		border-radius: 3px;
+		background-color: rgb(242, 242, 242);
+	}
+
+	#editObjectBehaviourModal .remove-rule-button-text {
+		margin-left: -1px;
+		margin-top: -2px;
+	}
+	
+	
+	#plus-button {
+		-webkit-box-shadow: 2px 4px 9px 3px rgba(0,0,0,0.3);
+		-moz-box-shadow: 2px 4px 9px 3px rgba(0,0,0,0.3);
+		box-shadow: 2px 4px 9px 3px rgba(0,0,0,0.3);
+	}
+	
+	#plus-button-list-group-item {
+		background-color: rgba(256, 256, 256, 0);
+		padding: 12px;
+		padding-left: 21px;
+	}
+	
+	
+	/* ----------------------------------------------------------*/
+	/* RULE DETAILS ---------------------------------------------*/
+	/* ----------------------------------------------------------*/
+	
+	#editObjectBehaviourModal #rule-info-top {
+		height: 344px;
+	}
+	
 	#editObjectBehaviourModal #rule-info {
 		display: inline-block;
 		float: right;
@@ -120,14 +176,20 @@
 		float: left;
 		width: 430px;
 		margin-right: 22px;
-		margin-top: 11px;
 	}
 	
-
+	#rule-details label {
+	    margin-bottom: 2px;
+	}
+	
+	#rule-details .form-group {
+		margin-bottom: 21px;
+	}
 	
 	#editObjectBehaviourModal #rule_type {
-	   width: 200px;
-		margin-bottom: 20px;
+		width: 200px;
+		margin-bottom: 15px;
+		margin-top: 1px;
 	}
 	
 	#editObjectBehaviourModal #is-certain-fact-field {
@@ -142,10 +204,13 @@
 		margin-left: 5px;
 	}
 	
-	/* AVAILABLE VARIABLES -----------------------------------------*/
+	/* ----------------------------------------------------------*/
+	/* AVAILABLE VARIABLES --------------------------------------*/
+	/* ----------------------------------------------------------*/
+	
 	#editObjectBehaviourModal #available-variable-frame {
-	    height: 420px;
 		width: 219px;
+		height: 307px;
 	}
 	
 	
@@ -153,6 +218,86 @@
 		display: inline-block;
 	}
 
+	.available-variables-label {
+		margin-top: 19px;
+		font-weight: 700;
+		font-size: 15px;
+		color: rgb(110, 110, 110);
+	} 
+	
+	#selectAvailableVariable {
+		width: 179px;
+		margin-top: 2px;
+		margin-bottom: 5px;
+	}
+	
+	#available-variable-frame {
+		border: 1px solid rgb(202, 202, 202);
+		border-radius: 4px;
+		width: 195px;
+		height: 300px;
+		overflow: auto;
+	}
+	
+	.list-group-item.avail-var-item{
+		border-bottom: 1px solid rgb(202, 202, 202);
+		margin-bottom: 0px;
+		padding:0px;
+	}
+
+	.avail-var-button {
+		background: white;
+		width: 195px;
+	}
+
+	/* ----------------------------------------------------------*/
+	/* RULE PDF -------------------------------------------------*/
+	/* ----------------------------------------------------------*/
+	.rule-pdf-panel-title {
+	    margin-top: 50px;
+		margin-bottom: 5px;
+		margin-left: 1px;
+		font-weight: 700;
+		font-size: 15px;
+	}
+	
+	#pdf-this-simulation {
+		display: inline-block;
+	}
+	
+	.outer-pdf-graph-container{
+		height: 156px;
+		width: 277px;
+		border: 1px solid rgb(240,240,240);
+		overflow: hidden;
+	}
+	
+	#pdf-graph-this-simulation {
+		height: 187px;
+		width: 340px;
+		margin-left: -44px;
+		margin-top: 0px;
+	}
+	
+	#pdf-all-simulations {
+		display: inline-block;
+		margin-left: 30px;
+	}
+	
+	#pdf-graph-all-simulations {
+		height: 187px;
+		width: 340px;
+		margin-left: -44px;
+		margin-top: 0px;
+	}
+	
+	.pdf-title {
+	    width: 100%;
+		text-align: center;
+		margin-top: 4px;
+	}
+	
+	
 
 </style>
 
@@ -184,6 +329,20 @@
 							<div id="available-variables-block"></div>
 						</div>
 						<div id="save-cancel-rule-buttons"></div>
+						<div class="rule-pdf-panel-title">Rule Probability</div>
+						<div id="rule-pdf-panel">
+							<div id="pdf-this-simulation">
+								<div class="outer-pdf-graph-container">
+									<div id="pdf-graph-this-simulation"></div>
+								</div>
+								<div class="pdf-title">Learned from this simulation</div>
+							</div>
+							<div id="pdf-all-simulations">
+								<div class="outer-pdf-graph-container">
+									<div id="pdf-graph-all-simulations"></div></div>
+								<div class="pdf-title">Learned from all simulations</div>
+							</div>
+						</div>
 					</div>
 						
 				</div>
@@ -214,13 +373,18 @@ var new_rule_cursor_textarea = '';
 	
 	
 	
-	function openEditObjectBehaviourModal(object_number, rules_attribute_id, rules_attribute_name){
+	function openEditObjectBehaviourModal(object_number, rules_attribute_id, rules_attribute_name, rule_id){
 		$("#editObjectBehaviourModal").modal('show');
 
 		var object_name = objects_dict[object_number]['object_name'];
 		$("#editObjectBehaviourModal #modal-title").html('Rules for ' + rules_attribute_name + ' of ' + object_name);
 	
 		populateTheRulePanels(object_number, rules_attribute_id, rules_attribute_name);
+		
+		if (rule_id) {
+			inspectRule(object_number, rules_attribute_id, rules_attribute_name, rule_id);
+		}
+		
 	}
 	
 	
@@ -368,7 +532,7 @@ var new_rule_cursor_textarea = '';
 		$("#editObjectBehaviourModal").modal('show');
 
 
-		// Populate the Modal
+		// Rule Details ------------------------------------------------------------
 		if (Object.keys(objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules']).includes(String(rule_id))) {
 			rule = objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules'][rule_id];
 		} else {
@@ -408,11 +572,11 @@ var new_rule_cursor_textarea = '';
 								'<div id="rule-details-main">' + 
 									'<div class="form-group">' + 
 										'<label for="rule-condition-text">IF</label>' +
-										'<textarea cols="20" rows="5" class="form-control" id="rule-condition-text" onclick="rememberCursorPostion(\'rule-condition-text\')">' + rule['condition_text'] + '</textarea>' +
+										'<textarea cols="20" rows="3" class="form-control" id="rule-condition-text" onclick="rememberCursorPostion(\'rule-condition-text\')">' + rule['condition_text'] + '</textarea>' +
 									'</div>' +
 									'<div class="form-group">' + 
 										'<label for="rule-effect-text">THEN ' + rules_attribute_name + ' = </label>' +
-										'<textarea cols="20" rows="5" class="form-control" id="rule-effect-text" onclick="rememberCursorPostion(\'rule-effect-text\')">' + rule['effect_text'] + '</textarea>' +
+										'<textarea cols="20" rows="3" class="form-control" id="rule-effect-text" onclick="rememberCursorPostion(\'rule-effect-text\')">' + rule['effect_text'] + '</textarea>' +
 									'</div>' +
 									'<div id="is-certain-fact-field">' +
 										'<input type="checkbox" class="form-check-input" id="is_certain_fact" ' + certain_fact_checked_string + '>' +
@@ -425,7 +589,7 @@ var new_rule_cursor_textarea = '';
 		
 		$('#rule-details').html(rule_details_html);
 		
-
+		// Available Variables ------------------------------------------------------------
 		available_variables_html = 	'<div class="available-variables-label">Available Variables:</div>' + 
 											'<input type="text" class="form-control" id="selectAvailableVariable" onkeyup="filterAvailableVariables();" placeholder=" Search">' + 
 											'<div id="available-variable-frame">' + 
@@ -450,11 +614,73 @@ var new_rule_cursor_textarea = '';
 		$('#available-variables-block').html(available_variables_html);
 		
 		
+		// Cancel/Save Buttons ------------------------------------------------------------
 		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="cancelNewRuleButton" onclick="cancelRuleCreation()">Cancel</button>' +
 										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="saveBehaviourRule(' + rule_id + ', ' + rules_attribute_id + ',\'' + rules_attribute_name + '\',' + object_number + ')">Save Rule</button>';
 		
 		$('#save-cancel-rule-buttons').html(save_button_html_string);		
 	
+	
+		// Rule Probability ------------------------------------------------------------
+		var url_components = window.location.href.split("/");
+		var simulation_id = url_components[url_components.length - 2];
+
+		
+		//get_single_pdf
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var histogram_data = JSON.parse(this.responseText);
+				
+				$('#pdf-graph-this-simulation').html('');
+				anychart.onDocumentReady(function () {
+					var dataSet = anychart.data.set(histogram_data);
+					var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
+					var chart = anychart.area();
+					var series = chart.area(seriesData);
+
+					// axes settings
+					chart.yAxis();
+					var xAxis = chart.xAxis();
+					xAxis.title('Probability');
+					xAxis.labels().format("{%Value}%");
+
+					chart.container('pdf-graph-this-simulation');
+					chart.draw();
+				});
+			}
+		};
+		xhttp.open('GET', '/tool/get_single_pdf?simulation_id=' + simulation_id + '&object_number=' + object_number + '&rule_id=' + rule_id , true);
+		xhttp.send();
+		
+		
+		//get_rules_pdf
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var histogram_data = JSON.parse(this.responseText);
+				
+				$('#pdf-graph-all-simulations').html('');
+				anychart.onDocumentReady(function () {
+					var dataSet = anychart.data.set(histogram_data);
+					var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
+					var chart = anychart.area();
+					var series = chart.area(seriesData);
+
+					// axes settings
+					chart.yAxis();
+					var xAxis = chart.xAxis();
+					xAxis.labels().format("{%Value}%");
+
+					chart.container('pdf-graph-all-simulations');
+					chart.draw();
+				});
+				
+			}
+		};
+		xhttp.open('GET', '/tool/get_rules_pdf?rule_id=' + rule_id , true);
+		xhttp.send();	
+		
 	}
 	
 	
@@ -582,11 +808,11 @@ var new_rule_cursor_textarea = '';
 		} else if (rule_type == 'Conditional Rule'){
 			rule_details_main_html = 	'<div class="form-group">' + 
 											'<label for="rule-condition-text">IF</label>' +
-											'<textarea id="rule-condition-text" cols="20" rows="5" class="form-control" onclick="rememberCursorPostion(\'rule-condition-text\')"></textarea>' +
+											'<textarea id="rule-condition-text" cols="20" rows="3" class="form-control" onclick="rememberCursorPostion(\'rule-condition-text\')"></textarea>' +
 										'</div>' +
 										'<div class="form-group">' + 
 											'<label for="rule-effect-text">THEN ' + attribute_name + ' = </label>' +
-											'<textarea id="rule-effect-text" cols="20" rows="5" class="form-control" onclick="rememberCursorPostion(\'rule-effect-text\')"></textarea>' +
+											'<textarea id="rule-effect-text" cols="20" rows="3" class="form-control" onclick="rememberCursorPostion(\'rule-effect-text\')"></textarea>' +
 										'</div>' +
 										'<div id="is-certain-fact-field">' +
 											'<input type="checkbox" class="form-check-input" id="is_certain_fact" >' +
