@@ -253,6 +253,8 @@
 	/* ----------------------------------------------------------*/
 	/* RULE PDF -------------------------------------------------*/
 	/* ----------------------------------------------------------*/
+	
+	/* left pdf ------------*/
 	.rule-pdf-panel-title {
 	    margin-top: 50px;
 		margin-bottom: 5px;
@@ -263,40 +265,64 @@
 	
 	#pdf-this-simulation {
 		display: inline-block;
+		margin-left: 2px;
 	}
 	
 	.outer-pdf-graph-container{
-		height: 156px;
-		width: 277px;
+		height: 150px;
+		width: 275px;
 		border: 1px solid rgb(240,240,240);
 		overflow: hidden;
 	}
 	
 	#pdf-graph-this-simulation {
-		height: 187px;
-		width: 340px;
-		margin-left: -44px;
+		height: 213px;
+		width: 346px;
+		margin-left: -48px;
 		margin-top: 0px;
 	}
 	
+	#this-simulation-warning-message {
+	    width: 273px;
+		text-align: center;
+		color: red;
+	}
+	
+	
+	/* right pdf ------------*/
 	#pdf-all-simulations {
 		display: inline-block;
-		margin-left: 30px;
+		margin-right: 62px;
+		float: right;
 	}
 	
 	#pdf-graph-all-simulations {
-		height: 187px;
-		width: 340px;
-		margin-left: -44px;
-		margin-top: 0px;
+		height: 213px;
+		width: 346px;
+		margin-left: -48px;
+		margin-top: -21px;
 	}
 	
 	.pdf-title {
 	    width: 100%;
 		text-align: center;
-		margin-top: 4px;
+		margin-top: -6px;
 	}
 	
+	.pdf-x-axis {
+		margin-left: -2px;
+		margin-right: -12px;
+		font-size: 12px;
+	}
+	
+	.pdf-x-axis .left {
+		display: inline-block;
+	}
+	
+	.pdf-x-axis .right {
+	    display: inline-block;
+		float: right;
+	}
 	
 
 </style>
@@ -309,7 +335,7 @@
 		<div class="modal-content">
 		  <div class="modal-header row">
 			<div class="modal-title object-type-name" id="modal-title"></div>
-			<button id="x-button" type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close"  onclick="closeObjectTypeModal()">
+			<button id="x-button" type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close">
 			  <span aria-hidden="true" >&times;</span>
 			</button>
 		  </div>
@@ -335,11 +361,15 @@
 								<div class="outer-pdf-graph-container">
 									<div id="pdf-graph-this-simulation"></div>
 								</div>
+								<div class="pdf-x-axis"><div class="left">0%</div><div class="right">100%</div></div>
 								<div class="pdf-title">Learned from this simulation</div>
+								<div id="this-simulation-warning-message"></div>
 							</div>
 							<div id="pdf-all-simulations">
 								<div class="outer-pdf-graph-container">
-									<div id="pdf-graph-all-simulations"></div></div>
+									<div id="pdf-graph-all-simulations"></div>
+								</div>
+								<div class="pdf-x-axis"><div class="left">0%</div><div class="right">100%</div></div>
 								<div class="pdf-title">Learned from all simulations</div>
 							</div>
 						</div>
@@ -349,7 +379,7 @@
 			</div>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-primary" onclick="closeObjectTypeModal()" id="editAttributeCloseButton" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-primary" id="editAttributeCloseButton" data-dismiss="modal">Close</button>
 
 		  </div>
 		  
@@ -630,14 +660,15 @@ var new_rule_cursor_textarea = '';
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				var histogram_data = JSON.parse(this.responseText);
+				var response = JSON.parse(this.responseText);
 				
 				$('#pdf-graph-this-simulation').html('');
 				anychart.onDocumentReady(function () {
-					var dataSet = anychart.data.set(histogram_data);
+					var dataSet = anychart.data.set(response['pdf']);
 					var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
 					var chart = anychart.area();
 					var series = chart.area(seriesData);
+					series.tooltip().enabled(false);
 
 					// axes settings
 					chart.yAxis();
@@ -648,6 +679,11 @@ var new_rule_cursor_textarea = '';
 					chart.container('pdf-graph-this-simulation');
 					chart.draw();
 				});
+				
+				if (response['message']) {
+					$('#this-simulation-warning-message').html(response['message']);
+				}
+				
 			}
 		};
 		xhttp.open('GET', '/tool/get_single_pdf?simulation_id=' + simulation_id + '&object_number=' + object_number + '&rule_id=' + rule_id , true);
@@ -666,6 +702,7 @@ var new_rule_cursor_textarea = '';
 					var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
 					var chart = anychart.area();
 					var series = chart.area(seriesData);
+					series.tooltip().enabled(false);
 
 					// axes settings
 					chart.yAxis();

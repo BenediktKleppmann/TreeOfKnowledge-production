@@ -17,6 +17,25 @@
 		padding: 0px;
 	}
 
+
+
+	#score-box {
+		position: absolute;
+		right: 12px;
+		top: 58px;
+		padding: 6px 19px;
+		font-size: 15px;
+		border: 1px solid rgb(202,202,202);
+		z-index: 2;
+		border-radius: 0px 0px 8px 8px;
+		background: rgb(235, 235, 235);
+	}
+	
+	#simulation-score {
+		display: inline-block;
+	}
+
+
 	/* --------------------------------------------------------------------------*/
 	/* Panels -------------------------------------------------------------------*/
 	/* --------------------------------------------------------------------------*/
@@ -350,6 +369,7 @@
 {% endblock %}	
 
 {% block content %}
+<div id="score-box">Overall Score: <div id="simulation-score"></div></div>
 <div class="left-panel">
 	<div class="simulation-selection-area">
 		<div class="simulation-selection-box">
@@ -686,7 +706,7 @@
 					if (['string', 'relation', 'bool'].includes(datatype)) {  // -> most common value
 						var value_occurences = {}
 						for (var l = 0; l < values.length; l++) {
-							var value = values[l];
+							var value = String(values[l]);
 							if (Object.keys(value_occurences).includes(value)) {
 								value_occurences[value] += 1;
 							} else {
@@ -840,7 +860,7 @@
 			// value_occurences
 			var value_occurences = {}
 			for (var i = 0; i < selected_simulations_list.length; i++) {
-				var value = simulation_data[selected_simulations_list[i]][column_name][period_number];
+				var value = String(simulation_data[selected_simulations_list[i]][column_name][period_number]);
 				if (Object.keys(value_occurences).includes(value)) {
 					value_occurences[value] += 1;
 				} else {
@@ -1204,6 +1224,11 @@
 	//========================================================================
 	
 	drawLeftPanel();
+	
+	score = errors['score'] * 100;
+	nb_of_decimal_places = Math.max(1-Math.floor(Math.log(score)/Math.log(10)) ,1);
+	score_text = String(Math.floor(score * (10**nb_of_decimal_places))/ (10**nb_of_decimal_places)) + '%';
+	$('#simulation-score').html(score_text);
 
 
 	// make the Top Panel resizable

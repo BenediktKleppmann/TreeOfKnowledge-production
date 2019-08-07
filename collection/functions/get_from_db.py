@@ -199,15 +199,15 @@ def get_rules_pdf(rule_id):
 
     if len(likelihood_functions) > 0:
         # multiply the likelihood functions of all different simulations/evidences to get a combined posterior
-        posterior_probabilities = np.array([1] * 100)
+        posterior_probabilities = np.array([1] * 30)
         for likelihood_function in likelihood_functions:
             likelihoods_probabilities = json.loads(likelihood_function['list_of_probabilities'])
             posterior_probabilities = posterior_probabilities * likelihoods_probabilities           # multiply with likelihood function
         
-        posterior_probabilities = posterior_probabilities * 100/ np.sum(posterior_probabilities) # re-normalisation
-        histogram = (posterior_probabilities.tolist(), np.linspace(0,1,101).tolist())
+        posterior_probabilities = posterior_probabilities * 30/ np.sum(posterior_probabilities) # re-normalisation
+        histogram = (posterior_probabilities.tolist(), np.linspace(0,1,31).tolist())
 
-        x_values = np.linspace(0,0.99,100) + 0.005
+        x_values = np.linspace(0,0.966666666666667,30) + 1/60
         mean = np.average(x_values, weights=posterior_probabilities)
         standard_dev = np.sqrt(np.average((x_values - mean)**2, weights=posterior_probabilities))
 
@@ -223,13 +223,19 @@ def get_single_pdf(simulation_id, object_number, rule_id):
     if len(likelihood_functions) > 0:
 
         list_of_probabilities = json.loads(likelihood_functions[0]['list_of_probabilities'])
-        histogram = (list(list_of_probabilities), list(np.linspace(0,1,101)))
+        histogram = (list(list_of_probabilities), list(np.linspace(0,1,31)))
 
-        x_values = np.linspace(0,0.99,100) + 0.005
+        x_values = np.linspace(0,0.966666666666667,30) + 1/60
         mean = np.average(x_values, weights=list_of_probabilities)
         standard_dev = np.sqrt(np.average((x_values - mean)**2, weights=list_of_probabilities))
 
-        return histogram, mean, standard_dev
+        nb_of_sim_in_which_rule_was_used = likelihood_functions[0]['nb_of_sim_in_which_rule_was_used'] 
+        if (nb_of_sim_in_which_rule_was_used < 200):
+            message = 'When running ' + str(likelihood_functions[0]['nb_of_simulations']) + ' simulations, this rule was triggered in only ' + str(nb_of_sim_in_which_rule_was_used) + ' of them.'
+        else:
+            message = ''
+
+        return histogram, mean, standard_dev, message
 
     else:
         return None, None, None

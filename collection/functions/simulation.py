@@ -32,10 +32,19 @@ class Simulator:
     rules = []
     rule_priors = []
     just_learned_rules = []
+    posterior_values_to_delete = {}
+    number_of_batches = 0
 
 
-
-
+# =================================================================================================================
+#   _____       _ _   _       _ _         
+#  |_   _|     (_) | (_)     | (_)        
+#    | |  _ __  _| |_ _  __ _| |_ _______ 
+#    | | | '_ \| | __| |/ _` | | |_  / _ \
+#   _| |_| | | | | |_| | (_| | | |/ /  __/
+#  |_____|_| |_|_|\__|_|\__,_|_|_/___\___|
+# 
+# =================================================================================================================
 
     def __init__(self, simulation_id):
 
@@ -118,23 +127,189 @@ class Simulator:
                     
                     if (not rule['is_conditionless']) and (not rule['learn_posterior']):
                         # if a specific posterior for this simulation has been learned, take this, else take the combined posterior of all other simulations
-                        histogram, mean, standard_dev= get_from_db.get_single_pdf(simulation_id, object_number, rule_id)
+                        histogram, mean, standard_dev, message= get_from_db.get_single_pdf(simulation_id, object_number, rule_id)
                         if histogram is None:
-                            histogram, mean, standard_dev= get_from_db.get_rules_pdf(rule_id)
+                            histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule_id)
                         rule['histogram'] = histogram
 
                     self.rules.append(rule)
 
 
+        #  --- Posterior Values to Delete ---
+        for rule in self.rules:
+            self.posterior_values_to_delete[rule['id']] = []
 
 
 
 
 
+# ==========================================================================================
+#    __  __       _       
+#   |  \/  |     (_)      
+#   | \  / | __ _ _ _ __  
+#   | |\/| |/ _` | | '_ \ 
+#   | |  | | (_| | | | | |
+#   |_|  |_|\__,_|_|_| |_|
+# 
+# ==========================================================================================
+
+    def run(self):
+        if len(self.rule_priors) > 0:
+            self.__learn_likelihoods(10000)
+
+        (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(1000)
+        self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df)
+
+
+
+
+
+    def __learn_likelihoods(self, nb_of_accepted_simulations=10000):
+
+        # PART 1 - Run the Simulation
+        batch_size = len(self.y0_values)
+
+        Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values, model=self.elfi_model)
+        S1 = elfi.Summary(self.unchanged, Y, model=self.elfi_model)
+        d = elfi.Distance(self.n_dimensional_distance, S1, model=self.elfi_model)
+        rej = elfi.Rejection(self.elfi_model, d, batch_size=batch_size, seed=30052017)
+
+        result = rej.sample(nb_of_accepted_simulations, threshold=.5)
+
+        # PART 2 - Post Processing
+        for rule_number, rule in enumerate(self.rules):
+            # histogram
+            samples = result.samples['prior__object' + str(rule['object_number']) + '_rule' + str(rule['id']) ]
+            histogram = np.histogram(samples, bins=30, range=(0.0,1.0))
+            histogram_of_to_be_removed = np.histogram(self.posterior_values_to_delete[rule['id']], bins=30, range=(0.0,1.0))
+            histogram = ((histogram[0] - histogram_of_to_be_removed[0]).tolist(),histogram[1].tolist())
+
+            # nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_values_in_posterior
+            nb_of_simulations = self.number_of_batches * batch_size
+            nb_of_sim_in_which_rule_was_used = nb_of_simulations - len(self.posterior_values_to_delete[rule['id']])
+            nb_of_values_in_posterior = len(samples)
+
+
+            # PART 2.1: update the rule's histogram - the next simulation will use the newly learned probabilities
+            self.rules[rule_number]['histogram'] = histogram 
+
+            # PART 2.2: save the learned likelihood function to the database
+            list_of_probabilities_str = json.dumps(list( np.array(histogram[0]) * 30/ np.sum(histogram[0])))
+
+
+
+
+
+            try:
+                likelihood_fuction = Likelihood_fuction.objects.get(simulation_id=self.simulation_id,  rule_id=rule['id'])
+                likelihood_fuction.list_of_probabilities = list_of_probabilities_str
+                likelihood_fuction.nb_of_simulations = nb_of_simulations
+                likelihood_fuction.nb_of_sim_in_which_rule_was_used = nb_of_sim_in_which_rule_was_used
+                likelihood_fuction.nb_of_values_in_posterior = nb_of_values_in_posterior
+                likelihood_fuction.save()
+
+            except:
+                likelihood_fuction = Likelihood_fuction(simulation_id=self.simulation_id, 
+                                                        object_number=rule['object_number'],
+                                                        rule_id=rule['id'], 
+                                                        list_of_probabilities=list_of_probabilities_str,
+                                                        nb_of_simulations=nb_of_simulations,
+                                                        nb_of_sim_in_which_rule_was_used=nb_of_sim_in_which_rule_was_used,
+                                                        nb_of_values_in_posterior=nb_of_values_in_posterior)
+                likelihood_fuction.save()
+
+
+
+
+
+    def __post_process_data(self, simulation_data_df, triggered_rules_df, errors_df):
+
+        # rule_infos
+        triggered_rules_df = triggered_rules_df[triggered_rules_df['triggered_rule'].notnull()]
+        rule_ids = [triggered_rule_info['id'] for triggered_rule_info  in list(triggered_rules_df['triggered_rule'])]
+        rule_ids = list(set(rule_ids))
+        rule_info_list = list(Rule.objects.filter(id__in=rule_ids).values())
+        rule_infos = {}
+        for rule in rule_info_list:
+            rule_infos[rule['id']] = rule
+        
+
+
+        # triggered_rules
+        triggered_rules_per_period = triggered_rules_df.groupby(['batch_number','initial_state_id','attribute_id','period']).aggregate({'initial_state_id':'first',
+                                                                                                        'batch_number':'first',
+                                                                                                        'attribute_id':'first',
+                                                                                                        'period':'first',
+                                                                                                        'triggered_rule':list,
+                                                                                                        'correct_value':'first',})  
+
+        attribute_dict = {attribute_id: {} for attribute_id in triggered_rules_df['attribute_id'].unique().tolist()}
+        triggered_rules = {}
+        for batch_number in triggered_rules_df['batch_number'].unique().tolist():
+            for initial_state_id in triggered_rules_df['initial_state_id'].unique().tolist():
+                triggered_rules[str(initial_state_id) + '-' + str(batch_number)] = deepcopy(attribute_dict)
+
+        for index, row in triggered_rules_per_period.iterrows():
+            triggered_rules[str(row['initial_state_id']) + '-' + str(row['batch_number'])][row['attribute_id']][int(row['period'])] = {'rules': row['triggered_rule'], 'correct_value': row['correct_value']}
+
+
+        # simulation_data
+        simulation_data = {}
+        attribute_ids = [attr_id for attr_id in simulation_data_df.columns if attr_id not in ['batch_number','initial_state_id','attribute_id','period', 'randomNumber', 'cross_join_column']]
+        aggregation_dict = {attr_id:list for attr_id in attribute_ids}
+        aggregation_dict['batch_number'] = 'first'
+        aggregation_dict['initial_state_id'] = 'first'
+        simulation_data_per_entity_attribute = simulation_data_df.groupby(['batch_number','initial_state_id']).aggregate(aggregation_dict)
+
+        for index, row in simulation_data_per_entity_attribute.iterrows():
+            for attribute_id in attribute_ids:
+                simulation_number = str(row['initial_state_id']) + '-' + str(row['batch_number'])
+                if simulation_number not in simulation_data.keys():
+                    simulation_data[str(row['initial_state_id']) + '-' + str(row['batch_number'])] = {}
+                simulation_data[str(row['initial_state_id']) + '-' + str(row['batch_number'])][attribute_id] = row[attribute_id].copy()
+
+
+
+        # errors
+        errors = {}
+        errors['score'] = errors_df['error'].mean()
+        errors['correct_simulations'] = list(errors_df.loc[errors_df['error'] < 0.25, 'simulation_number'])
+        errors['false_simulations'] = list(errors_df.loc[errors_df['error'] > 0.75, 'simulation_number'])
+
+
+        # save all
+        simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
+        simulation_model_record.just_learned_rules = json.dumps(self.just_learned_rules)
+        simulation_model_record.rule_infos = json.dumps(rule_infos)
+        simulation_model_record.triggered_rules = json.dumps(triggered_rules)
+        simulation_model_record.simulation_data = json.dumps(simulation_data)
+        simulation_model_record.errors = json.dumps(errors)
+        simulation_model_record.save()
+
+
+
+
+
+
+
+# ===========================================================================================================
+ #   _____ _                 _       _   _               ______                _   _                 
+ #  / ____(_)               | |     | | (_)             |  ____|              | | (_)                
+ # | (___  _ _ __ ___  _   _| | __ _| |_ _  ___  _ __   | |__ _   _ _ __   ___| |_ _  ___  _ __  ___ 
+ #  \___ \| | '_ ` _ \| | | | |/ _` | __| |/ _ \| '_ \  |  __| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+ #  ____) | | | | | | | |_| | | (_| | |_| | (_) | | | | | |  | |_| | | | | (__| |_| | (_) | | | \__ \
+ # |_____/|_|_| |_| |_|\__,_|_|\__,_|\__|_|\___/|_| |_| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+
+# ===========================================================================================================
+
+
+    #  Rule Learning  ---------------------------------------------------------------------------------
     def likelihood_learning_simulator(self, df, rules, *rule_priors, batch_size, random_state=None):
+        self.number_of_batches += 1
         df[self.y0_columns] = None
 
         for rule in rules:
+            rule['rule_was_used_in_simulation'] = [False]*batch_size
             if rule['learn_posterior']:
                 df['triggerThresholdForRule' + str(rule['id'])] = rule_priors[rule['prior_index']]
             else:
@@ -149,20 +324,27 @@ class Simulator:
         y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
         for period in range(len(times)-1):
             for rule in rules:
-                # Apply Rule  
+                # --------  IF  --------
                 if rule['is_conditionless']:
                     satisfying_rows = [True] * batch_size
                 else:
                     df['randomNumber'] = np.random.random(batch_size)
-                    satisfying_rows = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']) + '  & ' + str(rule['condition_exec']))
+                    triggered_rules = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
+                    condition_fulfilled_rules = pd.eval(rule['condition_exec'])
+                    satisfying_rows = triggered_rules  & condition_fulfilled_rules   
 
-
+                # --------  THEN  --------
                 if rule['effect_is_calculation']:
                     new_values = pd.eval(rule['effect_exec'])
                 else:
                     new_values = json.loads(rule['effect_exec'])
 
-                df.loc[satisfying_rows,rule['column_to_change']] = new_values
+                df.loc[satisfying_rows,rule['column_to_change']] = new_values        
+
+
+                # --------  used rules  --------
+                if rule['learn_posterior']:
+                    rule['rule_was_used_in_simulation'] = rule['rule_was_used_in_simulation'] | condition_fulfilled_rules
 
             y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
             y0_values_in_this_period.columns = [col + 'period' + str(period) for col in y0_values_in_this_period.columns] #faster version
@@ -171,12 +353,21 @@ class Simulator:
             # merging_columns =  ['obj' + obj_num + 'attrobject_id' for obj_num in self.objects_dict.keys()] #slower, safer version
             # y0_values_in_simulation = pd.merge(y0_values_in_simulation, y0_values_in_this_period, on=merging_columns, how='outer', suffixes=['','period' + period])
 
+        for rule in rules:  
+            if rule['learn_posterior']:
+                y0_values_in_simulation['triggerThresholdForRule' + str(rule['id'])] = rule_priors[rule['prior_index']]
+                y0_values_in_simulation['rule_used_in_simulation_' + str(rule['id'])] = rule['rule_was_used_in_simulation']
+                del rule['rule_was_used_in_simulation']
+
         return y0_values_in_simulation.to_dict('records')
 
           
 
 
 
+
+
+    #  Monte-Carlo  ---------------------------------------------------------------------------------
     def __run_monte_carlo_simulation(self, nb_of_simulations=1000):
 
         y0 = np.asarray(self.df[self.y0_columns].copy())
@@ -205,7 +396,7 @@ class Simulator:
             y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
             for period in range(len(times)-1):
                 for rule in self.rules:
-                    # Apply Rule  =======================================================
+                    # Apply Rule  ================================================================
                     if rule['is_conditionless']:
                         satisfying_rows = [True] * batch_size
                         condition_satisfying_rows = [True] * batch_size
@@ -225,7 +416,6 @@ class Simulator:
 
 
                     # Save the Simulation State  =======================================================
-
                     # triggered rules
                     trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
                     triggered_rule_infos = []
@@ -279,76 +469,6 @@ class Simulator:
 
 
 
-    def __post_process_data(self, simulation_data_df, triggered_rules_df, errors_df):
-
-
-        # rule_infos
-        triggered_rules_df = triggered_rules_df[triggered_rules_df['triggered_rule'].notnull()]
-        rule_ids = [triggered_rule_info['id'] for triggered_rule_info  in list(triggered_rules_df['triggered_rule'])]
-        rule_ids = list(set(rule_ids))
-        rule_info_list = list(Rule.objects.filter(id__in=rule_ids).values())
-        rule_infos = {}
-        for rule in rule_info_list:
-            rule_infos[rule['id']] = rule
-        
-
-
-
-        # triggered_rules
-        triggered_rules_per_period = triggered_rules_df.groupby(['batch_number','initial_state_id','attribute_id','period']).aggregate({'initial_state_id':'first',
-                                                                                                        'batch_number':'first',
-                                                                                                        'attribute_id':'first',
-                                                                                                        'period':'first',
-                                                                                                        'triggered_rule':list,
-                                                                                                        'correct_value':'first',})  
-
-        attribute_dict = {attribute_id: {} for attribute_id in triggered_rules_df['attribute_id'].unique().tolist()}
-        triggered_rules = {}
-        for batch_number in triggered_rules_df['batch_number'].unique().tolist():
-            for initial_state_id in triggered_rules_df['initial_state_id'].unique().tolist():
-                triggered_rules[str(initial_state_id) + '-' + str(batch_number)] = deepcopy(attribute_dict)
-
-        for index, row in triggered_rules_per_period.iterrows():
-            triggered_rules[str(row['initial_state_id']) + '-' + str(row['batch_number'])][row['attribute_id']][int(row['period'])] = {'rules': row['triggered_rule'], 'correct_value': row['correct_value']}
-
-
-        # simulation_data
-        simulation_data = {}
-        attribute_ids = [attr_id for attr_id in simulation_data_df.columns if attr_id not in ['batch_number','initial_state_id','attribute_id','period', 'randomNumber', 'cross_join_column']]
-        aggregation_dict = {attr_id:list for attr_id in attribute_ids}
-        aggregation_dict['batch_number'] = 'first'
-        aggregation_dict['initial_state_id'] = 'first'
-        simulation_data_per_entity_attribute = simulation_data_df.groupby(['batch_number','initial_state_id']).aggregate(aggregation_dict)
-
-        for index, row in simulation_data_per_entity_attribute.iterrows():
-            for attribute_id in attribute_ids:
-                simulation_number = str(row['initial_state_id']) + '-' + str(row['batch_number'])
-                if simulation_number not in simulation_data.keys():
-                    simulation_data[str(row['initial_state_id']) + '-' + str(row['batch_number'])] = {}
-                simulation_data[str(row['initial_state_id']) + '-' + str(row['batch_number'])][attribute_id] = row[attribute_id].copy()
-
-
-
-
-        # errors
-        errors = {}
-        errors['score'] = errors_df['error'].mean()
-        errors['correct_simulations'] = list(errors_df.loc[errors_df['error'] < 0.25, 'simulation_number'])
-        errors['false_simulations'] = list(errors_df.loc[errors_df['error'] > 0.75, 'simulation_number'])
-        
-
-
-
-
-
-        # save all
-        simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
-        simulation_model_record.just_learned_rules = json.dumps(self.just_learned_rules)
-        simulation_model_record.rule_infos = json.dumps(rule_infos)
-        simulation_model_record.triggered_rules = json.dumps(triggered_rules)
-        simulation_model_record.simulation_data = json.dumps(simulation_data)
-        simulation_model_record.errors = json.dumps(errors)
-        simulation_model_record.save()
 
 
 
@@ -356,73 +476,15 @@ class Simulator:
 
 
 
-
-
-
-
-
-    # ==========================================================================================
-    #  Run
-    # ==========================================================================================
-    def run(self):
-        if len(self.rule_priors) > 0:
-            self.__learn_likelihoods(10000)
-
-        (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(1000)
-        self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df)
-
-
-
-
-
-    def __learn_likelihoods(self, nb_of_accepted_simulations=10000):
-
-        # PART 1 - Run the Simulation
-        batch_size = len(self.y0_values)
-
-        Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values, model=self.elfi_model)
-        S1 = elfi.Summary(self.unchanged, Y, model=self.elfi_model)
-        d = elfi.Distance(self.n_dimensional_distance, S1, model=self.elfi_model)
-        rej = elfi.Rejection(self.elfi_model, d, batch_size=batch_size, seed=30052017)
-
-        result = rej.sample(nb_of_accepted_simulations, threshold=.5)
-
-        # PART 2 - Post Processing
-        for rule_number, rule in enumerate(self.rules):
-            samples = result.samples['prior__object' + str(rule['object_number']) + '_rule' + str(rule['id']) ]
-            histogram = np.histogram(samples, bins=100, range=(0.0,1.0))
-            histogram = (histogram[0].tolist(),histogram[1].tolist())
-
-            # PART 2.1: update the rule's histogram - the next simulation will use the newly learned probabilities
-            self.rules[rule_number]['histogram'] = histogram 
-
-            # PART 2.2: save the learned likelihood function to the database
-            list_of_probabilities_str = json.dumps(list( histogram[0] * 100/ np.sum(histogram[0])))
-
-            try:
-                likelihood_fuction = Likelihood_fuction.objects.get(simulation_id=self.simulation_id,  rule_id=rule['id'])
-                likelihood_fuction.list_of_probabilities = list_of_probabilities_str
-                likelihood_fuction.save()
-
-            except:
-                likelihood_fuction = Likelihood_fuction(simulation_id=self.simulation_id, 
-                                                        object_number=rule['object_number'],
-                                                        rule_id=rule['id'], 
-                                                        list_of_probabilities=list_of_probabilities_str)
-                likelihood_fuction.save()
-
-
-
-
-
-
-
-
-
-
-    # ==========================================================================================
-    #  Helper-Functions
-    # ==========================================================================================
+# ===========================================================================================================
+#               _     _ _ _   _                   _    ______ _  __ _    _   _           _           
+#      /\      | |   | (_) | (_)                 | |  |  ____| |/ _(_)  | \ | |         | |          
+#     /  \   __| | __| |_| |_ _  ___  _ __   __ _| |  | |__  | | |_ _   |  \| | ___   __| | ___  ___ 
+#    / /\ \ / _` |/ _` | | __| |/ _ \| '_ \ / _` | |  |  __| | |  _| |  | . ` |/ _ \ / _` |/ _ \/ __|
+#   / ____ \ (_| | (_| | | |_| | (_) | | | | (_| | |  | |____| | | | |  | |\  | (_) | (_| |  __/\__ \
+#  /_/    \_\__,_|\__,_|_|\__|_|\___/|_| |_|\__,_|_|  |______|_|_| |_|  |_| \_|\___/ \__,_|\___||___/
+# 
+# ===========================================================================================================
 
     def unchanged(self, y):
         return y
@@ -450,20 +512,31 @@ class Simulator:
         v_df = pd.DataFrame(list(v))
         
         total_error = np.zeros(shape=len(u))
+        dimensionality = np.zeros(shape=len(u))
         for y0_column in self.y0_columns:
             period_columns = [col for col in v_df.columns if col.split('period')[0] == y0_column]
             if self.y0_column_dt[y0_column] in ['string','bool','relation']:
                 for period_column in period_columns:
                     total_error += 1. - np.equal(np.array(u_df[period_column]), np.array(v_df[period_column])).astype(int)
+                    dimensionality += 1 - np.array(u_df[period_column].isnull().astype(int))
             if self.y0_column_dt[y0_column] in ['int','real']:
                 for period_column in period_columns:
                     residuals = np.abs(np.array(u_df[period_column]) - np.array(v_df[period_column]))
                     error_in_value_range = residuals/(np.max(v_df[period_column]) - np.min(v_df[period_column]))
                     error_in_error_range =  residuals/np.max(residuals)
-                    total_error += error_in_value_range + error_in_error_range     
+                    total_error += np.minimum(error_in_value_range + error_in_error_range, 1)  
+                    dimensionality += 1 - np.array(u_df[period_column].isnull().astype(int))
 
-        dimensionality = len(self.y0_columns) - np.array(u_df.isnull().sum(axis=1))
-        return total_error/dimensionality
+        dimensionality = np.maximum(dimensionality, [1]*len(u))
+        error = total_error/dimensionality
+
+        # posterior_values_to_delete   (delete value from posterior if it's rule was not used in the simulation)
+        rule_ids = [int(col_name[24:]) for col_name in u_df.columns if col_name[:24] == 'rule_used_in_simulation_']
+        for rule_id in rule_ids:
+            to_be_deleted_rows = np.array(error < 0.5)  &  np.invert(u_df['rule_used_in_simulation_' + str(rule_id)])
+            self.posterior_values_to_delete[rule_id].extend(list(u_df.loc[to_be_deleted_rows, 'triggerThresholdForRule' + str(rule_id)]))
+
+        return error
             
 
     def error_of_single_value(self, all_calculated_values, column_name, row_index, period):
@@ -497,18 +570,7 @@ class Simulator:
     def get_rule_priors(self):
         return self.rule_priors
 
-    # def get_object_timelines_dict(self):
-    #     object_timeline_dicts = {key:value.to_dict('list') for (key,value) in self.object_timelines.items()}
-    #     return object_timeline_dicts
 
-    # def get_timeline_visualisation_data(self):
-    #     return self.timeline_visualisation_data
-
-    # def get_linegraph_data(self):
-    #     return self.linegraph_data
-
-    # def get_attribute_errors(self):
-    #     return self.attribute_errors
 
    
 

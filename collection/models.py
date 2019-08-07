@@ -191,6 +191,9 @@ class Likelihood_fuction(models.Model):
     object_number = models.IntegerField()
     rule_id = models.IntegerField()
     list_of_probabilities = models.TextField()
+    nb_of_simulations = models.IntegerField()
+    nb_of_sim_in_which_rule_was_used = models.IntegerField()
+    nb_of_values_in_posterior = models.IntegerField()
 
 
 

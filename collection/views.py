@@ -18,6 +18,8 @@ import os
 from django.views.decorators.csrf import csrf_protect, csrf_exempt, requires_csrf_token
 import numpy as np
 import math
+from scipy.stats import beta
+import scipy
 
 
  # ===============================================================================
@@ -489,25 +491,43 @@ def get_object_rules(request):
 @login_required
 def get_rules_pdf(request):
     rule_id = request.GET.get('rule_id', '')
-    # request_body = json.loads(request.body)
-    # rule_id = request_body['rule_id']
     histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule_id)
-    response = [[bucket_value, count] for bucket_value, count in zip(histogram[1], histogram[0])]
+    
+    smooth_pdf = True
+    if smooth_pdf:
+        hist_dist = scipy.stats.rv_histogram(histogram)
+        hist_sample = hist_dist.rvs(size=10000)
+        a, b, min_value, value_range = beta.fit(hist_sample) 
+        x_values = list(histogram[1])[:-1]
+        pdf_values = [beta.pdf(x,a,b) for x in x_values]
+        response = [[x, prob] for x, prob in zip(x_values, pdf_values)]
+    else:
+        response = [[bucket_value, count] for bucket_value, count in zip(histogram[1], histogram[0])]
     return HttpResponse(json.dumps(response))
 
 
 # used in edit_object_behaviour_modal.html (which in turn is used in edit_simulation.html and analyse_simulation.html)
 @login_required
 def get_single_pdf(request):
+    response = {}
     simulation_id = request.GET.get('simulation_id', '')
     object_number = request.GET.get('object_number', '')
     rule_id = request.GET.get('rule_id', '')
-    # request_body = json.loads(request.body)
-    # simulation_id = request_body['simulation_id']
-    # object_number = request_body['object_number']
-    # rule_id = request_body['rule_id']
-    histogram, mean, standard_dev = get_from_db.get_single_pdf(simulation_id, object_number, rule_id)
-    response = [[bucket_value, count] for bucket_value, count in zip(histogram[1], histogram[0])]
+    histogram, mean, standard_dev, message = get_from_db.get_single_pdf(simulation_id, object_number, rule_id)
+
+    if message != '':
+        response['message'] = message
+
+    smooth_pdf = True
+    if smooth_pdf:
+        hist_dist = scipy.stats.rv_histogram(histogram)
+        hist_sample = hist_dist.rvs(size=10000)
+        a, b, min_value, value_range = beta.fit(hist_sample) 
+        x_values = list(histogram[1])[:-1]
+        pdf_values = [beta.pdf(x,a,b) for x in x_values]
+        response['pdf'] = [[x, prob] for x, prob in zip(x_values, pdf_values)]
+    else:
+        response['pdf'] = [[bucket_value, count] for bucket_value, count in zip(histogram[1], histogram[0])]
     return HttpResponse(json.dumps(response))
     
 
@@ -1369,6 +1389,7 @@ def test_page2(request):
     # objects_dict = {"1":{"object_name":"Country 1","object_type_id":"j1_5","object_type_name":"Country","object_icon":"si-glyph-flag","object_id":4420,"object_attributes":{"22":{"attribute_value":"Guinea","attribute_name":"Name","attribute_data_type":"string","attribute_rule":None},"23":{"attribute_value":246000,"attribute_name":"Surface area (km2)","attribute_data_type":"real","attribute_rule":None},"24":{"attribute_value":9680000,"attribute_name":"Population","attribute_data_type":"int","attribute_rule":None},"25":{"attribute_value":9.52,"attribute_name":"Infant mortality (%)","attribute_data_type":"real","attribute_rule":None},"26":{"attribute_value":51.3,"attribute_name":"Life expectancy (years)","attribute_data_type":"real","attribute_rule":None},"27":{"attribute_value":0.831,"attribute_name":"Maternal mortality ratio (%)","attribute_data_type":"real","attribute_rule":None},"28":{"attribute_value":1.9,"attribute_name":"Population growth (%/year)","attribute_data_type":"real","attribute_rule":None},"29":{"attribute_value":51.3,"attribute_name":"Life expectancy for women (years)","attribute_data_type":"real","attribute_rule":None},"30":{"attribute_value":51.3,"attribute_name":"Life expectancy for men (years)","attribute_data_type":"real","attribute_rule":None},"31":{"attribute_value":5.9,"attribute_name":"Fertility rate","attribute_data_type":"real","attribute_rule":None},"32":{"attribute_value":39,"attribute_name":"Population density (1/km2)","attribute_data_type":"int","attribute_rule":None},"33":{"attribute_value":1826000,"attribute_name":"CO2 Emissions (tons/year)","attribute_data_type":"real","attribute_rule":None},"34":{"attribute_value":0.2,"attribute_name":"CO2 Emissions per capita (tons/year)","attribute_data_type":"real","attribute_rule":None},"35":{"attribute_value":None,"attribute_name":"Rural population with safe water (%)","attribute_data_type":"real","attribute_rule":None},"36":{"attribute_value":None,"attribute_name":"People with safe water (%)","attribute_data_type":"real","attribute_rule":None},"37":{"attribute_value":None,"attribute_name":"Urban population with safe water (%)","attribute_data_type":"real","attribute_rule":None},"38":{"attribute_value":None,"attribute_name":"Rural population with safe sanitation (%)","attribute_data_type":"real","attribute_rule":None},"39":{"attribute_value":None,"attribute_name":"People with safe sanitation (%)","attribute_data_type":"real","attribute_rule":None},"40":{"attribute_value":None,"attribute_name":"Urban population with safe sanitation (%)","attribute_data_type":"real","attribute_rule":None},"41":{"attribute_value":4840000,"attribute_name":"Female Population","attribute_data_type":"int","attribute_rule":None},"42":{"attribute_value":4840000,"attribute_name":"Male Population","attribute_data_type":"int","attribute_rule":None}},"object_rules":{"22":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"23":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"24":{"used_rules":{"1":{"id":1,"changed_var_attribute_id":24,"condition_text":None,"condition_exec":None,"effect_text":"[Population] + [Population]*([Population growth (%/year)] /100)* [delta_t (years)]","effect_exec":"df.attr24 + df.attr24*(df.attr28 /100)* (df.delta_t/315360000)","effect_is_calculation":True,"used_attribute_ids":"[\"24\", \"28\"]","is_conditionless":True,"has_probability_1":True,"probability":None,"standard_dev":None,"learn_posterior":False},"2":{"id":2,"changed_var_attribute_id":24,"condition_text":None,"condition_exec":None,"effect_text":"[Population] + ([Female Population]*[Fertility rate]/[Life expectancy for women (years)] ) - ([Population]/[Life expectancy (years)])","effect_exec":"int(df.attr24 + (df.attr41*df.attr31/df.attr29 ) - (df.attr24/df.attr26))","effect_is_calculation":True,"used_attribute_ids":"[\"24\", \"26\", \"29\", \"31\", \"41\"]","is_conditionless":True,"has_probability_1":True,"probability":None,"standard_dev":None,"learn_posterior":False}},"not_used_rules":{},"execution_order":[1,2]},"25":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"26":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"27":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"28":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"29":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"30":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"31":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"32":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"33":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"34":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"35":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"36":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"37":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"38":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"39":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"40":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"41":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"42":{"used_rules":{"3":{"id":3,"changed_var_attribute_id":42,"condition_text":"[People with safe sanitation (%)] < 3","condition_exec":"df.attr39 < 3","effect_text":"[Population] * .098","effect_exec":"int(df.attr24 * .098)","effect_is_calculation":True,"used_attribute_ids":"['39', '24']","is_conditionless":False,"has_probability_1":False,"probability":None,"standard_dev":None,"learn_posterior":True}},"not_used_rules":{},"execution_order":[3]}},"object_filter_facts":[],"object_relations":[],"position":{"x":90,"y":162},"get_new_object_data":True},"2":{"object_name":"Country 2","object_type_id":"j1_5","object_type_name":"Country","object_icon":"si-glyph-flag","object_id":4408,"object_attributes":{"22":{"attribute_value":"Ethiopia","attribute_name":"Name","attribute_data_type":"string","attribute_rule":None},"23":{"attribute_value":1104000,"attribute_name":"Surface area (km2)","attribute_data_type":"real","attribute_rule":None},"24":{"attribute_value":76730000,"attribute_name":"Population","attribute_data_type":"int","attribute_rule":None},"25":{"attribute_value":7.8,"attribute_name":"Infant mortality (%)","attribute_data_type":"real","attribute_rule":None},"26":{"attribute_value":53.6,"attribute_name":"Life expectancy (years)","attribute_data_type":"real","attribute_rule":None},"27":{"attribute_value":0.743,"attribute_name":"Maternal mortality ratio (%)","attribute_data_type":"real","attribute_rule":None},"28":{"attribute_value":2.9,"attribute_name":"Population growth (%/year)","attribute_data_type":"real","attribute_rule":None},"29":{"attribute_value":55,"attribute_name":"Life expectancy for women (years)","attribute_data_type":"real","attribute_rule":None},"30":{"attribute_value":52.3,"attribute_name":"Life expectancy for men (years)","attribute_data_type":"real","attribute_rule":None},"31":{"attribute_value":6.1,"attribute_name":"Fertility rate","attribute_data_type":"real","attribute_rule":None},"32":{"attribute_value":76,"attribute_name":"Population density (1/km2)","attribute_data_type":"int","attribute_rule":None},"33":{"attribute_value":5119000,"attribute_name":"CO2 Emissions (tons/year)","attribute_data_type":"real","attribute_rule":None},"34":{"attribute_value":0.1,"attribute_name":"CO2 Emissions per capita (tons/year)","attribute_data_type":"real","attribute_rule":None},"35":{"attribute_value":0.5,"attribute_name":"Rural population with safe water (%)","attribute_data_type":"real","attribute_rule":None},"36":{"attribute_value":6.1,"attribute_name":"People with safe water (%)","attribute_data_type":"real","attribute_rule":None},"37":{"attribute_value":36,"attribute_name":"Urban population with safe water (%)","attribute_data_type":"real","attribute_rule":None},"38":{"attribute_value":1.9,"attribute_name":"Rural population with safe sanitation (%)","attribute_data_type":"real","attribute_rule":None},"39":{"attribute_value":None,"attribute_name":"People with safe sanitation (%)","attribute_data_type":"real","attribute_rule":None},"40":{"attribute_value":None,"attribute_name":"Urban population with safe sanitation (%)","attribute_data_type":"real","attribute_rule":None},"41":{"attribute_value":38450000,"attribute_name":"Female Population","attribute_data_type":"int","attribute_rule":None},"42":{"attribute_value":38280000,"attribute_name":"Male Population","attribute_data_type":"int","attribute_rule":None}},"object_rules":{"22":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"23":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"24":{"used_rules":{"1":{"id":1,"changed_var_attribute_id":24,"condition_text":None,"condition_exec":None,"effect_text":"[Population] + [Population]*([Population growth (%/year)] /100)* [delta_t (years)]","effect_exec":"df.attr24 + df.attr24*(df.attr28 /100)* (df.delta_t/315360000)","effect_is_calculation":True,"used_attribute_ids":"[\"24\", \"28\"]","is_conditionless":True,"has_probability_1":True,"probability":None,"standard_dev":None,"learn_posterior":False},"2":{"id":2,"changed_var_attribute_id":24,"condition_text":None,"condition_exec":None,"effect_text":"[Population] + ([Female Population]*[Fertility rate]/[Life expectancy for women (years)] ) - ([Population]/[Life expectancy (years)])","effect_exec":"int(df.attr24 + (df.attr41*df.attr31/df.attr29 ) - (df.attr24/df.attr26))","effect_is_calculation":True,"used_attribute_ids":"[\"24\", \"26\", \"29\", \"31\", \"41\"]","is_conditionless":True,"has_probability_1":True,"probability":None,"standard_dev":None,"learn_posterior":False}},"not_used_rules":{},"execution_order":[1,2]},"25":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"26":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"27":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"28":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"29":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"30":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"31":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"32":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"33":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"34":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"35":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"36":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"37":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"38":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"39":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"40":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"41":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"42":{"used_rules":{"3":{"id":3,"changed_var_attribute_id":42,"condition_text":"[People with safe sanitation (%)] < 3","condition_exec":"df.attr39 < 3","effect_text":"[Population] * .098","effect_exec":"int(df.attr24 * .098)","effect_is_calculation":True,"used_attribute_ids":"['39', '24']","is_conditionless":False,"has_probability_1":False,"probability":None,"standard_dev":None,"learn_posterior":True}},"not_used_rules":{},"execution_order":[3]}},"object_filter_facts":[],"object_relations":[],"position":{"x":236,"y":193},"get_new_object_data":True}}
     # simulation_start_time = 946681200
     # simulation_start_time = 1135551600
+    # Likelihood_fuction.objects.all().delete()
     bla = list(Likelihood_fuction.objects.all().values())
 
     # df = query_datapoints.get_data_from_related_objects(objects_dict, simulation_start_time, simulation_end_time)
@@ -1376,8 +1397,8 @@ def test_page2(request):
     # print('################################################################')
     # print(df)
     # print('################################################################')
+    # return HttpResponse(json.dumps('success'))
     return HttpResponse(json.dumps(bla))
-    
 
     
 
