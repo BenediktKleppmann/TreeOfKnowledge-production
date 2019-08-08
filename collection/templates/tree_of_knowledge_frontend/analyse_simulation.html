@@ -1193,25 +1193,48 @@
 	
 	
 	
-	/*
-	function showHideRules() {
-		if ($('#triggerd-rules-triangle').hasClass('glyphicon-triangle-top')) {
-			// format
-			$('#triggerd-rules-triangle').removeClass('glyphicon-triangle-top');
-			$('#triggerd-rules-triangle').addClass('glyphicon-triangle-bottom');
-			$('#triggerd-rules-panel').css('border', '1px solid rgb(210, 210, 210)');
-			$('#triggerd-rules-panel').css('height','120px');
-			$('#graph-panel').css('height','calc(100% - 165px)');
-		} else {
-			$('#triggerd-rules-triangle').removeClass('glyphicon-triangle-bottom');
-			$('#triggerd-rules-triangle').addClass('glyphicon-triangle-top');
-			$('#triggerd-rules-panel').css('border', '0px');
-			$('#triggerd-rules-panel').css('height','0px');
-			$('#graph-panel').css('height','calc(100% - 45px)');
+	//========================================================================
+	//========================================================================
+	//=======================    Re-Run Simulation      ======================
+	//========================================================================
+	//========================================================================
+	
+	function run() {
+		saveSimulation();
+		
+		form_html_string =	"<form role='form' action='' method='post' class='form' enctype='multipart/form-data'>" + 
+								"{% csrf_token %}" +
+							"</form>";
+		$(form_html_string).appendTo("body").submit();
+		
+	}
+	
+	
+	function saveSimulation() {
+		// get simulation_id
+		var url_components = window.location.href.split("/");
+		var simulation_id = url_components[url_components.length - 2];
+			
+		
+		request_body = {
+			'simulation_id': simulation_id,
+			'is_timeseries_analysis': is_timeseries_analysis,
+			'objects_dict': objects_dict,
+			'y_value_attributes': [{'object_number': 1, 'attribute_id':56}],
+			'object_type_counts': {{ simulation_model.object_type_counts|safe }},
+			'total_object_count': {{ simulation_model.total_object_count }},
+			'number_of_additional_object_facts': {{ simulation_model.number_of_additional_object_facts }},
+			'simulation_start_time': simulation_start_time,
+			'simulation_end_time': simulation_end_time,
+			'timestep_size': timestep_size
 		}
-	}*/
-	
-	
+		
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.open("POST", "/tool/save_changed_simulation/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));	
+	}
 	
 	
 	

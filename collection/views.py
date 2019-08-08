@@ -1241,11 +1241,8 @@ def edit_simulation(request, simulation_id):
     simulation_model = Simulation_model.objects.get(id=simulation_id)
 
     if request.method == 'POST':
-        print('TEST 1')
         the_simulator = simulation.Simulator(simulation_id)
-        print('TEST 2')
         the_simulator.run()
-        print('TEST 3')
         return redirect('analyse_simulation', simulation_id=simulation_id)
 
     
@@ -1258,25 +1255,27 @@ def edit_simulation(request, simulation_id):
 
 @login_required
 def analyse_simulation(request, simulation_id):
-    print('TEST 4')
-    simulation_model = Simulation_model.objects.get(id=simulation_id)
-
+   
     if request.method == 'POST':
-
-        the_simulator = simulate.Simulation(simulation_id)
+        the_simulator = simulation.Simulator(simulation_id)
         the_simulator.run()
+        simulation_model = Simulation_model.objects.get(id=simulation_id)
+        return render(request, 'tree_of_knowledge_frontend/analyse_simulation.html', {'simulation_model':simulation_model})
 
-        # save simulation results in simulation object
-        timeline_visualisation_data = the_simulator.get_timeline_visualisation_data()
-        simulation_model.timeline_visualisation_data = json.dumps(timeline_visualisation_data)
-        linegraph_data = the_simulator.get_linegraph_data()
-        simulation_model.linegraph_data = json.dumps(linegraph_data)
-        attribute_errors = the_simulator.get_attribute_errors()
-        simulation_model.attribute_errors = json.dumps(attribute_errors)
-        simulation_model.save()
-        return redirect('analyse_simulation', simulation_id=simulation_id)
+        # the_simulator = simulate.Simulation(simulation_id)
+        # the_simulator.run()
 
+        # # save simulation results in simulation object
+        # timeline_visualisation_data = the_simulator.get_timeline_visualisation_data()
+        # simulation_model.timeline_visualisation_data = json.dumps(timeline_visualisation_data)
+        # linegraph_data = the_simulator.get_linegraph_data()
+        # simulation_model.linegraph_data = json.dumps(linegraph_data)
+        # attribute_errors = the_simulator.get_attribute_errors()
+        # simulation_model.attribute_errors = json.dumps(attribute_errors)
+        # simulation_model.save()
+        # return redirect('analyse_simulation', simulation_id=simulation_id)
 
+    simulation_model = Simulation_model.objects.get(id=simulation_id)
     return render(request, 'tree_of_knowledge_frontend/analyse_simulation.html', {'simulation_model':simulation_model})
 
 

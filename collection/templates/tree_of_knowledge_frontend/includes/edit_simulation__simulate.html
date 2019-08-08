@@ -75,6 +75,18 @@
 		border-collapse: collapse;
 	}
 	
+	.attribute-name.active {
+		background: -moz-linear-gradient(
+			top,
+			#8ab8a1 0%,
+			#9bd1b6);
+		background: -webkit-gradient(
+			linear, left top, left bottom,
+			from(#8ab8a1),
+			to(#9bd1b6));
+	}
+
+
 	.attribute-name {
 		width: 184px;
 		padding-left: 9px;
@@ -96,6 +108,7 @@
 			
 		color: black;
 	}
+	
 
 
 	.attribute-value-box {
@@ -691,7 +704,7 @@
 				var attribute_id = attribute_ids[i];
 
 				object_attributes_string += '<tr>' +
-												'<td class="attribute-name">' + object_attributes[attribute_id]['attribute_name'] + '</td>' +
+												'<td id="optimisation-attribute-button-' + object_number + '-' + attribute_id + '" class="attribute-name" onclick="selectOptimisationAttribute(' + object_number + ', ' + attribute_id + ')">' + object_attributes[attribute_id]['attribute_name'] + '</td>' +
 												'<td class="attribute-value-box"><input class="form-control attribute-value" type="text" value="' + object_attributes[attribute_id]['attribute_value'] + '" onchange="attributeValueChange(' + object_number + ',' + attribute_id + ', this.value)"></td>' +
 												'<button type="button" id="format_violation' + 1 + '" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid value" style="display:none;" data-content="">!</button>' + 
 												'<td class="attribute-rule-box">' + 
@@ -701,6 +714,12 @@
 			}
 			object_attributes_string += '</table>';
 			$("#right-sidebar-body").html(object_attributes_string);
+			
+			// press the active Optimisation-attribute-buttons
+			for (var i = 0; i < y_value_attributes.length; i++) {
+				$('#optimisation-attribute-button-' + y_value_attributes[i]['object_number'] + '-' + y_value_attributes[i]['attribute_id'] ).addClass('active');
+			}
+
 		}		
 	}	
 	
@@ -716,6 +735,21 @@
 	
 	
 	
+	
+	function selectOptimisationAttribute(object_number, attribute_id) {
+		if ($('#optimisation-attribute-button-' + object_number + '-' + attribute_id ).hasClass('active')) {
+			$('#optimisation-attribute-button-' + object_number + '-' + attribute_id ).removeClass('active');
+			for (var i = 0; i < y_value_attributes.length; i++) {
+				if ((y_value_attributes[i]['object_number'] = object_number) && (y_value_attributes[i]['attribute_id'] = attribute_id)) {
+					y_value_attributes.splice(i, 1);
+				}
+			}
+		
+		} else {
+			$('#optimisation-attribute-button-' + object_number + '-' + attribute_id ).addClass('active');
+			y_value_attributes.push({'object_number': object_number, 'attribute_id':attribute_id})
+		}
+	}
 	
 	
 	

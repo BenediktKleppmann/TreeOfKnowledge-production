@@ -355,24 +355,8 @@
 							<div id="available-variables-block"></div>
 						</div>
 						<div id="save-cancel-rule-buttons"></div>
-						<div class="rule-pdf-panel-title">Rule Probability</div>
-						<div id="rule-pdf-panel">
-							<div id="pdf-this-simulation">
-								<div class="outer-pdf-graph-container">
-									<div id="pdf-graph-this-simulation"></div>
-								</div>
-								<div class="pdf-x-axis"><div class="left">0%</div><div class="right">100%</div></div>
-								<div class="pdf-title">Learned from this simulation</div>
-								<div id="this-simulation-warning-message"></div>
-							</div>
-							<div id="pdf-all-simulations">
-								<div class="outer-pdf-graph-container">
-									<div id="pdf-graph-all-simulations"></div>
-								</div>
-								<div class="pdf-x-axis"><div class="left">0%</div><div class="right">100%</div></div>
-								<div class="pdf-title">Learned from all simulations</div>
-							</div>
-						</div>
+						<div class="rule-pdf-panel-title"></div>
+						<div id="rule-pdf-panel"></div>
 					</div>
 						
 				</div>
@@ -619,6 +603,8 @@ var new_rule_cursor_textarea = '';
 		
 		$('#rule-details').html(rule_details_html);
 		
+		
+		
 		// Available Variables ------------------------------------------------------------
 		available_variables_html = 	'<div class="available-variables-label">Available Variables:</div>' + 
 											'<input type="text" class="form-control" id="selectAvailableVariable" onkeyup="filterAvailableVariables();" placeholder=" Search">' + 
@@ -644,18 +630,37 @@ var new_rule_cursor_textarea = '';
 		$('#available-variables-block').html(available_variables_html);
 		
 		
+		
 		// Cancel/Save Buttons ------------------------------------------------------------
 		var save_button_html_string =  	'<button type="button" class="btn btn-secondary" id="cancelNewRuleButton" onclick="cancelRuleCreation()">Cancel</button>' +
 										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="saveBehaviourRule(' + rule_id + ', ' + rules_attribute_id + ',\'' + rules_attribute_name + '\',' + object_number + ')">Save Rule</button>';
 		
 		$('#save-cancel-rule-buttons').html(save_button_html_string);		
 	
+
 	
 		// Rule Probability ------------------------------------------------------------
+		$('#rule-pdf-panel-title').html('Rule Probability');
+		var rule_probability_html_string = '<div id="pdf-this-simulation">' +
+												'<div class="outer-pdf-graph-container">' +
+													'<div id="pdf-graph-this-simulation"></div>' +
+												'</div>' +
+												'<div class="pdf-x-axis"><div class="left">0%</div><div class="right">100%</div></div>' +
+												'<div class="pdf-title">Learned from this simulation</div>' +
+												'<div id="this-simulation-warning-message"></div>' +
+											'</div>' +
+											'<div id="pdf-all-simulations">' +
+												'<div class="outer-pdf-graph-container">' +
+													'<div id="pdf-graph-all-simulations"></div>' +
+												'</div>' +
+												'<div class="pdf-x-axis"><div class="left">0%</div><div class="right">100%</div></div>' +
+												'<div class="pdf-title">Learned from all simulations</div>' +
+											'</div>';
+											
+		$('#rule-pdf-panel').html(rule_probability_html_string);
+		
 		var url_components = window.location.href.split("/");
 		var simulation_id = url_components[url_components.length - 2];
-
-		
 		//get_single_pdf
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
@@ -863,7 +868,9 @@ var new_rule_cursor_textarea = '';
 	function cancelRuleCreation() {
 		$('#rule-details').html('');
 		$('#available-variables-block').html('');
-		$('#save-cancel-rule-buttons').html('');		
+		$('#save-cancel-rule-buttons').html('');	
+		$('#rule-pdf-panel').html('');
+		$('#rule-pdf-panel-title').html('');
 	}
 	
 	
@@ -1168,7 +1175,8 @@ var new_rule_cursor_textarea = '';
 						// update the execution_order
 						new_index = ui.item.index();
 						var execution_order = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'];
-						objects_dict[object_number]['object_rules'][attribute_id]['execution_order'] = execution_order.splice(new_index, 0, rule_id);
+						execution_order.splice(new_index, 0, rule_id);
+						objects_dict[object_number]['object_rules'][attribute_id]['execution_order'] = execution_order;
 						
 						
 					}
