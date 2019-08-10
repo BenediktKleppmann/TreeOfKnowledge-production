@@ -640,89 +640,92 @@ var new_rule_cursor_textarea = '';
 
 	
 		// Rule Probability ------------------------------------------------------------
-		$('#rule-pdf-panel-title').html('Rule Probability');
-		var rule_probability_html_string = '<div id="pdf-this-simulation">' +
-												'<div class="outer-pdf-graph-container">' +
-													'<div id="pdf-graph-this-simulation"></div>' +
-												'</div>' +
-												'<div class="pdf-x-axis"><div class="left">0%</div><div class="right">100%</div></div>' +
-												'<div class="pdf-title">Learned from this simulation</div>' +
-												'<div id="this-simulation-warning-message"></div>' +
-											'</div>' +
-											'<div id="pdf-all-simulations">' +
-												'<div class="outer-pdf-graph-container">' +
-													'<div id="pdf-graph-all-simulations"></div>' +
-												'</div>' +
-												'<div class="pdf-x-axis"><div class="left">0%</div><div class="right">100%</div></div>' +
-												'<div class="pdf-title">Learned from all simulations</div>' +
-											'</div>';
-											
-		$('#rule-pdf-panel').html(rule_probability_html_string);
+		if (!rule['has_probability_1']) {
 		
-		var url_components = window.location.href.split("/");
-		var simulation_id = url_components[url_components.length - 2];
-		//get_single_pdf
-		var xhttp = new XMLHttpRequest();       
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var response = JSON.parse(this.responseText);
-				
-				$('#pdf-graph-this-simulation').html('');
-				anychart.onDocumentReady(function () {
-					var dataSet = anychart.data.set(response['pdf']);
-					var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
-					var chart = anychart.area();
-					var series = chart.area(seriesData);
-					series.tooltip().enabled(false);
+			$('#rule-pdf-panel-title').html('Rule Probability');
+			var rule_probability_html_string = '<div id="pdf-this-simulation">' +
+													'<div class="outer-pdf-graph-container">' +
+														'<div id="pdf-graph-this-simulation"></div>' +
+													'</div>' +
+													'<div class="pdf-x-axis"><div class="left">0%</div><div class="right">100%</div></div>' +
+													'<div class="pdf-title">Learned from this simulation</div>' +
+													'<div id="this-simulation-warning-message"></div>' +
+												'</div>' +
+												'<div id="pdf-all-simulations">' +
+													'<div class="outer-pdf-graph-container">' +
+														'<div id="pdf-graph-all-simulations"></div>' +
+													'</div>' +
+													'<div class="pdf-x-axis"><div class="left">0%</div><div class="right">100%</div></div>' +
+													'<div class="pdf-title">Learned from all simulations</div>' +
+												'</div>';
+												
+			$('#rule-pdf-panel').html(rule_probability_html_string);
+			
+			var url_components = window.location.href.split("/");
+			var simulation_id = url_components[url_components.length - 2];
+			//get_single_pdf
+			var xhttp = new XMLHttpRequest();       
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					var response = JSON.parse(this.responseText);
+					
+					$('#pdf-graph-this-simulation').html('');
+					anychart.onDocumentReady(function () {
+						var dataSet = anychart.data.set(response['pdf']);
+						var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
+						var chart = anychart.area();
+						var series = chart.area(seriesData);
+						series.tooltip().enabled(false);
 
-					// axes settings
-					chart.yAxis();
-					var xAxis = chart.xAxis();
-					xAxis.title('Probability');
-					xAxis.labels().format("{%Value}%");
+						// axes settings
+						chart.yAxis();
+						var xAxis = chart.xAxis();
+						xAxis.title('Probability');
+						xAxis.labels().format("{%Value}%");
 
-					chart.container('pdf-graph-this-simulation');
-					chart.draw();
-				});
-				
-				if (response['message']) {
-					$('#this-simulation-warning-message').html(response['message']);
+						chart.container('pdf-graph-this-simulation');
+						chart.draw();
+					});
+					
+					if (response['message']) {
+						$('#this-simulation-warning-message').html(response['message']);
+					}
+					
 				}
-				
-			}
-		};
-		xhttp.open('GET', '/tool/get_single_pdf?simulation_id=' + simulation_id + '&object_number=' + object_number + '&rule_id=' + rule_id , true);
-		xhttp.send();
-		
-		
-		//get_rules_pdf
-		var xhttp = new XMLHttpRequest();       
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var histogram_data = JSON.parse(this.responseText);
-				
-				$('#pdf-graph-all-simulations').html('');
-				anychart.onDocumentReady(function () {
-					var dataSet = anychart.data.set(histogram_data);
-					var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
-					var chart = anychart.area();
-					var series = chart.area(seriesData);
-					series.tooltip().enabled(false);
+			};
+			xhttp.open('GET', '/tool/get_single_pdf?simulation_id=' + simulation_id + '&object_number=' + object_number + '&rule_id=' + rule_id , true);
+			xhttp.send();
+			
+			
+			//get_rules_pdf
+			var xhttp = new XMLHttpRequest();       
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					var histogram_data = JSON.parse(this.responseText);
+					
+					$('#pdf-graph-all-simulations').html('');
+					anychart.onDocumentReady(function () {
+						var dataSet = anychart.data.set(histogram_data);
+						var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
+						var chart = anychart.area();
+						var series = chart.area(seriesData);
+						series.tooltip().enabled(false);
 
-					// axes settings
-					chart.yAxis();
-					var xAxis = chart.xAxis();
-					xAxis.labels().format("{%Value}%");
+						// axes settings
+						chart.yAxis();
+						var xAxis = chart.xAxis();
+						xAxis.labels().format("{%Value}%");
 
-					chart.container('pdf-graph-all-simulations');
-					chart.draw();
-				});
-				
-			}
-		};
-		xhttp.open('GET', '/tool/get_rules_pdf?rule_id=' + rule_id , true);
-		xhttp.send();	
-		
+						chart.container('pdf-graph-all-simulations');
+						chart.draw();
+					});
+					
+				}
+			};
+			xhttp.open('GET', '/tool/get_rules_pdf?rule_id=' + rule_id , true);
+			xhttp.send();
+			
+		}	
 	}
 	
 	

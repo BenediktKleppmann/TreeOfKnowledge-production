@@ -272,13 +272,7 @@ def get_data_from_random_related_object(objects_dict, specified_start_time, spec
 
 # used by simulation.py
 def get_data_from_related_objects(objects_dict, specified_start_time, specified_end_time):
-    print('##########################################################')
-    print(specified_start_time)
-    print(specified_end_time)
-    print(objects_dict)
-    print('##########################################################')
     object_numbers = list(objects_dict.keys())
-
 
     # PART1: create object_data_tables - i.e. get broad_table_df for every object_number
     object_data_tables = {}
@@ -295,15 +289,18 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
 
          # get broad_table_df
         broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)  
+
         if broad_table_df is not None:
             broad_table_df.columns = ['obj' + str(object_number) + 'attr' + str(column) for column in broad_table_df.columns]
             broad_table_df['cross_join_column'] = 1
             object_data_tables[object_number] = broad_table_df
+        else:
+            object_data_tables[object_number] = pd.DataFrame(columns=['cross_join_column','obj' + str(object_number) + 'attrobject_id'])
+
 
 
 
     # PART2: merge the broad_table_dfs according to the relations
-    object_numbers = list(object_data_tables.keys())
     merged_object_data_tables = object_data_tables[object_numbers[0]]
     list_of_added_tables = [object_numbers[0]]
 

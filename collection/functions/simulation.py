@@ -67,6 +67,7 @@ class Simulator:
 
         #  --- df ---
         self.df = query_datapoints.get_data_from_related_objects(self.objects_dict, self.simulation_start_time, self.simulation_end_time)
+        self.df.fillna(value=pd.np.nan, inplace=True)
         self.df.index = range(len(self.df))
 
 
@@ -87,8 +88,7 @@ class Simulator:
             times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
             for period in range(len(times)-1):
                 period_df = query_datapoints.get_data_from_related_objects(self.objects_dict, times[period], times[period + 1])
-                period_df = period_df[self.y0_columns]
-                merged_periods_df = pd.merge(merged_periods_df, period_df, on=merging_columns, how='outer', suffixes=['','period' + period])
+                period_columns  = [col for col in period_df if col in self.y0_columns + merging_columns]
             self.y0_values = [row for index, row in sorted(merged_periods_df.to_dict('index').items())]
 
         else:
@@ -108,10 +108,11 @@ class Simulator:
 
                 rule_ids = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)]['execution_order']
                 for rule_id in rule_ids:
-
+                    print
                     rule = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)]['used_rules'][str(rule_id)]
                     rule['effect_exec'] = rule['effect_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
-                    rule['condition_exec'] = rule['condition_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
+                    if not rule['is_conditionless']:
+                        rule['condition_exec'] = rule['condition_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
                     rule['column_to_change'] = 'obj' + str(object_number) + 'attr' + str(rule['changed_var_attribute_id'])
                     rule['object_number'] = object_number
 
@@ -272,7 +273,7 @@ class Simulator:
 
         # errors
         errors = {}
-        errors['score'] = errors_df['error'].mean()
+        errors['score'] = 1 - errors_df['error'].mean()
         errors['correct_simulations'] = list(errors_df.loc[errors_df['error'] < 0.25, 'simulation_number'])
         errors['false_simulations'] = list(errors_df.loc[errors_df['error'] > 0.75, 'simulation_number'])
 
@@ -306,20 +307,25 @@ class Simulator:
     #  Rule Learning  ---------------------------------------------------------------------------------
     def likelihood_learning_simulator(self, df, rules, *rule_priors, batch_size, random_state=None):
         self.number_of_batches += 1
-        df[self.y0_columns] = None
+        
 
         for rule in rules:
             rule['rule_was_used_in_simulation'] = [False]*batch_size
+
             if rule['learn_posterior']:
-                df['triggerThresholdForRule' + str(rule['id'])] = rule_priors[rule['prior_index']]
+                df['triggerThresholdForRule' + str(rule['id'])] = rule_priors[0][rule['prior_index']]
             else:
-                df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
+                if not rule['has_probability_1']:
+                    df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
 
 
         if self.is_timeseries_analysis: 
             times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
+            df['delta_t'] = self.timestep_size
         else:
             times = [self.simulation_start_time, self.simulation_end_time]
+            df[self.y0_columns] = None
+
 
         y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
         for period in range(len(times)-1):
@@ -329,8 +335,17 @@ class Simulator:
                     satisfying_rows = [True] * batch_size
                 else:
                     df['randomNumber'] = np.random.random(batch_size)
-                    triggered_rules = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
+                    if rule['has_probability_1']:
+                        triggered_rules = [True] * batch_size
+                    else:
+                        triggered_rules = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
                     condition_fulfilled_rules = pd.eval(rule['condition_exec'])
+                    print('========================================')
+                    print(len(triggered_rules))
+                    print(triggered_rules)
+                    print(len(condition_fulfilled_rules))
+                    print(condition_fulfilled_rules)
+                    print('========================================')
                     satisfying_rows = triggered_rules  & condition_fulfilled_rules   
 
                 # --------  THEN  --------

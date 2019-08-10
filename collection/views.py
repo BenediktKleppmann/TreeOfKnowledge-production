@@ -1224,6 +1224,7 @@ def edit_simulation_new(request):
     simulation_model = Simulation_model(user=request.user, 
                                         is_timeseries_analysis=True,
                                         objects_dict=json.dumps({}), 
+                                        y_value_attributes=json.dumps([]), 
                                         object_type_counts=json.dumps({}),
                                         total_object_count=0,
                                         number_of_additional_object_facts=2,
@@ -1389,15 +1390,25 @@ def test_page2(request):
     # simulation_start_time = 946681200
     # simulation_start_time = 1135551600
     # Likelihood_fuction.objects.all().delete()
-    bla = list(Likelihood_fuction.objects.all().values())
+    bla = list(Simulation_model.objects.filter(id=143).values())
 
     # df = query_datapoints.get_data_from_related_objects(objects_dict, simulation_start_time, simulation_end_time)
     # df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2019-07-31/test3.csv', index=False)
-    # print('################################################################')
-    # print(df)
-    # print('################################################################')
+
+
+    object_ids = [2899, 2900, 2901, 2902, 4357, 4358, 4359, 4360, 4361, 4362, 4363, 4364, 4365, 4366, 4367, 4368, 4369, 4370, 4371, 4372, 4373, 4374, 4375, 4376, 4377, 4378, 4379, 4380, 4381, 4382, 4383, 4384, 4385, 4386, 4387, 4388, 4389, 4390, 4391, 4392, 4393, 4394, 4395, 4396, 4397, 4398, 4399, 4400, 4401, 4402, 4403, 4404, 4405, 4406, 4407, 4408, 4409, 4410, 4411, 4412, 4413, 4414, 4415, 4416, 4417, 4418, 4419, 4420, 4421, 4422, 4423, 4424, 4425, 4426, 4427, 4428, 4429, 4430, 4431, 4432, 4433, 4434, 4435, 4436, 4437, 4438, 4439, 4440, 4441, 4442, 4443, 4444, 4445, 4446, 4447, 4448, 4449, 4450, 4451, 4452, 4453, 4454, 4455, 4456, 4457, 4458, 4459, 4460, 4461, 4462, 4463, 4464, 4465, 4466, 4467, 4468, 4469, 4470, 4471, 4472, 4473, 4474, 4475, 4476, 4477, 4478, 4479, 4480, 4481, 4482, 4483, 4484, 4485, 4486, 4487, 4488, 4489, 4490, 4491, 4492, 4493, 4494, 4495, 4496, 4497, 4498, 4499, 4500, 4501, 4502, 4503, 4504, 4505, 4506, 4507, 4508, 4509, 4510, 4511, 4512, 4513, 4514, 4515, 4516, 4517, 4518, 4519, 4520, 4521, 4522, 4523, 4524, 4525, 4526, 4527, 4528, 4529, 4530, 4531, 4532, 4533, 4534, 4535, 4536, 4537, 4538, 4539]
+    filter_facts = []
+    times = [978220800, 1009756800, 1041292800, 1072828800, 1104364800, 1135900800, 1167436800, 1198972800, 1230508800, 1262044800, 1293580800, 1325116800, 1356652800, 1388188800, 1419724800, 1451260800, 1482796800, 1514332800, 1545868800, 1577404800]
+    for period in range(len(times)-1):
+        specified_start_time = times[period]
+        specified_end_time = times[period + 1]
+        broad_table_df = query_datapoints.filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time) 
+
+        print('################################################################')
+        print(broad_table_df)
+        print('################################################################')
     # return HttpResponse(json.dumps('success'))
-    return HttpResponse(json.dumps(bla))
+    # return HttpResponse(json.dumps(broad_table_df))
 
     
 

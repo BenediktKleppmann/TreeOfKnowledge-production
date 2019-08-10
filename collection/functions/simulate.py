@@ -62,7 +62,7 @@ class Simulation:
                 timeline_first_timestep['error_' + str(attribute_id)] = 0.
 
                 attribute_record = Attribute.objects.get(id=attribute_id)
-                self.attribute_information[attribute_id] = {'data_type': Attribute.objects.get(id=attribute_id).data_type,
+                self.attribute_information[attribute_id] = {'data_type': attribute_record.data_type,
                                                             'valid_periods_per_timestep': attribute_record.expected_valid_period/self.timestep_size}
 
                 if attribute_id in self.objects_dict[str(object_number)]['object_rules']:
