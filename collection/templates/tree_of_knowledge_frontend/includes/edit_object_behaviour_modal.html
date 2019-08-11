@@ -1003,6 +1003,7 @@ var new_rule_cursor_textarea = '';
 		rule_dict['probability'] = null;
 		rule_dict['standard_dev'] = null;
 		rule_dict['learn_posterior'] = !rule_dict['has_probability_1'];
+		rule_dict['changed_var_data_type'] = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
 		
 		
 		// setting: condition_text, condition_exec, is_conditionless
@@ -1034,14 +1035,8 @@ var new_rule_cursor_textarea = '';
 			alert('Error with THEN: ' + executable_dict['error_message']);
 			return;
 		}
-		var effect_exec = executable_dict['executable']
-		if (objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'] == 'int'){
-			effect_exec = 'int(' + effect_exec + ')'
-		} else if (objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'] == 'real'){
-			effect_exec = 'float(' + effect_exec + ')'
-		}
 		rule_dict['effect_text'] = effect_text;
-		rule_dict['effect_exec'] = effect_exec;
+		rule_dict['effect_exec'] = executable_dict['executable'];
 		
 		
 		// setting: used_attribute_ids

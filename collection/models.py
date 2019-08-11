@@ -172,6 +172,7 @@ class Simulation_model(models.Model):
 
 class Rule(models.Model):
     changed_var_attribute_id = models.IntegerField()
+    changed_var_data_type = models.TextField()
     condition_text = models.TextField(null=True)
     condition_exec = models.TextField(null=True)
     effect_text = models.TextField()

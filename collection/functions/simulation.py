@@ -155,9 +155,12 @@ class Simulator:
 # ==========================================================================================
 
     def run(self):
+        print('Test1')
         if len(self.rule_priors) > 0:
+            print('Test2')
             self.__learn_likelihoods(10000)
 
+        
         (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(1000)
         self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df)
 
@@ -168,12 +171,15 @@ class Simulator:
     def __learn_likelihoods(self, nb_of_accepted_simulations=10000):
 
         # PART 1 - Run the Simulation
-        batch_size = len(self.y0_values)
+        print('Test3')
+        batch_size = len(self.df)
 
+        print('Test4 - ' + str(batch_size))
         Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values, model=self.elfi_model)
         S1 = elfi.Summary(self.unchanged, Y, model=self.elfi_model)
         d = elfi.Distance(self.n_dimensional_distance, S1, model=self.elfi_model)
         rej = elfi.Rejection(self.elfi_model, d, batch_size=batch_size, seed=30052017)
+        print('Test5')
 
         result = rej.sample(nb_of_accepted_simulations, threshold=.5)
 
@@ -196,7 +202,6 @@ class Simulator:
 
             # PART 2.2: save the learned likelihood function to the database
             list_of_probabilities_str = json.dumps(list( np.array(histogram[0]) * 30/ np.sum(histogram[0])))
-
 
 
 
@@ -306,10 +311,12 @@ class Simulator:
 
     #  Rule Learning  ---------------------------------------------------------------------------------
     def likelihood_learning_simulator(self, df, rules, *rule_priors, batch_size, random_state=None):
+        print('Test6')
         self.number_of_batches += 1
-        
+        print('Test7')
 
         for rule in rules:
+            print('Test8')
             rule['rule_was_used_in_simulation'] = [False]*batch_size
 
             if rule['learn_posterior']:
@@ -318,7 +325,7 @@ class Simulator:
                 if not rule['has_probability_1']:
                     df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
 
-
+        print('Test9')
         if self.is_timeseries_analysis: 
             times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
             df['delta_t'] = self.timestep_size
@@ -326,10 +333,11 @@ class Simulator:
             times = [self.simulation_start_time, self.simulation_end_time]
             df[self.y0_columns] = None
 
-
+        print('Test10')
         y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
         for period in range(len(times)-1):
             for rule in rules:
+                print('Test11 - ' + str(rule['learn_posterior']) + '; ' + str(rule['is_conditionless']) + '; ' + str(rule['has_probability_1']) + '; ' + str(rule['condition_exec']) + '; ' + str(rule['effect_is_calculation']) + '; ' + str(rule['effect_exec']) + '; ')
                 # --------  IF  --------
                 if rule['is_conditionless']:
                     satisfying_rows = [True] * batch_size
@@ -340,12 +348,6 @@ class Simulator:
                     else:
                         triggered_rules = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
                     condition_fulfilled_rules = pd.eval(rule['condition_exec'])
-                    print('========================================')
-                    print(len(triggered_rules))
-                    print(triggered_rules)
-                    print(len(condition_fulfilled_rules))
-                    print(condition_fulfilled_rules)
-                    print('========================================')
                     satisfying_rows = triggered_rules  & condition_fulfilled_rules   
 
                 # --------  THEN  --------
@@ -354,13 +356,38 @@ class Simulator:
                 else:
                     new_values = json.loads(rule['effect_exec'])
 
-                df.loc[satisfying_rows,rule['column_to_change']] = new_values        
+                if rule['changed_var_data_type'] in ['relation','int']:
+                    nan_rows = new_values.isnull()
+                    new_values = new_values.fillna(0)
+                    new_values = new_values.astype(int)
+                    new_values[nan_rows] = np.nan
+                elif rule['changed_var_data_type'] == 'real':
+                    new_values = new_values.astype(float)
+                elif rule['changed_var_data_type'] == 'boolean':
+                    nan_rows = new_values.isnull()
+                    new_values = new_values.astype(bool)
+                    new_values[nan_rows] = np.nan
+                elif rule['changed_var_data_type'] in ['string','date']:
+                    nan_rows = new_values.isnull()
+                    new_values = new_values.astype(str)
+                    new_values[nan_rows] = np.nan
+
+                print('Test12')
+                print(satisfying_rows)
+                print(rule['column_to_change'])
+                print(new_values)
+                print(batch_size)
+
+                df.loc[satisfying_rows,rule['column_to_change']] = new_values  
+                print('Test13')      
 
 
                 # --------  used rules  --------
                 if rule['learn_posterior']:
                     rule['rule_was_used_in_simulation'] = rule['rule_was_used_in_simulation'] | condition_fulfilled_rules
+                print('Test14')
 
+            print('Test13')
             y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
             y0_values_in_this_period.columns = [col + 'period' + str(period) for col in y0_values_in_this_period.columns] #faster version
             y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
@@ -385,33 +412,45 @@ class Simulator:
     #  Monte-Carlo  ---------------------------------------------------------------------------------
     def __run_monte_carlo_simulation(self, nb_of_simulations=1000):
 
+        print('Test4')
         y0 = np.asarray(self.df[self.y0_columns].copy())
         batch_size = len(y0)
 
+        print('Test5')
+        print(self.y0_columns)
+        print(self.df.columns)
+        print(self.df)
         simulation_data_df = pd.DataFrame()
         triggered_rules_df = pd.DataFrame()
         errors_df = pd.DataFrame()
 
+        print('Test6')
         number_of_batches = math.ceil(nb_of_simulations/batch_size)
         for batch_number in range(number_of_batches):
 
             df = self.df.copy()
             df[self.y0_columns] = None
+            print('Test7')
 
             for rule in self.rules:
-                df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
+                if not rule['is_conditionless']:
+                    df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
 
 
+            print('Test8')
             if self.is_timeseries_analysis: 
                 times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
+                df['delta_t'] = self.timestep_size
             else:
                 times = [self.simulation_start_time, self.simulation_end_time]
 
 
+            print('Test9')
             y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
             for period in range(len(times)-1):
                 for rule in self.rules:
                     # Apply Rule  ================================================================
+                    print('Test10')
                     if rule['is_conditionless']:
                         satisfying_rows = [True] * batch_size
                         condition_satisfying_rows = [True] * batch_size
@@ -422,18 +461,24 @@ class Simulator:
                         
 
                     if rule['effect_is_calculation']:
+                        print('---------------------------------------------------------------------------')
+                        print(rule['effect_exec'])
+                        df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2019-08-10/test2.csv', index=False)
+                        print('---------------------------------------------------------------------------')
                         all_new_values = pd.eval(rule['effect_exec'])
                     else:
                         all_new_values = [json.loads(rule['effect_exec'])] * batch_size
                     new_values = [value for value, satisfying in zip(all_new_values,satisfying_rows) if satisfying]
 
                     df.loc[satisfying_rows,rule['column_to_change']] = new_values
+                    print('Test11')
 
 
                     # Save the Simulation State  =======================================================
                     # triggered rules
                     trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
                     triggered_rule_infos = []
+                    print('Test11')
 
                     calculated_values = list(df[rule['column_to_change']])
                     for index in range(len(satisfying_rows)):
@@ -450,6 +495,7 @@ class Simulator:
                             triggered_rule_infos.append(None)
 
 
+                    print('Test12')
                     currently_triggered_rules = pd.DataFrame({  'initial_state_id':df.index,
                                                                 'batch_number':[batch_number]*batch_size,
                                                                 'attribute_id':[rule['column_to_change']]*batch_size,
@@ -462,12 +508,14 @@ class Simulator:
 
                 
                 # simulated values
+                print('Test13')
                 df['initial_state_id'] = df.index
                 df['batch_number'] = batch_number
                 df['period'] = period
                 simulation_data_df = simulation_data_df.append(df)
 
                 # error
+                print('Test14')
                 y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
                 y0_values_in_this_period.columns = [col + 'period' + str(period) for col in y0_values_in_this_period.columns] #faster version
                 y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)

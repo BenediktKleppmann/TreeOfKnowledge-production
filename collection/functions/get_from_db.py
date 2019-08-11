@@ -238,7 +238,7 @@ def get_single_pdf(simulation_id, object_number, rule_id):
         return histogram, mean, standard_dev, message
 
     else:
-        return None, None, None
+        return None, None, None, None
 
 
     
