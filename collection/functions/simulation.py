@@ -51,7 +51,7 @@ class Simulator:
         self.simulation_id = simulation_id
         simulation_model_record = Simulation_model.objects.get(id=simulation_id)
 
-        self.elfi_model = elfi.ElfiModel() 
+        # self.elfi_model = elfi.ElfiModel() 
         self.objects_dict = json.loads(simulation_model_record.objects_dict)
         self.simulation_start_time = simulation_model_record.simulation_start_time
         self.simulation_end_time = simulation_model_record.simulation_end_time
@@ -84,17 +84,26 @@ class Simulator:
         self.y0_values = []
         if self.is_timeseries_analysis:
             merging_columns =  ['obj' + obj_num + 'attrobject_id' for obj_num in self.objects_dict.keys()]
-            merged_periods_df = pd.DataFrame(columns= merging_columns)
+            merged_periods_df = self.df
             times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
             for period in range(len(times)-1):
                 period_df = query_datapoints.get_data_from_related_objects(self.objects_dict, times[period], times[period + 1])
                 period_columns  = [col for col in period_df if col in self.y0_columns + merging_columns]
+                merged_periods_df = pd.merge(merged_periods_df, period_df, on=merging_columns, how='outer', suffixes=['','period' + str(period)])
+
+            for col in self.y0_columns:
+                desired_column_names = [col + 'period'+ str(period) for period in range(len(times)-1)]
+                for desired_column_name in desired_column_names:
+                    if desired_column_name not in merged_periods_df.columns:
+                        merged_periods_df[desired_column_name] = np.nan
             self.y0_values = [row for index, row in sorted(merged_periods_df.to_dict('index').items())]
 
         else:
             df_copy = pd.DataFrame(self.df[self.y0_columns].copy())
             df_copy.columns = [col + 'period0' for col in df_copy.columns]
             self.y0_values = [row for index, row in sorted(df_copy.to_dict('index').items())]
+
+
            
 
 
@@ -108,9 +117,19 @@ class Simulator:
 
                 rule_ids = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)]['execution_order']
                 for rule_id in rule_ids:
-                    print
                     rule = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)]['used_rules'][str(rule_id)]
-                    rule['effect_exec'] = rule['effect_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
+
+                    if rule['effect_is_calculation']:
+                        rule['effect_exec'] = rule['effect_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
+                    else:
+                        if rule['changed_var_data_type'] in ['relation','int']:
+                            rule['effect_exec'] = int(rule['effect_exec'])
+                        elif rule['changed_var_data_type'] == 'real':
+                            rule['effect_exec'] = float(rule['effect_exec'])
+                        elif rule['changed_var_data_type'] == 'boolean':
+                            rule['effect_exec'] = (rule['effect_exec'] in ['True','true','T','t'])
+                    
+
                     if not rule['is_conditionless']:
                         rule['condition_exec'] = rule['condition_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
                     rule['column_to_change'] = 'obj' + str(object_number) + 'attr' + str(rule['changed_var_attribute_id'])
@@ -118,7 +137,8 @@ class Simulator:
 
 
                     if rule['learn_posterior']:
-                        new_prior = elfi.Prior('uniform', 0, 1, model=self.elfi_model, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
+                        new_prior = elfi.Prior('uniform', 0, 1, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
+                        # new_prior = elfi.Prior('uniform', 0, 1, model=self.elfi_model, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
                         self.rule_priors.append(new_prior)
         
                         rule['prior_index'] = number_of_priors
@@ -175,10 +195,14 @@ class Simulator:
         batch_size = len(self.df)
 
         print('Test4 - ' + str(batch_size))
-        Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values, model=self.elfi_model)
-        S1 = elfi.Summary(self.unchanged, Y, model=self.elfi_model)
-        d = elfi.Distance(self.n_dimensional_distance, S1, model=self.elfi_model)
-        rej = elfi.Rejection(self.elfi_model, d, batch_size=batch_size, seed=30052017)
+        Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values)
+        # Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values, model=self.elfi_model)
+        S1 = elfi.Summary(self.unchanged, Y)
+        # S1 = elfi.Summary(self.unchanged, Y, model=self.elfi_model)
+        d = elfi.Distance(self.n_dimensional_distance, S1)
+        # d = elfi.Distance(self.n_dimensional_distance, S1, model=self.elfi_model)
+        rej = elfi.Rejection(d, batch_size=batch_size, seed=30052017)
+        # rej = elfi.Rejection(self.elfi_model, d, batch_size=batch_size, seed=30052017)
         print('Test5')
 
         result = rej.sample(nb_of_accepted_simulations, threshold=.5)
@@ -347,36 +371,39 @@ class Simulator:
                         triggered_rules = [True] * batch_size
                     else:
                         triggered_rules = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
+                    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                    print(rule['id'])
+                    df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2019-08-10/test3.csv')
+                    print(rule['condition_exec'])
+                    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                     condition_fulfilled_rules = pd.eval(rule['condition_exec'])
                     satisfying_rows = triggered_rules  & condition_fulfilled_rules   
 
                 # --------  THEN  --------
                 if rule['effect_is_calculation']:
                     new_values = pd.eval(rule['effect_exec'])
+                    if rule['changed_var_data_type'] in ['relation','int']:
+                        nan_rows = new_values.isnull()
+                        new_values = new_values.fillna(0)
+                        new_values = new_values.astype(int)
+                        new_values[nan_rows] = np.nan
+                    elif rule['changed_var_data_type'] == 'real':
+                        new_values = new_values.astype(float)
+                    elif rule['changed_var_data_type'] == 'boolean':
+                        nan_rows = new_values.isnull()
+                        new_values = new_values.astype(bool)
+                        new_values[nan_rows] = np.nan
+                    elif rule['changed_var_data_type'] in ['string','date']:
+                        nan_rows = new_values.isnull()
+                        new_values = new_values.astype(str)
+                        new_values[nan_rows] = np.nan
+
                 else:
                     new_values = json.loads(rule['effect_exec'])
 
-                if rule['changed_var_data_type'] in ['relation','int']:
-                    nan_rows = new_values.isnull()
-                    new_values = new_values.fillna(0)
-                    new_values = new_values.astype(int)
-                    new_values[nan_rows] = np.nan
-                elif rule['changed_var_data_type'] == 'real':
-                    new_values = new_values.astype(float)
-                elif rule['changed_var_data_type'] == 'boolean':
-                    nan_rows = new_values.isnull()
-                    new_values = new_values.astype(bool)
-                    new_values[nan_rows] = np.nan
-                elif rule['changed_var_data_type'] in ['string','date']:
-                    nan_rows = new_values.isnull()
-                    new_values = new_values.astype(str)
-                    new_values[nan_rows] = np.nan
+
 
                 print('Test12')
-                print(satisfying_rows)
-                print(rule['column_to_change'])
-                print(new_values)
-                print(batch_size)
 
                 df.loc[satisfying_rows,rule['column_to_change']] = new_values  
                 print('Test13')      
@@ -417,9 +444,7 @@ class Simulator:
         batch_size = len(y0)
 
         print('Test5')
-        print(self.y0_columns)
-        print(self.df.columns)
-        print(self.df)
+
         simulation_data_df = pd.DataFrame()
         triggered_rules_df = pd.DataFrame()
         errors_df = pd.DataFrame()
@@ -429,15 +454,14 @@ class Simulator:
         for batch_number in range(number_of_batches):
 
             df = self.df.copy()
-            df[self.y0_columns] = None
-            print('Test7')
+            if not self.is_timeseries_analysis: 
+                df[self.y0_columns] = None
 
             for rule in self.rules:
                 if not rule['is_conditionless']:
                     df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
 
 
-            print('Test8')
             if self.is_timeseries_analysis: 
                 times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
                 df['delta_t'] = self.timestep_size
@@ -445,12 +469,11 @@ class Simulator:
                 times = [self.simulation_start_time, self.simulation_end_time]
 
 
-            print('Test9')
             y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
             for period in range(len(times)-1):
                 for rule in self.rules:
+
                     # Apply Rule  ================================================================
-                    print('Test10')
                     if rule['is_conditionless']:
                         satisfying_rows = [True] * batch_size
                         condition_satisfying_rows = [True] * batch_size
@@ -461,41 +484,60 @@ class Simulator:
                         
 
                     if rule['effect_is_calculation']:
-                        print('---------------------------------------------------------------------------')
-                        print(rule['effect_exec'])
-                        df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2019-08-10/test2.csv', index=False)
-                        print('---------------------------------------------------------------------------')
                         all_new_values = pd.eval(rule['effect_exec'])
                     else:
                         all_new_values = [json.loads(rule['effect_exec'])] * batch_size
                     new_values = [value for value, satisfying in zip(all_new_values,satisfying_rows) if satisfying]
 
                     df.loc[satisfying_rows,rule['column_to_change']] = new_values
-                    print('Test11')
+
 
 
                     # Save the Simulation State  =======================================================
                     # triggered rules
-                    trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
-                    triggered_rule_infos = []
-                    print('Test11')
+                    if rule['is_conditionless']: 
+                        trigger_thresholds = [0] * batch_size
+                    else:
+                        trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
+
+
+
 
                     calculated_values = list(df[rule['column_to_change']])
-                    for index in range(len(satisfying_rows)):
-                        if condition_satisfying_rows[index]:
-                            error = self.error_of_single_value(np.array(calculated_values), rule['column_to_change'], index, period)
-                            triggered_rule_infos.append({   'id':rule['id'], 
-                                                            'probability_triggered': satisfying_rows[index], 
-                                                            'trigger_probability': trigger_thresholds[index],
-                                                            'new_value': calculated_values[index],
-                                                            'error': error,
-                                                            'colour': self.colors[int(min(error,1.)*1000)] 
-                                                            })
-                        else: 
-                            triggered_rule_infos.append(None)
+                    errors = self.error_of_single_values(np.array(calculated_values), rule['column_to_change'], period)
 
+                    triggered_rule_infos_df = pd.DataFrame({'condition_satisfied': condition_satisfying_rows,
+                                                            'id':[rule['id']]* batch_size,
+                                                            'probability_triggered': satisfying_rows,
+                                                            'trigger_probability': trigger_thresholds,
+                                                            'new_value': calculated_values,
+                                                            'error':errors,
+                                                            'colour': [error if np.isnan(error) else self.colors[int(min(error,1.)*1000)] for error in errors] })
 
-                    print('Test12')
+                    triggered_rule_infos = triggered_rule_infos_df.to_dict('records')
+                    triggered_rule_infos = [rule_info if rule_info['condition_satisfied'] else None for rule_info in triggered_rule_infos]
+
+                    # triggered_rule_infos = []
+                    # for index in range(len(satisfying_rows)):
+                    #     if condition_satisfying_rows[index]:
+                    #         error = self.error_of_single_value(np.array(calculated_values), rule['column_to_change'], index, period)
+                    #         if np.isnan(error): 
+                    #             triggered_rule_infos.append({   'id':rule['id'], 
+                    #                                             'probability_triggered': satisfying_rows[index], 
+                    #                                             'trigger_probability': trigger_thresholds[index],
+                    #                                             'new_value': calculated_values[index]
+                    #                                             })
+                    #         else:
+                    #             triggered_rule_infos.append({   'id':rule['id'], 
+                    #                                             'probability_triggered': satisfying_rows[index], 
+                    #                                             'trigger_probability': trigger_thresholds[index],
+                    #                                             'new_value': calculated_values[index],
+                    #                                             'error': error,
+                    #                                             'colour': self.colors[int(min(error,1.)*1000)] 
+                    #                                             })
+                    #     else: 
+                    #         triggered_rule_infos.append(None)
+
                     currently_triggered_rules = pd.DataFrame({  'initial_state_id':df.index,
                                                                 'batch_number':[batch_number]*batch_size,
                                                                 'attribute_id':[rule['column_to_change']]*batch_size,
@@ -508,19 +550,16 @@ class Simulator:
 
                 
                 # simulated values
-                print('Test13')
                 df['initial_state_id'] = df.index
                 df['batch_number'] = batch_number
                 df['period'] = period
                 simulation_data_df = simulation_data_df.append(df)
 
                 # error
-                print('Test14')
                 y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
                 y0_values_in_this_period.columns = [col + 'period' + str(period) for col in y0_values_in_this_period.columns] #faster version
                 y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
                 
-
             error_df = pd.DataFrame({  'simulation_number': [str(index) + '-' + str(batch_number) for index in df.index],
                                         'error':self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), self.y0_values) })
             errors_df = errors_df.append(error_df)
@@ -577,7 +616,7 @@ class Simulator:
         total_error = np.zeros(shape=len(u))
         dimensionality = np.zeros(shape=len(u))
         for y0_column in self.y0_columns:
-            period_columns = [col for col in v_df.columns if col.split('period')[0] == y0_column]
+            period_columns = [col for col in u_df.columns if col.split('period')[0] == y0_column]
             if self.y0_column_dt[y0_column] in ['string','bool','relation']:
                 for period_column in period_columns:
                     total_error += 1. - np.equal(np.array(u_df[period_column]), np.array(v_df[period_column])).astype(int)
@@ -585,7 +624,13 @@ class Simulator:
             if self.y0_column_dt[y0_column] in ['int','real']:
                 for period_column in period_columns:
                     residuals = np.abs(np.array(u_df[period_column]) - np.array(v_df[period_column]))
-                    error_in_value_range = residuals/(np.max(v_df[period_column]) - np.min(v_df[period_column]))
+                    print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+                    print(period_column)
+                    print(np.array(u_df[period_column]))
+                    print(np.array(v_df[period_column]))
+                    print(list(residuals))
+                    print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+                    error_in_value_range = residuals/np.max((np.max(v_df[period_column]) - np.min(v_df[period_column])), 0.00000001)
                     error_in_error_range =  residuals/np.max(residuals)
                     total_error += np.minimum(error_in_value_range + error_in_error_range, 1)  
                     dimensionality += 1 - np.array(u_df[period_column].isnull().astype(int))
@@ -604,19 +649,42 @@ class Simulator:
 
     def error_of_single_value(self, all_calculated_values, column_name, row_index, period):
         calculated_value = all_calculated_values[row_index]
-        correct_value = self.y0_values[row_index][column_name + 'period' + str(period)]
+        # print('[[[[[[[[[[[[[[[[[[[[[[[[[[[  ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
+        # print(row_index)
+        # print(column_name + 'period' + str(period))
+        # print('[[[[[[[[[[[[[[[[[[[[[[[[[[[  ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')          
+
         all_correct_values = np.array(pd.DataFrame(self.y0_values)[column_name + 'period' + str(period)])
+        correct_value = all_correct_values[row_index]
+        # self.y0_values[row_index][column_name + 'period' + str(period)]
 
         if self.y0_column_dt[column_name] in ['string','bool','relation']:
+
             error = 1. - int(calculated_value == correct_value)
         if self.y0_column_dt[column_name] in ['int','real']:
-            residual = np.abs(calculated_value - all_correct_values)
-            all_residuals = np.abs(all_calculated_values - correct_value)
-            error_in_value_range = residuals/(np.max(all_correct_values) - np.min(all_correct_values))
-            error_in_error_range =  residuals/np.max(all_residuals)
-            error += error_in_value_range + error_in_error_range   
+            residual = np.abs(calculated_value - correct_value)
+            all_residuals = np.abs(all_calculated_values - all_correct_values)
+            error_in_value_range = residual/(np.max(all_correct_values) - np.min(all_correct_values))
+            error_in_error_range =  residual/np.max(all_residuals)
+            error = error_in_value_range + error_in_error_range   
 
         return error
+
+
+
+    def error_of_single_values(self, calculated_values, column_name, period):
+        correct_values = np.array(pd.DataFrame(self.y0_values)[column_name + 'period' + str(period)])
+
+
+        if self.y0_column_dt[column_name] in ['string','bool','relation']:
+            errors = 1. - np.equal(np.array(calculated_values), np.array(correct_values)).astype(int)
+        if self.y0_column_dt[column_name] in ['int','real']:
+            residuals = np.abs(np.array(calculated_values) - np.array(correct_values))
+            error_in_value_range = residuals/(np.max(correct_values) - np.min(correct_values))
+            error_in_error_range =  residuals/np.max(residuals)
+            errors = np.minimum(error_in_value_range + error_in_error_range, 1)  
+
+        return errors
 
 
 
