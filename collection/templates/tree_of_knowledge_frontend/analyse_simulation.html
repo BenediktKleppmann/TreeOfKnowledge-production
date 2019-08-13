@@ -328,6 +328,7 @@
 	
 	.triggerd-rules-period {
 		padding: 2px 5px 0px 5px;
+		display: inline-block;
 	}
 	
 	.triggerd-rule {
@@ -768,10 +769,12 @@
 	//========================  DRAW TOP PANEL   =================================
 		
 	function drawTopPanel_Attribute(object_number, attribute_id) {	
+		console.log('test1');
 		selected_object_attribute = {'object_number': object_number, 'attribute_id': attribute_id, 'period_number': null};
 		var attribute_name = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'];
 		var object_name = objects_dict[object_number]['object_name'];
 		var attribute_data_type = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
+		console.log('test2');
 		
 		$('#top-panel').html(	'<div id="graph-panel"></div>' +
 								'<div id="triggerd-rules-panel">' + 
@@ -787,25 +790,38 @@
 								'</div>' +
 								'<div id="top-splitter"></div>');
 
+		console.log('test3');
 		if (number_of_periods > 1) {
+			$('#inlude-zero-menu').html('<input type="checkbox" class="custom-control-input" id="include-zero" onchange="refreshRestOfScreen()">' +
+										'<label class="custom-control-label" for="include-zero">&nbsp;Include 0 in Linegraph</label>');
+		
 			if (['real','int'].includes(attribute_data_type)) {
+				console.log('test4');
 				linegraph_data = prepareLineGraphData_Attribute(object_number, attribute_id);
+				console.log('test5');
 				plotLineGraph(false, object_name, attribute_name, linegraph_data);
 			
 			} else {
+			console.log('test6');
 				plotLineGraph(true, object_name, attribute_name, linegraph_data);
 			} 	
 		} else {
 			if (['real','int'].includes(attribute_data_type)) {
+				console.log('test7');
 				histogram_data = prepareHistogramData(false, object_number, attribute_id, 0);
+				console.log('test8');
 				plotHistogram(object_name, attribute_name, histogram_data);
 			} else {
+				console.log('test9');
 				histogram_data = prepareHistogramData(true, object_number, attribute_id, 0);
+				console.log('test10');
 				plotHistogram(object_name, attribute_name, histogram_data);
 			}
 		}
 		
+		console.log('test11');
 		drawRulePanel(object_number, attribute_id, attribute_name,  null);
+		console.log('test12');
 		
 	}
 	
@@ -962,7 +978,7 @@
 			linegraph_data.push(linegraph_data_row);
 		}
 		
-		return linegraph_data;
+		return {'data':linegraph_data, 'min_value':min_value, 'max_value':max_value};
 	}
 	
 	
@@ -1016,7 +1032,7 @@
 		var selected_simulations_list = Array.from(selected_simulations);
 		anychart.onDocumentReady(function () {
 			// load data
-			var dataSet = anychart.data.set(linegraph_data);
+			var dataSet = anychart.data.set(linegraph_data['data']);
 
 
 			// create line chart
@@ -1041,9 +1057,9 @@
 			//var include_zero = false;
 			var include_zero = document.getElementById("include-zero").checked;
 			var yScale = chart.yScale();
-			if (include_zero & min_value > 0) {
+			if (include_zero & linegraph_data['min_value'] > 0) {
 				yScale.minimum(0);
-			} else if (include_zero &  max_value < 0) {
+			} else if (include_zero &  linegraph_data['max_value'] < 0) {
 				yScale.maximum(0);
 			}
 
@@ -1052,9 +1068,9 @@
 				// create first series with mapped data
 				var series_2;
 				if (is_categorical) {
-					series_2 = chart.line(dataSet.mapAs({'x': 0, 'value': i+1}));
-				} else {
 					series_2 = chart.stepLine(dataSet.mapAs({'x': 0, 'value': i+1}));
+				} else {
+					series_2 = chart.line(dataSet.mapAs({'x': 0, 'value': i+1}));
 				}
 				series_2.name('Simulation' + i)
 						.stroke("2 #14AA09");
@@ -1083,8 +1099,7 @@
 			chart.draw();
 		});
 		
-		$('#inlude-zero-menu').html('<input type="checkbox" class="custom-control-input" id="inlcude-zero" onchange="refreshRestOfScreen()">' +
-									'<label class="custom-control-label" for="inlcude-zero">&nbsp;Include 0 in Linegraph</label>');
+
 	}
 	
 	
@@ -1102,14 +1117,14 @@
 			if (period_number == null) {
 				triggerd_rules_html = '';
 				for (var period_number = 0; period_number < number_of_periods; period_number++) {
-					var triggerd_rules_period_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number);
+					var triggerd_rules_period_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number, false);
 					triggerd_rules_html += triggerd_rules_period_html[0];
 					if (triggerd_rules_period_html[1] > max_number_of_rules) {max_number_of_rules = triggerd_rules_period_html[1];}
 				}
 				$('#triggerd-rule-periods').html(triggerd_rules_html);
 				$('.triggerd-rules-period').css('width', Math.round(100/number_of_periods) + '%');
 			} else {
-				triggerd_rules_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  0);
+				triggerd_rules_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  0, true);
 				$('#triggerd-rule-periods').html(triggerd_rules_html[0]);
 				if (triggerd_rules_html[1] > max_number_of_rules) {max_number_of_rules = triggerd_rules_html[1];}
 			}
@@ -1135,7 +1150,7 @@
 	
 	
 	
-	function getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number){
+	function getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number, is_single_period){
 	
 		var number_of_rules = 0;
 		var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
@@ -1147,30 +1162,54 @@
 					var triggered_rule_info = triggered_rule_infos[i];
 					var rule_id = triggered_rule_info['id'];
 					var rule = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
-					if (rule['is_conditionless']) {
-						rule_text = "At every timestep: [" + attribute_name + "] = " + rule['effect_text'];
-					} else {
-						rule_text = "IF " +  rule['condition_text'] + " THEN [" + attribute_name + "] = " + rule['effect_text'];
-					}
-					rule_text += "&#013;---&#013;current value=|" + triggered_rule_info['new_value'] + "|  vs.  correct value=|" + String(triggered_rules[simulation_id][column_name][period_number]['correct_value']) + "|";
 					
-					if (triggered_rule_info['probability_triggered']) {
-						text_decoration = '';
-						probability_html = '<span class="rule-prob" ' + text_decoration + '>(prob=' + Math.round(triggered_rule_info['trigger_probability']*100) + '%) &#10004;</span>';
-						if (['real','int'].includes(objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'])) {
-							new_value_html = '<span class="rule-value"> => ' + triggered_rule_info['new_value'] + '</span>';
-						} else {
-							new_value_html = '<span class="rule-value"> => \'' + triggered_rule_info['new_value'] + '\'</span>';
-						}
+					//text_decoration
+					if (triggered_rule_info['pt']){
+						text_decoration = ''
 					} else {
 						text_decoration = ' style="text-decoration: line-through;" ';
-						probability_html = ' <span class="rule-prob" ' + text_decoration + '> (prob=' + Math.round(triggered_rule_info['trigger_probability']) + '%) &#10008;</span>';
-						new_value_html = '';
 					}
 					
-
+					// rule_number
 					rule_number = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].indexOf(rule_id) + 1;
-					triggerd_rules_period_html  += 	'<div class="triggerd-rule" style="background: '+ triggered_rule_info['colour'] +'" data-toggle="tooltip" title="' + rule_text + '" onclick="openEditObjectBehaviourModal(' + object_number + ', ' + attribute_id + ', \'' + attribute_name + '\', ' + triggered_rule_info['id'] + ')">' +
+					
+					
+					// tooltip_text
+					if (rule['is_conditionless']) {
+						tooltip_text = "At every timestep: [" + attribute_name + "] = " + rule['effect_text'];
+					} else {
+						tooltip_text = "IF " +  rule['condition_text'] + " THEN [" + attribute_name + "] = " + rule['effect_text'];
+					}
+					tooltip_text += "&#013;---&#013;current value=|" + triggered_rule_info['v'] + "|  vs.  correct value=|" + String(triggered_rules[simulation_id][column_name][period_number]['correct_value']) + "|";  // v = new_value
+					
+
+					//probability_html
+					if (rule['has_probability_1']) {
+						probability_html = '';
+					} else {
+						if (triggered_rule_info['pt']){ //pt = probability_triggered
+							probability_html = '<span class="rule-prob" >(prob=' + Math.round(triggered_rule_info['tp']*100) + '%) &#10004;</span>';  // tp = trigger_probability
+						} else {
+							probability_html = ' <span class="rule-prob" style="text-decoration: line-through;"> (prob=' + Math.round(triggered_rule_info['tp']) + '%) &#10008;</span>'; // tp = trigger_probability
+						}
+						
+					}
+					
+					//new_value_html
+					if ((is_single_period || number_of_periods < 11) & triggered_rule_info['pt']) {//pt = probability_triggered
+						if (['real','int'].includes(objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'])) {
+							new_value_html = '<span class="rule-value"> => ' + triggered_rule_info['v'] + '</span>'; // v = new_value
+						} else {
+							new_value_html = '<span class="rule-value"> => \'' + triggered_rule_info['v'] + '\'</span>'; // v = new_value
+						}
+					} else {
+						new_value_html = '';
+					}
+
+					
+
+					
+					triggerd_rules_period_html  += 	'<div class="triggerd-rule" style="background: '+ triggered_rule_info['colour'] +'" data-toggle="tooltip" title="' + tooltip_text + '" onclick="openEditObjectBehaviourModal(' + object_number + ', ' + attribute_id + ', \'' + attribute_name + '\', ' + triggered_rule_info['id'] + ')">' +
 														'<span class="rule-name" ' + text_decoration + '>Rule ' + rule_number + ' </span>' +
 														probability_html +
 														new_value_html +

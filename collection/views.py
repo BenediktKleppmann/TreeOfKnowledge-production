@@ -1393,7 +1393,9 @@ def test_page2(request):
     # simulation_start_time = 1135551600
     # Likelihood_fuction.objects.all().delete()
     # bla = list(Simulation_model.objects.filter(id=143).values())
-    blu = list(Rule.objects.all().values())
+    # blu = list(Rule.objects.all().values())
+    Simulation_model.objects.all().delete()
+    # print(blu)
     # df = query_datapoints.get_data_from_related_objects(objects_dict, simulation_start_time, simulation_end_time)
     # df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2019-07-31/test3.csv', index=False)
 
@@ -1409,8 +1411,8 @@ def test_page2(request):
     #     print('################################################################')
     #     print(broad_table_df)
     #     print('################################################################')
-    # return HttpResponse(json.dumps('success'))
-    return HttpResponse(json.dumps(blu))
+    return HttpResponse('success')
+    # return HttpResponse(json.dumps(blu))
 
     
 

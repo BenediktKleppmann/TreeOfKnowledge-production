@@ -60,9 +60,10 @@ class Simulator:
 
 
         #  --- colors ---
-        green = Color("#97CF99")
-        color_objects = list(green.range_to(Color("#D1A19C"),1001))
-        self.colors = [color.hex for color in color_objects]
+        # green = Color("#97CF99")
+        # color_objects = list(green.range_to(Color("#D1A19C"),1001))
+        # self.colors = [color.hex for color in color_objects]
+        # colour = self.colors[int(min(error,1.)*1000)]
 
 
         #  --- df ---
@@ -96,11 +97,13 @@ class Simulator:
                 for desired_column_name in desired_column_names:
                     if desired_column_name not in merged_periods_df.columns:
                         merged_periods_df[desired_column_name] = np.nan
+            merged_periods_df = merged_periods_df[[col for col in merged_periods_df.columns if col.split('period')[0] in self.y0_columns]]
             self.y0_values = [row for index, row in sorted(merged_periods_df.to_dict('index').items())]
 
         else:
             df_copy = pd.DataFrame(self.df[self.y0_columns].copy())
             df_copy.columns = [col + 'period0' for col in df_copy.columns]
+            df_copy = df_copy[[col for col in df_copy.columns if col.split('period')[0] in self.y0_columns]]
             self.y0_values = [row for index, row in sorted(df_copy.to_dict('index').items())]
 
 
@@ -307,7 +310,18 @@ class Simulator:
         errors['false_simulations'] = list(errors_df.loc[errors_df['error'] > 0.75, 'simulation_number'])
 
 
-        # save all
+
+        # Front-End too slow?
+        number_of_megabytes =len(json.dumps(simulation_data))/1000000
+        if number_of_megabytes > 3:
+            number_of_simulations_to_keep = int(len(simulation_data) * 3 / number_of_megabytes)
+            keys_to_keep = list(simulation_data.keys())[:number_of_simulations_to_keep]
+            simulation_data = {key:value for key, value in simulation_data.items() if key in keys_to_keep}
+            triggered_rules = {key:value for key, value in triggered_rules.items() if key in keys_to_keep}
+            # simulation_data = {k: d[k]) for k in keys if k in d} simulation_data
+            # triggered_rules = triggered_rules[:number_of_simulations_to_send]
+
+
         simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
         simulation_model_record.just_learned_rules = json.dumps(self.just_learned_rules)
         simulation_model_record.rule_infos = json.dumps(rule_infos)
@@ -361,7 +375,7 @@ class Simulator:
         y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
         for period in range(len(times)-1):
             for rule in rules:
-                print('Test11 - ' + str(rule['learn_posterior']) + '; ' + str(rule['is_conditionless']) + '; ' + str(rule['has_probability_1']) + '; ' + str(rule['condition_exec']) + '; ' + str(rule['effect_is_calculation']) + '; ' + str(rule['effect_exec']) + '; ')
+                # print('Test11 - ' + str(rule['learn_posterior']) + '; ' + str(rule['is_conditionless']) + '; ' + str(rule['has_probability_1']) + '; ' + str(rule['condition_exec']) + '; ' + str(rule['effect_is_calculation']) + '; ' + str(rule['effect_exec']) + '; ')
                 # --------  IF  --------
                 if rule['is_conditionless']:
                     satisfying_rows = [True] * batch_size
@@ -371,11 +385,7 @@ class Simulator:
                         triggered_rules = [True] * batch_size
                     else:
                         triggered_rules = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
-                    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-                    print(rule['id'])
-                    df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2019-08-10/test3.csv')
-                    print(rule['condition_exec'])
-                    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+
                     condition_fulfilled_rules = pd.eval(rule['condition_exec'])
                     satisfying_rows = triggered_rules  & condition_fulfilled_rules   
 
@@ -508,35 +518,18 @@ class Simulator:
 
                     triggered_rule_infos_df = pd.DataFrame({'condition_satisfied': condition_satisfying_rows,
                                                             'id':[rule['id']]* batch_size,
-                                                            'probability_triggered': satisfying_rows,
-                                                            'trigger_probability': trigger_thresholds,
-                                                            'new_value': calculated_values,
-                                                            'error':errors,
-                                                            'colour': [error if np.isnan(error) else self.colors[int(min(error,1.)*1000)] for error in errors] })
+                                                            'pt': satisfying_rows,          # pt = probability_triggered
+                                                            'tp': trigger_thresholds,       # tp = trigger_probability
+                                                            'v': calculated_values,         # v = new_value
+                                                            'error':errors})
 
                     triggered_rule_infos = triggered_rule_infos_df.to_dict('records')
                     triggered_rule_infos = [rule_info if rule_info['condition_satisfied'] else None for rule_info in triggered_rule_infos]
+                    for i in range(len(triggered_rule_infos)):
+                        del triggered_rule_infos[i]['condition_satisfied']
+                        if np.isnan(triggered_rule_infos[i]['error']):
+                            del triggered_rule_infos[i]['error']
 
-                    # triggered_rule_infos = []
-                    # for index in range(len(satisfying_rows)):
-                    #     if condition_satisfying_rows[index]:
-                    #         error = self.error_of_single_value(np.array(calculated_values), rule['column_to_change'], index, period)
-                    #         if np.isnan(error): 
-                    #             triggered_rule_infos.append({   'id':rule['id'], 
-                    #                                             'probability_triggered': satisfying_rows[index], 
-                    #                                             'trigger_probability': trigger_thresholds[index],
-                    #                                             'new_value': calculated_values[index]
-                    #                                             })
-                    #         else:
-                    #             triggered_rule_infos.append({   'id':rule['id'], 
-                    #                                             'probability_triggered': satisfying_rows[index], 
-                    #                                             'trigger_probability': trigger_thresholds[index],
-                    #                                             'new_value': calculated_values[index],
-                    #                                             'error': error,
-                    #                                             'colour': self.colors[int(min(error,1.)*1000)] 
-                    #                                             })
-                    #     else: 
-                    #         triggered_rule_infos.append(None)
 
                     currently_triggered_rules = pd.DataFrame({  'initial_state_id':df.index,
                                                                 'batch_number':[batch_number]*batch_size,
@@ -560,8 +553,18 @@ class Simulator:
                 y0_values_in_this_period.columns = [col + 'period' + str(period) for col in y0_values_in_this_period.columns] #faster version
                 y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
                 
+            errors = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), self.y0_values)
+            # print('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+            # y0_values_in_simulation_dict = y0_values_in_simulation.to_dict('records')
+            # with open("C:/Users/l412/Documents/2 temporary stuff/2019-08-13/y0_values_in_simulation.txt", "w") as text_file:
+            #     text_file.write(json.dumps(y0_values_in_simulation_dict))
+
+            # with open("C:/Users/l412/Documents/2 temporary stuff/2019-08-13/y0_values.txt", "w") as text_file:
+            #     text_file.write(json.dumps(self.y0_values))
+            # print(list(errors))
+            # print('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
             error_df = pd.DataFrame({  'simulation_number': [str(index) + '-' + str(batch_number) for index in df.index],
-                                        'error':self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), self.y0_values) })
+                                        'error': errors})
             errors_df = errors_df.append(error_df)
 
 
@@ -612,6 +615,8 @@ class Simulator:
         v = np.atleast_1d(v)
         u_df = pd.DataFrame(list(u))
         v_df = pd.DataFrame(list(v))
+        u_df = u_df.fillna(np.nan)
+        v_df = v_df.fillna(np.nan)
         
         total_error = np.zeros(shape=len(u))
         dimensionality = np.zeros(shape=len(u))
@@ -624,16 +629,12 @@ class Simulator:
             if self.y0_column_dt[y0_column] in ['int','real']:
                 for period_column in period_columns:
                     residuals = np.abs(np.array(u_df[period_column]) - np.array(v_df[period_column]))
-                    print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-                    print(period_column)
-                    print(np.array(u_df[period_column]))
-                    print(np.array(v_df[period_column]))
-                    print(list(residuals))
-                    print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-                    error_in_value_range = residuals/np.max((np.max(v_df[period_column]) - np.min(v_df[period_column])), 0.00000001)
-                    error_in_error_range =  residuals/np.max(residuals)
-                    total_error += np.minimum(error_in_value_range + error_in_error_range, 1)  
-                    dimensionality += 1 - np.array(u_df[period_column].isnull().astype(int))
+                    error_in_value_range = residuals/np.nanmax([(np.nanmax(v_df[period_column]) - np.nanmin(v_df[period_column])), 0.00000001])
+                    error_in_error_range =  residuals/np.nanmax(residuals)
+                    error = np.minimum(error_in_value_range + error_in_error_range, 1)
+                    dimensionality += np.isnan(error).astype('int')
+                    error[np.isnan(error)] = 0
+                    total_error += error 
 
         dimensionality = np.maximum(dimensionality, [1]*len(u))
         error = total_error/dimensionality

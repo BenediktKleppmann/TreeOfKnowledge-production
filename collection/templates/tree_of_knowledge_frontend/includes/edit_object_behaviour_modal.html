@@ -791,6 +791,8 @@ var new_rule_cursor_textarea = '';
 			// move it in the data
 			objects_dict[object_number]['object_rules'][attribute_id]['not_used_rules'][rule_id] = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
 			delete objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
+			execution_order_index = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].indexOf(rule_id);
+			objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].splice(execution_order_index, 1); 
 
 			// move it on the html
 			not_used_rules_list = document.getElementById('not-used-rules-list');
