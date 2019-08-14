@@ -495,10 +495,25 @@ class Simulator:
 
                     if rule['effect_is_calculation']:
                         all_new_values = pd.eval(rule['effect_exec'])
+                        if rule['changed_var_data_type'] in ['relation','int']:
+                            nan_rows = all_new_values.isnull()
+                            all_new_values = all_new_values.fillna(0)
+                            all_new_values = all_new_values.astype(int)
+                            all_new_values[nan_rows] = np.nan
+                        elif rule['changed_var_data_type'] == 'real':
+                            all_new_values = all_new_values.astype(float)
+                        elif rule['changed_var_data_type'] == 'boolean':
+                            nan_rows = all_new_values.isnull()
+                            all_new_values = all_new_values.astype(bool)
+                            all_new_values[nan_rows] = np.nan
+                        elif rule['changed_var_data_type'] in ['string','date']:
+                            nan_rows = all_new_values.isnull()
+                            all_new_values = all_new_values.astype(str)
+                            all_new_values[nan_rows] = np.nan
                     else:
                         all_new_values = [json.loads(rule['effect_exec'])] * batch_size
-                    new_values = [value for value, satisfying in zip(all_new_values,satisfying_rows) if satisfying]
 
+                    new_values = [value for value, satisfying in zip(all_new_values,satisfying_rows) if satisfying]
                     df.loc[satisfying_rows,rule['column_to_change']] = new_values
 
 
@@ -628,11 +643,15 @@ class Simulator:
                     dimensionality += 1 - np.array(u_df[period_column].isnull().astype(int))
             if self.y0_column_dt[y0_column] in ['int','real']:
                 for period_column in period_columns:
-                    residuals = np.abs(np.array(u_df[period_column]) - np.array(v_df[period_column]))
-                    error_in_value_range = residuals/np.nanmax([(np.nanmax(v_df[period_column]) - np.nanmin(v_df[period_column])), 0.00000001])
-                    error_in_error_range =  residuals/np.nanmax(residuals)
-                    error = np.minimum(error_in_value_range + error_in_error_range, 1)
-                    dimensionality += np.isnan(error).astype('int')
+                    true_value_change_percent = (np.array(v_df[period_column]) - np.array(v_df[period_column.split('period')[0]]))/np.array(v_df[period_column.split('period')[0]])
+                    simulated_value_change_percent = (np.array(u_df[period_column]) - np.array(v_df[period_column.split('period')[0]]))/np.array(v_df[period_column.split('period')[0]])
+                    error_of_value_change = np.minimum(np.abs(simulated_value_change_percent - true_value_change_percent) * 10,1)
+                    error = np.minimum(error_of_value_change, 1)
+                    # residuals = np.abs(np.array(u_df[period_column]) - np.array(v_df[period_column]))
+                    # error_in_value_range = residuals/np.nanmax([(np.nanmax(v_df[period_column]) - np.nanmin(v_df[period_column])), 0.00000001])
+                    # error_in_error_range =  residuals/np.nanmax(residuals)
+                    # error = np.minimum(error_in_value_range + error_in_error_range, 1)
+                    dimensionality += 1 -np.isnan(error).astype('int')
                     error[np.isnan(error)] = 0
                     total_error += error 
 

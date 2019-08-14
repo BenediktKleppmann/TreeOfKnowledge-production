@@ -172,8 +172,7 @@
 	.collapse-triangle {
 		font-size: 9px;
 		padding: 12px;
-		padding-right: 18px;
-		float: right;
+		padding-left: 22px;
 	}
 	
 	.bottom-object-inner-box {
@@ -202,9 +201,15 @@
 		box-shadow: inset 0px 0px 3px rgba(255,255,255,0.9);
 	}
 	
+	.buffer-div {
+		display: inline-block;
+	}
+	
 	.bottom-attribute-values {
 		display: inline-block;	
+		float: right;
 	}
+	
 	
 	.attribute-value {
 		width: 55px;
@@ -215,6 +220,11 @@
 		color: rgb(95, 95, 95);
 	}
 	
+	
+	.attribute-value-span {
+		overflow: hidden;
+		width: 55px;
+	}
 	
 	/* --------------------------------------------------------------------------*/
 	/* Top Panel ----------------------------------------------------------------*/
@@ -309,12 +319,12 @@
 	}
 	
 	#triggerd-rules-title {
-		width: 50px;
+		width: 118px;
 		height: 66px;
 		display: inline-block;
 		writing-mode: vertical-rl;
 		transform: rotate(180deg);
-		padding-right: 6px;
+		padding-right: 7px;
 		text-align: center;
 		float: left;
 	}
@@ -322,7 +332,7 @@
 	#triggerd-rule-periods {
 		display: inline-block;
 		text-align: center;
-		width: calc(100% - 63px);
+		width: calc(100% - 118px);
 		overflow-y: scroll;
 	}
 	
@@ -422,7 +432,7 @@
 	
 	var number_of_periods;
 	if (is_timeseries_analysis) {
-		number_of_periods = Math.floor((simulation_end_time - simulation_start_time)/timestep_size) + 1;
+		number_of_periods = Math.floor((simulation_end_time - simulation_start_time)/timestep_size) - 1;
 	} else {
 		number_of_periods = 1;
 	}
@@ -645,7 +655,7 @@
 				for (var j = 0; j < attribute_ids.length; j++) {
 					var attribute_id = attribute_ids[j];
 					
-					object_items_html += 		'<div class="bottom-object-data-row" style="width:' + String(178 + 57*(number_of_periods)) + 'px;">' +
+					object_items_html += 		'<div class="bottom-object-data-row" style="width:' + String(138 + 57*(number_of_periods)) + 'px;">' +
 													'<div class="bottom-attribute-name" onclick="drawTopPanel_Attribute(' + object_number + ',' + attribute_id + ')">' + objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'] + '</div>' +
 													'<div class="bottom-attribute-values">';
 						
@@ -700,7 +710,15 @@
 						}
 						resulting_value = sum_of_values/selected_simulations_list.length;
 						if (resulting_value % 0.001 !== 0 ){
-							resulting_value = resulting_value.toFixed(3);
+							resulting_value = resulting_value.toPrecision(3);
+							/*
+							attribute_data_type = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type']
+							if (['int','relation'].includes(attribute_data_type)) {
+								resulting_value = resulting_value.toFixed(0);
+							} else {
+								resulting_value = resulting_value.toPrecision(3);
+							}
+							*/
 						}
 					}
 					
@@ -727,7 +745,7 @@
 					}
 					
 					// insert the resulting value
-					$('#' + object_number + '-' + attribute_id + '-' + period_number).html(resulting_value);
+					$('#' + object_number + '-' + attribute_id + '-' + period_number).html('<aside class="attribute-value-span">' + resulting_value + '</aside>');
 						
 				}
 			}
@@ -1099,6 +1117,22 @@
 			chart.draw();
 		});
 		
+		
+		//y_axis_offset 
+		y_axis_offset = 55;
+		found_value = false;		
+		$("g[role='article']").children('path').each(function () {
+			if ($(this)[0].hasAttribute("d") && !found_value) {
+				path_starting_point = parseInt($(this).attr('d').split(' ')[1]);
+				if (path_starting_point > 5) {
+					y_axis_offset = path_starting_point;
+					found_value = true;
+				}
+			}
+		});
+		$('#triggerd-rules-title').css('width', y_axis_offset + 'px');
+		$('#triggerd-rule-periods').css('width', 'calc(100% - 118px)');
+		
 
 	}
 	
@@ -1122,7 +1156,7 @@
 					if (triggerd_rules_period_html[1] > max_number_of_rules) {max_number_of_rules = triggerd_rules_period_html[1];}
 				}
 				$('#triggerd-rule-periods').html(triggerd_rules_html);
-				$('.triggerd-rules-period').css('width', Math.round(100/number_of_periods) + '%');
+				$('.triggerd-rules-period').css('width', (100/number_of_periods).toFixed(3) + '%');
 			} else {
 				triggerd_rules_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  0, true);
 				$('#triggerd-rule-periods').html(triggerd_rules_html[0]);

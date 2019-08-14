@@ -1394,8 +1394,12 @@ def test_page2(request):
     # Likelihood_fuction.objects.all().delete()
     # bla = list(Simulation_model.objects.filter(id=143).values())
     # blu = list(Rule.objects.all().values())
-    Simulation_model.objects.all().delete()
-    # print(blu)
+    blu = Simulation_model.objects.get(id=170)
+    print(str(blu.simulation_start_time))
+    print(str(blu.simulation_end_time))
+    print(str(blu.timestep_size))
+    # with open("C:/Users/l412/Documents/2 temporary stuff/2019-08-13/test.txt","w") as text_file:
+    #     text_file.write(str(blu))
     # df = query_datapoints.get_data_from_related_objects(objects_dict, simulation_start_time, simulation_end_time)
     # df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2019-07-31/test3.csv', index=False)
 
