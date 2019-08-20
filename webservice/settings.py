@@ -26,7 +26,7 @@ SECRET_KEY = '4#trl*=#otl7kt&sz7$lf%v0l&a0-)@oawykk4%lgv2t$ou7^x'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS  = ['*', 'datascienceforgood-aalen.herokuapp.com']
 
 
 # Application definition

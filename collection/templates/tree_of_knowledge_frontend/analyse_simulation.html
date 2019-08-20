@@ -199,6 +199,7 @@
 					-moz-box-shadow: inset 0px 0px 3px rgba(255,255,255,0.9);
 					-webkit-box-shadow: inset 0px 0px 3px rgba(255,255,255,0.9);
 		box-shadow: inset 0px 0px 3px rgba(255,255,255,0.9);
+		float: left;
 	}
 	
 	.buffer-div {
@@ -207,7 +208,7 @@
 	
 	.bottom-attribute-values {
 		display: inline-block;	
-		float: right;
+		/*float: right;*/
 	}
 	
 	
@@ -361,12 +362,14 @@
 	.triggerd-rule .rule-prob {
 		display: inline-block;
 		font-size: 11.5px;
+		margin-left: 2px;
 	}
 	
 
 	
 	.triggerd-rule .rule-value {
 		display: inline-block;
+		margin-left: 6px;
 	}
 	
 	
@@ -446,6 +449,7 @@
 	var clicked_selection_buttons = {'select_all_clicked': false, 'select_correct_clicked': false, 'select_false_clicked': false};
 	var delta_t_list = ['delta_t (years)', 'delta_t (months)', 'delta_t (days)', 'delta_t (hours)', 'delta_t (minutes)', 'delta_t (seconds)'];
 	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1];
+	var error_colours = ['#97CF99', '#97CF97', '#98CF97', '#9ACF97', '#9CCF97', '#9DCF97', '#9FCF97', '#A1CF97', '#A3CF97', '#A5CF97', '#A6CF97', '#A8CF97', '#AACF97', '#ACCF98', '#AECF98', '#AFCF98', '#B1CF98', '#B3CF98', '#B5CF98', '#B6CF98', '#B8CF98', '#BACF98', '#BCCF98', '#BDCF98', '#BFCF98', '#C1CF98', '#C2CF99', '#C4CF99', '#C6CF99', '#C8CF99', '#C9CF99', '#CBCF99', '#CDD099', '#CFD099', '#D0CF99', '#D0CD99', '#D0CC99', '#D0CA99', '#D0C89A', '#D0C79A', '#D0C59A', '#D0C39A', '#D0C29A', '#D0C09A', '#D0BF9A', '#D0BD9A', '#D0BB9A', '#D0BA9A', '#D0B89A', '#D0B79A', '#D0B59A', '#D0B39B', '#D0B29B', '#D0B09B', '#D0AF9B', '#D0AD9B', '#D0AB9B', '#D0AA9B', '#D0A89B', '#D0A79B', '#D0A59B', '#D0A49B', '#D0A29B', '#D1A19C']
 	
 
 
@@ -655,7 +659,7 @@
 				for (var j = 0; j < attribute_ids.length; j++) {
 					var attribute_id = attribute_ids[j];
 					
-					object_items_html += 		'<div class="bottom-object-data-row" style="width:' + String(138 + 57*(number_of_periods)) + 'px;">' +
+					object_items_html += 		'<div class="bottom-object-data-row" style="width:' + String(175 + 57*(number_of_periods)) + 'px;">' +
 													'<div class="bottom-attribute-name" onclick="drawTopPanel_Attribute(' + object_number + ',' + attribute_id + ')">' + objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'] + '</div>' +
 													'<div class="bottom-attribute-values">';
 						
@@ -1222,9 +1226,9 @@
 						probability_html = '';
 					} else {
 						if (triggered_rule_info['pt']){ //pt = probability_triggered
-							probability_html = '<span class="rule-prob" >(prob=' + Math.round(triggered_rule_info['tp']*100) + '%) &#10004;</span>';  // tp = trigger_probability
+							probability_html = '<span class="rule-prob" >(prob=' + Math.round(triggered_rule_info['tp']*100) + '%&#10004;)</span>';  // tp = trigger_probability
 						} else {
-							probability_html = ' <span class="rule-prob" style="text-decoration: line-through;"> (prob=' + Math.round(triggered_rule_info['tp']) + '%) &#10008;</span>'; // tp = trigger_probability
+							probability_html = ' <span class="rule-prob" style="text-decoration: line-through;"> (prob=' + Math.round(triggered_rule_info['tp']) + '%&#10008;)</span>'; // tp = trigger_probability
 						}
 						
 					}
@@ -1232,9 +1236,9 @@
 					//new_value_html
 					if ((is_single_period || number_of_periods < 11) & triggered_rule_info['pt']) {//pt = probability_triggered
 						if (['real','int'].includes(objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'])) {
-							new_value_html = '<span class="rule-value"> => ' + triggered_rule_info['v'] + '</span>'; // v = new_value
+							new_value_html = '<span class="rule-value"> =>' + triggered_rule_info['v'] + '</span>'; // v = new_value
 						} else {
-							new_value_html = '<span class="rule-value"> => \'' + triggered_rule_info['v'] + '\'</span>'; // v = new_value
+							new_value_html = '<span class="rule-value"> =>\'' + triggered_rule_info['v'] + '\'</span>'; // v = new_value
 						}
 					} else {
 						new_value_html = '';
@@ -1243,7 +1247,9 @@
 					
 
 					
-					triggerd_rules_period_html  += 	'<div class="triggerd-rule" style="background: '+ triggered_rule_info['colour'] +'" data-toggle="tooltip" title="' + tooltip_text + '" onclick="openEditObjectBehaviourModal(' + object_number + ', ' + attribute_id + ', \'' + attribute_name + '\', ' + triggered_rule_info['id'] + ')">' +
+	
+					
+					triggerd_rules_period_html  += 	'<div class="triggerd-rule" style="background: '+ error_colours[Math.round(triggered_rule_info['error']*63)] +'" data-toggle="tooltip" title="' + tooltip_text + '" onclick="openEditObjectBehaviourModal(' + object_number + ', ' + attribute_id + ', \'' + attribute_name + '\', ' + triggered_rule_info['id'] + ')">' +
 														'<span class="rule-name" ' + text_decoration + '>Rule ' + rule_number + ' </span>' +
 														probability_html +
 														new_value_html +

@@ -223,6 +223,7 @@ def get_single_pdf(simulation_id, object_number, rule_id):
     if len(likelihood_functions) > 0:
 
         list_of_probabilities = json.loads(likelihood_functions[0]['list_of_probabilities'])
+        list_of_probabilities = np.minimum(list_of_probabilities, 1000000)
         histogram = (list(list_of_probabilities), list(np.linspace(0,1,31)))
 
         x_values = np.linspace(0,0.966666666666667,30) + 1/60

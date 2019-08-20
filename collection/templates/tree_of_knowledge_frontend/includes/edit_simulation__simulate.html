@@ -625,6 +625,13 @@
 
 
 	function run() {
+	
+		if (y_value_attributes.length == 0) {
+			alert('Please specify a y-attribute!!');
+			return;
+		}
+		
+		
 		saveSimulation();
 		
 		form_html_string =	"<form role='form' action='' method='post' class='form' enctype='multipart/form-data'>" + 

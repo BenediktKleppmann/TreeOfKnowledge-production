@@ -119,18 +119,17 @@ class Simulator:
             for attribute_id in attribute_ids:
 
                 rule_ids = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)]['execution_order']
-                for rule_id in rule_ids:
+                for rule_id in set(rule_ids):
                     rule = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)]['used_rules'][str(rule_id)]
 
                     if rule['effect_is_calculation']:
                         rule['effect_exec'] = rule['effect_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
-                    else:
-                        if rule['changed_var_data_type'] in ['relation','int']:
-                            rule['effect_exec'] = int(rule['effect_exec'])
-                        elif rule['changed_var_data_type'] == 'real':
-                            rule['effect_exec'] = float(rule['effect_exec'])
-                        elif rule['changed_var_data_type'] == 'boolean':
-                            rule['effect_exec'] = (rule['effect_exec'] in ['True','true','T','t'])
+                    elif rule['changed_var_data_type'] in ['relation','int']:
+                        rule['effect_exec'] = int(rule['effect_exec'])
+                    elif rule['changed_var_data_type'] == 'real':
+                        rule['effect_exec'] = float(rule['effect_exec'])
+                    elif rule['changed_var_data_type'] == 'boolean':
+                        rule['effect_exec'] = (rule['effect_exec'] in ['True','true','T','t'])
                     
 
                     if not rule['is_conditionless']:
@@ -140,6 +139,9 @@ class Simulator:
 
 
                     if rule['learn_posterior']:
+                        # print('===================================================')
+                        # print('prior__object' + str(object_number) + '_rule' + str(rule_id))
+                        # print('===================================================')
                         new_prior = elfi.Prior('uniform', 0, 1, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
                         # new_prior = elfi.Prior('uniform', 0, 1, model=self.elfi_model, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
                         self.rule_priors.append(new_prior)
@@ -178,9 +180,7 @@ class Simulator:
 # ==========================================================================================
 
     def run(self):
-        print('Test1')
         if len(self.rule_priors) > 0:
-            print('Test2')
             self.__learn_likelihoods(10000)
 
         
@@ -194,10 +194,8 @@ class Simulator:
     def __learn_likelihoods(self, nb_of_accepted_simulations=10000):
 
         # PART 1 - Run the Simulation
-        print('Test3')
         batch_size = len(self.df)
 
-        print('Test4 - ' + str(batch_size))
         Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values)
         # Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values, model=self.elfi_model)
         S1 = elfi.Summary(self.unchanged, Y)
@@ -206,7 +204,6 @@ class Simulator:
         # d = elfi.Distance(self.n_dimensional_distance, S1, model=self.elfi_model)
         rej = elfi.Rejection(d, batch_size=batch_size, seed=30052017)
         # rej = elfi.Rejection(self.elfi_model, d, batch_size=batch_size, seed=30052017)
-        print('Test5')
 
         result = rej.sample(nb_of_accepted_simulations, threshold=.5)
 
@@ -349,21 +346,19 @@ class Simulator:
 
     #  Rule Learning  ---------------------------------------------------------------------------------
     def likelihood_learning_simulator(self, df, rules, *rule_priors, batch_size, random_state=None):
-        print('Test6')
         self.number_of_batches += 1
-        print('Test7')
+
 
         for rule in rules:
-            print('Test8')
             rule['rule_was_used_in_simulation'] = [False]*batch_size
 
             if rule['learn_posterior']:
-                df['triggerThresholdForRule' + str(rule['id'])] = rule_priors[0][rule['prior_index']]
+                df['triggerThresholdForRule' + str(rule['id'])] = rule_priors[rule['prior_index']]
             else:
                 if not rule['has_probability_1']:
                     df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
 
-        print('Test9')
+
         if self.is_timeseries_analysis: 
             times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
             df['delta_t'] = self.timestep_size
@@ -371,7 +366,7 @@ class Simulator:
             times = [self.simulation_start_time, self.simulation_end_time]
             df[self.y0_columns] = None
 
-        print('Test10')
+
         y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
         for period in range(len(times)-1):
             for rule in rules:
@@ -413,18 +408,14 @@ class Simulator:
 
 
 
-                print('Test12')
-
                 df.loc[satisfying_rows,rule['column_to_change']] = new_values  
-                print('Test13')      
-
 
                 # --------  used rules  --------
                 if rule['learn_posterior']:
                     rule['rule_was_used_in_simulation'] = rule['rule_was_used_in_simulation'] | condition_fulfilled_rules
-                print('Test14')
 
-            print('Test13')
+
+
             y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
             y0_values_in_this_period.columns = [col + 'period' + str(period) for col in y0_values_in_this_period.columns] #faster version
             y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
@@ -449,17 +440,16 @@ class Simulator:
     #  Monte-Carlo  ---------------------------------------------------------------------------------
     def __run_monte_carlo_simulation(self, nb_of_simulations=1000):
 
-        print('Test4')
+
         y0 = np.asarray(self.df[self.y0_columns].copy())
         batch_size = len(y0)
 
-        print('Test5')
 
         simulation_data_df = pd.DataFrame()
         triggered_rules_df = pd.DataFrame()
         errors_df = pd.DataFrame()
 
-        print('Test6')
+
         number_of_batches = math.ceil(nb_of_simulations/batch_size)
         for batch_number in range(number_of_batches):
 
@@ -541,9 +531,10 @@ class Simulator:
                     triggered_rule_infos = triggered_rule_infos_df.to_dict('records')
                     triggered_rule_infos = [rule_info if rule_info['condition_satisfied'] else None for rule_info in triggered_rule_infos]
                     for i in range(len(triggered_rule_infos)):
-                        del triggered_rule_infos[i]['condition_satisfied']
-                        if np.isnan(triggered_rule_infos[i]['error']):
-                            del triggered_rule_infos[i]['error']
+                        if triggered_rule_infos[i] is not None:
+                                del triggered_rule_infos[i]['condition_satisfied']
+                                if np.isnan(triggered_rule_infos[i]['error']):
+                                    del triggered_rule_infos[i]['error']
 
 
                     currently_triggered_rules = pd.DataFrame({  'initial_state_id':df.index,
@@ -668,11 +659,7 @@ class Simulator:
             
 
     def error_of_single_value(self, all_calculated_values, column_name, row_index, period):
-        calculated_value = all_calculated_values[row_index]
-        # print('[[[[[[[[[[[[[[[[[[[[[[[[[[[  ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
-        # print(row_index)
-        # print(column_name + 'period' + str(period))
-        # print('[[[[[[[[[[[[[[[[[[[[[[[[[[[  ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')          
+        calculated_value = all_calculated_values[row_index]     
 
         all_correct_values = np.array(pd.DataFrame(self.y0_values)[column_name + 'period' + str(period)])
         correct_value = all_correct_values[row_index]
