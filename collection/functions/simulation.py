@@ -106,6 +106,7 @@ class Simulator:
             df_copy = df_copy[[col for col in df_copy.columns if col.split('period')[0] in self.y0_columns]]
             self.y0_values = [row for index, row in sorted(df_copy.to_dict('index').items())]
 
+        self.y0_values_df = pd.DataFrame(self.y0_values)
 
            
 

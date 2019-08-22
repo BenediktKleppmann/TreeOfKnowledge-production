@@ -316,7 +316,7 @@
 	
 	#triggerd-rules-panel {
 		max-height: 146px;
-		padding-right: 18px;
+		/*padding-right: 18px;*/
 	}
 	
 	#triggerd-rules-title {
@@ -443,6 +443,7 @@
 
 	
 	var selected_simulations = new Set(); 
+	var all_simulations_list = Object.keys(simulation_data);
 	var selected_object_attribute = null;
 
 			
@@ -676,6 +677,14 @@
 		}
 		
 		$('#bottom-object-items').html(object_items_html);
+		
+		// make sure the height of .bottom-attribute-values fits even if the attribute name goes over two rows
+		var test = $( ".bottom-object-data-row" );
+		$( ".bottom-object-data-row" ).each(function() {
+		  var attribute_name_height = $(this).children(".bottom-attribute-name" ).first().height();
+		  $(this).children(".bottom-attribute-values" ).first().height(attribute_name_height + 12);
+		});
+
 	}
 	
 	
@@ -818,18 +827,15 @@
 										'<label class="custom-control-label" for="include-zero">&nbsp;Include 0 in Linegraph</label>');
 		
 			if (['real','int'].includes(attribute_data_type)) {
-				console.log('test4');
 				linegraph_data = prepareLineGraphData_Attribute(object_number, attribute_id);
-				console.log('test5');
 				plotLineGraph(false, object_name, attribute_name, linegraph_data);
 			
 			} else {
-			console.log('test6');
+				linegraph_data = prepareLineGraphData_Attribute(object_number, attribute_id);
 				plotLineGraph(true, object_name, attribute_name, linegraph_data);
 			} 	
 		} else {
 			if (['real','int'].includes(attribute_data_type)) {
-				console.log('test7');
 				histogram_data = prepareHistogramData(false, object_number, attribute_id, 0);
 				console.log('test8');
 				plotHistogram(object_name, attribute_name, histogram_data);
@@ -892,27 +898,31 @@
 	
 		var selected_simulations_list = Array.from(selected_simulations);
 		var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
-		var histogram_data;
+		var histogram_data = {};
 		
 		if (is_categorical) {
-			// value_occurences
+			// value_occurences & value_labels
 			var value_occurences = {}
+			var value_labels = {}
 			for (var i = 0; i < selected_simulations_list.length; i++) {
 				var value = String(simulation_data[selected_simulations_list[i]][column_name][period_number]);
 				if (Object.keys(value_occurences).includes(value)) {
 					value_occurences[value] += 1;
+					value_labels[value] += 'Simulation' + all_simulations_list.indexOf(selected_simulations_list[i])  + '\n';
 				} else {
 					value_occurences[value] = 1;
+					value_labels[value] = 'Simulation' + all_simulations_list.indexOf(selected_simulations_list[i])  + '\n';
 				}
 			}
 			
 			// histogram_data
-			histogram_data = []
+			var data = []
 			var distinct_values = Object.keys(value_occurences);
 			for (var i = 0; i < distinct_values.length; i++) {
 				var value = distinct_values[i];
-				histogram_data.push([value, String(value_occurences[value])]);
+				data.push([value, String(value_occurences[value])]);
 			}
+			histogram_data = { 'data': data, 'labels':labels};
 			
 			
 		} else {
@@ -927,22 +937,36 @@
 					if (value < minimum_overall_value) {minimum_overall_value = value;}
 				}
 			}
-			var bin_interval = (maximum_overall_value - minimum_overall_value)/40;
 			
-			// bin_occurences
+			//bin_lower_bounds
+			var bin_interval = (maximum_overall_value - minimum_overall_value)/40;
+			var bin_interval_order_of_magnitude = Math.pow(10, Math.floor(Math.log(bin_interval)/Math.log(10)));
+			var rounded_bin_interval = Math.ceil(bin_interval/bin_interval_order_of_magnitude) * bin_interval_order_of_magnitude
+			var bins_bottom_edge = Math.floor(minimum_overall_value/rounded_bin_interval) * rounded_bin_interval 
+			var bin_lower_bounds = []
+			for (var i = 0; i < 40; i++) {
+				bin_lower_bounds.push(bins_bottom_edge + i*rounded_bin_interval)
+			}
+			
+			// bin_occurences & bin_labels
 			bin_occurences = Array(40).fill(0);
+			bin_labels = Array(40).fill(''); 
 			for (var i = 0; i < selected_simulations_list.length; i++) {
 				var value = simulation_data[selected_simulations_list[i]][column_name][period_number];
-				var bin_number = Math.floor((value - minimum_overall_value)/bin_interval);
+				var bin_number = 0;
+				for (var j = 0; j < bin_lower_bounds.length; j++) {
+					if (value > bin_lower_bounds[j]) { bin_number = j;	}
+				}
 				bin_occurences[bin_number] += 1;
+				bin_labels[bin_number] += 'Simulation' + all_simulations_list.indexOf(selected_simulations_list[i])  + ': ' + String(value) + '\n';
 			}
 			
 			// histogram_data
-			histogram_data = []
-			for (var i = 0; i < bin_occurences.length; i++) {
-				var interval_central_value = (minimum_overall_value + i*bin_interval + bin_interval/2 ).toFixed(2)
-				histogram_data.push([String(interval_central_value), String(bin_occurences[i])])
+			var data = []
+			for (var i = 0; i < bin_lower_bounds.length; i++) {
+				data.push([String(bin_lower_bounds[i]), String(bin_occurences[i])])
 			}
+			histogram_data = {'data': data, 'labels':bin_labels};
 		}
 		
 		return histogram_data;
@@ -961,6 +985,9 @@
 		var linegraph_data = [];
 		var max_value = -1000;
 		var min_value = 1000;
+		var distinct_values = new Set();
+
+
 		for (var period_number = 0; period_number < number_of_periods; period_number++) {
 			
 			// Period's Time
@@ -996,11 +1023,23 @@
 				linegraph_data_row.push(value);
 				if (value < min_value) {min_value = value;}
 				if (value > max_value) {max_value = value;}
+				distinct_values.add(value);
 			}
 			linegraph_data.push(linegraph_data_row);
 		}
 		
-		return {'data':linegraph_data, 'min_value':min_value, 'max_value':max_value};
+		// distinct_values
+		let distinct_values_list = Array.from(distinct_values);
+		
+		// simulation_numbers
+		simulation_numbers = []
+		for (var k = 0; k < selected_simulations_list.length; k++) {
+			simulation_number = all_simulations_list.indexOf(selected_simulations_list[k]);
+			simulation_numbers.push(simulation_number);
+		}
+		
+		
+		return {'data':linegraph_data, 'min_value':min_value, 'max_value':max_value, 'distinct_values':distinct_values_list, 'simulation_numbers':simulation_numbers};
 	}
 	
 	
@@ -1014,10 +1053,11 @@
 
 			var chart = anychart.column();
 			chart.title(object_name + '.[' + attribute_name + ']');
+			chart.yScale().ticks().allowFractional(false);
 			//chart.animation(true);
 
 
-			var series = chart.column(histogram_data);
+			var series = chart.column(histogram_data['data']);
 
 			series.tooltip().titleFormat('{%X}');
 
@@ -1025,8 +1065,16 @@
 					.position('center-top')
 					.anchor('center-bottom')
 					.offsetX(0)
-					.offsetY(5)
-					.format('{%Value}{groupsSeparator: }');
+					.offsetY(5);
+					
+			var tooltip = series.tooltip();
+			tooltip.format(function(){
+				var index = 0;
+				for (var i = 0; i < histogram_data['data'].length; i++) {
+					if (histogram_data['data'][i][0] == this.x) { index = i;}
+				}
+				return this.value + '\n\n' + histogram_data['labels'][index] ;
+			});
 
 
 			chart.barGroupsPadding(0);
@@ -1072,7 +1120,7 @@
 			
 			if (is_categorical) {
 				ordinalYScale = anychart.scales.ordinal();
-				ordinalYScale.names(categories)
+				ordinalYScale.names(linegraph_data['distinct_values'])
 				chart.yScale(ordinalYScale);
 			}
 			
@@ -1094,7 +1142,7 @@
 				} else {
 					series_2 = chart.line(dataSet.mapAs({'x': 0, 'value': i+1}));
 				}
-				series_2.name('Simulation' + i)
+				series_2.name('Simulation' + linegraph_data['simulation_numbers'][i])
 						.stroke("2 #14AA09");
 				series_2.hovered().markers()
 						.enabled(true)
