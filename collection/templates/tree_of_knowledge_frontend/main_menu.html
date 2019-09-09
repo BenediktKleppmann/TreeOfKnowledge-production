@@ -4,21 +4,124 @@
 	Tree of Knowledge - Main Menu
 {% endblock %}
 
-{% block additionalcss %}{% endblock %}
+{% block additionalcss %}
+<style>
+
+	/* Buttons ---------------------------*/
+	.menu-row {
+		padding: 13px;
+	}
+
+	.menu-item-box {
+	    padding: 5px;
+		border: 1px solid rgb(230,230,230);
+		display: inline-block;
+		border-radius: 9px;
+		margin: 26px;
+		float:left;
+	}
+	
+	.menu-item-button {
+	    height: 170px;
+		width: 170px;
+		border-radius: 6px;
+		/*border-left: 14px solid rgb(252, 252, 252);
+		border-top: 14px solid rgb(255, 255, 255);
+		border-right: 14px solid rgb( 242, 242, 242);
+		border-bottom: 14px solid rgb( 235, 235, 235);
+		background-color: rgb(252, 252, 252);*/
+		border-left: 11px solid rgb(246, 246, 246);
+		border-top: 11px solid rgb(249, 249, 249);
+		border-right: 11px solid rgb(234, 234, 234);
+		border-bottom: 11px solid rgb(227, 227, 227);
+		background-color: rgb(244, 244, 244);
+		color: rgb(80, 80, 80);
+	}
+	
+	#simulation-button {
+		border-left: 11px solid rgb(232, 247, 249);
+		border-top: 11px solid rgb(235, 250, 252);
+		border-right: 11px solid rgb(220, 235, 237);
+		border-bottom: 11px solid rgb(213, 228, 230);
+		background-color: rgb(230, 245, 247);
+	}
+	
+	/* Button Icons ---------------------------*/
+	.icon-box {
+		margin-bottom: 11px;
+	}
+	
+	.fas {
+		font-size: 37px;
+	}
+	
+	/* Existing Simulations ---------------------------*/
+	.existing-simulations-box {
+		margin-top: 18px;
+		height: 368px;
+		overflow-y: scroll;
+	}
+	
+	
+	.existing-simulations-title {
+		margin-left: 4px;
+		margin-bottom: 3px;
+		color: rgb(120, 120, 120);
+	}
+	
+	.existing-simulation-link {
+		line-height: 23px;
+		color: #7cadd9;
+	}
+	
+	
+	
+
+</style>
+{% endblock %}
 
 {% block content %}
-	<br><br>
-	<ul>
-		<li><a href="{% url 'query_data' %}">query data</a></li>
-		<li><a href="{% url 'upload_data1_new' %}">upload data</a></li>
-		<li><a href="{% url 'edit_simulation_new' %}">new simulation</a></li>
-		<br>
-		{% for simulation in simulation_models %}
-			<li><a href="{% url 'edit_simulation' simulation_id=simulation.id %}">edit simulation {{ simulation.id }}</a></li>
-		{% endfor %}
-	</ul>
-		
-
+	<br>
+	<div class="menu-row">
+		<div class="menu-item-box">
+			<a href="{% url 'upload_data1_new' %}">
+				<button type="button" class="menu-item-button btn btn-light">
+				
+					<div class="icon-box"><i class="fas fa-file-upload"></i></div>
+					Upload Data
+				</button>
+			</a>
+		</div>
+		<div class="menu-item-box">
+			<a href="{% url 'edit_simulation_new' %}">
+				<button type="button" class="menu-item-button btn btn-light" id="simulation-button" href="{% url 'edit_simulation_new' %}">
+					<div class="icon-box"><i class="fas fa-cogs" aria-hidden="true"></i></div>
+					Make Simulation
+				</button>
+			</a>
+			<br>
+			<div class="existing-simulations-box">
+				<div class="existing-simulations-title">
+					Existing Simulations:
+				</div>
+				<ul>
+					{% for simulation in simulation_models %}
+						<li><a class="existing-simulation-link" href="{% url 'edit_simulation' simulation_id=simulation.id %}">Simulation {{ simulation.id }}</a></li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+		<div class="menu-item-box">
+			<a href="{% url 'edit_simulation_new' %}">
+				<button type="button" class="menu-item-button btn btn-light" href="{% url 'query_data' %}">
+					<div class="icon-box"><i class="fas fa-search" aria-hidden="true"></i></div>
+					Query Data
+				</button>
+			</a>
+		</div>
+	</div>
+	
+	
 		{% include "tree_of_knowledge_frontend/includes/instruction_video_modal.html" with url="https://www.youtube-nocookie.com/embed/ZVlZMOB-Sq0" %} 
 		
 		

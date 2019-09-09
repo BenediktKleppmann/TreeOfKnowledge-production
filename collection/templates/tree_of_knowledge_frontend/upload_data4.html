@@ -21,16 +21,16 @@
 
 <link rel="stylesheet" href="{% static 'css/bootstrap-3.4.0.min.css' %}" />
 <link rel="stylesheet" href="{% static 'css/bootstrap-datetimepicker.min.css' %}" />
+<link rel="stylesheet" href="{% static 'css/upload_table_frame.css' %}" />
 
 
 
 <style>
-		
-		
-		.content {
-			padding-left: 1.5%;
-			padding-right: 1.5%;
+		.container-fluid {
+			padding: 0px;
 		}
+		
+
 
 		.next-button {
 			margin-top: 15px;
@@ -262,127 +262,135 @@
 {% block content %}
 
 
-	<br>
-	<h1>4 - Meta data</h1>
-		{% for error in errors %}
-			<div class="error">{{ error }}</div><br>
-		{% endfor %}
 
 	
 	<div class="container-fluid">
-		<div class="row">
-			<div class="col-sm-3 col-md-4 col-lg-5 instructions">
-				<br> &nbsp;
-				<br> &nbsp;
-				<br>
-                 <b>Does the table include all {{ uploaded_dataset.object_type_name }}? </b>
-				 <div style="margin-top: 15px; margin-left:19px; font-size: 17px;">If not, please specify here what conditions had to hold for the observed {{ uploaded_dataset.object_type_name }} in order for them to be included? </div>
-				 <br> &nbsp;
-				 <br> &nbsp;
-				 <br>
-				 <div style="color:rgb(130,130,130)">
-					 You could consider:<br>
-					 <ul>
-						<li>the environment of the entities <br>(e.g. location, environment)</li>
-						<li>The state of the entities when they were measured <br>(e.g. state = active)</li>
-						<li>Things that depend on the sampling procedure <br>(e.g. was_willing_to_participate_in_survey = true)</li>
-					 </ul>
-					 <br>
-					 E.g.: you can encode "all participants had been professional athletes 2-3 years before" with the fact "Profession = athlete | valid from: 2016-01-01 to: 2017-01-01".
-				</div>
-			</div>
-			<div class="col-sm-9 col-md-8 col-lg-7">
-				<div class="form">
-					<div id="jstree-result">
-						{{ uploaded_dataset.entire_objectInfoHTMLString|safe }}
+		<a href="{% url 'upload_data1' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">1</div><div class="closed-frame-title">Select csv-file</div></div></a>
+		<a href="{% url 'upload_data2' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">2</div><div class="closed-frame-title">Data source</div></div></a>
+		<a href="{% url 'upload_data3' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">3</div><div class="closed-frame-title">Object type</div></div></a>
+		<div class="frame">
+			<div class="big-circle">4</div>
+			<div class="window-title-top">Meta data</div>
+			<div class="window">
+				<div class="window-inner" style="padding-left:30px">
+					{% for error in errors %}
+						<div class="error">{{ error }}</div><br>
+					{% endfor %}
+					<div class="row">
+						<div class="col-sm-3 col-md-4 col-lg-5 instructions">
+							<br> &nbsp;
+							<br> &nbsp;
+							<br>
+							 <b>Does the table include all {{ uploaded_dataset.object_type_name }}? </b>
+							 <div style="margin-top: 15px; margin-left:19px; font-size: 17px;">If not, please specify here what conditions had to hold for the observed {{ uploaded_dataset.object_type_name }} in order for them to be included? </div>
+							 <br> &nbsp;
+							 <br> &nbsp;
+							 <br>
+							 <div style="color:rgb(130,130,130)">
+								 You could consider:<br>
+								 <ul>
+									<li>the environment of the entities <br>(e.g. location, environment)</li>
+									<li>The state of the entities when they were measured <br>(e.g. state = active)</li>
+									<li>Things that depend on the sampling procedure <br>(e.g. was_willing_to_participate_in_survey = true)</li>
+								 </ul>
+								 <br>
+								 E.g.: you can encode "all participants had been professional athletes 2-3 years before" with the fact "Profession = athlete | valid from: 2016-01-01 to: 2017-01-01".
+							</div>
+						</div>
+						<div class="col-sm-9 col-md-8 col-lg-7">
+							<div class="form">
+								<div id="jstree-result">
+									{{ uploaded_dataset.entire_objectInfoHTMLString|safe }}
+								</div>
+								<div class="row list-group-row row-eq-height" id="additional_facts">  
+									<div class="col-sm-1 list-group-left-column" id="additional_facts" ><span style="margin-left:-42px;margin-top:44px;width:136px;height:50px">additional&nbsp;facts on the objects</span></div>
+									<div class="col-sm-11 list-group-right-column">  
+										<ul class="list-group object-info" id="additional_facts_list"> 
+											<li class="list-group-item broad" > <!-- Additional Attribute 1 -->
+												<div>
+													<button type="button" id="format_violation1" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
+													<div class="dropdown inline">
+														<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name1">Attribute</span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+														<div class="dropdown-menu" aria-labelledby="attributeMenu1">
+															<div id="attributeList1">
+																<input type="text" class="search" id="dropDonwSearch1" onkeyup="filterAttributeDropDown(1);" placeholder=" Search">
+																<ul id="drop-down-display1" class="list-group drop-down-display"></ul>
+																<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(1);">Reset</button>
+																<button class="btn btn-success dropdown-item-button" type="button" data-toggle="modal" data-target="#createAttributeModal">Create New Attribute</button>
+															</div>
+														</div>
+													</div>
+													<input type="hidden" id="attribute1" name="attribute1" value="">
+													<div class="form-group inline operator">
+														<select class="form-control form-control-lg" id="operator1" name="operator1">
+															<option value="=" selected>=</option>
+															<option value=">">></option>
+															<option value="<"><</option>
+															<option value="in">in</option>
+														</select>
+													</div> 
+													<div class="form-group inline value">
+														<input type="text" class="form-control" id="value1" name="value1" value="" size="15">
+													</div>
+												</div>
+												<div class="valid_time">
+													<div class="picker-label1">valid from:</div><input name="start_date1" id="datetimepicker1-start" class="datetimepicker form-control" value="{{ data_generation_year }}-01-01">
+													<div class="picker-label2">to:</div><input name="end_date1" id="datetimepicker1-end" class="datetimepicker form-control" value="{{ data_generation_year | add:1 }}-01-01">
+												</div>
+											</li>
+											<li class="list-group-item broad" > <!-- Additional Attribute 2 -->
+												<div>
+													<button type="button" id="format_violation2" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
+													<div class="dropdown inline" >
+														<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name2">Attribute</span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
+														<div class="dropdown-menu" aria-labelledby="attributeMenu2">
+															<div id="attributeList2">
+																<input type="text" class="search" id="dropDonwSearch2" onkeyup="filterAttributeDropDown(2);" placeholder=" Search">
+																<ul id="drop-down-display2" class="list-group drop-down-display"></ul>
+																<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(2);">Reset</button>
+																<button class="btn btn-success dropdown-item-button" type="button" data-toggle="modal" data-target="#createAttributeModal">Create New Attribute</button>
+															</div>
+														</div>
+													</div>
+													<input type="hidden" id="attribute2" name="attribute2" value="">
+													<div class="form-group inline operator">
+														<select class="form-control form-control-lg" id="operator2" name="operator2">
+															<option value="=" selected>=</option>
+															<option value=">">></option>
+															<option value="<"><</option>
+															<option value="in">in</option>
+														</select>
+													</div> 
+													<div class="form-group inline value">
+														<input type="text" class="form-control" id="value2" name="value2" value="" size="15">
+													</div>
+												</div>
+												<div class="valid_time">
+													<div class="picker-label1">valid from:</div><input name="start_date2" id="datetimepicker2-start" class="datetimepicker form-control" value="{{ data_generation_year }}-01-01">
+													<div class="picker-label2">to:</div><input name="end_date2" id="datetimepicker2-end" class="datetimepicker form-control" value="{{ data_generation_year | add:1 }}-01-01">
+												</div>
+											</li>
+											<li class="list-group-item narrow" id="create-new-fact-button">  	<button type="button" class="btn btn-outline-dark" onclick="newAdditionalFactInput();" ><i class="fas fa-plus"></i></button> </li>
+										</ul>  
+									</div>  
+								</div> 
+								<br>
+								<button type="button" class="btn btn-primary pull-right" onclick="next()">Next</button>
+							</div> 
+						</div>
 					</div>
-					<div class="row list-group-row row-eq-height" id="additional_facts">  
-						<div class="col-sm-1 list-group-left-column" id="additional_facts" ><span style="margin-left:-42px;margin-top:44px;width:136px;height:50px">additional&nbsp;facts on the objects</span></div>
-						<div class="col-sm-11 list-group-right-column">  
-							<ul class="list-group object-info" id="additional_facts_list"> 
-								<li class="list-group-item broad" > <!-- Additional Attribute 1 -->
-									<div>
-										<button type="button" id="format_violation1" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
-										<div class="dropdown inline">
-											<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name1">Attribute</span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
-											<div class="dropdown-menu" aria-labelledby="attributeMenu1">
-												<div id="attributeList1">
-													<input type="text" class="search" id="dropDonwSearch1" onkeyup="filterAttributeDropDown(1);" placeholder=" Search">
-													<ul id="drop-down-display1" class="list-group drop-down-display"></ul>
-													<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(1);">Reset</button>
-													<button class="btn btn-success dropdown-item-button" type="button" data-toggle="modal" data-target="#createAttributeModal">Create New Attribute</button>
-												</div>
-											</div>
-										</div>
-										<input type="hidden" id="attribute1" name="attribute1" value="">
-										<div class="form-group inline operator">
-											<select class="form-control form-control-lg" id="operator1" name="operator1">
-												<option value="=" selected>=</option>
-												<option value=">">></option>
-												<option value="<"><</option>
-												<option value="in">in</option>
-											</select>
-										</div> 
-										<div class="form-group inline value">
-											<input type="text" class="form-control" id="value1" name="value1" value="" size="15">
-										</div>
-									</div>
-									<div class="valid_time">
-										<div class="picker-label1">valid from:</div><input name="start_date1" id="datetimepicker1-start" class="datetimepicker form-control" value="{{ data_generation_year }}-01-01">
-										<div class="picker-label2">to:</div><input name="end_date1" id="datetimepicker1-end" class="datetimepicker form-control" value="{{ data_generation_year | add:1 }}-01-01">
-									</div>
-								</li>
-								<li class="list-group-item broad" > <!-- Additional Attribute 2 -->
-									<div>
-										<button type="button" id="format_violation2" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
-										<div class="dropdown inline" >
-											<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name2">Attribute</span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
-											<div class="dropdown-menu" aria-labelledby="attributeMenu2">
-												<div id="attributeList2">
-													<input type="text" class="search" id="dropDonwSearch2" onkeyup="filterAttributeDropDown(2);" placeholder=" Search">
-													<ul id="drop-down-display2" class="list-group drop-down-display"></ul>
-													<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(2);">Reset</button>
-													<button class="btn btn-success dropdown-item-button" type="button" data-toggle="modal" data-target="#createAttributeModal">Create New Attribute</button>
-												</div>
-											</div>
-										</div>
-										<input type="hidden" id="attribute2" name="attribute2" value="">
-										<div class="form-group inline operator">
-											<select class="form-control form-control-lg" id="operator2" name="operator2">
-												<option value="=" selected>=</option>
-												<option value=">">></option>
-												<option value="<"><</option>
-												<option value="in">in</option>
-											</select>
-										</div> 
-										<div class="form-group inline value">
-											<input type="text" class="form-control" id="value2" name="value2" value="" size="15">
-										</div>
-									</div>
-									<div class="valid_time">
-										<div class="picker-label1">valid from:</div><input name="start_date2" id="datetimepicker2-start" class="datetimepicker form-control" value="{{ data_generation_year }}-01-01">
-										<div class="picker-label2">to:</div><input name="end_date2" id="datetimepicker2-end" class="datetimepicker form-control" value="{{ data_generation_year | add:1 }}-01-01">
-									</div>
-								</li>
-								<li class="list-group-item narrow" id="create-new-fact-button">  	<button type="button" class="btn btn-outline-dark" onclick="newAdditionalFactInput();" ><i class="fas fa-plus"></i></button> </li>
-							</ul>  
-						</div>  
-					</div> 
-					<br>
-					<button type="button" class="btn btn-primary pull-right" onclick="next()">Next</button>
-				</div> 
-				
+				</div>	
 			</div>
-			
 		</div>
-	  </div>
+		<div class="closed-frame"><div class="small-circle">5</div><div class="closed-frame-title">Object Attributes</div></div>
+		<div class="closed-frame"><div class="small-circle">6</div><div class="closed-frame-title">Match to existing entities</div></div>
+	</div>
 	
 	
 
 	
 	{% include "tree_of_knowledge_frontend/includes/create_attribute_modal.html" %} 
 	{% include "tree_of_knowledge_frontend/includes/edit_attribute_modal.html" %} 
-	{% include "tree_of_knowledge_frontend/includes/instruction_video_modal.html" with url="https://www.youtube-nocookie.com/embed/ZVlZMOB-Sq0" %} 
 	
 
 

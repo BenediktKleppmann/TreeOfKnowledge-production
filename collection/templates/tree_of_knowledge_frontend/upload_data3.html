@@ -11,6 +11,7 @@
 <!--
 <script type="text/javascript" src="{% static 'js/bootstrap-3.4.0.min.js' %}"></script>-->
 <script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/upload_table_frame.css' %}" />
 
 
 
@@ -64,7 +65,7 @@
 		}
 		
 		#object-info {
-			height:calc(100vh - 320px);
+			height:calc(100vh - 341px);
 			overflow:auto;
 		}
 		
@@ -277,44 +278,56 @@
 
 {% block content %}
 
-	<br>
-	<h1>3 - What objects are described by the table?</h1>
-	<br>
-		{% for error in errors %}
-			<div class="error">{{ error }}</div><br>
-		{% endfor %}
+
 
 	
 	<div class="container-fluid">
-		<div class="row">
-			<div class="col-sm-7">
-				<div class="form">
-					<input type="text" value="" id="search-box" placeholder="Search" />
+		<a href="{% url 'upload_data1' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">1</div><div class="closed-frame-title">Select csv-file</div></div></a>
+		<a href="{% url 'upload_data2' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">2</div><div class="closed-frame-title">Data source</div></div></a>
+		<div class="frame">
+			<div class="big-circle">3</div>
+			<div class="window-title-top">Object type</div>
+			<div class="window">
+				<div class="window-inner">
+					<h1>What type of objects are described in the table?</h1>
 					<br>
-					<br>
-					<div class="object-type-spec-box">
-						<div id="container-for-object-tree" ></div>
-					</div>
-					<div style="margin-top:7px;margin-left:7px;">
-						Object Type not listed? &nbsp;<button id="create-object-type" type="button" class="btn btn-default" data-toggle="modal" data-target="#createObjectType">Create/Edit Object Type</button>
+					{% for error in errors %}
+						<div class="error">{{ error }}</div><br>
+					{% endfor %}
+					<div class="row">
+						<div class="col-sm-7">
+							<div class="form">
+								<input type="text" value="" id="search-box" placeholder="Search" />
+								<br>
+								<br>
+								<div class="object-type-spec-box">
+									<div id="container-for-object-tree" ></div>
+								</div>
+								<div style="margin-top:7px;margin-left:7px;">
+									Object Type not listed? &nbsp;<button id="create-object-type" type="button" class="btn btn-default" data-toggle="modal" data-target="#createObjectType">Create/Edit Object Type</button>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-5 broad-col" >
+							<form role="form" action="" method="post" class="form" enctype="multipart/form-data">
+							{% csrf_token %}
+								<div class="info-panel">
+									<div id="jstree-result"></div>
+								</div>
+								<input type="hidden" id="entire_objectInfoHTMLString" name="entire_objectInfoHTMLString" value="">
+								<input type="hidden" id="all_entry_counts" name="all_entry_counts" value="">
+								<button type="submit" class="btn btn-primary pull-right choose-button">Choose ></button>
+							</form> 
+						</div>
 					</div>
 				</div>
 			</div>
-			<div class="col-sm-5 broad-col" >
-				<form role="form" action="" method="post" class="form" enctype="multipart/form-data">
-				{% csrf_token %}
-					<div class="info-panel">
-						<div id="jstree-result"></div>
-					</div>
-					<input type="hidden" id="entire_objectInfoHTMLString" name="entire_objectInfoHTMLString" value="">
-					<input type="hidden" id="all_entry_counts" name="all_entry_counts" value="">
-					<button type="submit" class="btn btn-primary pull-right choose-button">Choose ></button>
-				</form> 
-			</div>
-			
 		</div>
-	  </div>
-	
+		<div class="closed-frame"><div class="small-circle">4</div><div class="closed-frame-title">Meta data</div></div>
+		<div class="closed-frame"><div class="small-circle">5</div><div class="closed-frame-title">Object Attributes</div></div>
+		<div class="closed-frame"><div class="small-circle">6</div><div class="closed-frame-title">Match to existing entities</div></div>
+	</div>
+
 
 	
 
@@ -450,7 +463,7 @@
 	
 	{% include "tree_of_knowledge_frontend/includes/create_attribute_modal.html" %} 
 	{% include "tree_of_knowledge_frontend/includes/edit_attribute_modal.html" %} 
-	{% include "tree_of_knowledge_frontend/includes/instruction_video_modal.html" with url="https://www.youtube-nocookie.com/embed/ZVlZMOB-Sq0" %} 
+	
 
 
 <script>

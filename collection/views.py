@@ -178,7 +178,7 @@ def upload_data2(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
 
     if request.method == 'POST':
         form2 = Uploaded_datasetForm2(data=request.POST, instance=uploaded_dataset)
@@ -190,7 +190,7 @@ def upload_data2(request, upload_id):
             return redirect('upload_data3', upload_id=upload_id)
 
     known_data_sources = get_from_db.get_known_data_sources()
-    return render(request, 'tree_of_knowledge_frontend/upload_data2.html', {'uploaded_dataset': uploaded_dataset, 'known_data_sources': known_data_sources, 'errors': errors, 'error_dict': error_dict})
+    return render(request, 'tree_of_knowledge_frontend/upload_data2.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'known_data_sources': known_data_sources, 'errors': errors, 'error_dict': error_dict})
 
 
 @login_required
@@ -200,7 +200,7 @@ def upload_data3(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
 
     
     if request.method == 'POST':
@@ -215,7 +215,7 @@ def upload_data3(request, upload_id):
             return redirect('upload_data4', upload_id=upload_id)
 
     object_hierachy_tree = get_from_db.get_object_hierachy_tree()
-    return render(request, 'tree_of_knowledge_frontend/upload_data3.html', {'uploaded_dataset': uploaded_dataset, 'object_hierachy_tree':object_hierachy_tree, 'errors': errors})
+    return render(request, 'tree_of_knowledge_frontend/upload_data3.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'object_hierachy_tree':object_hierachy_tree, 'errors': errors})
 
 
 @login_required
@@ -225,7 +225,7 @@ def upload_data4(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
 
     
     if request.method == 'POST':
@@ -244,7 +244,7 @@ def upload_data4(request, upload_id):
     data_generation_year = "2015"
     if uploaded_dataset.data_generation_date is not None:
         data_generation_year = uploaded_dataset.data_generation_date.year
-    return render(request, 'tree_of_knowledge_frontend/upload_data4.html', {'uploaded_dataset': uploaded_dataset, 'data_generation_year':data_generation_year, 'errors': errors})
+    return render(request, 'tree_of_knowledge_frontend/upload_data4.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'data_generation_year':data_generation_year, 'errors': errors})
 
 
 
@@ -256,7 +256,7 @@ def upload_data5(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
     
     if request.method == 'POST':
         form5 = Uploaded_datasetForm5(data=request.POST, instance=uploaded_dataset)
@@ -269,7 +269,7 @@ def upload_data5(request, upload_id):
             else:
                 return redirect('upload_data6B', upload_id=upload_id) #timeseries
  
-    return render(request, 'tree_of_knowledge_frontend/upload_data5.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+    return render(request, 'tree_of_knowledge_frontend/upload_data5.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
 
@@ -280,7 +280,7 @@ def upload_data6A(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
 
     if request.method == 'POST':
         form6 = Uploaded_datasetForm6(data=request.POST, instance=uploaded_dataset)
@@ -295,7 +295,7 @@ def upload_data6A(request, upload_id):
                 return redirect('upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
    
     table_attributes = upload_data.make_table_attributes_dict(uploaded_dataset)
-    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'data_table_json': uploaded_dataset.data_table_json, 'table_attributes': table_attributes, 'errors': errors})
+    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'upload_id': upload_id, 'data_table_json': uploaded_dataset.data_table_json, 'table_attributes': table_attributes, 'errors': errors})
 
 
 
@@ -306,7 +306,7 @@ def upload_data6B(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
 
     if request.method == 'POST':
         form6 = Uploaded_datasetForm6(data=request.POST, instance=uploaded_dataset)
@@ -324,7 +324,7 @@ def upload_data6B(request, upload_id):
     else: 
         data_table_json_dict = upload_data.make_data_table_json_with_distinct_entities(uploaded_dataset)
         data_table_json = json.dumps(data_table_json_dict)
-    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'data_table_json': data_table_json, 'table_attributes': table_attributes, 'errors': errors})
+    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'upload_id': upload_id, 'data_table_json': data_table_json, 'table_attributes': table_attributes, 'errors': errors})
 
 
 
@@ -336,7 +336,7 @@ def upload_data7(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
 
     
     if request.method == 'POST':
@@ -348,7 +348,7 @@ def upload_data7(request, upload_id):
             (number_of_datapoints_saved, new_model_id) = upload_data.perform_uploading(uploaded_dataset, request)
             return redirect('upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
    
-    return render(request, 'tree_of_knowledge_frontend/upload_data7.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+    return render(request, 'tree_of_knowledge_frontend/upload_data7.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
 @login_required
@@ -1389,37 +1389,10 @@ def test_page1(request):
 
 
 def test_page2(request):
-    # objects_dict = {"1":{"object_name":"Country 1","object_type_id":"j1_5","object_type_name":"Country","object_icon":"si-glyph-flag","object_id":4420,"object_attributes":{"22":{"attribute_value":"Guinea","attribute_name":"Name","attribute_data_type":"string","attribute_rule":None},"23":{"attribute_value":246000,"attribute_name":"Surface area (km2)","attribute_data_type":"real","attribute_rule":None},"24":{"attribute_value":9680000,"attribute_name":"Population","attribute_data_type":"int","attribute_rule":None},"25":{"attribute_value":9.52,"attribute_name":"Infant mortality (%)","attribute_data_type":"real","attribute_rule":None},"26":{"attribute_value":51.3,"attribute_name":"Life expectancy (years)","attribute_data_type":"real","attribute_rule":None},"27":{"attribute_value":0.831,"attribute_name":"Maternal mortality ratio (%)","attribute_data_type":"real","attribute_rule":None},"28":{"attribute_value":1.9,"attribute_name":"Population growth (%/year)","attribute_data_type":"real","attribute_rule":None},"29":{"attribute_value":51.3,"attribute_name":"Life expectancy for women (years)","attribute_data_type":"real","attribute_rule":None},"30":{"attribute_value":51.3,"attribute_name":"Life expectancy for men (years)","attribute_data_type":"real","attribute_rule":None},"31":{"attribute_value":5.9,"attribute_name":"Fertility rate","attribute_data_type":"real","attribute_rule":None},"32":{"attribute_value":39,"attribute_name":"Population density (1/km2)","attribute_data_type":"int","attribute_rule":None},"33":{"attribute_value":1826000,"attribute_name":"CO2 Emissions (tons/year)","attribute_data_type":"real","attribute_rule":None},"34":{"attribute_value":0.2,"attribute_name":"CO2 Emissions per capita (tons/year)","attribute_data_type":"real","attribute_rule":None},"35":{"attribute_value":None,"attribute_name":"Rural population with safe water (%)","attribute_data_type":"real","attribute_rule":None},"36":{"attribute_value":None,"attribute_name":"People with safe water (%)","attribute_data_type":"real","attribute_rule":None},"37":{"attribute_value":None,"attribute_name":"Urban population with safe water (%)","attribute_data_type":"real","attribute_rule":None},"38":{"attribute_value":None,"attribute_name":"Rural population with safe sanitation (%)","attribute_data_type":"real","attribute_rule":None},"39":{"attribute_value":None,"attribute_name":"People with safe sanitation (%)","attribute_data_type":"real","attribute_rule":None},"40":{"attribute_value":None,"attribute_name":"Urban population with safe sanitation (%)","attribute_data_type":"real","attribute_rule":None},"41":{"attribute_value":4840000,"attribute_name":"Female Population","attribute_data_type":"int","attribute_rule":None},"42":{"attribute_value":4840000,"attribute_name":"Male Population","attribute_data_type":"int","attribute_rule":None}},"object_rules":{"22":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"23":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"24":{"used_rules":{"1":{"id":1,"changed_var_attribute_id":24,"condition_text":None,"condition_exec":None,"effect_text":"[Population] + [Population]*([Population growth (%/year)] /100)* [delta_t (years)]","effect_exec":"df.attr24 + df.attr24*(df.attr28 /100)* (df.delta_t/315360000)","effect_is_calculation":True,"used_attribute_ids":"[\"24\", \"28\"]","is_conditionless":True,"has_probability_1":True,"probability":None,"standard_dev":None,"learn_posterior":False},"2":{"id":2,"changed_var_attribute_id":24,"condition_text":None,"condition_exec":None,"effect_text":"[Population] + ([Female Population]*[Fertility rate]/[Life expectancy for women (years)] ) - ([Population]/[Life expectancy (years)])","effect_exec":"int(df.attr24 + (df.attr41*df.attr31/df.attr29 ) - (df.attr24/df.attr26))","effect_is_calculation":True,"used_attribute_ids":"[\"24\", \"26\", \"29\", \"31\", \"41\"]","is_conditionless":True,"has_probability_1":True,"probability":None,"standard_dev":None,"learn_posterior":False}},"not_used_rules":{},"execution_order":[1,2]},"25":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"26":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"27":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"28":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"29":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"30":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"31":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"32":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"33":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"34":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"35":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"36":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"37":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"38":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"39":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"40":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"41":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"42":{"used_rules":{"3":{"id":3,"changed_var_attribute_id":42,"condition_text":"[People with safe sanitation (%)] < 3","condition_exec":"df.attr39 < 3","effect_text":"[Population] * .098","effect_exec":"int(df.attr24 * .098)","effect_is_calculation":True,"used_attribute_ids":"['39', '24']","is_conditionless":False,"has_probability_1":False,"probability":None,"standard_dev":None,"learn_posterior":True}},"not_used_rules":{},"execution_order":[3]}},"object_filter_facts":[],"object_relations":[],"position":{"x":90,"y":162},"get_new_object_data":True},"2":{"object_name":"Country 2","object_type_id":"j1_5","object_type_name":"Country","object_icon":"si-glyph-flag","object_id":4408,"object_attributes":{"22":{"attribute_value":"Ethiopia","attribute_name":"Name","attribute_data_type":"string","attribute_rule":None},"23":{"attribute_value":1104000,"attribute_name":"Surface area (km2)","attribute_data_type":"real","attribute_rule":None},"24":{"attribute_value":76730000,"attribute_name":"Population","attribute_data_type":"int","attribute_rule":None},"25":{"attribute_value":7.8,"attribute_name":"Infant mortality (%)","attribute_data_type":"real","attribute_rule":None},"26":{"attribute_value":53.6,"attribute_name":"Life expectancy (years)","attribute_data_type":"real","attribute_rule":None},"27":{"attribute_value":0.743,"attribute_name":"Maternal mortality ratio (%)","attribute_data_type":"real","attribute_rule":None},"28":{"attribute_value":2.9,"attribute_name":"Population growth (%/year)","attribute_data_type":"real","attribute_rule":None},"29":{"attribute_value":55,"attribute_name":"Life expectancy for women (years)","attribute_data_type":"real","attribute_rule":None},"30":{"attribute_value":52.3,"attribute_name":"Life expectancy for men (years)","attribute_data_type":"real","attribute_rule":None},"31":{"attribute_value":6.1,"attribute_name":"Fertility rate","attribute_data_type":"real","attribute_rule":None},"32":{"attribute_value":76,"attribute_name":"Population density (1/km2)","attribute_data_type":"int","attribute_rule":None},"33":{"attribute_value":5119000,"attribute_name":"CO2 Emissions (tons/year)","attribute_data_type":"real","attribute_rule":None},"34":{"attribute_value":0.1,"attribute_name":"CO2 Emissions per capita (tons/year)","attribute_data_type":"real","attribute_rule":None},"35":{"attribute_value":0.5,"attribute_name":"Rural population with safe water (%)","attribute_data_type":"real","attribute_rule":None},"36":{"attribute_value":6.1,"attribute_name":"People with safe water (%)","attribute_data_type":"real","attribute_rule":None},"37":{"attribute_value":36,"attribute_name":"Urban population with safe water (%)","attribute_data_type":"real","attribute_rule":None},"38":{"attribute_value":1.9,"attribute_name":"Rural population with safe sanitation (%)","attribute_data_type":"real","attribute_rule":None},"39":{"attribute_value":None,"attribute_name":"People with safe sanitation (%)","attribute_data_type":"real","attribute_rule":None},"40":{"attribute_value":None,"attribute_name":"Urban population with safe sanitation (%)","attribute_data_type":"real","attribute_rule":None},"41":{"attribute_value":38450000,"attribute_name":"Female Population","attribute_data_type":"int","attribute_rule":None},"42":{"attribute_value":38280000,"attribute_name":"Male Population","attribute_data_type":"int","attribute_rule":None}},"object_rules":{"22":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"23":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"24":{"used_rules":{"1":{"id":1,"changed_var_attribute_id":24,"condition_text":None,"condition_exec":None,"effect_text":"[Population] + [Population]*([Population growth (%/year)] /100)* [delta_t (years)]","effect_exec":"df.attr24 + df.attr24*(df.attr28 /100)* (df.delta_t/315360000)","effect_is_calculation":True,"used_attribute_ids":"[\"24\", \"28\"]","is_conditionless":True,"has_probability_1":True,"probability":None,"standard_dev":None,"learn_posterior":False},"2":{"id":2,"changed_var_attribute_id":24,"condition_text":None,"condition_exec":None,"effect_text":"[Population] + ([Female Population]*[Fertility rate]/[Life expectancy for women (years)] ) - ([Population]/[Life expectancy (years)])","effect_exec":"int(df.attr24 + (df.attr41*df.attr31/df.attr29 ) - (df.attr24/df.attr26))","effect_is_calculation":True,"used_attribute_ids":"[\"24\", \"26\", \"29\", \"31\", \"41\"]","is_conditionless":True,"has_probability_1":True,"probability":None,"standard_dev":None,"learn_posterior":False}},"not_used_rules":{},"execution_order":[1,2]},"25":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"26":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"27":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"28":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"29":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"30":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"31":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"32":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"33":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"34":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"35":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"36":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"37":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"38":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"39":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"40":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"41":{"used_rules":{},"not_used_rules":{},"execution_order":[]},"42":{"used_rules":{"3":{"id":3,"changed_var_attribute_id":42,"condition_text":"[People with safe sanitation (%)] < 3","condition_exec":"df.attr39 < 3","effect_text":"[Population] * .098","effect_exec":"int(df.attr24 * .098)","effect_is_calculation":True,"used_attribute_ids":"['39', '24']","is_conditionless":False,"has_probability_1":False,"probability":None,"standard_dev":None,"learn_posterior":True}},"not_used_rules":{},"execution_order":[3]}},"object_filter_facts":[],"object_relations":[],"position":{"x":236,"y":193},"get_new_object_data":True}}
-    # simulation_start_time = 946681200
-    # simulation_start_time = 1135551600
-    # Likelihood_fuction.objects.all().delete()
-    # bla = list(Simulation_model.objects.filter(id=143).values())
-    # blu = list(Rule.objects.all().values())
-    # blu = Simulation_model.objects.get(id=170)
-    # print(str(blu.simulation_start_time))
-    # print(str(blu.simulation_end_time))
-    # print(str(blu.timestep_size))
-    # with open("C:/Users/l412/Documents/2 temporary stuff/2019-08-13/test.txt","w") as text_file:
-    #     text_file.write(str(blu))
-    # df = query_datapoints.get_data_from_related_objects(objects_dict, simulation_start_time, simulation_end_time)
-    # df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2019-07-31/test3.csv', index=False)
-    blu = list(Rule.objects.filter(id__in=[14,15,16]).values())
-
-
-
-    # object_ids = [2899, 2900, 2901, 2902, 4357, 4358, 4359, 4360, 4361, 4362, 4363, 4364, 4365, 4366, 4367, 4368, 4369, 4370, 4371, 4372, 4373, 4374, 4375, 4376, 4377, 4378, 4379, 4380, 4381, 4382, 4383, 4384, 4385, 4386, 4387, 4388, 4389, 4390, 4391, 4392, 4393, 4394, 4395, 4396, 4397, 4398, 4399, 4400, 4401, 4402, 4403, 4404, 4405, 4406, 4407, 4408, 4409, 4410, 4411, 4412, 4413, 4414, 4415, 4416, 4417, 4418, 4419, 4420, 4421, 4422, 4423, 4424, 4425, 4426, 4427, 4428, 4429, 4430, 4431, 4432, 4433, 4434, 4435, 4436, 4437, 4438, 4439, 4440, 4441, 4442, 4443, 4444, 4445, 4446, 4447, 4448, 4449, 4450, 4451, 4452, 4453, 4454, 4455, 4456, 4457, 4458, 4459, 4460, 4461, 4462, 4463, 4464, 4465, 4466, 4467, 4468, 4469, 4470, 4471, 4472, 4473, 4474, 4475, 4476, 4477, 4478, 4479, 4480, 4481, 4482, 4483, 4484, 4485, 4486, 4487, 4488, 4489, 4490, 4491, 4492, 4493, 4494, 4495, 4496, 4497, 4498, 4499, 4500, 4501, 4502, 4503, 4504, 4505, 4506, 4507, 4508, 4509, 4510, 4511, 4512, 4513, 4514, 4515, 4516, 4517, 4518, 4519, 4520, 4521, 4522, 4523, 4524, 4525, 4526, 4527, 4528, 4529, 4530, 4531, 4532, 4533, 4534, 4535, 4536, 4537, 4538, 4539]
-    # filter_facts = []
-    # times = [978220800, 1009756800, 1041292800, 1072828800, 1104364800, 1135900800, 1167436800, 1198972800, 1230508800, 1262044800, 1293580800, 1325116800, 1356652800, 1388188800, 1419724800, 1451260800, 1482796800, 1514332800, 1545868800, 1577404800]
-    # for period in range(len(times)-1):
-    #     specified_start_time = times[period]
-    #     specified_end_time = times[period + 1]
-    #     broad_table_df = query_datapoints.filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time) 
-
-    #     print('################################################################')
-    #     print(broad_table_df)
-    #     print('################################################################')
+    # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
+    bla = list(Attribute.objects.filter(id=24).values())
     # return HttpResponse('success')
-    return HttpResponse(json.dumps(blu))
+    return HttpResponse(json.dumps(bla))
 
     
 

@@ -410,8 +410,6 @@
 	<script type="text/javascript" src="{% static 'js/bootstrap-3.4.0.min.js' %}"></script>
 	{% include "tree_of_knowledge_frontend/includes/additional_facts_functions.html" %} 
 
-	{% include "tree_of_knowledge_frontend/includes/edit_object_behaviour_modal.html" %} 
-	{% include "tree_of_knowledge_frontend/includes/edit_object_type_behaviour_modal.html" %} 
 	
 	
 
@@ -831,6 +829,13 @@
 		total_object_count -= 1;
 		object_type_counts[object_type_id] -= 1;
 		if (object_type_counts[object_type_id] == 0) {delete object_type_counts[object_type_id];}
+		
+		// remove y0_values from this object
+		for (var i = 0; i < y_value_attributes.length; i++) {
+			if (y_value_attributes[i]['object_number'] == object_number) {
+				y_value_attributes.splice(i, 1);
+			}
+		}
 		
 		
 
@@ -1411,6 +1416,10 @@
 </script>
 
 
+
+{% include "tree_of_knowledge_frontend/includes/edit_object_behaviour_modal.html" %} 
+{% include "tree_of_knowledge_frontend/includes/edit_object_type_behaviour_modal.html" %} 
+	
 
 	
 {% endblock %}

@@ -157,6 +157,7 @@ class Simulation_model(models.Model):
     rule_infos = models.TextField(null=True)
     triggered_rules = models.TextField(null=True)
     simulation_data = models.TextField(null=True)
+    correct_values = models.TextField(null=True)
     errors = models.TextField(null=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,)
     created = models.DateTimeField(editable=False)

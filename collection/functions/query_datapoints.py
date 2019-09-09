@@ -257,6 +257,11 @@ def get_data_from_random_related_object(objects_dict, specified_start_time, spec
 
             for object_column in object_columns:
                 attribute_id = object_column.split('attr')[1]
+                print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+                print(merged_object_data_tables.columns)
+                print(object_columns)
+                print(attribute_id)
+                print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
                 attribute_record = Attribute.objects.get(id=attribute_id)
                 all_attribute_values[object_number]['object_attributes'][attribute_id] = {  'attribute_value': merged_object_data_tables['obj' + str(object_number) + 'attr' + str(attribute_id)].iloc[chosen_row], 
                                                                                             'attribute_name':attribute_record.name, 
@@ -301,22 +306,30 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
 
 
     # PART2: merge the broad_table_dfs according to the relations
-    merged_object_data_tables = object_data_tables[object_numbers[0]]
-    list_of_added_tables = [object_numbers[0]]
+    merged_object_data_tables = pd.DataFrame({'cross_join_column':[1]})
+    list_of_added_tables = []
 
     for object_number in object_numbers:
         if object_number not in list_of_added_tables:
             merged_object_data_tables = pd.merge(merged_object_data_tables , object_data_tables[object_number] , on='cross_join_column', how='inner')
             list_of_added_tables.append(object_number)
 
+            
+
         
         object_relations = objects_dict[object_number]['object_relations']
         for relation in object_relations:
-            target_object_number = relation['target_object_number']
+            target_object_number = str(relation['target_object_number'])
             attribute_id_column = 'obj' + str(object_number) + 'attr' + str(relation['attribute_id'])           
-            merged_object_data_tables = pd.merge(merged_object_data_tables, object_data_tables[str(target_object_number)], left_on=attribute_id_column, right_on=str(target_object_number) + '-object_id', how='inner', suffixes=('-old', ''))
-            list_of_added_tables.append(str(target_object_number))
-            # merged_object_data_tables = merged_object_data_tables[[column for column in merged_object_data_tables.columns if len(column.split('attr')) <3]]
+            merged_object_data_tables = pd.merge(merged_object_data_tables, object_data_tables[str(target_object_number)], left_on=attribute_id_column, right_on='obj' +str(target_object_number) + 'attrobject_id', how='inner', suffixes=('-old', ''))
+            if target_object_number not in list_of_added_tables:
+                list_of_added_tables.append(target_object_number)
+            else:
+                merged_object_data_tables[merged_object_data_tables['obj' + target_object_number + 'attrobject_id']==merged_object_data_tables['obj' + str(target_object_number) + 'attrobject_id-old']]
+                columns_without_old = [col for col in merged_object_data_tables.columns if col[-4:]!='-old']
+                merged_object_data_tables = merged_object_data_tables[columns_without_old]
+
+             # merged_object_data_tables = merged_object_data_tables[[column for column in merged_object_data_tables.columns if len(column.split('attr')) <3]]
 
     return merged_object_data_tables
 

@@ -18,6 +18,7 @@
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 <script src="{% static 'js/contextmenu.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/upload_table_frame.css' %}" />
 
 
 
@@ -28,7 +29,7 @@
 		}
 		
 		.next-button {
-			margin-top: 11px;
+			margin-top: 16px;
 		}
 		/* --- Table box ----------------------------------------------------------- */
 		
@@ -36,7 +37,7 @@
 			/*position: absolute;*/
 			top: 40px;
 			left: 0;
-			height:calc(100vh - 210px);
+			height:calc(100vh - 220px);
 			border: 1px solid rgb(210, 210, 210);
 			padding:2px;
 		
@@ -285,33 +286,45 @@
 {% endblock %}
 
 {% block content %}
+	<a href="{% url 'upload_data1' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">1</div><div class="closed-frame-title">Select csv-file</div></div></a>
+	<a href="{% url 'upload_data2' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">2</div><div class="closed-frame-title">Data source</div></div></a>
+	<a href="{% url 'upload_data3' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">3</div><div class="closed-frame-title">Object type</div></div></a>
+	<a href="{% url 'upload_data4' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">4</div><div class="closed-frame-title">Meta data</div></div></a>
+	<div class="frame">
+		<div class="big-circle">5</div>
+		<div class="window-title-top">Object Attributes</div>
+		<div class="window">
+			<div class="window-inner">
+				{% for error in errors %}
+					<div class="error">{{ error }}</div><br>
+				{% endfor %}
+				<h1>What are the columns?</h1>
 
-	{% for error in errors %}
-		<div class="error">{{ error }}</div><br>
-	{% endfor %}
-	<br>
-	<h1>5 - What are the columns?</h1>
 
-
-	
-	<div class="form">
-		<div class="form-group">
-			<div class="box">
-				<div class="overflowing-content">			
-					<div class="table-box">
-						<div id="attribute_selection"></div>
-						<div id="unique_identifier_selection" class="btn-group" data-toggle="buttons" style="display:none;"></div>
-						<div id="uploaded_table"></div>
-						<div id="column_transformations"></div>
+				
+				<div class="form">
+					<div class="form-group">
+						<div class="box">
+							<div class="overflowing-content">			
+								<div class="table-box">
+									<div id="attribute_selection"></div>
+									<div id="unique_identifier_selection" class="btn-group" data-toggle="buttons" style="display:none;"></div>
+									<div id="uploaded_table"></div>
+									<div id="column_transformations"></div>
+								</div>
+							</div>
+						</div>
+						<button type="button" class="btn btn-primary pull-right next-button" onclick="next()">Next</button>
 					</div>
-				</div>
+				</div>	
+				
+				<br>
+				<br>
 			</div>
-			<button type="button" class="btn btn-primary pull-right next-button" onclick="next()">Next</button>
 		</div>
-	</div>	
-	
-	<br>
-	<br>
+	</div>
+	<div class="closed-frame"><div class="small-circle">6</div><div class="closed-frame-title">Match to existing entities</div></div>
+
 	
 
 

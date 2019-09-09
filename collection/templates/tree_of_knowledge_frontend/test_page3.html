@@ -10,174 +10,93 @@
   <link href="https://cdn.anychart.com/releases/v8/fonts/css/anychart-font.min.css?hcode=be5162d915534272a57d0bb781d27f2b" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="{% static 'css/bootstrap-3.4.0.min.css' %}" />
 	
+<style>
+
+
+
+	/* --------------------------------------------------------------------------*/
+	/* Panels -------------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+	.left-panel {
+		float:left;
+		display: inline-block;
+		width: 256px;
+		height:calc(100vh - 59px);
+		background: rgb(226, 226, 226);
+	}
+	
+	/* Right */
+	.right-panel-container {
+		display: inline-block;
+		display: flex;
+		flex-direction: column;
+		border: 1px solid silver;
+		overflow: hidden;
+		xtouch-action: none; /* avoid browser level touch actions */
+		height:calc(100vh - 59px);
+	}
+
+	#top-panel {
+	  flex: 0 0 auto;  /* only manually resize */
+	  height: 55%;
+	  min-height: 150px;
+	  width: 100%;
+	  //white-space: nowrap;
+	}
+
+	#splitter {
+	  flex: 0 0 auto;
+	  height: 4px;  
+	  background: rgb(225, 225, 225);
+	  border: 1px solid rgb(200, 200, 200);
+	  cursor: row-resize; 
+	  //box-shadow: 0px  -2px 6px 0 rgba(0, 0, 0, 0.14);
+	  z-index: 1;
+	}
+
+	#bottom-panel {
+	  flex: 1 1 auto;   /* resizable */
+	  padding-right: 10px;
+	  min-height: 200px;
+	  width: 100%;
+	  height: 100%;
+	  overflow-x: scroll;
+	  background: rgb(255,255,255);
+	}
+	
+
+					
+	
+	
+	
+	
+
+
+</style>	
 
 
 
 {% endblock %}	
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-6">
-            Examples of list groups in multiple columns. Pros and cons of each scenario.
-        </div>
-        <div class="col-6">
-            <!-- method 1 - sizing classes -->
-            <div class="list-group d-flex flex-row flex-wrap">
-                <a href="#alerts" class="list-group-item w-50 list-group-item-action">
-                Alerts
-              </a>
-                <a href="#alerts" class="list-group-item w-50 list-group-item-action">
-                Badges
-              </a>
-                <a href="#alerts" class="list-group-item w-50 list-group-item-action">
-                Breadcrumbs
-              </a>
-                <a href="#alerts" class="list-group-item w-50 list-group-item-action">
-                Buttons
-              </a>
-                <a href="#alerts" class="list-group-item w-50 list-group-item-action">
-                Cards
-              </a>
-                <a href="#alerts" class="list-group-item w-50 list-group-item-action">
-                Modals
-              </a>
-                <a href="#alerts" class="list-group-item w-50 list-group-item-action">
-                Lists
-              </a>
-                <a href="#alerts" class="list-group-item w-50 list-group-item-action">
-                Tabs
-              </a>
-            </div>
-        </div>
-        <hr class="w-100">
-        <div class="col-6">
-            <!-- method 2 - seperate list groups in gutterless columns -->
-            <div class="row no-gutters">
-                <div class="col-6">
-                    <div class="d-flex flex-row flex-wrap">
-                        <a href="#alerts" class="list-group-item list-group-item-action">
-                            Alerts
-                          </a>
-                        <a href="#alerts" class="list-group-item list-group-item-action">
-                            Badges
-                          </a>
-                            <a href="#alerts" class="list-group-item list-group-item-action">
-                            Breadcrumbs
-                          </a>
-                        <a href="#alerts" class="list-group-item list-group-item-action">
-                            Buttons
-                          </a>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="d-flex flex-row flex-wrap">
-                        <a href="#alerts" class="list-group-item list-group-item-action">
-                            Cards
-                          </a>
-                        <a href="#alerts" class="list-group-item list-group-item-action">
-                            Modals
-                          </a>
-                        <a href="#alerts" class="list-group-item list-group-item-action">
-                            Lists
-                          </a>
-                        <a href="#alerts" class="list-group-item list-group-item-action">
-                            Tabs
-                          </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6">
-            <!-- method 3 with cards  -->
-            <div class="d-flex flex-row flex-wrap ">
-                <a href="#alerts" class="card p-2 px-3 w-50 list-group-item-action">
-                Alerts
-              </a>
-                <a href="#alerts" class="card p-2 px-3 w-50 list-group-item-action">
-                Badges
-              </a>
-                <a href="#alerts" class="card p-2 px-3 w-50 list-group-item-action">
-                Breadcrumbs
-              </a>
-                <a href="#alerts" class="card p-2 px-3 w-50 list-group-item-action">
-                Buttons
-              </a>
-                <a href="#alerts" class="card p-2 px-3 w-50 list-group-item-action">
-                Cards
-              </a>
-                <a href="#alerts" class="card p-2 px-3 w-50 list-group-item-action">
-                Modals
-              </a>
-                <a href="#alerts" class="card p-2 px-3 w-50 list-group-item-action">
-                Lists
-              </a>
-                <a href="#alerts" class="card p-2 px-3 w-50 list-group-item-action">
-                Tabs
-              </a>
-            </div>
-        </div>
-        <hr class="w-100">
-        <div class="col-6">
-            <!-- method 4 - just use border, width and padding -->
-            <div class="d-flex flex-row flex-wrap">
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    1 Alerts
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    2 Badges
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    3 Breadcrumbs
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    4 Buttons
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    5 Cards
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    6 Modals
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    7 Tabs
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    8 Tables
-                </a>
-            </div>
-        </div>
-        <div class="col-6">
-            <!-- method 4 - just use border, width and padding -->
-            <div class="d-flex flex-column flex-nowrap">
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    1 Alerts
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    2 Badges
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    3 Breadcrumbs
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    4 Buttons
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    5 Cards
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    6 Modals
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    7 Tabs
-                </a>
-                <a href="#alerts" class="border p-2 w-50 list-group-item-action">
-                    8 Tables
-                </a>
-            </div>
-        </div>
-        <hr class="w-100">
-    </div>
+<div id="score-box">Overall Score: <div id="simulation-score"></div></div>
+<div class="left-panel">
+	<div class="simulation-selection-area">
+		<div class="simulation-selection-box">
+			<button id="all-simulations-button" class="btn btn-light simulation-selection-button" type="button" onclick="selectAllSimulations()">All Simulations</button>
+			<button id="correct-simulations-button" class="btn btn-light simulation-selection-button" type="button" onclick="selectCorrectSimulations()">Correct Simulations</button>
+			<button id="false-simulations-button" class="btn btn-light simulation-selection-button" type="button" onclick="selectFalseSimulations()">False Simulations</button>
+		</div>
+		<div id="initial-state-simulation-selection-buttons" class="simulation-selection-box"></div>
+		<div id="individual-simulation-selection-buttons" class="simulation-selection-box"></div>
+	</div>
+</div>
+<div class="right-panel-container">
+	<div id="top-panel"></div>
+	<div id="splitter"></div>
+	<div id="bottom-panel">	
+		<ul id="bottom-object-items"></ul>
+	</div>
 </div>
 
 
@@ -194,6 +113,1054 @@
 <script type="text/javascript" src="https://rawgit.com/RickStrahl/jquery-resizable/master/src/jquery-resizable.js"></script>
 
 
+ <!--
+<script type="text/javascript">
+	// GLOBAL VARIABLES:
+	objects_dict = {{ simulation_model.objects_dict|safe }};
+	y_value_attributes = {{ simulation_model.y_value_attributes|safe }};
+	just_learned_rules = {{ simulation_model.just_learned_rules|safe }};
+	rule_infos = {{ simulation_model.rule_infos|safe }};
+	triggered_rules = {{ simulation_model.triggered_rules|safe }};
+	simulation_data = {{ simulation_model.simulation_data|safe }};
+	correct_values = {{ simulation_model.correct_values|safe }};
+	errors = {{ simulation_model.errors|safe }};
+	
+	is_timeseries_analysis = {{ simulation_model.is_timeseries_analysis|yesno:"true,false" }};
+	simulation_start_time = {{ simulation_model.simulation_start_time }};
+    simulation_end_time = {{ simulation_model.simulation_end_time }};
+    timestep_size = {{ simulation_model.timestep_size }};
+	
+	var number_of_periods;
+	if (is_timeseries_analysis) {
+		number_of_periods = Math.floor((simulation_end_time - simulation_start_time)/timestep_size) - 1;
+	} else {
+		number_of_periods = 1;
+	}
+
+
+	
+	var selected_simulations = new Set(); 
+	var all_simulations_list = Object.keys(simulation_data);
+	var selected_object_attribute = null;
+
+			
+	var clicked_selection_buttons = {'select_all_clicked': false, 'select_correct_clicked': false, 'select_false_clicked': false};
+	var delta_t_list = ['delta_t (years)', 'delta_t (months)', 'delta_t (days)', 'delta_t (hours)', 'delta_t (minutes)', 'delta_t (seconds)'];
+	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1];
+	var error_colours = ['#97CF99', '#97CF97', '#98CF97', '#9ACF97', '#9CCF97', '#9DCF97', '#9FCF97', '#A1CF97', '#A3CF97', '#A5CF97', '#A6CF97', '#A8CF97', '#AACF97', '#ACCF98', '#AECF98', '#AFCF98', '#B1CF98', '#B3CF98', '#B5CF98', '#B6CF98', '#B8CF98', '#BACF98', '#BCCF98', '#BDCF98', '#BFCF98', '#C1CF98', '#C2CF99', '#C4CF99', '#C6CF99', '#C8CF99', '#C9CF99', '#CBCF99', '#CDD099', '#CFD099', '#D0CF99', '#D0CD99', '#D0CC99', '#D0CA99', '#D0C89A', '#D0C79A', '#D0C59A', '#D0C39A', '#D0C29A', '#D0C09A', '#D0BF9A', '#D0BD9A', '#D0BB9A', '#D0BA9A', '#D0B89A', '#D0B79A', '#D0B59A', '#D0B39B', '#D0B29B', '#D0B09B', '#D0AF9B', '#D0AD9B', '#D0AB9B', '#D0AA9B', '#D0A89B', '#D0A79B', '#D0A59B', '#D0A49B', '#D0A29B', '#D1A19C']
+	
+
+
+
+
+	//========================================================================
+	//========================================================================
+	//=========================   LEFT PANEL      ============================
+	//========================================================================
+	//========================================================================
+
+	
+
+	//== draw buttons ================================================================================================
+	function drawLeftPanel() {
+	
+		initial_state_ids = []; 
+		var all_simulation_numbers = Object.keys(simulation_data);
+		for (var i = 0; i < all_simulation_numbers.length; i++) {
+			var initial_state_id = all_simulation_numbers[i].split('-')[0];
+			if (!initial_state_ids.includes(initial_state_id)) {
+				initial_state_ids.push(initial_state_id);
+			}
+		}	
+		
+		var initial_state_selection_buttons = '';
+		for (var i = 0; i < initial_state_ids.length; i++) {
+			initial_state_selection_buttons += '<button id="initial-state-btn' + i + '" class="btn btn-light simulation-selection-button" type="button" onclick="selectSimulationsWithInitialState(' + initial_state_ids[i] + ')">All with Intital State ' + initial_state_ids[i] + '</button>';
+		}	
+		$('#initial-state-simulation-selection-buttons').html(initial_state_selection_buttons);
+		
+		var individual_selection_buttons = '';
+		for (var i = 0; i < all_simulation_numbers.length; i++) {
+			individual_selection_buttons += '<button id="selection-button-' + all_simulation_numbers[i] + '" class="btn btn-light simulation-selection-button simulation-toggle" type="button" onclick="selectSimulation(\'' + all_simulation_numbers[i] + '\')">Simulation ' + i + '</button>'
+		}	
+		$('#individual-simulation-selection-buttons').html(individual_selection_buttons);
+	} 
+
+
+	
+	
+	
+	
+	
+	//All Simulations -------------------------------  
+	
+	function selectAllSimulations() {	
+		$('#all-simulations-button').toggleClass('active');
+
+		if (clicked_selection_buttons['select_all_clicked']) {
+			clicked_selection_buttons['select_all_clicked'] = false;
+			
+			selected_simulations = new Set()		
+			$('.simulation-toggle').removeClass('active');
+			$('#bottom-object-items').html('');
+			$('#graph-panel').html('');
+		} else {
+			clicked_selection_buttons['select_all_clicked'] = true;
+			
+			all_simulation_numbers = Object.keys(simulation_data);
+			for (var i = 0; i < all_simulation_numbers.length; i++) {
+				selected_simulations.add(all_simulation_numbers[i]);
+			}		
+			$('.simulation-toggle').addClass('active');
+			
+			refreshRestOfScreen();
+		}
+	}
+	
+	//Correct Simulations  -------------------------------
+	function selectCorrectSimulations() {
+		$('#correct-simulations-button').toggleClass('active');
+		if (clicked_selection_buttons['select_correct_clicked']) {
+			clicked_selection_buttons['select_correct_clicked'] = false;
+			
+			for (var i = 0; i < errors['correct_simulations'].length; i++) {
+				var simulation_number = errors['correct_simulations'][i];
+				selected_simulations.delete(simulation_number);
+				$('#selection-button-' + simulation_number).removeClass('active');
+			}
+				
+		} else {
+			clicked_selection_buttons['select_correct_clicked'] = true;
+			
+			for (var i = 0; i < errors['correct_simulations'].length; i++) {
+				var simulation_number = errors['correct_simulations'][i];
+				selected_simulations.add(simulation_number);
+				$('#selection-button-' + simulation_number).addClass('active');
+			}
+		}
+		refreshRestOfScreen();
+	}
+	
+	//False Simulations  -------------------------------
+	function selectFalseSimulations() {
+		$('#false-simulations-button').toggleClass('active');
+		if (clicked_selection_buttons['select_false_clicked']) {
+			clicked_selection_buttons['select_false_clicked'] = false;
+			
+			for (var i = 0; i < errors['false_simulations'].length; i++) {
+				var simulation_number = errors['false_simulations'][i];
+				selected_simulations.delete(simulation_number);
+				$('#selection-button-' + simulation_number).removeClass('active');
+			}
+				
+		} else {
+			clicked_selection_buttons['select_false_clicked'] = true;
+			
+			for (var i = 0; i < errors['false_simulations'].length; i++) {
+				var simulation_number = errors['false_simulations'][i];
+				selected_simulations.add(simulation_number);
+				$('#selection-button-' + simulation_number).addClass('active');
+			}
+		}
+		refreshRestOfScreen();
+	}
+	
+	//All with Initial State X  -------------------------------
+	function selectSimulationsWithInitialState(initial_state_id) {
+		$('#initial-state-btn' + initial_state_id).toggleClass('active');
+		if (clicked_selection_buttons['select_initial_state' + initial_state_id +'_clicked']) {
+			clicked_selection_buttons['select_initial_state' + initial_state_id +'_clicked'] = false;
+			
+			var all_simulation_numbers = Object.keys(simulation_data);
+			for (var i = 0; i < all_simulation_numbers.length; i++) {
+				if (all_simulation_numbers[i].split('-')[0] == String(initial_state_id)) {
+					selected_simulations.delete(all_simulation_numbers[i]);
+					$('#selection-button-' + all_simulation_numbers[i]).removeClass('active');
+				}
+			}		
+		} else {
+			clicked_selection_buttons['select_initial_state' + initial_state_id +'_clicked'] = true;
+			
+			var all_simulation_numbers = Object.keys(simulation_data);
+			for (var i = 0; i < all_simulation_numbers.length; i++) {
+				if (all_simulation_numbers[i].split('-')[0] == String(initial_state_id)) {
+					selected_simulations.add(all_simulation_numbers[i]);
+					$('#selection-button-' + all_simulation_numbers[i]).addClass('active');
+				}
+			}	
+		}
+		refreshRestOfScreen();
+	}
+	
+	//Simulation X  -------------------------------
+	function selectSimulation(simulation_number) {
+		if ($('#selection-button-' + simulation_number).hasClass('active')) {
+			selected_simulations.delete(simulation_number);
+			$('#selection-button-' + simulation_number).removeClass('active');
+		} else {
+			selected_simulations.add(simulation_number);
+			$('#selection-button-' + simulation_number).addClass('active');
+		}
+		refreshRestOfScreen();
+	}
+	
+	
+	
+	
+	function refreshRestOfScreen() {
+	
+		drawBottomPanel();
+		fillBottomPanel('mean');
+		if (selected_object_attribute != null) {
+			var object_number = selected_object_attribute['object_number']
+			var attribute_id = selected_object_attribute['attribute_id']
+			var period_number = selected_object_attribute['period_number']
+			if (period_number == null) {
+				drawTopPanel_Attribute(object_number, attribute_id);
+			} else {
+				drawTopPanel_AttributeValue(object_number, attribute_id, period_number);
+			}
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	//========================================================================
+	//========================================================================
+	//=====================    BOTTOM PANEL      =============================
+	//========================================================================
+	//========================================================================
+	
+	
+	// Draw Object Boxes  -------------------------------
+	function drawBottomPanel() {
+		var object_items_html = '';
+		
+		var selected_simulations_list = Array.from(selected_simulations);
+		if (selected_simulations_list.length > 0) {
+			var object_numbers = Object.keys(objects_dict);
+			for (var i = 0; i < object_numbers.length; i++) {
+				var object_number = object_numbers[i];
+				object_items_html = '<li class="bottom-object-item">' +
+										'<div class="bottom-object-outer-box">' + 
+											'<img class="bottom-object-icon" src="{% static "images/object_icons/" %}' + objects_dict[object_number]['object_icon'] + '.svg">' +
+											'<div class="bottom-object-name">' + objects_dict[object_number]['object_name'] + '</div>' + 
+											'<span id="object-box-triangle-' + object_number + '" class="glyphicon glyphicon-triangle-top collapse-triangle" onclick="collapseExpandObjectInnerBox(' + object_number + ');"></span>' +
+											'<div id="object-inner-box' + object_number + '" class="bottom-object-inner-box">';
+				
+				attribute_ids = Object.keys(objects_dict[object_number]['object_attributes']);
+				for (var j = 0; j < attribute_ids.length; j++) {
+					var attribute_id = attribute_ids[j];
+					
+					object_items_html += 		'<div class="bottom-object-data-row" style="width:' + String(175 + 57*(number_of_periods)) + 'px;">' +
+													'<div class="bottom-attribute-name" onclick="drawTopPanel_Attribute(' + object_number + ',' + attribute_id + ')">' + objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'] + '</div>' +
+													'<div class="bottom-attribute-values">';
+						
+					for (var period_number = 0; period_number < number_of_periods; period_number++) {
+						object_items_html += 			'<div id="' + object_number + '-' + attribute_id + '-' + period_number + '" class="attribute-value" onclick="drawTopPanel_AttributeValue(' + object_number + ',' + attribute_id + ',' + period_number + ')"></div>';
+					}
+					object_items_html += 			'</div>	' +
+												'</div>';
+				}
+				object_items_html += 		'</div>	' +
+										'</div>' + 						
+									'</li>';
+			}
+		}
+		
+		$('#bottom-object-items').html(object_items_html);
+		
+		// make sure the height of .bottom-attribute-values fits even if the attribute name goes over two rows
+		var attribute_name_height = 20;
+		$( ".bottom-object-data-row" ).each(function() {
+		  attribute_name_height = $(this).children(".bottom-attribute-name" ).first().height();
+		  $(this).children(".bottom-attribute-values" ).first().height(attribute_name_height + 12);
+		  $(this).height(attribute_name_height + 12);
+		});
+
+	}
+	
+	
+	
+
+	
+	// Fill in Values  -------------------------------
+	function fillBottomPanel(metric) {
+		
+		var selected_simulations_list = Array.from(selected_simulations);
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			var object_number = object_numbers[i];
+			
+			var attribute_ids = Object.keys(objects_dict[object_number]['object_attributes']);
+			for (var j = 0; j < attribute_ids.length; j++) {
+				var attribute_id = attribute_ids[j];
+				
+				for (var period_number = 0; period_number < number_of_periods; period_number++) {
+					
+					// values
+					var values = []
+					for (var k = 0; k < selected_simulations_list.length; k++) {
+						var simulation_number = selected_simulations_list[k];
+						var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
+						values.push(simulation_data[simulation_number][column_name][period_number]);
+					}
+					
+					// calculate the resulting value
+					var resulting_value;
+					var datatype = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
+					if (['real','int'].includes(datatype) && metric=='mean') { // -> average value
+						var sum_of_values = 0;
+						var number_of_values = 0;
+						for (var l = 0; l < values.length; l++) {
+							if (! isNaN(values[l])) {
+								sum_of_values += values[l];
+								number_of_values += 1;
+							}
+						}
+						resulting_value = sum_of_values/number_of_values;
+						if (resulting_value % 0.001 !== 0 ){
+							resulting_value = resulting_value.toPrecision(3);
+							/*
+							attribute_data_type = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type']
+							if (['int','relation'].includes(attribute_data_type)) {
+								resulting_value = resulting_value.toFixed(0);
+							} else {
+								resulting_value = resulting_value.toPrecision(3);
+							}
+							*/
+						}
+					}
+					
+					if (['string', 'relation', 'bool'].includes(datatype)) {  // -> most common value
+						var value_occurences = {}
+						for (var l = 0; l < values.length; l++) {
+							var value = String(values[l]);
+							if (Object.keys(value_occurences).includes(value)) {
+								value_occurences[value] += 1;
+							} else {
+								value_occurences[value] = 1;
+							}
+						}
+						
+						var max_count = 0;
+						var distinct_values = Object.keys(value_occurences);
+						
+						for (var l = 0; l < distinct_values.length; l++) {
+							if (value_occurences[distinct_values[l]] > max_count) {
+								resulting_value = distinct_values[l];
+								max_count = distinct_values[distinct_values[l]];
+							}
+						}
+					}
+					
+					// insert the resulting value
+					$('#' + object_number + '-' + attribute_id + '-' + period_number).html('<aside class="attribute-value-span">' + resulting_value + '</aside>');
+						
+				}
+			}
+		}
+	}
+		
+		
+		
+	// Expand/Collapse Triangle -------------------------------
+	function collapseExpandObjectInnerBox(object_number) {
+		var span = $('#object-box-triangle-' + object_number)
+		if (span.hasClass('glyphicon-triangle-top')) {
+			span.removeClass('glyphicon-triangle-top');
+			span.addClass('glyphicon-triangle-bottom');
+			$('#object-inner-box' + object_number).animate({height: '0px'}, 200, 'linear');
+			$('#object-inner-box' + object_number).css('border-width', '0px');
+		} else {
+			span.removeClass('glyphicon-triangle-bottom');
+			span.addClass('glyphicon-triangle-top');
+			$('#object-inner-box' + object_number).css('height', 'auto');
+			$('#object-inner-box' + object_number).css('border-width', '1px');
+		}
+	}
+	
+
+
+
+
+
+
+	//========================================================================
+	//========================================================================
+	//========================   TOP PANEL   =================================
+	//========================================================================
+	//========================================================================
+
+	
+
+	//========================  DRAW TOP PANEL   =================================
+		
+	function drawTopPanel_Attribute(object_number, attribute_id) {	
+		console.log('test1');
+		selected_object_attribute = {'object_number': object_number, 'attribute_id': attribute_id, 'period_number': null};
+		var attribute_name = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'];
+		var object_name = objects_dict[object_number]['object_name'];
+		var attribute_data_type = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
+		console.log('test2');
+		checked_string = '';
+		if (document.getElementById("include-zero")) {
+			if (document.getElementById("include-zero").checked) {
+				checked_string = ' checked';
+			}
+		}
+		
+		$('#top-panel').html(	'<div id="graph-panel"></div>' +
+								'<div id="triggerd-rules-panel">' + 
+									'<div id="triggerd-rules-title">Triggered Rules</div>' +
+									'<div id="triggerd-rule-periods"></div>' + 
+								'</div>' +
+								'<div id="top-menu-bar">' +
+									'<div id="vertically-centered">' +
+										//'<button id="show-rules-button"  style="display:none;" class="btn btn-secondary" type="button" onclick="showHideRules(' + object_number + ',' + attribute_id + ', null)">Triggerd Rules<span id="triggerd-rules-triangle" class="glyphicon glyphicon-triangle-top collapse-triangle"></span></button>' +
+										'<div id="inlude-zero-menu"></div>' +
+										'<button id="run-button" class="btn btn-primary pull-right" type="button" onclick="run()">Re-Run Simulation</button>' +
+									'</div>' +
+								'</div>');
+
+		console.log('test3');
+		if (number_of_periods > 1) {
+
+			$('#inlude-zero-menu').html('<input type="checkbox" class="custom-control-input" id="include-zero" onchange="refreshRestOfScreen()"' + checked_string + '>' +
+										'<label class="custom-control-label" for="include-zero">&nbsp;Include 0 in Linegraph</label>');
+		
+			if (['real','int'].includes(attribute_data_type)) {
+				linegraph_data = prepareLineGraphData_Attribute(object_number, attribute_id);
+				plotLineGraph(false, object_name, attribute_name, linegraph_data);
+			
+			} else {
+				linegraph_data = prepareLineGraphData_Attribute(object_number, attribute_id);
+				plotLineGraph(true, object_name, attribute_name, linegraph_data);
+			} 	
+		} else {
+			if (['real','int'].includes(attribute_data_type)) {
+				histogram_data = prepareHistogramData(false, object_number, attribute_id, 0);
+				console.log('test8');
+				plotHistogram(object_name, attribute_name, histogram_data);
+			} else {
+				console.log('test9');
+				histogram_data = prepareHistogramData(true, object_number, attribute_id, 0);
+				console.log('test10');
+				plotHistogram(object_name, attribute_name, histogram_data);
+			}
+		}
+		
+		console.log('test11');
+		drawRulePanel(object_number, attribute_id, attribute_name,  null);
+		console.log('test12');
+		
+	}
+	
+	
+	function drawTopPanel_AttributeValue(object_number, attribute_id, period_number) {
+		selected_object_attribute = {'object_number': object_number, 'attribute_id': attribute_id, 'period_number': period_number};
+		var attribute_name = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'];
+		var object_name = objects_dict[object_number]['object_name'];
+		var attribute_data_type = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
+		
+		
+		$('#top-panel').html(	'<div id="graph-panel"></div>' +
+								'<div id="triggerd-rules-panel">' + 
+									'<div id="triggerd-rules-title">Triggered Rules</div>' +
+									'<div id="triggerd-rule-periods">' + 
+									'</div>' +
+								'</div>' +
+								'<div id="top-menu-bar">' +
+									'<div id="vertically-centered">' +
+										//'<button id="show-rules-button" style="display:none;" class="btn btn-secondary" type="button" onclick="showHideRules(' + object_number + ',' + attribute_id + ', null)">Triggerd Rules<span id="triggerd-rules-triangle" class="glyphicon glyphicon-triangle-top collapse-triangle"></span></button>' +
+										'<div id="inlude-zero-menu"></div>' +
+										'<button id="run-button" class="btn btn-primary pull-right" type="button" onclick="run()">Re-Run Simulation</button>' +
+									'</div>' +
+								'</div>');
+								
+		
+		if (['real','int'].includes(attribute_data_type)) {
+			histogram_data = prepareHistogramData(false, object_number, attribute_id, period_number);
+			plotHistogram(object_name, attribute_name, histogram_data);
+		} else {
+			histogram_data = prepareHistogramData(true, object_number, attribute_id, period_number);
+			plotHistogram(object_name, attribute_name, histogram_data);
+		}
+		
+		drawRulePanel(object_number, attribute_id, attribute_name,  period_number);
+	}
+	
+
+	
+	
+	//========================  PREPARE DATA - TOP PANEL   =================================
+	
+	// Histogram Graph Data ------------------------
+	function prepareHistogramData(is_categorical, object_number, attribute_id, period_number) {
+	
+		var selected_simulations_list = Array.from(selected_simulations);
+		var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
+		var histogram_data = {};
+		
+		if (is_categorical) {
+			// value_occurences & value_labels
+			var value_occurences = {}
+			var value_labels = {}
+			for (var i = 0; i < selected_simulations_list.length; i++) {
+				var value = String(simulation_data[selected_simulations_list[i]][column_name][period_number]);
+				if (Object.keys(value_occurences).includes(value)) {
+					value_occurences[value] += 1;
+					value_labels[value] += 'Simulation' + all_simulations_list.indexOf(selected_simulations_list[i])  + '\n';
+				} else {
+					value_occurences[value] = 1;
+					value_labels[value] = 'Simulation' + all_simulations_list.indexOf(selected_simulations_list[i])  + '\n';
+				}
+			}
+			
+			// histogram_data
+			var data = []
+			var distinct_values = Object.keys(value_occurences);
+			for (var i = 0; i < distinct_values.length; i++) {
+				var value = distinct_values[i];
+				data.push([value, String(value_occurences[value])]);
+			}
+			histogram_data = { 'data': data, 'labels':value_labels};
+			
+			
+		} else {
+			// overall value range
+			var minimum_overall_value = 100000;
+			var maximum_overall_value = -100000;
+			var all_simulations = Object.keys(simulation_data);
+			for (var i = 0; i < all_simulations.length; i++) {
+				for (var period_nb = 0; period_nb < number_of_periods; period_nb++) {
+					var value = simulation_data[all_simulations[i]][column_name][period_nb];
+					if (value > maximum_overall_value) {maximum_overall_value = value;}
+					if (value < minimum_overall_value) {minimum_overall_value = value;}
+				}
+			}
+			
+			//bin_lower_bounds
+			var bin_interval = (maximum_overall_value - minimum_overall_value)/40;
+			var bin_interval_order_of_magnitude = Math.pow(10, Math.floor(Math.log(bin_interval)/Math.log(10)));
+			var rounded_bin_interval = Math.ceil(bin_interval/bin_interval_order_of_magnitude) * bin_interval_order_of_magnitude
+			var bins_bottom_edge = Math.floor(minimum_overall_value/rounded_bin_interval) * rounded_bin_interval 
+			var bin_lower_bounds = []
+			for (var i = 0; i < 40; i++) {
+				bin_lower_bounds.push(bins_bottom_edge + i*rounded_bin_interval)
+			}
+			
+			// bin_occurences & bin_labels
+			bin_occurences = Array(40).fill(0);
+			bin_labels = Array(40).fill(''); 
+			for (var i = 0; i < selected_simulations_list.length; i++) {
+				var value = simulation_data[selected_simulations_list[i]][column_name][period_number];
+				var bin_number = 0;
+				for (var j = 0; j < bin_lower_bounds.length; j++) {
+					if (value > bin_lower_bounds[j]) { bin_number = j;	}
+				}
+				bin_occurences[bin_number] += 1;
+				bin_labels[bin_number] += 'Simulation' + all_simulations_list.indexOf(selected_simulations_list[i])  + ': ' + String(value) + '\n';
+			}
+			
+			// histogram_data
+			var data = []
+			for (var i = 0; i < bin_lower_bounds.length; i++) {
+				data.push([String(bin_lower_bounds[i]), String(bin_occurences[i])])
+			}
+			histogram_data = {'data': data, 'labels':bin_labels};
+		}
+		
+		return histogram_data;
+	}
+	
+	
+	
+	// Line Graph Data ------------------------------------
+	function prepareLineGraphData_Attribute(object_number, attribute_id) {
+
+		var selected_simulations_list = Array.from(selected_simulations);
+		if (selected_simulations_list.length > 20) {
+			selected_simulations_list = selected_simulations_list.slice(0, 20);
+		}
+		
+		var linegraph_data = [];
+		var max_value = -1000;
+		var min_value = 1000;
+		var distinct_values = new Set();
+
+
+		for (var period_number = 0; period_number < number_of_periods; period_number++) {
+			
+			// Period's Time
+			var current_timestamp= simulation_start_time + (timestep_size * (period_number + 1));
+			var current_date = new Date(current_timestamp*1000);
+			var year = current_date.getFullYear();
+			var month = current_date.getMonth();
+			var day = current_date.getDate();
+			var hours = current_date.getHours();
+			var minutes = "0" + current_date.getMinutes();
+			var seconds = "0" + current_date.getSeconds();
+			
+			var date_string = '';
+			if (timestep_size >= 31535998) {
+				date_string = year;
+			} else if (timestep_size >= 2419198) {
+				date_string = year+'-'+month;
+			} else if (timestep_size >= 86398) {
+				date_string = year+'-'+month+'-'+day;
+			} else if (timestep_size >= 58) {
+				date_string = year+'-'+month+'-'+day+' '+hours + ':' + minutes.substr(-2);
+			} else {
+				date_string = year+'-'+month+'-'+day+' '+hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+			}
+			
+			var linegraph_data_row = [date_string];
+
+			// values
+			for (var k = 0; k < selected_simulations_list.length; k++) {
+				var simulation_number = selected_simulations_list[k];
+				var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
+				var value = simulation_data[simulation_number][column_name][period_number];
+				linegraph_data_row.push(value);
+				
+				// correct values
+				is_y_value_attribute = false;
+				for (var l = 0; l < y_value_attributes.length; l++) { 
+					if (y_value_attributes[l]['object_number']==object_number && y_value_attributes[l]['attribute_id']==attribute_id) {is_y_value_attribute = true;}
+				}
+				if (selected_simulations_list.length == 1 && is_y_value_attribute) {
+					var initial_state_index = simulation_number.split('-')[0];
+					var correct_value = correct_values[column_name + 'period' + period_number][initial_state_index];
+					linegraph_data_row.push(correct_value);
+				}
+				
+				//distinct_values
+				if (value < min_value) {min_value = value;}
+				if (value > max_value) {max_value = value;}
+				distinct_values.add(value);
+			}
+			linegraph_data.push(linegraph_data_row);
+		}
+		
+		
+		// distinct_values
+		let distinct_values_list = Array.from(distinct_values);
+		
+		// simulation_numbers
+		simulation_numbers = []
+		for (var k = 0; k < selected_simulations_list.length; k++) {
+			simulation_number = all_simulations_list.indexOf(selected_simulations_list[k]);
+			simulation_numbers.push(simulation_number);
+		}
+		
+		
+		return {'data':linegraph_data, 'min_value':min_value, 'max_value':max_value, 'distinct_values':distinct_values_list, 'simulation_numbers':simulation_numbers};
+	}
+	
+	
+	
+
+	//========================  PLOT GRAPH - TOP PANEL   =================================
+			
+	// Plot Line Histogram  -------------------------------------
+	function plotHistogram(object_name, attribute_name, histogram_data) {
+		anychart.onDocumentReady(function () {
+
+			var chart = anychart.column();
+			chart.title(object_name + '.[' + attribute_name + ']');
+			chart.yScale().ticks().allowFractional(false);
+			//chart.animation(true);
+
+
+			var series = chart.column(histogram_data['data']);
+
+			series.tooltip().titleFormat('{%X}');
+
+			series.tooltip()
+					.position('center-top')
+					.anchor('center-bottom')
+					.offsetX(0)
+					.offsetY(5);
+					
+			var tooltip = series.tooltip();
+			tooltip.format(function(){
+				/*var index = 0;
+				for (var i = 0; i < histogram_data['data'].length; i++) {
+					if (histogram_data['data'][i][0] == this.x) { index = i;}
+				}*/
+				return this.value + '\n\n' + histogram_data['labels'][this.x] ;
+			});
+
+
+			chart.barGroupsPadding(0);
+			chart.yScale().minimum(0);
+			chart.yAxis().labels().format('{%Value}{groupsSeparator: }');
+			chart.tooltip().positionMode('point');
+			chart.interactivity().hoverMode('by-x');
+
+			chart.xAxis().title(attribute_name);
+			chart.yAxis().title('Count');
+
+			// set container id for the chart
+			chart.container('graph-panel');
+			chart.draw();
+		});
+		
+	}
+	
+	
+
+
+	// Plot Line Graph  ----------------------------------
+	function plotLineGraph(is_categorical, object_name, attribute_name, linegraph_data) {
+	
+		var selected_simulations_list = Array.from(selected_simulations);
+		anychart.onDocumentReady(function () {
+			// load data
+			var dataSet = anychart.data.set(linegraph_data['data']);
+
+
+			// create line chart
+			var chart = anychart.line();
+			chart.title(object_name + '.[' + attribute_name + ']');
+			chart.animation(true);
+			chart.padding([10, 20, 5, 20]);
+			chart.crosshair()
+					.enabled(true)
+					.yLabel(false)
+					.yStroke(null);
+			chart.tooltip().positionMode('point');
+			chart.yAxis().title(attribute_name);
+			chart.xAxis().labels().padding(5);
+			
+			if (is_categorical) {
+				ordinalYScale = anychart.scales.ordinal();
+				ordinalYScale.names(linegraph_data['distinct_values'])
+				chart.yScale(ordinalYScale);
+			}
+			
+			//var include_zero = false;
+			var include_zero = document.getElementById("include-zero").checked;
+			var yScale = chart.yScale();
+			if (include_zero & linegraph_data['min_value'] > 0) {
+				yScale.minimum(0);
+			} else if (include_zero &  linegraph_data['max_value'] < 0) {
+				yScale.maximum(0);
+			}
+
+
+
+			//true values
+			if (selected_simulations_list.length == 1 && linegraph_data['data'][0].length == 3) {
+				var series_1 = chart.jumpLine(dataSet.mapAs({'x': 0, 'value': 2}));
+				series_1.name('True values')
+						.stroke("3.5 blue");
+				series_1.hovered().markers()
+						.enabled(true)
+						.type('circle')
+						.size(4);
+				series_1.tooltip()
+						.position('right')
+						.anchor('left-center')
+						.offsetX(5)
+						.offsetY(5);
+			}
+			
+
+
+			for (var i = 0; i < selected_simulations_list.length; i++) {
+				// create first series with mapped data
+				var series_2;
+				if (is_categorical) {
+					series_2 = chart.stepLine(dataSet.mapAs({'x': 0, 'value': i+1}));
+				} else {
+					series_2 = chart.line(dataSet.mapAs({'x': 0, 'value': i+1}));
+				}
+				series_2.name('Simulation' + linegraph_data['simulation_numbers'][i])
+						.stroke("2 #14AA09");
+				series_2.hovered().markers()
+						.enabled(true)
+						.type('circle')
+						.size(4);
+				series_2.tooltip()
+						.position('right')
+						.anchor('left-center')
+						.offsetX(5)
+						.offsetY(5);
+			}
+			
+			
+			// turn the legend on
+			chart.legend()
+					.enabled(true)
+					.fontSize(13)
+					.padding([0, 0, 10, 0])
+					.positionMode("inside")
+					.position("top");
+
+			// set container id for the chart
+			chart.container('graph-panel');
+			chart.draw();
+		});
+		
+		
+		//y_axis_offset 
+		y_axis_offset = 55;
+		found_value = false;		
+		$("g[role='article']").children('path').each(function () {
+			if ($(this)[0].hasAttribute("d") && !found_value) {
+				path_starting_point = parseInt($(this).attr('d').split(' ')[1]);
+				if (path_starting_point > 5) {
+					y_axis_offset = path_starting_point;
+					found_value = true;
+				}
+			}
+		});
+		$('#triggerd-rules-title').css('width', y_axis_offset + 'px');
+		$('#triggerd-rule-periods').css('width', 'calc(100% - 118px)');
+		
+
+	}
+	
+	
+	//========================================================================
+	//=====================    TRIGGERD RULES      ===========================
+	//========================================================================
+	
+	function drawRulePanel(object_number, attribute_id, attribute_name,  period_number){
+	
+		var max_number_of_rules = 0;
+		var selected_simulations_list = Array.from(selected_simulations);
+		if (selected_simulations_list.length == 1) {
+			var simulation_id = selected_simulations_list[0];
+		
+			if (period_number == null) {
+				triggerd_rules_html = '';
+				for (var period_number = 0; period_number < number_of_periods; period_number++) {
+					var triggerd_rules_period_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number, false);
+					triggerd_rules_html += triggerd_rules_period_html[0];
+					if (triggerd_rules_period_html[1] > max_number_of_rules) {max_number_of_rules = triggerd_rules_period_html[1];}
+				}
+				$('#triggerd-rule-periods').html(triggerd_rules_html);
+				$('.triggerd-rules-period').css('width', (100/number_of_periods).toFixed(3) + '%');
+			} else {
+				triggerd_rules_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  0, true);
+				$('#triggerd-rule-periods').html(triggerd_rules_html[0]);
+				if (triggerd_rules_html[1] > max_number_of_rules) {max_number_of_rules = triggerd_rules_html[1];}
+			}
+			
+			var rule_height = Math.max(24 * max_number_of_rules, 66);
+			$('#triggerd-rules-panel').css('border', '1px solid rgb(210, 210, 210)');
+			$('#triggerd-rules-panel').css('height', rule_height + 'px');
+			$('#triggerd-rules-title').css('display', 'inline-block');
+			$('#triggerd-rule-periods').css('height', rule_height + 'px');
+			$('#graph-panel').css('height','calc(100% - ' + (45 + rule_height) + 'px)');
+			
+			
+		} else {
+			$('#triggerd-rule-periods').html('');
+			$('#triggerd-rules-panel').css('height', '0px');
+			$('#triggerd-rules-panel').css('border', '0px');
+			$('#triggerd-rules-title').css('display', 'none');
+			$('#triggerd-rule-periods').css('height', '0px');
+			$('#graph-panel').css('height','calc(100% - 45px)');
+		}
+
+	}
+	
+	
+	
+	function getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number, is_single_period){
+	
+		var number_of_rules = 0;
+		var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
+		triggerd_rules_period_html  = '<div class="triggerd-rules-period">';
+		if (Object.keys(triggered_rules[simulation_id]).includes(column_name)) {
+			if (Object.keys(triggered_rules[simulation_id][column_name]).includes(String(period_number))) {
+				var triggered_rule_infos = triggered_rules[simulation_id][column_name][period_number]['rules'];
+				for (var i = 0; i < triggered_rule_infos.length; i++) {
+					var triggered_rule_info = triggered_rule_infos[i];
+					var rule_id = triggered_rule_info['id'];
+					var rule = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
+					
+					//text_decoration
+					if (triggered_rule_info['pt']){
+						text_decoration = ''
+					} else {
+						text_decoration = ' style="text-decoration: line-through;" ';
+					}
+					
+					// rule_number
+					rule_number = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].indexOf(rule_id) + 1;
+					
+					
+					// tooltip_text
+					if (rule['is_conditionless']) {
+						tooltip_text = "At every timestep: [" + attribute_name + "] = " + rule['effect_text'];
+					} else {
+						tooltip_text = "IF " +  rule['condition_text'] + " THEN [" + attribute_name + "] = " + rule['effect_text'];
+					}
+					tooltip_text += "&#013;---&#013;current value=|" + triggered_rule_info['v'] + "|  vs.  correct value=|" + String(triggered_rules[simulation_id][column_name][period_number]['correct_value']) + "|";  // v = new_value
+					
+
+					//probability_html
+					if (rule['has_probability_1']) {
+						probability_html = '';
+					} else {
+						if (triggered_rule_info['pt']){ //pt = probability_triggered
+							probability_html = '<span class="rule-prob" >(prob=' + Math.round(triggered_rule_info['tp']*100) + '%&#10004;)</span>';  // tp = trigger_probability
+						} else {
+							probability_html = ' <span class="rule-prob" style="text-decoration: line-through;"> (prob=' + Math.round(triggered_rule_info['tp']) + '%&#10008;)</span>'; // tp = trigger_probability
+						}
+						
+					}
+					
+					//new_value_html
+					if ((is_single_period || number_of_periods < 11) & triggered_rule_info['pt']) {//pt = probability_triggered
+						if (['real','int'].includes(objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'])) {
+							new_value_html = '<span class="rule-value"> =>' + triggered_rule_info['v'] + '</span>'; // v = new_value
+						} else {
+							new_value_html = '<span class="rule-value"> =>\'' + triggered_rule_info['v'] + '\'</span>'; // v = new_value
+						}
+					} else {
+						new_value_html = '';
+					}
+
+					
+
+					
+	
+					var error_colour = '#f0f0f0';
+					if ('error' in triggered_rule_info) {
+						var error_colour =  error_colours[Math.round(triggered_rule_info['error']*63)];
+					}
+					triggerd_rules_period_html  += 	'<div class="triggerd-rule" style="background: '+ error_colour +'" data-toggle="tooltip" title="' + tooltip_text + '" onclick="openEditObjectBehaviourModal(' + object_number + ', ' + attribute_id + ', \'' + attribute_name + '\', ' + triggered_rule_info['id'] + ')">' +
+														'<span class="rule-name" ' + text_decoration + '>Rule ' + rule_number + ' </span>' +
+														probability_html +
+														new_value_html +
+													'</div>';
+					number_of_rules += 1;
+				}
+				
+				triggerd_rules_period_html += 	'</div>';
+				
+
+				return [triggerd_rules_period_html, number_of_rules];
+				
+			} else {
+				return ['<div class="triggerd-rules-period"></div>', 0];
+			}
+		} else {
+			return ['<div class="triggerd-rules-period"></div>', 0];
+		}
+	}
+	
+	
+	
+	//========================================================================
+	//========================================================================
+	//=======================    Re-Run Simulation      ======================
+	//========================================================================
+	//========================================================================
+	
+	function run() {
+		saveSimulation();
+		
+		form_html_string =	"<form role='form' action='' method='post' class='form' enctype='multipart/form-data'>" + 
+								"{% csrf_token %}" +
+							"</form>";
+		$(form_html_string).appendTo("body").submit();
+		
+	}
+	
+	
+	function saveSimulation() {
+		// get simulation_id
+		var url_components = window.location.href.split("/");
+		var simulation_id = url_components[url_components.length - 2];
+			
+		
+		request_body = {
+			'simulation_id': simulation_id,
+			'is_timeseries_analysis': is_timeseries_analysis,
+			'objects_dict': objects_dict,
+			'y_value_attributes': y_value_attributes,
+			'object_type_counts': {{ simulation_model.object_type_counts|safe }},
+			'total_object_count': {{ simulation_model.total_object_count }},
+			'number_of_additional_object_facts': {{ simulation_model.number_of_additional_object_facts }},
+			'simulation_start_time': simulation_start_time,
+			'simulation_end_time': simulation_end_time,
+			'timestep_size': timestep_size
+		}
+		
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.open("POST", "/tool/save_changed_simulation/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));	
+	}
+	
+	
+	
+	
+
+	//========================================================================
+	//========================================================================
+	//========================    MAIN      ==================================
+	//========================================================================
+	//========================================================================
+	
+	drawLeftPanel();
+	
+	score = errors['score'] * 100;
+	nb_of_decimal_places = Math.max(1-Math.floor(Math.log(score)/Math.log(10)) ,1);
+	score_text = String(Math.floor(score * (10**nb_of_decimal_places))/ (10**nb_of_decimal_places)) + '%';
+	$('#simulation-score').html(score_text);
+
+
+	// make the Top Panel resizable
+	 $("#top-panel").resizable({
+	   handleSelector: "#splitter",
+	   resizeHeight: true
+	 });
+	 
+
+
+	
+	 
+</script>
+-->
+
+<script>
+	// make the Top Panel resizable
+	 $("#top-panel").resizable({
+	   handleSelector: "#splitter",
+	   resizeHeight: true
+	 });
+</script>
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+
+<script>
+	jQuery(document).ready(function($){
+		 $(function () {
+			$("#bottom-object-items").sortable({
+
+			});
+			$("#bottom-object-items").disableSelection();
+		});
+	});
+</script>
+	 
 
 {% endblock %}
 

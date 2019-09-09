@@ -101,6 +101,10 @@ class Simulator:
             self.y0_values = [row for index, row in sorted(merged_periods_df.to_dict('index').items())]
 
         else:
+            print('################################################################')
+            print(self.df.columns)
+            print(self.y0_columns)
+            print('################################################################')
             df_copy = pd.DataFrame(self.df[self.y0_columns].copy())
             df_copy.columns = [col + 'period0' for col in df_copy.columns]
             df_copy = df_copy[[col for col in df_copy.columns if col.split('period')[0] in self.y0_columns]]
@@ -300,6 +304,8 @@ class Simulator:
                 simulation_data[str(row['initial_state_id']) + '-' + str(row['batch_number'])][attribute_id] = row[attribute_id].copy()
 
 
+        correct_values = pd.DataFrame(self.y0_values).to_dict()
+
 
         # errors
         errors = {}
@@ -325,6 +331,7 @@ class Simulator:
         simulation_model_record.rule_infos = json.dumps(rule_infos)
         simulation_model_record.triggered_rules = json.dumps(triggered_rules)
         simulation_model_record.simulation_data = json.dumps(simulation_data)
+        simulation_model_record.correct_values = json.dumps(correct_values)
         simulation_model_record.errors = json.dumps(errors)
         simulation_model_record.save()
 
@@ -382,11 +389,13 @@ class Simulator:
                     else:
                         triggered_rules = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
 
+                    print(rule['condition_exec'])
                     condition_fulfilled_rules = pd.eval(rule['condition_exec'])
                     satisfying_rows = triggered_rules  & condition_fulfilled_rules   
 
                 # --------  THEN  --------
                 if rule['effect_is_calculation']:
+                    print(rule['effect_exec'])
                     new_values = pd.eval(rule['effect_exec'])
                     if rule['changed_var_data_type'] in ['relation','int']:
                         nan_rows = new_values.isnull()
@@ -522,6 +531,12 @@ class Simulator:
                     calculated_values = list(df[rule['column_to_change']])
                     errors = self.error_of_single_values(np.array(calculated_values), rule['column_to_change'], period)
 
+                    # print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+                    # print(rule['id'])
+                    # print(period)
+                    # print(np.array(calculated_values))
+                    # print(errors)
+                    # print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
                     triggered_rule_infos_df = pd.DataFrame({'condition_satisfied': condition_satisfying_rows,
                                                             'id':[rule['id']]* batch_size,
                                                             'pt': satisfying_rows,          # pt = probability_triggered
@@ -568,7 +583,8 @@ class Simulator:
 
             # with open("C:/Users/l412/Documents/2 temporary stuff/2019-08-13/y0_values.txt", "w") as text_file:
             #     text_file.write(json.dumps(self.y0_values))
-            # print(list(errors))
+            # print(len(df.index))
+            # print(len(list(errors)))
             # print('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
             error_df = pd.DataFrame({  'simulation_number': [str(index) + '-' + str(batch_number) for index in df.index],
                                         'error': errors})
@@ -635,9 +651,10 @@ class Simulator:
                     dimensionality += 1 - np.array(u_df[period_column].isnull().astype(int))
             if self.y0_column_dt[y0_column] in ['int','real']:
                 for period_column in period_columns:
-                    true_value_change_percent = (np.array(v_df[period_column]) - np.array(v_df[period_column.split('period')[0]]))/np.array(v_df[period_column.split('period')[0]])
-                    simulated_value_change_percent = (np.array(u_df[period_column]) - np.array(v_df[period_column.split('period')[0]]))/np.array(v_df[period_column.split('period')[0]])
-                    error_of_value_change = np.minimum(np.abs(simulated_value_change_percent - true_value_change_percent) * 10,1)
+                    period_number = max(int(period_column.split('period')[1]), 1)
+                    true_change_percent_per_period = ((np.array(v_df[period_column]) - np.array(v_df[period_column.split('period')[0]]))/np.array(v_df[period_column.split('period')[0]]))/period_number
+                    simulated_change_percent_per_period = ((np.array(u_df[period_column]) - np.array(v_df[period_column.split('period')[0]]))/np.array(v_df[period_column.split('period')[0]]))/period_number
+                    error_of_value_change = np.minimum(np.abs(simulated_change_percent_per_period - true_change_percent_per_period) * 20,1)
                     error = np.minimum(error_of_value_change, 1)
                     # residuals = np.abs(np.array(u_df[period_column]) - np.array(v_df[period_column]))
                     # error_in_value_range = residuals/np.nanmax([(np.nanmax(v_df[period_column]) - np.nanmin(v_df[period_column])), 0.00000001])
@@ -660,6 +677,7 @@ class Simulator:
             
 
     def error_of_single_value(self, all_calculated_values, column_name, row_index, period):
+        initial_value = np.array(self.df[column_name])[row_index]
         calculated_value = all_calculated_values[row_index]     
 
         all_correct_values = np.array(pd.DataFrame(self.y0_values)[column_name + 'period' + str(period)])
@@ -670,27 +688,38 @@ class Simulator:
 
             error = 1. - int(calculated_value == correct_value)
         if self.y0_column_dt[column_name] in ['int','real']:
-            residual = np.abs(calculated_value - correct_value)
-            all_residuals = np.abs(all_calculated_values - all_correct_values)
-            error_in_value_range = residual/(np.max(all_correct_values) - np.min(all_correct_values))
-            error_in_error_range =  residual/np.max(all_residuals)
-            error = error_in_value_range + error_in_error_range   
+            # residual = np.abs(calculated_value - correct_value)
+            # all_residuals = np.abs(all_calculated_values - all_correct_values)
+            # error_in_value_range = residual/(np.max(all_correct_values) - np.min(all_correct_values))
+            # error_in_error_range =  residual/np.max(all_residuals)
+            # error = error_in_value_range + error_in_error_range 
+
+            true_change_percent_per_period = ((correct_value - initial_value)/initial_value)/max(period,1)
+            simulated_change_percent_per_period = ((np.array(calculated_value) - initial_value)/initial_value)/max(period,1)
+            error_of_value_change = np.minimum(np.abs(simulated_change_percent_per_period - true_change_percent_per_period) * 20,1)
+            error = np.minimum(error_of_value_change, 1)
 
         return error
 
 
 
     def error_of_single_values(self, calculated_values, column_name, period):
+        initial_values = np.array(self.df[column_name])
         correct_values = np.array(pd.DataFrame(self.y0_values)[column_name + 'period' + str(period)])
 
 
         if self.y0_column_dt[column_name] in ['string','bool','relation']:
             errors = 1. - np.equal(np.array(calculated_values), np.array(correct_values)).astype(int)
         if self.y0_column_dt[column_name] in ['int','real']:
-            residuals = np.abs(np.array(calculated_values) - np.array(correct_values))
-            error_in_value_range = residuals/(np.max(correct_values) - np.min(correct_values))
-            error_in_error_range =  residuals/np.max(residuals)
-            errors = np.minimum(error_in_value_range + error_in_error_range, 1)  
+            # residuals = np.abs(np.array(calculated_values) - np.array(correct_values))
+            # error_in_value_range = residuals/(np.max(correct_values) - np.min(correct_values))
+            # error_in_error_range =  residuals/np.max(residuals)
+            # errors = np.minimum(error_in_value_range + error_in_error_range, 1)  
+
+            true_change_percent_per_period = ((correct_values - initial_values)/initial_values)/max(period,1)
+            simulated_change_percent_per_period = ((np.array(calculated_values) - initial_values)/initial_values)/max(period,1)
+            error_of_value_change = np.minimum(np.abs(simulated_change_percent_per_period - true_change_percent_per_period) * 20,1)
+            errors = np.minimum(error_of_value_change, 1)
 
         return errors
 

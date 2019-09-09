@@ -11,6 +11,7 @@
 <script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/remove-element-function.js' %}"></script>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="{% static 'css/upload_table_frame.css' %}" />
 
 
 
@@ -199,56 +200,69 @@
 
 {% block content %}
 	
-	{% for error in errors %}
-		<div class="error">{{ error }}</div><br>
-	{% endfor %}
-	<h1>6 - Match to existing entities</h1>
-	<div class="instruction">Entitiy-identifying columns:</div>
-	<!--
-	Does the table contain columns that can be used for identifying it's entities? <br>
-	<ul>
-		<li>&nbsp;&nbsp;Yes&nbsp;&nbsp; -> &nbsp;please select them </li>
-		<li>&nbsp;&nbsp;No&nbsp;&nbsp;D -> &nbsp;press 'Next' </li>
-	</ul>
-	<br>-->
-	
-	<div class="form" id="match-attribute-selection">
-		<span id="end-of-attribute-selection"><span>
+	<a href="{% url 'upload_data1' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">1</div><div class="closed-frame-title">Select csv-file</div></div></a>
+	<a href="{% url 'upload_data2' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">2</div><div class="closed-frame-title">Data source</div></div></a>
+	<a href="{% url 'upload_data3' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">3</div><div class="closed-frame-title">Object type</div></div></a>
+	<a href="{% url 'upload_data4' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">4</div><div class="closed-frame-title">Meta data</div></div></a>
+	<a href="{% url 'upload_data5' upload_id=upload_id%}"><div class="closed-frame"><div class="small-circle">5</div><div class="closed-frame-title">Object Attributes</div></div></a>
+	<div class="frame">
+		<div class="big-circle">6</div>
+		<div class="window-title-top">Match to existing entities</div>
+		<div class="window">
+			<div class="window-inner">
+				{% for error in errors %}
+					<div class="error">{{ error }}</div><br>
+				{% endfor %}
+				<br>
+				<div class="instruction">Entitiy-identifying columns:</div>
+				<!--
+				Does the table contain columns that can be used for identifying it's entities? <br>
+				<ul>
+					<li>&nbsp;&nbsp;Yes&nbsp;&nbsp; -> &nbsp;please select them </li>
+					<li>&nbsp;&nbsp;No&nbsp;&nbsp;D -> &nbsp;press 'Next' </li>
+				</ul>
+				<br>-->
+				
+				<div class="form" id="match-attribute-selection">
+					<span id="end-of-attribute-selection"><span>
+				</div>
+				<div>
+					<div class="box" id="outer-table-box" style="display:none;">		
+						<div class="table-box">
+							<div id="uploaded_table"></div>
+						</div>
+					</div>
+					<div id="find-matches-button-box">
+						<button id="find-matches-button" class="btn btn-success" type="button" onclick="findMatches()" style="display:none;">Find<br>Matches<div id="find-matches-button-icon"><span class="glyphicon glyphicon-chevron-right"></span><div></button>
+					</div>
+					<div class="box" id="outer-matches-box"  style="display:none;">		
+						<div class="table-box">
+							<div id="potential_matches"></div>
+						</div>
+						<div id="select-all-buttons">
+							<button class="btn btn-secondary de_select_button" type="button" onclick="selectAll()">Select All</button>
+							<button class="btn btn-secondary de_select_button" type="button" onclick="unselectAll()">Unselect All</button>
+						</div>
+					</div>
+
+				</div>
+				<br>
+				<br>
+				<button id="select-all-button" class="btn btn-primary pull-right" type="button" onclick="next()">Next</button>
+
+				<form id="next-form" role='form' action='' method='post' class='form' enctype='multipart/form-data'>
+					{% csrf_token %}
+					<input type='hidden' id='list_of_matches' name='list_of_matches' value=''>
+				</form>
+				
+			</div>
+		</div>
 	</div>
-	<div>
-		<div class="box" id="outer-table-box" style="display:none;">		
-			<div class="table-box">
-				<div id="uploaded_table"></div>
-			</div>
-		</div>
-		<div id="find-matches-button-box">
-			<button id="find-matches-button" class="btn btn-success" type="button" onclick="findMatches()" style="display:none;">Find<br>Matches<div id="find-matches-button-icon"><span class="glyphicon glyphicon-chevron-right"></span><div></button>
-		</div>
-		<div class="box" id="outer-matches-box"  style="display:none;">		
-			<div class="table-box">
-				<div id="potential_matches"></div>
-			</div>
-			<div id="select-all-buttons">
-				<button class="btn btn-secondary de_select_button" type="button" onclick="selectAll()">Select All</button>
-				<button class="btn btn-secondary de_select_button" type="button" onclick="unselectAll()">Unselect All</button>
-			</div>
-		</div>
 
-	</div>
-	<br>
-	<br>
-	<button id="select-all-button" class="btn btn-primary pull-right" type="button" onclick="next()">Next</button>
-
-	<form id="next-form" role='form' action='' method='post' class='form' enctype='multipart/form-data'>
-		{% csrf_token %}
-		<input type='hidden' id='list_of_matches' name='list_of_matches' value=''>
-	</form>
 
 
 	
-	{% include "tree_of_knowledge_frontend/includes/instruction_video_modal.html" with url="https://www.youtube-nocookie.com/embed/ZVlZMOB-Sq0" %} 
 
-	
 
 <script>
 
