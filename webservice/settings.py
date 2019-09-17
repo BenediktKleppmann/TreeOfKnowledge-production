@@ -86,6 +86,34 @@ DATABASES = {
 }
 
 
+# EMAIL_BACKEND = 'django_smtp_ssl.SSLEmailBackend'
+# MAILER_EMAIL_BACKEND = EMAIL_BACKEND
+# EMAIL_HOST = 'mail.gmx.net'
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'bene3@gmx.net'
+# EMAIL_HOST_PASSWORD = '1q2W3e4R5t6Z'
+# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# DEFAULT_TO_EMAIL = EMAIL_HOST_USER
+# EMAIL_USE_TLS = True
+# EMAIL_USE_SSL = False
+
+
+EMAIL_HOST = 'mail.gmx.net'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'bene3@gmx.net'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_TO_EMAIL = EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = '1q2W3e4R5t6Z'
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+EMAIL_TIMEOUT = 3600
+DEFAULT_CHARSET = 'utf-8'
+EMAIL_USE_LOCALTIME = True
+SERVER_EMAIL = 'bene3@gmx.net'
+
+
+
+
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 

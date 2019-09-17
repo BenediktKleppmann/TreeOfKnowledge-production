@@ -1398,16 +1398,21 @@ def test_page2(request):
 
 
 def test_page3(request):
-    return render(request, 'tree_of_knowledge_frontend/test_page3.html')
-    # county_objects = Object.objects.filter(object_type_id='j1_12')
-    # county_object_ids = [el['id'] for el in list(county_objects.values('id'))]
-    # number_of_chunks = math.ceil(len(county_object_ids)/100)
-    # for chunk_number in range(number_of_chunks):
-    #     current_object_ids = county_object_ids[chunk_number*100: chunk_number*100+100]
-    #     Data_point.objects.filter(object_id__in=current_object_ids).delete()
+    from django.core.mail import send_mail
 
-    # county_objects.delete()
-    # return HttpResponse('success')
+    send_mail(
+        'Subject here',
+        'Here is the message.',
+        'benedikt@kleppmann.de',
+        ['benedikt@kleppmann.de'],
+        fail_silently=False,
+    )
+    return HttpResponse('success')
+    # return render(request, 'tree_of_knowledge_frontend/test_page3.html')
+
 
 
     
+
+
+
