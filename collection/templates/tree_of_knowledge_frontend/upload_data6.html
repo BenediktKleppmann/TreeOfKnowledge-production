@@ -83,7 +83,7 @@
 		vertical-align: top;
 		border: 1px solid rgb(210, 210, 210);
 		padding:2px;
-		height: calc(100vh - 280px);
+		height: calc(100vh - 300px);
 	}
 
 	
@@ -134,7 +134,7 @@
 	.table thead > tr > th {border-bottom: 0;}
 
 	.table-body {
-		height: calc(100vh - 320px);
+		height: calc(100vh - 340px);
 		overflow-y: auto;
 		direction: rtl;
 	}
@@ -168,14 +168,14 @@
 	/* --- Potential Matches (the display at the right) -------------------------------------------------------- */
 	
 	.matches-body {
-		height: calc(100vh - 320px);
+		height: calc(100vh - 340px);
 		overflow-y: auto;
 		/*direction: rtl;*/
 	}
 	
 	
 	.match-row {
-		height: 37px;
+		height: 35.86px;
 	}
 	
 	.match-dropdown {
@@ -194,7 +194,30 @@
 		float:right;
 	}
 	
-		
+	
+	/* --- Please Wait Modal -------------------------------------------------------- */
+	#pleaseWaitModal .modal-dialog {
+		position: initial;
+		width: 1135px;
+	}
+	
+	#pleaseWaitModal .modal-header {
+		margin: 0px;
+	}
+	
+	#pleaseWaitModal .modal-title {
+		font-size: 22px;
+	}
+	
+	#knowledge-base-image-div {
+		text-align: center;
+	}
+	
+	#knowledge-base-image {
+		width: 860px;
+	}
+	
+	.    
 </style>
 {% endblock %}
 
@@ -248,7 +271,7 @@
 				</div>
 				<br>
 				<br>
-				<button id="select-all-button" class="btn btn-primary pull-right" type="button" onclick="next()">Next</button>
+				<button id="select-all-button" class="btn btn-primary pull-right" type="button" onclick="next()">Upload the data!</button>
 
 				<form id="next-form" role='form' action='' method='post' class='form' enctype='multipart/form-data'>
 					{% csrf_token %}
@@ -261,6 +284,32 @@
 
 
 
+
+
+	<!-- Please Wait Modal -->
+	<div class="modal fade" id="pleaseWaitModal" tabindex="-1" role="dialog" aria-labelledby="pleaseWaitModal" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+		<div class="modal-content">
+		  <div class="modal-header row">
+			<h5 class="modal-title col-md-11">Loading into Knowledge Base ...</h5>
+			<button type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:2px; margin-right:19px;font-size:29px">
+			  <span aria-hidden="true" >&times;</span>
+			</button>
+		  </div>
+		  <div class="modal-body" style="margin-top:15px;">
+			  <div class="container-fluid">
+					Your data is currently being integrated with the millions of datapoints already in the Knowledge Base.<br>
+					<br>
+					With the information you specified, we know exactly where and when in the world the datapoints were observed. 
+					This information is used in the Knowledge Base not only to merge the data with the existing data there, but also to automatically connected your data with the existing models of this part of the world!<br>
+					<div id="knowledge-base-image-div">
+						<img id="knowledge-base-image" src="{% static 'images/knowledge_base.png'%}">
+					</div>
+			  </div>
+		  </div>
+		</div>
+	  </div>
+	</div>
 	
 
 
@@ -361,6 +410,9 @@
 		$("#list_of_matches").val(JSON.stringify(list_of_matches));
 	
 		$("#next-form").submit();
+		
+		$('#pleaseWaitModal').modal('show');
+		
 	}
 	
 

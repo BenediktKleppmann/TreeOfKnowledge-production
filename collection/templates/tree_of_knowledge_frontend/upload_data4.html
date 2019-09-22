@@ -253,9 +253,6 @@
 			width: 600px;
 		}
 		
-		
-		
-
 </style>
 {% endblock %}
 
@@ -391,10 +388,15 @@
 	
 	{% include "tree_of_knowledge_frontend/includes/create_attribute_modal.html" %} 
 	{% include "tree_of_knowledge_frontend/includes/edit_attribute_modal.html" %} 
+	{% include "tree_of_knowledge_frontend/includes/additional_facts_functions.html" %} 
 	
 
 
-	
+<style>
+		.dropdown {
+			position: relative;
+		}
+</style>
 	
 
 <script>
@@ -424,7 +426,7 @@
 													'<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu' + fact_number + '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name' + fact_number + '">Attribute</span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>' + 
 													'<div class="dropdown-menu" aria-labelledby="attributeMenu' + fact_number + '">' + 
 														'<div id="attributeList' + fact_number + '">' + 
-															'<input type="text" class="search" id="dropDonwSearch2" onkeyup="filterAttributeDropDown(' + fact_number + ')" placeholder=" Search">' + 
+															'<input type="text" class="search" id="dropDonwSearch' + fact_number + '" onkeyup="filterAttributeDropDown(' + fact_number + ')" placeholder=" Search">' + 
 															'<ul id="drop-down-display' + fact_number + '" class="list-group drop-down-display"></ul>' + 
 															'<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(' + fact_number + ');">Reset</button>' +
 															'<button class="btn btn-success dropdown-item-button" type="button" data-toggle="modal" data-target="#createAttributeModal">Create New Attribute</button>' +
@@ -513,7 +515,7 @@
 	
 	
 		/*=============  POPULATE AdditionalAttribute-DROPDOWNS  ================================================================ */
-	
+	/*
 		function makeObjectsAdditionalAttributesDropdown(object_type_id, attribute_number){
 	
 			var xhttp = new XMLHttpRequest();       
@@ -552,14 +554,16 @@
 		};
 	}
 
-
+*/
 	/*=============  SELECT DROPDOWN OPTION  ================================================================ */
+	/*
 	function selectAdditionalAttribute(attribute_number , attribute_name, attribute_id) {
 		$('#attributeMenu' + attribute_number + ' > #attribute-name' + attribute_number).html(attribute_name);
 		$('#attribute' + attribute_number).attr('value', attribute_id);									
 	}
-	
+	*/
 	/*=============  RESET DROPDOWN SELECTION  ================================================================ */
+	/*
 	function resetAttribute(attribute_number){
 		$('#attributeMenu' + attribute_number + ' > #attribute-name' + attribute_number).html('Attribute');
 		document.getElementById('attribute' + attribute_number).value = '';	
@@ -567,8 +571,9 @@
 		document.getElementById('value' + attribute_number).value = '';	
 		checkAdditionalFactFormats();
 	}
-	
+	*/
 	/*=============  CHECK ADDITIONAL FACTS FORMATS  ================================================================ */
+	/*
 	function checkAdditionalFactFormats() {
 		for (var fact_number = 1; fact_number <= number_of_additional_facts; fact_number++) {
 			var attribute_id = $('#attribute' + fact_number).val();
@@ -603,6 +608,7 @@
 			xhttp.send();
 		}									
 	}
+	*/
 	
 	
 

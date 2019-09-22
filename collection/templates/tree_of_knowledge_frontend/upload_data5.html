@@ -29,7 +29,7 @@
 		}
 		
 		.next-button {
-			margin-top: 16px;
+			margin-top: 11px;
 		}
 		/* --- Table box ----------------------------------------------------------- */
 		
@@ -37,7 +37,7 @@
 			/*position: absolute;*/
 			top: 40px;
 			left: 0;
-			height:calc(100vh - 220px);
+			height:calc(100vh - 240px);
 			border: 1px solid rgb(210, 210, 210);
 			padding:2px;
 		
@@ -424,7 +424,7 @@
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" id="choose-attribute-close-button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-			<button type="button" class="btn btn-primary" onclick="takeOverEditedColumn()" data-dismiss="modal">Save</button>
+			<button type="button" class="btn btn-primary" onclick="takeOverEditedColumn()" data-dismiss="modal">Use this column</button>
 		  </div>
 		</div>
 	  </div>
@@ -432,7 +432,7 @@
 	
 	{% include "tree_of_knowledge_frontend/includes/create_attribute_modal.html" %} 
 	{% include "tree_of_knowledge_frontend/includes/edit_attribute_modal.html" %} 
-	{% include "tree_of_knowledge_frontend/includes/instruction_video_modal.html" with url="https://www.youtube-nocookie.com/embed/ZVlZMOB-Sq0" %} 
+	
 	
 	
 
@@ -1008,11 +1008,21 @@
 				
 				if (data_type == "int"){
 					for (var i = 0; i < table_body[edited_column_number].length; i++) {
-						new_column.push(parseInt(table_body[edited_column_number][i], 10) || null);
+						var new_value = parseInt(table_body[edited_column_number][i], 10);
+						if (new_value || new_value ==0) {
+							new_column.push(new_value);
+						} else {
+							new_column.push(null);
+						}
 					}
 				} else if (data_type == "real"){
 					for (var i = 0; i < table_body[edited_column_number].length; i++) {
-						new_column.push(parseFloat(table_body[edited_column_number][i], 10) || null);
+						var new_value = parseFloat(table_body[edited_column_number][i], 10);
+						if (new_value || new_value ==0) {
+							new_column.push(new_value);
+						} else {
+							new_column.push(null);
+						}
 					}
 				} else if (data_type == "string"){
 					for (var i = 0; i < table_body[edited_column_number].length; i++) {
@@ -1403,6 +1413,7 @@
 		
 		$("#edited-column-name").html(table_headers[attributenumber]);
 		edited_column = table_body[attributenumber]
+		console.log(edited_column);
 		drawEditedColumnValues();
 		$("#subset-specification-div").attr("style","display:none;");
 		$("#subset_specification").val("");

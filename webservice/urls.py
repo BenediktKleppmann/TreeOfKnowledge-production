@@ -90,6 +90,7 @@ urlpatterns = [
     url(r'^tool/find_suggested_attributes/$', views.find_suggested_attributes, name='find_suggested_attributes'),
     url(r'^tool/find_suggested_attributes2/$', views.find_suggested_attributes2, name='find_suggested_attributes2'),
     url(r'^tool/find_matching_entities/$', views.find_matching_entities, name='find_matching_entities'),
+    url(r'^tool/find_single_entity/$', views.find_single_entity, name='find_single_entity'),    
     # save
     url(r'^tool/save_new_object_hierachy_tree/$', views.save_new_object_hierachy_tree, name='save_new_object_hierachy_tree'),
     url(r'^tool/save_new_object_type/$', views.save_new_object_type, name='save_new_object_type'),

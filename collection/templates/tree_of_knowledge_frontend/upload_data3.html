@@ -230,6 +230,8 @@
 		
 		#createObjectType #modal-title {
 			font-size:22px;
+			display: inline-block;
+			margin-left: 20px;
 		}
 		
 		#createObjectType #search-box2 {
@@ -345,9 +347,9 @@
 	<div class="modal fade" id="createObjectType" tabindex="-1" role="dialog" aria-labelledby="chooseAttributeTitle" aria-hidden="true">
 	  <div class="modal-dialog" role="document">
 		<div class="modal-content">
-		  <div class="modal-header row">
-			<h5 class="modal-title col-md-11" id="modal-title">Create/Edit Object Type</h5>
-			<button type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModalAndSave()" style="margin-top:2px; margin-right:19px;font-size:29px">
+		  <div class="modal-header">
+			<h5 class="modal-title" id="modal-title">Create/Edit Object Type</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:2px; margin-right:19px;font-size:29px; float:right;">
 			  <span aria-hidden="true" >&times;</span>
 			</button>
 		  </div>
@@ -451,7 +453,7 @@
 			  </div>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-secondary" onclick="closeModalAndSave()" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-secondary" onclick="closeModalAndSave()" data-dismiss="modal">Close and Save</button>
 			
 			
 		  </div>
@@ -634,8 +636,10 @@
 		var parent_id = $('#parent_node_id').val(); // <-- 'parent'
 		
 		
-		$('#container-for-object-tree2').jstree(true).create_node(parent_id, new_object_dict);
-		var new_node_id = $('#container-for-object-tree').jstree(true).create_node(parent_id, new_object_dict);
+		var new_node_id = $('#container-for-object-tree2').jstree(true).create_node(parent_id, new_object_dict);
+		//$('#container-for-object-tree').jstree(true).create_node(parent_id, new_object_dict);
+		console.log('creating node id: ' + String(new_node_id));
+
 
 		
 		//send the new object_type to the backend
@@ -913,12 +917,13 @@
 		}
 		
 		//send the new object_hierachy_tree to the backend
+		/*
 		var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance 
 		xmlhttp.open("POST", "/tool/save_new_object_hierachy_tree/");
 		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send(JSON.stringify(edited_object_dict));
-		
+		*/
 	}
 	
 	

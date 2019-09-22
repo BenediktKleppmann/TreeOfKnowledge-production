@@ -36,7 +36,7 @@ def save_new_upload_details(request):
 
 
         table_header = list(data_table_df.columns)
-        table_body = data_table_df.to_dict()  
+        table_body = data_table_df.to_dict('list')  
         for column_number, column_name in enumerate(table_header): # change the table_body-dict to have column_numbers as keys instead of column_nmaes
             table_body[column_number] = table_body.pop(column_name)
         
@@ -75,6 +75,7 @@ def save_existing_upload_details(upload_id, request):
         na_values = request.POST.get('na_values')
         skiprows = request.POST.get('skiprows')
         header = request.POST.get('header', 'infer')
+
 
         # File to JSON -----------------------------------------
         data_table_df = pd.read_csv(request.FILES['file'], sep=sep, encoding=encoding, quotechar=quotechar, escapechar=escapechar, na_values=na_values, skiprows=skiprows, header=header)
@@ -202,6 +203,19 @@ def perform_uploading(uploaded_dataset, request):
             attribute_id_column = [attribute_id]*number_of_entities
             attribute_id_column = [str(attribute_id) for attribute_id in attribute_id_column]
 
+            print(data_type)
+            print(column_number)
+            print(table_body)
+            print('object_id: ' + str(len(object_id_column)))
+            print('object_id: ' + str(len(object_id_column)))
+            print('attribute_id: ' + str(len([str(attribute_id)]*number_of_entities)))
+            print('value_as_string: ' + str(len([str(value) for value in table_body[str(column_number)]])))
+            print('numeric_value: ' + str(len(numeric_value_column)))
+            print('string_value: ' + str(len(string_value_column)))
+            print('boolean_value: ' + str(len(boolean_value_column)))
+            print('valid_time_start: ' + str(len([valid_time_start]*number_of_entities)))
+            print('valid_time_end: ' + str(len([valid_time_end]*number_of_entities)))
+            print('data_quality: ' + str(len([data_quality]*number_of_entities)))
             new_datapoint_records = pd.DataFrame({'object_id':object_id_column,
                             'attribute_id':[str(attribute_id)]*number_of_entities,
                             'value_as_string':[str(value) for value in table_body[str(column_number)]],

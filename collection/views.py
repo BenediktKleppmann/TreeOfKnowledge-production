@@ -117,6 +117,7 @@ def profile_and_settings(request):
 @login_required
 def upload_data1_new(request):
     errors = []
+
     if request.method == 'POST':
         form1 = UploadFileForm(request.POST, request.FILES)
         if not form1.is_valid():
@@ -386,7 +387,7 @@ def get_possible_attributes(request):
     attributes = Attribute.objects.all().filter(first_applicable_object_type__in=list_of_parent_object_ids)
     
     for attribute in attributes:
-        response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name})
+        response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'attribute_data_type': attribute.data_type, 'attribute_first_relation_object_type': attribute.first_relation_object_type})
     return HttpResponse(json.dumps(response))
 
 # used in create_attribute_modal.html
@@ -622,6 +623,7 @@ def find_suggested_attributes(request):
 # get_suggested_attributes2 get the concluding_format instead of just the attribute's format
 @login_required
 def find_suggested_attributes2(request):
+    print('find_suggested_attributes2')
     request_body = json.loads(request.body)
     attributenumber = request_body['attributenumber']
     object_type_id = request_body['object_type_id']
@@ -630,10 +632,23 @@ def find_suggested_attributes2(request):
 
     list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
     list_of_parent_object_ids = [el['id'] for el in list_of_parent_objects]
+
+    print('######################################################################')
+    print(request_body)
+    print('-')
+    print(object_type_id)
+    print('-')
+    print(list_of_parent_objects)
+    print('-')
+    print(list_of_parent_object_ids)
+    print('######################################################################')
     
     response = []
     attributes = Attribute.objects.all().filter(first_applicable_object_type__in=list_of_parent_object_ids)
+    print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
+    print(len(attributes))
     for attribute in attributes:
+        print(str(attribute.id) + ' - ' + attribute.name)
         concluding_format = get_from_db.get_attributes_concluding_format(attribute.id, object_type_id, upload_id)
         response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'description': attribute.description, 'format': concluding_format['format_specification'], 'comments': concluding_format['comments'], 'data_type': attribute.data_type, 'object_type_id_of_related_object': attribute.first_relation_object_type})
     return HttpResponse(json.dumps(response))
@@ -648,6 +663,20 @@ def find_matching_entities(request):
     matching_objects_entire_list_string = query_datapoints.find_matching_entities(match_attributes, match_values)
     return HttpResponse(matching_objects_entire_list_string)
 
+
+# used in: additional_facts_functions.html, which in turn is used in upload_data3 and upload_data4
+# this function should be extended to also find fuzzy matches and suggest them in the format_violation_text
+@login_required
+def find_single_entity(request):
+    relation_id = request.GET.get('relation_id', '')
+    print('++++++++ ' + relation_id + ' +++++++++++++++++')
+    attribute_id = request.GET.get('attribute_id', '')
+    value = request.GET.get('value', '')
+
+    matching_object_id = query_datapoints.find_single_entity(relation_id, attribute_id, value)
+    response = {'fact_number': int(request.GET.get('fact_number', '')),
+                'matching_object_id':matching_object_id}
+    return HttpResponse(json.dumps(response))
 
 
 # ==================
@@ -1390,7 +1419,12 @@ def test_page1(request):
 
 def test_page2(request):
     # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
-    bla = list(Attribute.objects.filter(id=24).values())
+    # bla = list(Object.objects.filter(object_type_id__in=['j1_5']).values_list('id'))
+    bla = list(Attribute.objects.all().values())
+    # bla = list(Object.objects.all().values())
+
+
+
     # return HttpResponse('success')
     return HttpResponse(json.dumps(bla))
 
@@ -1398,16 +1432,15 @@ def test_page2(request):
 
 
 def test_page3(request):
-    from django.core.mail import send_mail
+    current_object_type = list(Object_types.objects.all().values())
 
-    send_mail(
-        'Subject here',
-        'Here is the message.',
-        'benedikt@kleppmann.de',
-        ['benedikt@kleppmann.de'],
-        fail_silently=False,
-    )
-    return HttpResponse('success')
+    # current_object_type = list(Uploaded_dataset.objects.filter(id=79).values())
+    # for i in range(len(current_object_type)):
+    #     del current_object_type[i]['created']
+    #     del current_object_type[i]['updated']
+    #     del current_object_type[i]['data_generation_date']
+
+    return HttpResponse(json.dumps(current_object_type))
     # return render(request, 'tree_of_knowledge_frontend/test_page3.html')
 
 

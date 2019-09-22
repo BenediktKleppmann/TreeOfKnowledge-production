@@ -41,6 +41,9 @@ def find_matching_entities(match_attributes, match_values):
             value_as_string_column.extend([str(value) for value in match_values[column_number]])
 
         table_rows = list(map(list, zip(*[row_number_column, attribute_id_column, value_as_string_column])))
+        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        print(table_rows)
+        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
 
         number_of_chunks =  math.ceil(number_of_rows / 100)
@@ -75,7 +78,8 @@ def find_matching_entities(match_attributes, match_values):
 
         cursor.execute(matched_data_points_string)
 
-
+        print('matched_data_points ----------------------------------')
+        print(list(cursor.execute('SELECT * FROM matched_data_points')))
 
 
         matched_objects_string = """
@@ -85,11 +89,14 @@ def find_matching_entities(match_attributes, match_values):
                         '{"object_id":' || object_id || ', ' || group_concat(dictionary_element) || '}' AS object_dict, 
                         COUNT(*) AS number_of_attributes_found,
                         SUM(data_quality) AS data_quality,
-                        RANK () OVER (ORDER BY data_quality) AS match_number
+                        RANK () OVER (PARTITION BY row_number ORDER BY data_quality DESC) AS match_number
                 FROM temp.matched_data_points
                 GROUP BY row_number, object_id
         """
         cursor.execute(matched_objects_string)
+
+        print('matched_objects ----------------------------------')
+        print(list(cursor.execute('SELECT * FROM matched_objects')))
 
         matched_rows_string = """
             CREATE TEMPORARY TABLE matched_rows AS
@@ -103,7 +110,8 @@ def find_matching_entities(match_attributes, match_values):
         """
         cursor.execute(matched_rows_string)
 
-
+        print('matched_rows ----------------------------------')
+        print(list(cursor.execute('SELECT * FROM matched_rows')))
 
         row_number_string = """
             CREATE TEMPORARY TABLE row_number AS
@@ -112,7 +120,8 @@ def find_matching_entities(match_attributes, match_values):
         """
         cursor.execute(row_number_string)
 
-
+        print('row_number ----------------------------------')
+        print(list(cursor.execute('SELECT * FROM row_number')))
 
         get_matching_objects_json = """
             SELECT '[' || group_concat(matching_objects_json) || ']' AS matching_objects_json
@@ -129,6 +138,23 @@ def find_matching_entities(match_attributes, match_values):
         matching_objects_entire_list_string = list(result)[0][0]
 
     return matching_objects_entire_list_string
+
+
+
+
+# this function should be extended to also find fuzzy matches and suggest them in the format_violation_text
+def find_single_entity(relation_id, attribute_id, value):
+    first_relation_object_type = Attribute.objects.get(id=relation_id).first_relation_object_type
+    list_of_parent_objects = get_from_db.get_list_of_parent_objects(first_relation_object_type)
+    list_of_parent_object_ids = [parent_obj['id'] for parent_obj in list_of_parent_objects]
+    list_of_object_ids = list(Object.objects.filter(object_type_id__in=list_of_parent_object_ids).values_list('id'))
+    list_of_object_ids = [el[0] for el in list_of_object_ids]
+    matching_objects_list = list(Data_point.objects.filter(object_id__in=list_of_object_ids, attribute_id=attribute_id, value_as_string=value).values())
+    if len(matching_objects_list)>0:
+        return list(Data_point.objects.filter(object_id__in=list_of_object_ids, attribute_id=attribute_id, value_as_string=value).values())[0]['object_id']
+    else:
+        return None
+
 
 
 
