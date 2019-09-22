@@ -632,23 +632,11 @@ def find_suggested_attributes2(request):
 
     list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
     list_of_parent_object_ids = [el['id'] for el in list_of_parent_objects]
-
-    print('######################################################################')
-    print(request_body)
-    print('-')
-    print(object_type_id)
-    print('-')
-    print(list_of_parent_objects)
-    print('-')
-    print(list_of_parent_object_ids)
-    print('######################################################################')
-    
+  
     response = []
     attributes = Attribute.objects.all().filter(first_applicable_object_type__in=list_of_parent_object_ids)
-    print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
-    print(len(attributes))
+
     for attribute in attributes:
-        print(str(attribute.id) + ' - ' + attribute.name)
         concluding_format = get_from_db.get_attributes_concluding_format(attribute.id, object_type_id, upload_id)
         response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'description': attribute.description, 'format': concluding_format['format_specification'], 'comments': concluding_format['comments'], 'data_type': attribute.data_type, 'object_type_id_of_related_object': attribute.first_relation_object_type})
     return HttpResponse(json.dumps(response))

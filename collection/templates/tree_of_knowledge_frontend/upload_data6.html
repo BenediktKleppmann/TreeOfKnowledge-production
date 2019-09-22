@@ -41,6 +41,36 @@
 		margin-right: 5px;
 	}
 	
+	
+	#entities-to-upload-selection {
+		position: absolute;
+		bottom: 95px;
+		right: 27px;
+		color: rgb(105,105,105);
+	}
+	
+	#entities-to-upload-selection-title {
+		display: inline-block;
+		    margin-right: 2px;
+	}
+	
+	.btn-outline-secondary {
+		border: 1.2px solid rgb(220,220,220);
+		text-align: left;
+		color: rgb(105,105,105);
+	}
+	
+	.btn-outline-secondary.active {
+		background: rgb(223, 232, 237);
+	}
+	
+
+	
+	#select-all-button {
+		position: absolute;
+		bottom: 32px;
+		right: 29px;
+	}
 	/* --- Spinner on 'Find Matches'-Button ----------------------------------- */
 
 	.lds-dual-ring {
@@ -151,6 +181,11 @@
 	.table thead > tr > ts:hover {
 		background-color: rgb(225, 225, 225);
 	}
+	
+	.left-table-element {
+		height: 37px;
+		overflow-y: hidden;
+	}
 		
 	/* --- Match-attribute selection (the dropdowns at the top) -------------------------------------------------------- */
 	
@@ -175,7 +210,7 @@
 	
 	
 	.match-row {
-		height: 35.86px;
+		height: 37px;
 	}
 	
 	.match-dropdown {
@@ -269,8 +304,20 @@
 					</div>
 
 				</div>
-				<br>
-				<br>
+				<div id="entities-to-upload-selection">
+					<div id="entities-to-upload-selection-title">Upload:</div>
+					<div id="period-group" class="btn-group-vertical" data-toggle="buttons">
+						<label class="btn btn-outline-secondary active">
+							<input type="radio" name="period" id="period1">all entities
+						</label>
+						<label class="btn btn-outline-secondary">
+							<input type="radio" name="period" id="period2">only the matched entities
+						</label>
+					</div>
+				</div>
+				
+
+				
 				<button id="select-all-button" class="btn btn-primary pull-right" type="button" onclick="next()">Upload the data!</button>
 
 				<form id="next-form" role='form' action='' method='post' class='form' enctype='multipart/form-data'>
@@ -359,7 +406,7 @@
 			table_html_string +=  		'<tr>';
 			for (var j = 0; j < columns_to_show.length; j++) {
 				var column_index = columns_to_show[j];
-				table_html_string +=  			'<td nowrap>' + table_body[column_index][i] + '</td>';
+				table_html_string +=  			'<td nowrap class="left-table-element">' + table_body[column_index][i] + '</td>';
 			}
 			table_html_string +=  		'</tr>';
 		}
@@ -511,6 +558,7 @@
 				
 				var potential_matches = JSON.parse(this.responseText)
 				
+				console.log(potential_matches);
 				$("#find-matches-button-icon").html('<span class="glyphicon glyphicon-chevron-right"></span>');
 				$("#outer-matches-box").attr("style", "display:inline-block;");
 				drawPotentialMatches(potential_matches);
@@ -560,7 +608,9 @@
 						var attriute_id = match_attributes[k]['attribute_id']
 						var attribute_value = potential_matches_row[j][attriute_id]
 						if (typeof attribute_value != 'undefined') {
-							dropdown_text += attribute_value + "&nbsp;".repeat(Math.max(37 - Math.round(attribute_value.length * 1.82 ),0))
+							dropdown_text += attribute_value + "&nbsp;".repeat(Math.max(37 - Math.round(attribute_value.length * 1.82 ),0));
+						} else {
+							dropdown_text += "&nbsp;".repeat(37);
 						}
 					}
 					matches_html_string +=		'<option value="' + object_id + '" selected>' + dropdown_text + '</option>';

@@ -33,17 +33,15 @@ def find_matching_entities(match_attributes, match_values):
 
         # insert into table_to_match   ----------------------------------------
         number_of_rows = len(match_values[0])
-        row_number_column = range(number_of_rows)
+        row_number_column = list(range(number_of_rows))*len(match_attributes)
         attribute_id_column = []
         value_as_string_column = []
         for column_number, match_attribute in enumerate(match_attributes):
             attribute_id_column.extend( [match_attribute['attribute_id']] * number_of_rows)
             value_as_string_column.extend([str(value) for value in match_values[column_number]])
 
+
         table_rows = list(map(list, zip(*[row_number_column, attribute_id_column, value_as_string_column])))
-        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        print(table_rows)
-        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
 
         number_of_chunks =  math.ceil(number_of_rows / 100)
@@ -73,13 +71,12 @@ def find_matching_entities(match_attributes, match_values):
                 LEFT JOIN collection_data_point AS dp
                 ON ttm.attribute_id = dp.attribute_id AND 
                    ttm.value_as_string = dp.value_as_string 
-                GROUP BY row_number, object_id, dp.attribute_id, dp.value_as_string  
+                WHERE ttm.value_as_string != 'None'
+                GROUP BY row_number, object_id, dp.attribute_id, dp.value_as_string ; 
         """
 
         cursor.execute(matched_data_points_string)
 
-        print('matched_data_points ----------------------------------')
-        print(list(cursor.execute('SELECT * FROM matched_data_points')))
 
 
         matched_objects_string = """
@@ -91,12 +88,11 @@ def find_matching_entities(match_attributes, match_values):
                         SUM(data_quality) AS data_quality,
                         RANK () OVER (PARTITION BY row_number ORDER BY data_quality DESC) AS match_number
                 FROM temp.matched_data_points
-                GROUP BY row_number, object_id
+                GROUP BY row_number, object_id;
         """
         cursor.execute(matched_objects_string)
 
-        print('matched_objects ----------------------------------')
-        print(list(cursor.execute('SELECT * FROM matched_objects')))
+
 
         matched_rows_string = """
             CREATE TEMPORARY TABLE matched_rows AS
@@ -106,22 +102,22 @@ def find_matching_entities(match_attributes, match_values):
                 FROM temp.matched_objects
                 WHERE number_of_attributes_found > 0
                   AND match_number <=3
-                GROUP BY row_number
+                GROUP BY row_number;
         """
         cursor.execute(matched_rows_string)
 
-        print('matched_rows ----------------------------------')
-        print(list(cursor.execute('SELECT * FROM matched_rows')))
+
+
 
         row_number_string = """
             CREATE TEMPORARY TABLE row_number AS
-                SELECT  row_number
+                SELECT DISTINCT row_number
                 FROM temp.table_to_match  
+                ORDER BY row_number;
         """
         cursor.execute(row_number_string)
 
-        print('row_number ----------------------------------')
-        print(list(cursor.execute('SELECT * FROM row_number')))
+
 
         get_matching_objects_json = """
             SELECT '[' || group_concat(matching_objects_json) || ']' AS matching_objects_json
@@ -131,7 +127,7 @@ def find_matching_entities(match_attributes, match_values):
                 LEFT JOIN temp.matched_rows  AS mr
                 ON rn.row_number = mr.row_number
                 ORDER BY rn.row_number
-            )
+            );
         """
 
         result = cursor.execute(get_matching_objects_json)

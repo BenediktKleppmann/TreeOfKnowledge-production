@@ -48,6 +48,11 @@
 			font-weight:600;
 		}
 
+		#more-info-button {
+			width: 90px;
+			padding: 5px 10px;
+		}
+		
 		/* ---  Object type info (on the right) -------------------------------------------- */
 		
 		.info-panel {
@@ -278,20 +283,25 @@
 							<br> &nbsp;
 							<br> &nbsp;
 							<br>
-							 <b>Does the table include all {{ uploaded_dataset.object_type_name }}? </b>
-							 <div style="margin-top: 15px; margin-left:19px; font-size: 17px;">If not, please specify here what conditions had to hold for the observed {{ uploaded_dataset.object_type_name }} in order for them to be included? </div>
-							 <br> &nbsp;
-							 <br> &nbsp;
-							 <br>
-							 <div style="color:rgb(130,130,130)">
-								 You could consider:<br>
-								 <ul>
-									<li>the environment of the entities <br>(e.g. location, environment)</li>
-									<li>The state of the entities when they were measured <br>(e.g. state = active)</li>
-									<li>Things that depend on the sampling procedure <br>(e.g. was_willing_to_participate_in_survey = true)</li>
-								 </ul>
-								 <br>
-								 E.g.: you can encode "all participants had been professional athletes 2-3 years before" with the fact "Profession = athlete | valid from: 2016-01-01 to: 2017-01-01".
+							<b>Does the table include all {{ uploaded_dataset.object_type_name }}? </b>
+							<div style="margin-top: 15px; margin-left:19px; font-size: 17px;">If not, please specify here what conditions had to hold for the observed {{ uploaded_dataset.object_type_name }} in order for them to be included? </div>
+							<br> &nbsp;
+							
+							<button id="more-info-button" class="btn btn-default" type="button" data-toggle="collapse" data-target="#moreInfoCollapse" aria-expanded="false" aria-controls="moreInfoCollapse">
+								More Info
+							</button>
+							<div class="collapse" id="moreInfoCollapse">
+								<div class="card card-body">
+									<br>
+									You could consider:<br>
+										<ul>
+											<li>the environment of the entities <br>(e.g. location, environment)</li>
+											<li>The state of the entities when they were measured <br>(e.g. state = active)</li>
+											<li>Things that depend on the sampling procedure <br>(e.g. was_willing_to_participate_in_survey = true)</li>
+										</ul>
+									<br>
+									E.g.: you can encode "all participants had been professional athletes 2-3 years before" with the fact "Profession = athlete | valid from: 2016-01-01 to: 2017-01-01".
+								</div>
 							</div>
 						</div>
 						<div class="col-sm-9 col-md-8 col-lg-7">
@@ -686,9 +696,6 @@
 		loadListOfParentObjects('{{ uploaded_dataset.object_type_id }}');
 		
 		
-		//$('.attribute-modal-button').on('click', function (e) {
-//			$("#createAttributeModal").attr('style', "display:block;");
-	//	});
 		
 		
 
