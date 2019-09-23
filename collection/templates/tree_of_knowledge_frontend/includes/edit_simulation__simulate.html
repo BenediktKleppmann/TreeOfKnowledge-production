@@ -65,6 +65,36 @@
 	/* --------------------------------------------------------------------------*/
 	/* --------------------------------------------------------------------------*/
 		
+		
+	/* --- Dual Ring Spinner ----------------------------------- */
+
+	.lds-dual-ring {
+	  margin: auto;
+	  width: 24px;
+	  height: 24px;
+	  padding-top: 12px;
+	}
+	.lds-dual-ring:after {
+	  content: " ";
+	  display: block;
+	  width: 24px;
+	  height: 24px;
+	  margin: 1px;
+	  border-radius: 50%;
+	  border: 2px solid #fed;
+	  border-color: rgb(80,80,80) transparent rgb(80,80,80) transparent;
+	  animation: lds-dual-ring 3.2s linear infinite;
+	}
+	@keyframes lds-dual-ring {
+	  0% {
+		transform: rotate(0deg);
+	  }
+	  100% {
+		transform: rotate(360deg);
+	  }
+	}
+	
+	
 	/* Object Body ----------------------------------------------------------*/
 	#right-sidebar-body {
 		height: calc(100vh - 145px);
@@ -498,6 +528,9 @@
 		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send(JSON.stringify(request_body));	
+		
+		var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Retrieving object data...<div class="lds-dual-ring"></div></div>';
+		$("#right-sidebar-body").html(no_results_string);
 	}
 
 	
@@ -699,11 +732,12 @@
 		var attribute_ids = Object.keys(object_attributes);
 		
 		if (attribute_ids.length ==0){
-			var object_type_name = objects_dict[object_number]['object_type_name'];
-			var object_name = objects_dict[object_number]['object_name'];
-			var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">No ' + object_type_name + ' found that satisfies ' + object_name + '\'s restrictions.</div>';
+			var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">No combination of objects found that satisfy the restrictions.</div>';
 			$("#right-sidebar-body").html(no_results_string);
-			
+			//var object_type_name = objects_dict[object_number]['object_type_name'];
+			//var object_name = objects_dict[object_number]['object_name'];
+			//var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Retrieving object data...<div class="lds-dual-ring"></div></div>';
+			//$("#right-sidebar-body").html(no_results_string);
 		} else {		
 		
 			object_attributes_string = '<table id="object-attributes-table">';

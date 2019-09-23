@@ -74,7 +74,6 @@
 	/* --- Spinner on 'Find Matches'-Button ----------------------------------- */
 
 	.lds-dual-ring {
-	  display: inline-block;
 	  width: 16px;
 	  height: 16px;
 	  //width: 64px;
@@ -304,26 +303,28 @@
 					</div>
 
 				</div>
-				<div id="entities-to-upload-selection">
-					<div id="entities-to-upload-selection-title">Upload:</div>
-					<div id="period-group" class="btn-group-vertical" data-toggle="buttons">
-						<label class="btn btn-outline-secondary active">
-							<input type="radio" name="period" id="period1">all entities
-						</label>
-						<label class="btn btn-outline-secondary">
-							<input type="radio" name="period" id="period2">only the matched entities
-						</label>
+				
+				<form id="next-form" role='form' action='' method='post' class='form' enctype='multipart/form-data'>
+					{% csrf_token %}
+					<div id="entities-to-upload-selection">
+						<div id="entities-to-upload-selection-title">Upload:</div>
+						<div id="upload_only_matched_entities-group" class="btn-group-vertical" data-toggle="buttons">
+							<label class="btn btn-outline-secondary active">
+								<input type="radio" name="upload_only_matched_entities" value="False">all entities
+							</label>
+							<label class="btn btn-outline-secondary">
+								<input type="radio" name="upload_only_matched_entities" value="True">only the matched entities
+							</label>
+						</div>
 					</div>
-				</div>
+					<input type='hidden' id='list_of_matches' name='list_of_matches' value=''>
+				</form>
 				
 
 				
 				<button id="select-all-button" class="btn btn-primary pull-right" type="button" onclick="next()">Upload the data!</button>
 
-				<form id="next-form" role='form' action='' method='post' class='form' enctype='multipart/form-data'>
-					{% csrf_token %}
-					<input type='hidden' id='list_of_matches' name='list_of_matches' value=''>
-				</form>
+
 				
 			</div>
 		</div>

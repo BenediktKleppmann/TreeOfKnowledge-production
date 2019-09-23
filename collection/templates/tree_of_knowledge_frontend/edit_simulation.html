@@ -117,6 +117,7 @@
 	
 	.object-name {
 		width: 55px;
+		height: 34px;
 		text-align: center;
 		font-size: 12px;
 		font-weight: 300;
@@ -148,6 +149,7 @@
 	
 	.relation-button {
 		margin-top: 3px;
+		margin-left: 3px;
 	}
 	
 	.relation-button-box .btn-group > .btn {
@@ -452,7 +454,7 @@
 		left_panel__design = '<div class="accordion md-accordion" id="accordion-left" role="tablist" aria-multiselectable="true">' +	
 								'<div class="card">' +
 									'<div class="card-header" role="tab" id="accordion-left-header-1">' +
-										'<button class="btn left-panel-header collapsed" data-toggle="collapse" data-parent="#accordion-left" href="#accordion-left-content-1" aria-expanded="false" aria-controls="accordion-left-content-1">Environment</button>' +
+										'<button class="btn left-panel-header collapsed accordion-toggle" data-toggle="collapse" data-parent="#accordion-left" href="#accordion-left-content-1" aria-expanded="false" aria-controls="accordion-left-content-1">Environment</button>' +
 									'</div>' +
 									'<div id="accordion-left-content-1" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-1" data-parent="#accordion-left">' +
 										'<div class="card-body">' +
@@ -475,7 +477,7 @@
 								'</div>' +
 								'<div class="card">' +
 									'<div class="card-header" role="tab" id="accordion-left-header-2">' +
-										'<button class="btn left-panel-header collapsed" data-toggle="collapse" data-parent="#accordion-left" href="#accordion-left-content-2" aria-expanded="false" aria-controls="accordion-left-content-2">Objects</button>' +
+										'<button class="btn left-panel-header collapsed accordion-toggle" data-toggle="collapse" data-parent="#accordion-left" href="#accordion-left-content-2" aria-expanded="false" aria-controls="accordion-left-content-2">Objects</button>' +
 									'</div>' +
 									'<div id="accordion-left-content-2" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-2" data-parent="#accordion-left">' +
 										'<div class="card-body">' +
@@ -508,7 +510,7 @@
 								'</div>' +
 								'<div class="card">' +
 									'<div class="card-header" role="tab" id="accordion-left-header-3">' +
-										'<button class="btn left-panel-header collapsed" data-toggle="collapse" data-parent="#accordion-left" href="#accordion-left-content-3" aria-expanded="false" aria-controls="accordion-left-content-3">Relations</button>' +
+										'<button class="btn left-panel-header collapsed accordion-toggle" data-toggle="collapse" data-parent="#accordion-left" href="#accordion-left-content-3" aria-expanded="false" aria-controls="accordion-left-content-3">Relations</button>' +
 									'</div>' +
 									'<div id="accordion-left-content-3" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-3" data-parent="#accordion-left">' +
 										'<div id="relations-card" class="card-body">' +
@@ -529,7 +531,7 @@
 		});
 		
 		// this showing and hiding makes sure that there are no open ones at the bottom of the page
-		$('.datetimepicker').datetimepicker('show');
+		//$('.datetimepicker').datetimepicker('show');
 		$('.datetimepicker').datetimepicker('hide');
 		
 		// initialize the datetimepickers
@@ -644,11 +646,12 @@
 				$('#simulate-button').attr('class','btn design-simulate-button');
 				drawLeftPanel__design();
 			} else {
+				getObjectData();
 				$('#design-button').attr('class','btn design-simulate-button');
 				$('#simulate-button').attr('class','btn design-simulate-button active');
 				drawLeftPanel__simulate();
 				saveSimulation();
-				getObjectData();
+				
 				
 			}
 		}
@@ -1406,10 +1409,22 @@
 			}
 		}
 		
+		
+		
+			
+		$('.accordion-toggle').click(function() {
+			content_element = $($(this).attr('href'));
+			if (content_element.hasClass('in')) {
+				content_element.hide();
+				content_element.removeClass('in')
+			}
+		});
+	
 	};
 	
 
 	
+
 	
 	
 	

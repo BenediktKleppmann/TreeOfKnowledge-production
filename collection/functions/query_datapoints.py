@@ -261,10 +261,11 @@ def get_data_from_random_object(object_type_id, filter_facts, specified_start_ti
 
 def get_data_from_random_related_object(objects_dict, specified_start_time, specified_end_time):
 
+    print('~~~~~~~~~~~~~~~  get_data_from_random_related_object  ~~~~~~~~~~~~~~~~~~~~~~')
     object_numbers = list(objects_dict.keys())
     merged_object_data_tables = get_data_from_related_objects(objects_dict, specified_start_time, specified_end_time)
 
-    if merged_object_data_tables is not None:
+    if len(merged_object_data_tables) > 0:
         # chose random row
         merged_object_data_tables.index = range(len(merged_object_data_tables))
         chosen_row = random.choice(merged_object_data_tables.index)
@@ -291,7 +292,7 @@ def get_data_from_random_related_object(objects_dict, specified_start_time, spec
                                                                                             'attribute_rule': None}
 
     else: 
-        all_attribute_values = {}
+        all_attribute_values = {object_number:{'object_attributes':{}} for object_number in object_numbers}
 
     return all_attribute_values
 
@@ -299,24 +300,29 @@ def get_data_from_random_related_object(objects_dict, specified_start_time, spec
 
 # used by simulation.py
 def get_data_from_related_objects(objects_dict, specified_start_time, specified_end_time):
+    print('~~~~~~~~~~~~~~~  get_data_from_related_objects  ~~~~~~~~~~~~~~~~~~~~~~')
     object_numbers = list(objects_dict.keys())
 
     # PART1: create object_data_tables - i.e. get broad_table_df for every object_number
     object_data_tables = {}
     for object_number in object_numbers:
+        print('object_number: ' + str(object_number))
         # get object_ids
         object_type_id = objects_dict[object_number]['object_type_id']
         filter_facts  = objects_dict[object_number]['object_filter_facts']
         child_object_types = get_from_db.get_list_of_child_objects(object_type_id)
         child_object_ids = [el['id'] for el in child_object_types]
+        print('1')
         with connection.cursor() as cursor:
             query_string = 'SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);' % (', '.join('"{0}"'.format(object_type_id) for object_type_id in child_object_ids))
             cursor.execute(query_string)
             object_ids = [entry[0] for entry in cursor.fetchall()]
 
          # get broad_table_df
+        print('2')
         broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)  
 
+        print('3')
         if broad_table_df is not None:
             broad_table_df.columns = ['obj' + str(object_number) + 'attr' + str(column) for column in broad_table_df.columns]
             broad_table_df['cross_join_column'] = 1
@@ -332,6 +338,7 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
     list_of_added_tables = []
 
     for object_number in object_numbers:
+        print('object_number: ' + str(object_number))
         if object_number not in list_of_added_tables:
             merged_object_data_tables = pd.merge(merged_object_data_tables , object_data_tables[object_number] , on='cross_join_column', how='inner')
             list_of_added_tables.append(object_number)
@@ -343,6 +350,20 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
         for relation in object_relations:
             target_object_number = str(relation['target_object_number'])
             attribute_id_column = 'obj' + str(object_number) + 'attr' + str(relation['attribute_id'])           
+            print('===== Merging object ' + str(object_number) + ' relation ' + str(relation) + '======================================================================================')
+            print(merged_object_data_tables)
+            print('************************************************')
+            print(object_data_tables[str(target_object_number)])
+            print('[--1----------------------------------]')
+            print(merged_object_data_tables.columns)
+            print(object_data_tables[str(target_object_number)].columns)
+            print('[--2----------------------------------]')
+            print(merged_object_data_tables[attribute_id_column])
+            print(object_data_tables[str(target_object_number)]['obj' +str(target_object_number) + 'attrobject_id'])
+            # print('[--3----------------------------------]')
+            # print(type(merged_object_data_tables.loc[0,attribute_id_column]))
+            # print(type(object_data_tables[str(target_object_number)].loc[0,'obj' +str(target_object_number) + 'attrobject_id']))
+            merged_object_data_tables[attribute_id_column] = pd.to_numeric(merged_object_data_tables[attribute_id_column])
             merged_object_data_tables = pd.merge(merged_object_data_tables, object_data_tables[str(target_object_number)], left_on=attribute_id_column, right_on='obj' +str(target_object_number) + 'attrobject_id', how='inner', suffixes=('-old', ''))
             if target_object_number not in list_of_added_tables:
                 list_of_added_tables.append(target_object_number)

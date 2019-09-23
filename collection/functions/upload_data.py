@@ -140,46 +140,57 @@ def perform_uploading(uploaded_dataset, request):
         Main upload function for non-timeseries data.
     """
     with connection.cursor() as cursor:
+
+        # PART 0: Variables
         object_type_id = uploaded_dataset.object_type_id
         data_quality = uploaded_dataset.correctness_of_data
         attribute_selection = json.loads(uploaded_dataset.attribute_selection)
         list_of_matches = json.loads(uploaded_dataset.list_of_matches)
+        upload_only_matched_entities = uploaded_dataset.upload_only_matched_entities
         valid_time_start = (uploaded_dataset.data_generation_date - datetime.date(1970, 1, 1)).days * 86400
-        # valid_time_start = int(time.mktime(uploaded_dataset.data_generation_date.timetuple()))
         data_table_json = json.loads(uploaded_dataset.data_table_json)
         table_body = data_table_json["table_body"]
-        number_of_entities = len(table_body[list(table_body.keys())[0]])
-        
-        # make new_object_ids
-        not_matched_indexes = [index for index, match_id in enumerate(list_of_matches) if match_id is None]
-        maximum_object_id = Object.objects.all().order_by('-id').first().id
-        new_object_ids = range(maximum_object_id + 1, maximum_object_id + len(not_matched_indexes) + 1)
-
-        object_id_column = list_of_matches
-        if len(not_matched_indexes) > 0:
-            for not_matched_index, new_object_id in zip(not_matched_indexes, new_object_ids):
-                object_id_column[not_matched_index] = new_object_id
-
-            # create new object records        
-            table_rows = list(map(list, zip(*[new_object_ids, [object_type_id] * len(not_matched_indexes)])))
-            number_of_chunks =  math.ceil(len(not_matched_indexes) / 100)
-            for chunk_index in range(number_of_chunks):
-
-                rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
-                insert_statement = '''
-                    INSERT INTO collection_object (id, object_type_id) 
-                    VALUES ''' 
-                insert_statement += ','.join(['(%s, %s)']*len(rows_to_insert))
-                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
-
-        # new_object_records = pd.DataFrame({
-        #     'id': new_object_ids,
-        #     'object_type_id': [object_type_id] * len(not_matched_indexes) })
-        # new_object_records.to_sql('collection_object', connection, if_exists='append', index=False, chunksize=40 )
+        object_id_column = []
 
 
+        # PART 1: Create missing objects/ Remove not-matched rows
+        print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        print(upload_only_matched_entities)
+        print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        if upload_only_matched_entities == 'True':
+            object_id_column = [match_id for match_id in list_of_matches if match_id is not None]
+            for column_number, attribute_id in enumerate(attribute_selection):
+                # remove all the not matched rows
+                table_body[str(column_number)] = [value for index, value in enumerate(table_body[str(column_number)]) if list_of_matches[index] is not None]
+            
+        else:
+            # make new_object_ids
+            not_matched_indexes = [index for index, match_id in enumerate(list_of_matches) if match_id is None]
+            maximum_object_id = Object.objects.all().order_by('-id').first().id
+            new_object_ids = range(maximum_object_id + 1, maximum_object_id + len(not_matched_indexes) + 1)
 
+            object_id_column = list_of_matches
+            if len(not_matched_indexes) > 0:
+                for not_matched_index, new_object_id in zip(not_matched_indexes, new_object_ids):
+                    object_id_column[not_matched_index] = new_object_id
+
+                # create new object records        
+                table_rows = list(map(list, zip(*[new_object_ids, [object_type_id] * len(not_matched_indexes)])))
+                number_of_chunks =  math.ceil(len(not_matched_indexes) / 100)
+                for chunk_index in range(number_of_chunks):
+
+                    rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
+                    insert_statement = '''
+                        INSERT INTO collection_object (id, object_type_id) 
+                        VALUES ''' 
+                    insert_statement += ','.join(['(%s, %s)']*len(rows_to_insert))
+                    cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+
+
+
+        # PART 2: Insert into DataPoints
         # for every column: create and save new_datapoint_records
+        number_of_entities = len(table_body[list(table_body.keys())[0]])
         for column_number, attribute_id in enumerate(attribute_selection):
             attribute_record = Attribute.objects.get(id=attribute_id)
             data_type = attribute_record.data_type
@@ -238,9 +249,10 @@ def perform_uploading(uploaded_dataset, request):
                 insert_statement += ','.join(['(%s, %s, %s, %s, %s, %s, %s, %s, %s)']*len(rows_to_insert))
                 cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
      
-            # new_datapoint_records.to_sql('collection_data_point', connection, if_exists='append', index=False)
 
+        
 
+        # PART 3: Make new Simulation model with same initialisation
         # create new simulation_model
         object_type_record = Object_types.objects.get(id=object_type_id)
         objects_dict = {}

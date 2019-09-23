@@ -64,7 +64,7 @@ class Uploaded_datasetForm5(forms.ModelForm):
 class Uploaded_datasetForm6(forms.ModelForm):
 	class Meta:
 		model = Uploaded_dataset
-		fields = ('list_of_matches', )
+		fields = ('list_of_matches', 'upload_only_matched_entities',)
 
 
 class Uploaded_datasetForm7(forms.ModelForm):
