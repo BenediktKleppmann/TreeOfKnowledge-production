@@ -35,12 +35,16 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
 		<ul class="nav navbar-nav">
+			<li><a href="{% url 'upload_data1_new' %}">Upload Data</a></li>
 			<li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> File <span class="caret" style="border-top-color:rgb(226,221,204);"></span></a>
+                <a href="{% url 'edit_simulation_new' %}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Simulation<span class="caret" style="border-top-color:rgb(226,221,204);"></span></a>
                 <ul class="dropdown-menu">
-				  <li><a href="{% url 'edit_simulation_new' %}">New Model</a></li>
-				  <li><a href="#">Open Model</a></li>
+				  <li><a href="{% url 'edit_simulation_new' %}">New Simulation</a></li>
+				  <li><a href="{% url 'open_your_simulation' %}">Your Simulations</a></li>
+				  <li><a href="{% url 'open_your_simulation' %}">Search Simulation</a></li>
 				  
+				  <!--
+				  <li role="separator" class="divider"></li>
 				  <li class="dropdown-submenu">
 					<a tabindex="-1" href="#">Recent Models</a>
 					<ul class="dropdown-menu">
@@ -48,13 +52,12 @@
 							<li><a href="{% url 'edit_simulation' simulation_id=model.id %}">edit model {{ model.name }}</a></li>
 						{% endfor %}
 					</ul>
-				  </li>
-				  <li role="separator" class="divider"></li>
-                  <li><a href="#">Upload Data</a></li>
+				  </li>-->
+
                 </ul>
               </li>
-            <li><a href="#">Edit</a></li>
-			<li><a href="#">Run</a></li>
+            
+			<li><a href="{% url 'query_data' %}">Query Data</a></li>
             <li><a href="#">Help</a></li>
           </ul>
 		   <ul class="nav navbar-nav navbar-right">

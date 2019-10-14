@@ -240,7 +240,7 @@
 										'<div id="allowed-values-group" class="row" style="display:none;">' +
 											'<label for="allowed_values" class="form-group col-sm-7">Allowed Values</label>' +
 											'<div class="col-sm-5">' +
-												'<input type="text" class="form-control" id="allowed_values" name="allowed_values" placeholder=' + "'" + '["value1","value2"]' + "'" + '>' +
+												'<input type="text" class="form-control" id="allowed_values" name="allowed_values" placeholder="[&quot;value1&quot;, &quot;value2&quot;]"' +
 											'</div>' +
 										'</div>';
 			$("#new-attribute-further-fields").html(dataTypeSpecificOptions);
@@ -306,10 +306,10 @@
 		var displayed = $("#createAttributeModal #allowed-values-group").attr("style")=="display:block;";
 		if (displayed) {
 			$("#createAttributeModal #allowed-values-group").attr("style","display:none;");
-			document.getElementById("allowed-values").disabled = true;
+			$('#allowed_values').prop("disabled", true);
 		} else {
 			$("#createAttributeModal #allowed-values-group").attr("style","display:block;");
-			document.getElementById("allowed-values").disabled = false;
+			$('#allowed_values').prop("disabled", false);
 		}
 	
 	}
@@ -384,10 +384,10 @@
 				try {
 					allowed_values_list  = JSON.parse(allowed_values)
 					if (!Array.isArray(allowed_values_list)) {
-						alert("Allowed Values - the value submitted here is not a list");
+						alert('Allowed Values - the value submitted here is not a list. Please use the format ["value1", "value2"]');
 						return;
 					} else {
-						message_body['format_specification']['fields']['column']['allowed_values'] = allowed_values_list;
+						message_body['format_specification']['fields']['column']['allowed_values'] = JSON.stringify(allowed_values_list);
 					}
 				}
 				catch(err) {

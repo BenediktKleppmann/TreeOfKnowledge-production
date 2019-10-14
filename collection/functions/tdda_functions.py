@@ -9,6 +9,9 @@ import json
 def get_columns_format_violations(attribute_id, column_values):
     attribute_record = Attribute.objects.get(id=attribute_id)
     constraint_dict =  json.loads(attribute_record.format_specification)
+    if 'allowed_values' in constraint_dict['fields']['column'].keys():
+        constraint_dict['fields']['column']['allowed_values'] = json.loads(constraint_dict['fields']['column']['allowed_values'])
+
     df = pd.DataFrame({'column':column_values})
     if constraint_dict['fields']['column']['type'] == 'int':
         # if there's one None value in the column, then pandas will convert the whole column to np.float64 instead of np.int64, which causes problems
@@ -21,8 +24,16 @@ def get_columns_format_violations(attribute_id, column_values):
 
     pdv = PandasConstraintVerifier(df, epsilon=None, type_checking=None)
 
+
+
+    print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
+    print(constraint_dict)
+    print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
+
+
     constraints = DatasetConstraints()
     constraints.initialize_from_dict(constraint_dict)
+
 
     pdv.repair_field_types(constraints)
     detection = pdv.detect(constraints, VerificationClass=PandasDetection, outpath=None, write_all=False, per_constraint=False, output_fields=None, index=False, in_place=False, rownumber_is_index=True, boolean_ints=False, report='records') 

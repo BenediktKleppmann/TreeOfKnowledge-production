@@ -53,6 +53,7 @@ urlpatterns = [
     # THE TOOL  
     # ==================================================
     url(r'^tool/main_menu/$', views.main_menu, name='main_menu'),
+    url(r'^tool/open_your_simulation/$', views.open_your_simulation, name='open_your_simulation'),
     url(r'^tool/profile_and_settings/$', views.profile_and_settings, name='profile_and_settings'),
 
     # Upload data  -------------------------------------------------------------------------

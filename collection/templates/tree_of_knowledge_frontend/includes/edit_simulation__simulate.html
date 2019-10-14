@@ -499,6 +499,7 @@
 	
 	var delta_t_list = ['delta_t (years)', 'delta_t (months)', 'delta_t (days)', 'delta_t (hours)', 'delta_t (minutes)', 'delta_t (seconds)'];
 	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1];
+	var got_object_data = false;
 	
 	
 
@@ -507,6 +508,7 @@
 		request_body['objects_dict']  = objects_dict;
 		request_body['specified_start_time'] = simulation_start_time;
 		request_body['specified_end_time'] = simulation_end_time;
+		got_object_data = false;
 		
 		var xmlhttp = new XMLHttpRequest();       
 		xmlhttp.onreadystatechange = function() {
@@ -520,7 +522,11 @@
 					object_number = parseInt(object_numbers[i]);
 					objects_dict[object_number]['object_id'] = all_attribute_values[object_number]['object_id'];	
 					objects_dict[object_number]['object_attributes'] = all_attribute_values[object_number]['object_attributes'];
-				}		
+				}	
+				got_object_data = true;	
+				var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Got the data.<br>Please click on the object again.</div>';
+				$("#right-sidebar-body").html(no_results_string);
+				
 			}
 		};
 
@@ -529,7 +535,7 @@
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send(JSON.stringify(request_body));	
 		
-		var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Retrieving object data...<div class="lds-dual-ring"></div></div>';
+		var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Retrieving data...<div class="lds-dual-ring"></div></div>';
 		$("#right-sidebar-body").html(no_results_string);
 	}
 
@@ -731,37 +737,41 @@
 		var object_attributes = objects_dict[object_number]['object_attributes'];
 		var attribute_ids = Object.keys(object_attributes);
 		
-		if (attribute_ids.length ==0){
-			var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">No combination of objects found that satisfy the restrictions.</div>';
+		if (!got_object_data){
+			var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Retrieving data...<div class="lds-dual-ring"></div></div>';
 			$("#right-sidebar-body").html(no_results_string);
-			//var object_type_name = objects_dict[object_number]['object_type_name'];
-			//var object_name = objects_dict[object_number]['object_name'];
-			//var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Retrieving object data...<div class="lds-dual-ring"></div></div>';
-			//$("#right-sidebar-body").html(no_results_string);
-		} else {		
-		
-			object_attributes_string = '<table id="object-attributes-table">';
-			for (var i = 0; i < attribute_ids.length ; i++) {
-				var attribute_id = attribute_ids[i];
-
-				object_attributes_string += '<tr>' +
-												'<td id="optimisation-attribute-button-' + object_number + '-' + attribute_id + '" class="attribute-name" onclick="selectOptimisationAttribute(' + object_number + ', ' + attribute_id + ')">' + object_attributes[attribute_id]['attribute_name'] + '</td>' +
-												'<td class="attribute-value-box"><input class="form-control attribute-value" type="text" value="' + object_attributes[attribute_id]['attribute_value'] + '" onchange="attributeValueChange(' + object_number + ',' + attribute_id + ', this.value)"></td>' +
-												'<button type="button" id="format_violation' + 1 + '" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid value" style="display:none;" data-content="">!</button>' + 
-												'<td class="attribute-rule-box">' + 
-													'<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="openEditObjectBehaviourModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\', null)">edit behaviour</button>'
-												'</td>' +
-											'</tr>';
-			}
-			object_attributes_string += '</table>';
-			$("#right-sidebar-body").html(object_attributes_string);
 			
-			// press the active Optimisation-attribute-buttons
-			for (var i = 0; i < y_value_attributes.length; i++) {
-				$('#optimisation-attribute-button-' + y_value_attributes[i]['object_number'] + '-' + y_value_attributes[i]['attribute_id'] ).addClass('active');
-			}
+		} else {
+		
+			if (attribute_ids.length ==0){
+				var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">No combination of objects found that satisfy the restrictions.</div>';
+				$("#right-sidebar-body").html(no_results_string);
+				//var object_type_name = objects_dict[object_number]['object_type_name'];
+				//var object_name = objects_dict[object_number]['object_name'];
+				
+			} else {		
+				object_attributes_string = '<table id="object-attributes-table">';
+				for (var i = 0; i < attribute_ids.length ; i++) {
+					var attribute_id = attribute_ids[i];
 
-		}		
+					object_attributes_string += '<tr>' +
+													'<td id="optimisation-attribute-button-' + object_number + '-' + attribute_id + '" class="attribute-name" onclick="selectOptimisationAttribute(' + object_number + ', ' + attribute_id + ')">' + object_attributes[attribute_id]['attribute_name'] + '</td>' +
+													'<td class="attribute-value-box"><input class="form-control attribute-value" type="text" value="' + object_attributes[attribute_id]['attribute_value'] + '" onchange="attributeValueChange(' + object_number + ',' + attribute_id + ', this.value)"></td>' +
+													'<button type="button" id="format_violation' + 1 + '" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid value" style="display:none;" data-content="">!</button>' + 
+													'<td class="attribute-rule-box">' + 
+														'<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="openEditObjectBehaviourModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\', null)">edit behaviour</button>'
+													'</td>' +
+												'</tr>';
+				}
+				object_attributes_string += '</table>';
+				$("#right-sidebar-body").html(object_attributes_string);
+				
+				// press the active Optimisation-attribute-buttons
+				for (var i = 0; i < y_value_attributes.length; i++) {
+					$('#optimisation-attribute-button-' + y_value_attributes[i]['object_number'] + '-' + y_value_attributes[i]['attribute_id'] ).addClass('active');
+				}
+			}	
+		}
 	}	
 	
 	function attributeValueChange(object_number, attribute_id , attribute_value) {

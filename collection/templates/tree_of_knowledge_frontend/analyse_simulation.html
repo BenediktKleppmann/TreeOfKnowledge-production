@@ -1212,24 +1212,29 @@
 			// set container id for the chart
 			chart.container('graph-panel');
 			chart.draw();
+			
+	
+			
+			chart.listen("chartDraw", function() {
+				//y_axis_offset 
+				y_axis_offset = 118;
+				found_value = false;		
+				$("g[role='article']").children('path').each(function () {
+					if ($(this)[0].hasAttribute("d") && !found_value) {
+						path_starting_point = parseInt($(this).attr('d').split(' ')[1]);
+						if (path_starting_point > 5) {
+							y_axis_offset = path_starting_point;
+							found_value = true;
+						}
+					}
+				});
+				$('#triggerd-rules-title').css('width', y_axis_offset + 'px');
+				$('#triggerd-rule-periods').css('width', 'calc(100% - ' + y_axis_offset + 'px)');
+			});	
 		});
 		
 		
-		//y_axis_offset 
-		y_axis_offset = 55;
-		found_value = false;		
-		$("g[role='article']").children('path').each(function () {
-			if ($(this)[0].hasAttribute("d") && !found_value) {
-				path_starting_point = parseInt($(this).attr('d').split(' ')[1]);
-				if (path_starting_point > 5) {
-					y_axis_offset = path_starting_point;
-					found_value = true;
-				}
-			}
-		});
-		$('#triggerd-rules-title').css('width', y_axis_offset + 'px');
-		$('#triggerd-rule-periods').css('width', 'calc(100% - 118px)');
-		
+
 
 	}
 	
@@ -1277,6 +1282,8 @@
 			$('#graph-panel').css('height','calc(100% - 45px)');
 		}
 
+
+		
 	}
 	
 	

@@ -249,6 +249,8 @@
 	
 	#knowledge-base-image {
 		width: 860px;
+		margin-top: 10px;
+		margin-bottom: 10px;
 	}
 	
 	.    
@@ -304,20 +306,23 @@
 
 				</div>
 				
-				<form id="next-form" role='form' action='' method='post' class='form' enctype='multipart/form-data'>
-					{% csrf_token %}
-					<div id="entities-to-upload-selection">
-						<div id="entities-to-upload-selection-title">Upload:</div>
-						<div id="upload_only_matched_entities-group" class="btn-group-vertical" data-toggle="buttons">
-							<label class="btn btn-outline-secondary active">
+				<div id="entities-to-upload-selection">
+					<div id="entities-to-upload-selection-title">Upload:</div>
+						<div class="btn-group-vertical" data-toggle="buttons">
+							<label class="btn btn-outline-secondary upload_only_matched_entities active">
 								<input type="radio" name="upload_only_matched_entities" value="False">all entities
 							</label>
-							<label class="btn btn-outline-secondary">
+							<label class="btn btn-outline-secondary upload_only_matched_entities">
 								<input type="radio" name="upload_only_matched_entities" value="True">only the matched entities
 							</label>
 						</div>
 					</div>
+				</div>
+				
+				<form id="next-form" role='form' action='' method='post' class='form' enctype='multipart/form-data'>
+					{% csrf_token %}
 					<input type='hidden' id='list_of_matches' name='list_of_matches' value=''>
+					<input type='hidden' id='upload_only_matched_entities' name='upload_only_matched_entities' value=''>
 				</form>
 				
 
@@ -438,8 +443,8 @@
 	//===  the "Next" Button  =======================================================================================================================	
 	function next() {
 	
+		//list_of_matches
 		var list_of_matches = [];
-		
 		for (var i = 0; i < table_body[0].length; i++) {
 			var this_rows_checkbox = document.getElementById("match-checkbox" + i);
 			if (this_rows_checkbox) {
@@ -454,8 +459,11 @@
 				list_of_matches.push(null);
 			}	
 		}
-		
 		$("#list_of_matches").val(JSON.stringify(list_of_matches));
+		
+		//upload_only_matched_entities
+		$('#upload_only_matched_entities').val(  $(".upload_only_matched_entities.active").children().first().val() );
+
 	
 		$("#next-form").submit();
 		

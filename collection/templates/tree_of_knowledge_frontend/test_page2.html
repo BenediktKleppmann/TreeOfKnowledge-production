@@ -1,97 +1,17 @@
-{% load staticfiles %}
-
-<html>
-<head>
-    <title>Simple Split Panels - jquery-resizable</title>
-    <meta charset="utf-8"/>
-	  <link href="https://cdn.anychart.com/releases/v8/css/anychart-ui.min.css?hcode=be5162d915534272a57d0bb781d27f2b" rel="stylesheet" type="text/css">
-  <link href="https://cdn.anychart.com/releases/v8/fonts/css/anychart-font.min.css?hcode=be5162d915534272a57d0bb781d27f2b" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="{% static 'css/bootstrap-3.4.0.min.css' %}" />
-  
-  
-<style>
-
-
-/* vertical panel */
-
-.panel-container-vertical {
-  display: flex;
-  flex-direction: column;
-  height: 500px;
-}
-
-.panel-top {
-  flex: 0 0 auto;
-  height: 150px;
-  width: 100%;
-}
-
-.splitter-horizontal {
-  flex: 0 0 auto;
-  height: 18px;
-  cursor: row-resize;
-}
-
-.panel-bottom {
-  flex: 1 1 auto;
-}
-
-
-</style>
-	
-</head>
-<body style="">
-
-	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-	<script type="text/javascript" src="https://rawgit.com/RickStrahl/jquery-resizable/master/src/jquery-resizable.js"></script>
-
-
-		
-<script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
-<script src="https://cdn.anychart.com/releases/v8/js/anychart-ui.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
-<script src="https://cdn.anychart.com/releases/v8/js/anychart-exports.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
-<script src="https://cdn.anychart.com/releases/v8/js/anychart-gantt.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
-<script src="https://cdn.anychart.com/releases/v8/js/anychart-data-adapter.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
- 
-
-<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
-<script type="text/javascript" src="https://rawgit.com/RickStrahl/jquery-resizable/master/src/jquery-resizable.js"></script>
-
-
-
-        <div class="panel-container-vertical">
-
-            <div class="panel-top">
-                top panel
-            </div>
-
-            <div class="splitter-horizontal">
-            </div>
-
-            <div class="panel-bottom">
-                bottom panel
-            </div>
-        </div>
-
-
-
-
-
-<script type="text/javascript">
-
-				
-
-
-	 $(".panel-top").resizable({
-	   handleSelector: ".splitter-horizontal",
-	   resizeWidth: false
-	 });
-
-	
-	 
-</script>
-
-<script src="//code.jquery.com/jquery-1.10.2.js"></script>
-<script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
-</body>
-</html>
+<table>
+  <tr>
+    <th>Month</th>
+    <th>Savings</th>
+  </tr>
+  <tr>
+    <td>January</td>
+    <td>$100</td>
+  </tr>
+  <tr>
+    <td>February</td>
+    <td>$80</td>
+  </tr>
+  <tr>
+    <td colspan="2">Sum: $180</td>
+  </tr>
+</table>

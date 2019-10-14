@@ -11,6 +11,10 @@ from django.db import connection
 import math
 import itertools
 import datetime
+import time
+from sqlalchemy import create_engine
+import io
+from django.conf import settings
 
 # called from upload_data1
 def save_new_upload_details(request):
@@ -33,7 +37,6 @@ def save_new_upload_details(request):
         # File to JSON -----------------------------------------
         data_table_df = pd.read_csv(request.FILES['file'], sep=sep, encoding=encoding, quotechar=quotechar, escapechar=escapechar, na_values=na_values, skiprows=skiprows, header=header)
         data_table_df = data_table_df.where(pd.notnull(data_table_df), None)
-
 
         table_header = list(data_table_df.columns)
         table_body = data_table_df.to_dict('list')  
@@ -78,6 +81,7 @@ def save_existing_upload_details(upload_id, request):
 
 
         # File to JSON -----------------------------------------
+        print('File to JSON')
         data_table_df = pd.read_csv(request.FILES['file'], sep=sep, encoding=encoding, quotechar=quotechar, escapechar=escapechar, na_values=na_values, skiprows=skiprows, header=header)
         data_table_df = data_table_df.where(pd.notnull(data_table_df), None)
 
@@ -86,6 +90,7 @@ def save_existing_upload_details(upload_id, request):
         for column_number, column_name in enumerate(table_header): # change the table_body-dict to have column_numbers as keys instead of column_nmaes
             table_body[column_number] = table_body.pop(column_name)
         
+        print('')
         data_table_dict = {"table_header": table_header, "table_body": table_body}
         data_table_json = json.dumps(data_table_dict)
 
@@ -134,6 +139,24 @@ def make_data_table_json_with_distinct_entities(uploaded_dataset):
 
 
 
+
+
+# =============================================================================================================
+# Faster uploading to Postgres ...
+# =============================================================================================================
+    # sqlalchemy_engine = create_engine(settings.DB_CONNECTION_URL)  # ,pool_recycle=settings.POOL_RECYCLE
+    # sqlalchemy_connection = sqlalchemy_engine.raw_connection()
+    # sqlalchemy_cursor = sqlalchemy_connection.cursor()
+    # output = io.StringIO()
+    
+    # new_datapoint_records.to_csv(output, sep='\t', header=False, index=False)
+    # output.seek(0)
+    # sqlalchemy_cursor.copy_from(output, 'collection_data_point')
+# =============================================================================================================
+
+
+
+
 # called from upload_data7
 def perform_uploading(uploaded_dataset, request):
     """
@@ -151,6 +174,7 @@ def perform_uploading(uploaded_dataset, request):
         data_table_json = json.loads(uploaded_dataset.data_table_json)
         table_body = data_table_json["table_body"]
         object_id_column = []
+        print(table_body)
 
 
         # PART 1: Create missing objects/ Remove not-matched rows
@@ -192,6 +216,8 @@ def perform_uploading(uploaded_dataset, request):
         # for every column: create and save new_datapoint_records
         number_of_entities = len(table_body[list(table_body.keys())[0]])
         for column_number, attribute_id in enumerate(attribute_selection):
+            print('======================================================================')
+            print('1 - ' + str(time.time()))
             attribute_record = Attribute.objects.get(id=attribute_id)
             data_type = attribute_record.data_type
             valid_time_end = valid_time_start + attribute_record.expected_valid_period
@@ -213,32 +239,34 @@ def perform_uploading(uploaded_dataset, request):
 
             attribute_id_column = [attribute_id]*number_of_entities
             attribute_id_column = [str(attribute_id) for attribute_id in attribute_id_column]
+            
+            print('2 - ' + str(time.time()))
+            print(len(object_id_column))
+            print(len([str(attribute_id)]*number_of_entities))
+            print(len([str(value) for value in table_body[str(column_number)]]))
+            print(len(numeric_value_column))
+            print(len(string_value_column))
+            print(len(boolean_value_column))
+            print(len([valid_time_start]*number_of_entities))
+            print(len([valid_time_end]*number_of_entities))
+            print(len([data_quality]*number_of_entities))
 
-            print(data_type)
-            print(column_number)
-            print(table_body)
-            print('object_id: ' + str(len(object_id_column)))
-            print('object_id: ' + str(len(object_id_column)))
-            print('attribute_id: ' + str(len([str(attribute_id)]*number_of_entities)))
-            print('value_as_string: ' + str(len([str(value) for value in table_body[str(column_number)]])))
-            print('numeric_value: ' + str(len(numeric_value_column)))
-            print('string_value: ' + str(len(string_value_column)))
-            print('boolean_value: ' + str(len(boolean_value_column)))
-            print('valid_time_start: ' + str(len([valid_time_start]*number_of_entities)))
-            print('valid_time_end: ' + str(len([valid_time_end]*number_of_entities)))
-            print('data_quality: ' + str(len([data_quality]*number_of_entities)))
-            new_datapoint_records = pd.DataFrame({'object_id':object_id_column,
-                            'attribute_id':[str(attribute_id)]*number_of_entities,
-                            'value_as_string':[str(value) for value in table_body[str(column_number)]],
-                            'numeric_value':numeric_value_column,
-                            'string_value':string_value_column,
-                            'boolean_value':boolean_value_column,
-                            'valid_time_start': [valid_time_start]*number_of_entities,
-                            'valid_time_end':[valid_time_end]*number_of_entities,
-                            'data_quality':[data_quality]*number_of_entities})
+            new_datapoints_dict = {'object_id':object_id_column,
+                                    'attribute_id':[str(attribute_id)]*number_of_entities,
+                                    'value_as_string':[str(value) for value in table_body[str(column_number)]],
+                                    'numeric_value':numeric_value_column,
+                                    'string_value':string_value_column,
+                                    'boolean_value':boolean_value_column,
+                                    'valid_time_start': [valid_time_start]*number_of_entities,
+                                    'valid_time_end':[valid_time_end]*number_of_entities,
+                                    'data_quality':[data_quality]*number_of_entities}
+            # print(new_datapoints_dict)
+            new_datapoint_records = pd.DataFrame(new_datapoints_dict)
 
-
+            print('3 - ' + str(time.time()))
             table_rows = new_datapoint_records.values.tolist()
+            # print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+            # print(table_rows)
             number_of_chunks =  math.ceil(number_of_entities / 100)
 
             for chunk_index in range(number_of_chunks):
@@ -247,7 +275,13 @@ def perform_uploading(uploaded_dataset, request):
                     INSERT INTO collection_data_point (object_id, attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end, data_quality) 
                     VALUES ''' 
                 insert_statement += ','.join(['(%s, %s, %s, %s, %s, %s, %s, %s, %s)']*len(rows_to_insert))
+                # print('=================================================')
+                # print(insert_statement)
+                # print('#############')
+                # print(rows_to_insert)
+                cursor.fast_executemany = True 
                 cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+            print('4 - ' + str(time.time()))
      
 
         

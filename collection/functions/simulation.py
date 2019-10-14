@@ -449,7 +449,10 @@ class Simulator:
 
     #  Monte-Carlo  ---------------------------------------------------------------------------------
     def __run_monte_carlo_simulation(self, nb_of_simulations=1000):
-
+        print('################################################################')
+        print(self.df.columns)
+        print(self.y0_columns)
+        print('################################################################')
 
         y0 = np.asarray(self.df[self.y0_columns].copy())
         batch_size = len(y0)

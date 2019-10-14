@@ -56,7 +56,8 @@
 		
 		.overflowing-content {
 		    height: 400px;
-			overflow: auto;
+			overflow-y: hidden;
+			overflow-x: auto;
 			margin-top:100px;
 			margin-left:2%;
 			margin-right:2%;
@@ -105,7 +106,7 @@
 		.table thead > tr > th {border-bottom: 0;}
 
         tbody {
-            height: 352px;
+            height: 340px;
             overflow-y: auto;
 			direction: rtl;
         }
@@ -269,7 +270,8 @@
 			
 			// MAKE TABLE ROWS
 			var tbody = document.createElement('tbody')
-			for (var i = 0; i < table_body[0].length; i++) {
+			var number_of_rows = Math.min(table_body[0].length, 200);
+			for (var i = 0; i < number_of_rows; i++) {
 				tr = tbody.insertRow(-1);
 
 				for (var j = 0; j < table_headers.length; j++) {

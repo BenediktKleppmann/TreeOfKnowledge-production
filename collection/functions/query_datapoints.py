@@ -56,7 +56,6 @@ def find_matching_entities(match_attributes, match_values):
 
 
 
-
         # match table_to_match with collection_data_point   ----------------------------------------
 
         matched_data_points_string = """
@@ -173,7 +172,7 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
 
     # object_ids = list(Object.objects.filter(object_type_id__in=child_object_ids).values_list('id', flat=True))
 
-    broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)   
+    broad_table_df = filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time)   
     # print("===================================================")
     # print("===================================================")
     # print("object_ids: " + str(object_ids))
@@ -231,7 +230,7 @@ def get_data_from_random_object(object_type_id, filter_facts, specified_start_ti
         cursor.execute(query_string)
         object_ids = [entry[0] for entry in cursor.fetchall()]
 
-    broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)   
+    broad_table_df = filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time)   
 
     if broad_table_df is not None:
 
@@ -320,7 +319,7 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
 
          # get broad_table_df
         print('2')
-        broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)  
+        broad_table_df = filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time)  
 
         print('3')
         if broad_table_df is not None:
@@ -381,11 +380,11 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
 
 
 # used in query_data.html
-def get_data_from_objects_behind_the_relation(object_ids, specified_start_time, specified_end_time):
+def get_data_from_objects_behind_the_relation(object_type_id, object_ids, specified_start_time, specified_end_time):
 
 
     filter_facts = []
-    broad_table_df = filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time)   
+    broad_table_df = filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time)   
 
     # prepare response
     if broad_table_df is not None:
@@ -432,7 +431,7 @@ def get_training_data(object_type_id, filter_facts, valid_times):
 
     broad_table_df = pd.DataFrame()
     for valid_time in valid_times:
-        broad_table_df = broad_table_df.append(filter_and_make_df_from_datapoints(object_ids, filter_facts, valid_time[0], valid_time[1]), sort=False)
+        broad_table_df = broad_table_df.append(filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, valid_time[0], valid_time[1]), sort=False)
 
     broad_table_df.columns = ['attr'+ col for col in broad_table_df.columns]
     broad_table_df.index = range(len(broad_table_df))
@@ -442,7 +441,7 @@ def get_training_data(object_type_id, filter_facts, valid_times):
 
 
 
-def filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start_time, specified_end_time):
+def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time):
 
     with connection.cursor() as cursor:
 
@@ -485,6 +484,7 @@ def filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start
                     GROUP BY object_id '''
             new_valid_ranges_df = pd.read_sql_query(sql_string2, connection)
             new_valid_ranges_df['new_valid_range'] = new_valid_ranges_df['new_valid_range'].apply(json.loads)
+            new_valid_ranges_df['object_id'] = new_valid_ranges_df['object_id'].astype(int)
             
             # find the intersecting time ranges (= the overlap between the known valid_ranges and the valid_ranges from the new filter fact)
             valid_ranges_df = pd.merge(valid_ranges_df, new_valid_ranges_df, on='object_id', how='left')
@@ -557,14 +557,31 @@ def filter_and_make_df_from_datapoints(object_ids, filter_facts, specified_start
 
         # clean up the broad table
         broad_table_df['object_id'] = [val[0] for val in broad_table_df.index]
-
-        # broad_table_df['time'] = [datetime.fromtimestamp(val[1]).strftime('%Y-%m-%d') for val in broad_table_df.index] # this is the chosen satisfying_time_start for the object_id
         list_of_datetimes = [datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=(val[1])) for val in broad_table_df.index]
         broad_table_df['time'] = [val.strftime('%Y-%m-%d') for val in list_of_datetimes]
 
         broad_table_df.reindex()
         broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
-    
+
+        # insert missing columns
+        print('=====  broad_table_df  =====================================================================')
+        print(object_type_id)
+        list_of_parent_object_types = [el['id'] for el in get_from_db.get_list_of_parent_objects(object_type_id)]
+        print(list_of_parent_object_types)
+        all_attribute_ids = Attribute.objects.filter(first_applicable_object_type__in = list_of_parent_object_types).values_list('id', flat=True)
+        all_attribute_ids = [str(attribute_id) for attribute_id in all_attribute_ids]
+        existing_columns = list(broad_table_df.columns)
+        print(existing_columns)
+        print(type(existing_columns[0]))
+        print(all_attribute_ids)
+        for attribute_id in all_attribute_ids:
+            if attribute_id not in existing_columns:
+                print('adding ' + str(attribute_id) + 'to the broad_table_df')
+                broad_table_df[attribute_id] = None
+
+        
+        print(list(broad_table_df.columns))
+        print('============================================================================================')
     return broad_table_df
 
 
@@ -693,7 +710,7 @@ def find_matching_entities_OLD(match_attributes, match_values):
 
 
 
-def filter_and_make_df_from_datapoints_OLD(object_ids, filter_facts, specified_start_time, specified_end_time):
+def filter_and_make_df_from_datapoints_OLD(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time):
 
     data_point_records = Data_point.objects.filter(object_id__in=object_ids)
     data_point_records = data_point_records.filter(valid_time_start__gte=specified_start_time, valid_time_start__lt=specified_end_time)   

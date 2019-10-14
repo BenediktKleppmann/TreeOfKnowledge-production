@@ -38,7 +38,7 @@
 		}
 		
 		.dropdown {
-			position: absolute;
+			display: inline-block;
 			margin-left:2px;
 		}
 		
@@ -75,6 +75,17 @@
 			margin-bottom:3px;
 			border-radius:5px;
 		}
+		
+		/* ---------------------------------------------------------------------------- */
+		.operator {
+			width:10%;
+			max-width:59px;
+		}
+		
+		.value {
+			width: 15%;
+			max-width: 140px;
+		}
 </style>
 
 	
@@ -87,7 +98,7 @@
 								
 										
 	/*=============  POPULATE AdditionalAttribute-DROPDOWNS  ================================================================ */
-	
+	console.log('makeObjectsAdditionalAttributesDropdown');
 	function makeObjectsAdditionalAttributesDropdown(object_type_id, attribute_number){
 
 		var xhttp = new XMLHttpRequest();       
@@ -113,6 +124,7 @@
 	}
 	
 	
+	console.log('filterAttributeDropDown');
 	function filterAttributeDropDown(attribute_number){	
 		var current_query = $('#dropDonwSearch' + attribute_number).val().toLowerCase();
 		if (current_query !== "") {
@@ -130,6 +142,7 @@
 
 
 	/*=============  SELECT DROPDOWN OPTION  ================================================================ */
+	console.log('selectAdditionalAttribute');
 	function selectAdditionalAttribute(attribute_number , attribute_name, attribute_id, attribute_data_type, attribute_first_relation_object_type) {
 		$('#attribute-name' + attribute_number).html(attribute_name);
 		$('#attribute' + attribute_number).attr('value', attribute_id);	
@@ -173,6 +186,7 @@
 	}
 	
 	/*=============  CHECK ADDITIONAL FACTS FORMATS  ================================================================ */
+	console.log('checkAdditionalFactFormats');
 	function checkAdditionalFactFormats() {
 		for (var fact_number = 1; fact_number <= number_of_additional_object_facts; fact_number++) {
 			var attribute_id = $('#attribute' + fact_number).val();
@@ -254,11 +268,14 @@
 	
 	
 	/*=============  RESET DROPDOWN SELECTION  ================================================================ */
+	console.log('resetAttribute');
 	function resetAttribute(attribute_number){
 		$('#attribute-name' + attribute_number).html('Attribute');
 		document.getElementById('attribute' + attribute_number).value = '';	
 		document.getElementById('operator' + attribute_number).selectedIndex = 0;
 		document.getElementById('value' + attribute_number).value = '';	
+		document.getElementById('relation-dropdown' + attribute_number).remove();
+		$('#format_violation' + attribute_number).css('display', 'none');
 		checkAdditionalFactFormats();
 	}
 	

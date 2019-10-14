@@ -913,12 +913,14 @@
 			
 			if (new_attribute_is_relation) {
 			
-				specified_start_time = $("#specified_start_time").val();
-				specified_end_time = $("#specified_end_time").val();
+				var object_type_id = $("#object_type_id").val();
+				var specified_start_time = $("#specified_start_time").val();
+				var specified_end_time = $("#specified_end_time").val();
 				specified_start_time = new Date(specified_start_time).getTime() / 1000
 				specified_end_time = new Date(specified_end_time).getTime() / 1000
 		
-				request_body = {'object_ids': table_body[parseInt(new_attribute_id)],
+				request_body = {'object_type_id': object_type_id,
+								'object_ids': table_body[parseInt(new_attribute_id)],
 								'specified_start_time': specified_start_time,
 								'specified_end_time': specified_end_time}
 								

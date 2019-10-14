@@ -114,6 +114,20 @@
 			border-left:1px solid black;
 		}
 		
+		#last-table-row {
+			width: 100%;
+		}
+		
+		#more-rows-button{
+			background: white;
+			border-color: rgb(90,90,90);
+			margin-left: 250px;
+			margin-bottom: 12px;
+			margin-top: 11px;
+			padding: 3px 400px;
+		}
+		}
+		
 		
 		 /* --- Attribute Selections ----------------------------------------------------- */
 		
@@ -445,6 +459,7 @@
 
 	// THE DATA
 	var data_table_json = {{ uploaded_dataset.data_table_json | safe }}
+	console.log(data_table_json);
 
 	// GLOBAL VARIABLES ==========================================
 	var table_headers = data_table_json["table_header"]
@@ -462,6 +477,7 @@
 	var attribute_selection = [];
 	var related_attribute_selection = [];
 	var object_identifiers = [];
+	var violating_cells = {};
 	
 	for (var i = 0; i < table_headers.length; i++) {
 		attribute_selection.push("");
@@ -477,7 +493,7 @@
 	
 	
 	//===  Draw the table  =============================================================================	
-    function drawTheTable() {
+    function drawTheTable(max_number_of_rows) {
 
 		var table_html_string = '<table id="data-table" class="table table-sm table-condensed" style="width:' + (150*table_headers.length + 20) + 'px;">' +
 									'<thead>' +
@@ -490,8 +506,8 @@
 		table_html_string +=  			'</tr>' +
 									'</thead>' +
 									'<tbody>';
-		
-		for (var i = 0; i < table_body[0].length; i++) {
+		var number_of_rows = Math.min(table_body[0].length, max_number_of_rows);
+		for (var i = 0; i < number_of_rows; i++) {
 			table_html_string +=  		'<tr>';
 			for (var j = 0; j < table_headers.length; j++) {
 				table_html_string +=  		'<td><span>f</span>' + table_body[j][i] + '</td>';
@@ -499,7 +515,16 @@
 			table_html_string +=  		'</tr>';
 		}
 		
-		table_html_string +=  		'</tbody>' +
+		if (table_body[0].length > max_number_of_rows) {
+			table_html_string +=  		'<tr>' +
+											'<td id="last-table-row" colspan="' + table_headers.length + '">' + 
+												'<button id="more-rows-button" class="btn btn-outline-secondary" type="button" onclick="drawTheTable(' + (max_number_of_rows + 300) + ')">Display more Rows</button>' +
+											'</td>' +
+										'</tr>';
+		}
+		
+		
+		table_html_string += 		'</tbody>' +
 								'</table>';
 									
 		$("#uploaded_table").html(table_html_string);
@@ -562,23 +587,31 @@
 		final_column_index = 0;
 		var datetime_column = null;
 	
-		for (var i = 0; i < table_headers.length; i++) {
-			if (attribute_selection[i] == "DateTime of Observation") {
-				datetime_column = table_body[i]		
-			} else if (attribute_selection[i] != ""){
+		for (var column_nb = 0; column_nb < table_headers.length; column_nb++) {
+			if (attribute_selection[column_nb] == "DateTime of Observation") {
+				datetime_column = table_body[column_nb]		
+			} else if (attribute_selection[column_nb] != ""){
 				//save column in final-variables
-				final_table_headers.push($("#attribute-button" + i).html());
-				final_attribute_selection.push(attribute_selection[i])
-				final_table_body[final_column_index] = table_body[i];
-				final_object_identifiers[final_column_index] = object_identifiers[i];
+				final_table_headers.push($("#attribute-button" + column_nb).html());
+				final_attribute_selection.push(attribute_selection[column_nb])
+				final_table_body[final_column_index] = table_body[column_nb];
+				final_object_identifiers[final_column_index] = object_identifiers[column_nb];
 				
 				
 				//remove those values from the final_table_body that have violating formats
+				if (column_nb in violating_cells) {
+					for (var j = 0; j < violating_cells[column_nb].length; j++) {
+						row_number = violating_cells[column_nb][j];
+						final_table_body[final_column_index][row_number] = null;
+					}
+				}
+				
+				/*
 				for (var j = 0; j < table_body[i].length; j++) {
 					if (document.getElementById('data-table').rows[j+1].cells[i].getAttribute("style") == "background-color: rgb(216, 147, 147);") {
 						final_table_body[final_column_index][j] = null;
 					}
-				}
+				}*/
 				final_column_index++;
 			}
 		}
@@ -625,11 +658,13 @@
 	
 	function updateColumn(attributenumber) {
 		for (var i = 0; i < table_body[attributenumber].length; i++) {
-			if (String(table_body[attributenumber][i]).length < 30) {
-				document.getElementById('data-table').rows[i+1].cells[attributenumber].innerHTML = '&nbsp;' + String(table_body[attributenumber][i]).replace(new RegExp(' ', 'g'), '&nbsp;');
-			} else {
-				document.getElementById('data-table').rows[i+1].cells[attributenumber].innerHTML = '&nbsp;' + table_body[attributenumber][i]
-			}			
+			if (document.getElementById('data-table').rows[i+1] && document.getElementById('data-table').rows[i+1].cells[attributenumber]) {
+				if (String(table_body[attributenumber][i]).length < 30) {
+					document.getElementById('data-table').rows[i+1].cells[attributenumber].innerHTML = '&nbsp;' + String(table_body[attributenumber][i]).replace(new RegExp(' ', 'g'), '&nbsp;');
+				} else {
+					document.getElementById('data-table').rows[i+1].cells[attributenumber].innerHTML = '&nbsp;' + table_body[attributenumber][i]
+				}	
+			}
 		}
 	}
 	
@@ -640,8 +675,9 @@
 		
 		//remove the old markings
 		for (var i = 0; i < table_body[attributenumber].length; i++) {
-			var violating_cell = document.getElementById('data-table').rows[i+1].cells[attributenumber];
-			violating_cell.setAttribute("style", "");
+			if (document.getElementById('data-table').rows[i+1] && document.getElementById('data-table').rows[i+1].cells[attributenumber]) { 
+				document.getElementById('data-table').rows[i+1].cells[attributenumber].setAttribute("style", ""); 
+			}
 		}
 		$("#violation-summary" + attributenumber).html("&nbsp;");
 		
@@ -660,19 +696,29 @@
 			xmlhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
 
-					var violating_rows = JSON.parse(this.responseText);
-					var number_of_format_violations = 0;
-					
+					var violating_rows = JSON.parse(this.responseText);						
+
+					// paint the violating cells
+					truly_violating_rows = [];
 					for (var i = 0; i < violating_rows.length; i++) {
-						if (table_body[attributenumber][i] != null){
-							number_of_format_violations++;
-							var violating_row = violating_rows[i];
-							var violating_cell = document.getElementById('data-table').rows[violating_row + 1].cells[attributenumber];
-							violating_cell.setAttribute("style", "background-color: rgb(216, 147, 147);");
-						}
+						var violating_row = violating_rows[i];
+						if (table_body[attributenumber][violating_row] != null & table_body[attributenumber][violating_row] != 'null'){
+							truly_violating_rows.push(violating_row);
+							if (document.getElementById('data-table').rows[violating_row+1] && document.getElementById('data-table').rows[violating_row+1].cells[attributenumber]) { 
+								document.getElementById('data-table').rows[violating_row+1].cells[attributenumber].setAttribute("style", "background-color: rgb(216, 147, 147);");
+							}
+						} 
 					}
 					
-					$("#violation-summary" + attributenumber).html(number_of_format_violations.toString() + " format missmatches");
+					//remember the violating cells
+					violating_cells[attributenumber] = truly_violating_rows;
+					
+					var number_of_format_violations = truly_violating_rows.length;
+					if (number_of_format_violations > 0){
+						$("#violation-summary" + attributenumber).html(truly_violating_rows.length.toString() + " format missmatches");
+					} else {
+						$("#violation-summary" + attributenumber).html(" &nbsp; ");
+					}
 					
 				}
 			};
@@ -716,7 +762,7 @@
 	
 	//== Clicking on an Attribute in the Choose Attribute Modal =========================================================================================		  
 	function inspectAttribute(i) {
-	
+		console.log("inspectAttribute");
 		var attribute_detail = attribute_options[i];
 		selected_attribute_number = i;
 		selected_attribute_is_datetime = false;
@@ -738,7 +784,7 @@
 				var specification_name = format_specifications[j];
 				var specification_value = attribute_detail['format'][format_specifications[j]];
 				if (specification_name == 'allowed_values') {
-					specification_value = JSON.stringify(specification_value);
+					specification_value = specification_value.split('"').join('&quot;');
 				}
 				
 				
@@ -976,7 +1022,13 @@
 				var related_attribute_name = related_object_attribute_options[selected_attribute_number_of_relation]['attribute_name'];
 				var related_attribute_id = related_object_attribute_options[selected_attribute_number_of_relation]['attribute_id'];
 				
-				var request_body = {'match_values': [table_body[edited_column_number]], 
+				var match_values = table_body[edited_column_number];
+				for (var i = 0; i < match_values.length; i++) {	
+					if (typeof match_values[i] === 'string') {
+						match_values[i] = match_values[i].trim()
+					}
+				}
+				var request_body = {'match_values': [match_values], 
 									'match_attributes': [{'attribute_id': related_attribute_id, 'attribute_name': related_attribute_name}]};
 				var xmlhttp = new XMLHttpRequest();       
 				xmlhttp.open("POST", "/tool/find_matching_entities/", false);
@@ -1026,16 +1078,37 @@
 					}
 				} else if (data_type == "string"){
 					for (var i = 0; i < table_body[edited_column_number].length; i++) {
-						if (table_body[edited_column_number][i] != null){
-							new_column.push(String(table_body[edited_column_number][i]));
-						} 
+						if (table_body[edited_column_number][i]== null){
+							new_column.push(null);
+						} else {
+							if (["", "null", "na", "nan"].includes(table_body[edited_column_number][i].toLowerCase().trim())) {
+								new_column.push(null);
+							} else {
+								new_column.push(String(table_body[edited_column_number][i].trim()));
+							}
+						}
 					}
-				} else if (data_type == "boolean"){
+				} else if (data_type == "bool"){
 					for (var i = 0; i < table_body[edited_column_number].length; i++) {
-						if (table_body[edited_column_number][i].toLowerCase() == "true"){
-							new_column.push(true);
-						} else if (table_body[edited_column_number][i].toLowerCase() == "false"){
-							new_column.push(false);
+						var value = table_body[edited_column_number][i];
+						if (typeof value === "boolean") {
+							new_column.push(value);
+						} else if (typeof value === "string") {
+							if (["true", "t", "yes"].includes(value.toLowerCase().trim())){
+								new_column.push(true);
+							} else if (["false","f","no"].includes(value.toLowerCase().trim())){
+								new_column.push(false);
+							} else {
+								new_column.push(null);
+							}
+						} else if (typeof value === "number") {
+							if (Math.round(value) == 1){
+								new_column.push(true);
+							} else if (Math.round(value) == 0){
+								new_column.push(false);
+							} else {
+								new_column.push(null);
+							}
 						} else {
 							new_column.push(null);
 						}
@@ -1223,7 +1296,12 @@
 				}
 				
 				if (data_type == "string") {
-					var allowed_values = JSON.stringify(response_dict["fields"]["column"]["allowed_values"])
+				
+					var allowed_values = '';
+					if ('allowed_values' in response_dict["fields"]["column"]) {
+						var allowed_values = JSON.stringify(response_dict["fields"]["column"]["allowed_values"]);
+						allowed_values = allowed_values.split('"').join('&quot;');
+					}
 					var checked  =  (typeof allowed_values === "undefined") ? "" : "checked";
 					//var checked  =  (allowed_values.length > 0) ? "checked" : "" ;
 					dataTypeSpecificOptions += 	'<br>' +
@@ -1250,7 +1328,7 @@
 												'<div id="allowed-values-group" class="row" style="display:none;">' +
 													'<label for="allowed_values" class="form-group col-sm-7">Allowed Values</label>' +
 													'<div class="col-sm-5">' +
-														'<input type="text" class="form-control" id="allowed_values" name="allowed_values" placeholder="' + allowed_values + '">' +
+														'<input type="text" class="form-control" id="allowed_values" name="allowed_values" value="' + allowed_values + '">' +
 													'</div>' +
 												'</div>';
 
@@ -1281,7 +1359,7 @@
 		
 	
 		/*====  Create Table    ========================================== */
-		drawTheTable()
+		drawTheTable(200)
 		createChooseAttributeButtons();
 		createObjectIdButtons()
 		createColumnTransformationFields();
@@ -1371,7 +1449,7 @@
 				new_value = parseInt(markedCell.innerHTML, 10) || null;
 			} else if (data_type == "real"){
 				new_value = parseFloat(markedCell.innerHTML, 10) || null;
-			} else if (data_type == "boolean"){
+			} else if (data_type == "bool"){
 				if (table_body[attributenumber][i].toLowerCase() == "true"){
 						new_value = true;
 				} else if (table_body[attributenumber][i].toLowerCase() == "false"){

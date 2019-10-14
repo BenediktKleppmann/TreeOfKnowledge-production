@@ -126,7 +126,7 @@
 			padding: 3px 5px;
 			font-size:18px;
 			position: absolute;
-			margin-left:309px;
+			float: right;
 		}
 		
 		.popover {
@@ -134,78 +134,7 @@
 		}
 
 		/* --- Additional Fact Row -------------------------------------------- */
-		.dropdown-menu {
-			padding:0;
-		}
-		
-		.search {
-			height:40px;
-			border-radius:4px;
-			border: 1px solid #999;
-		}
-		
-		div.inline { 
-			float:left; 
-			margin-right: 5px;
-		}
-		
-		
-		.broad {
-			padding-top: 3px;
-			padding-bottom: 1px;
-			padding-right: 3px;
-			padding-left: 2px;
-			height:43px;
-		}
-		
-		.form-group {
-			margin-bottom: 0px;
-		}
-		
-		div.inline {
-			margin-right:3px;
-		}
-		
-		.dropdown {
-			position: absolute;
-			margin-left:2px;
-		}
-		
-		.dropdown-item {
-			padding: 6px 10px;
-			border-radius:2px;
-			width:150px
-		}
-		
-		
-		/* --- Additional Attribute Drop Down ----------------------------------- */
-		
-		.list-group.drop-down-display {
-			margin-bottom:3px;
-			max-height: 250px;
-			overflow-y: scroll;
-		}
 
-		.dropdown {
-			margin-left:2px;
-		}
-		
-		.dropdown-item {
-			padding: 6px 10px;
-			border-radius:2px;
-			width:150px
-		}
-		
-		.dropdown-item-button {
-			padding: 6px 10px;
-			border-radius:2px;
-			width:150px;
-			margin-left:17px;
-			margin-bottom:3px;
-			border-radius:5px;
-		}
-
-		
 
 		
 		
@@ -395,7 +324,7 @@
 														</div>
 													</div>
 													<input type="hidden" id="attribute1" name="attribute1" value="">
-													<div class="form-group inline operator" style="position: absolute; margin-left: 102px;">
+													<div class="form-group inline operator">
 														<select class="form-control form-control-lg" id="operator1" name="operator1">
 															<option value="=" selected>=</option>
 															<option value=">">></option>
@@ -403,10 +332,10 @@
 															<option value="in">in</option>
 														</select>
 													</div> 
-													<div class="form-group inline value" style="position: absolute;margin-left: 165px;">
+													<div class="form-group inline value">
 														<input type="text" class="form-control" id="value1" name="value1" value="" size="15">
 													</div>
-													<button type="button" id="format_violation1" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
+													<button type="button" id="format_violation1" class="btn btn-danger" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
 												</div>
 											</li>
 											<li class="list-group-item broad" > <!-- Object Attribute 2 -->
@@ -423,7 +352,7 @@
 														</div>
 													</div>
 													<input type="hidden" id="attribute2" name="attribute2" value="">
-													<div class="form-group inline operator" style="position: absolute; margin-left: 102px;">
+													<div class="form-group inline operator">
 														<select class="form-control form-control-lg" id="operator2" name="operator2">
 															<option value="=" selected>=</option>
 															<option value=">">></option>
@@ -431,10 +360,10 @@
 															<option value="in">in</option>
 														</select>
 													</div> 
-													<div class="form-group inline value" style="position: absolute;margin-left: 165px;">
+													<div class="form-group inline value">
 														<input type="text" class="form-control" id="value2" name="value2" value="" size="15">
 													</div>
-													<button type="button" id="format_violation2" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
+													<button type="button" id="format_violation2" class="btn btn-danger" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
 												</div>
 											</li>
 											<li class="list-group-item narrow" id="create-new-object-fact-button">  	<button id="make-new-additional-fact-button" type="button" class="btn btn-outline-dark" onclick="newAdditionalFactInput('all');" ><i class="fas fa-plus"></i></button> </li>
@@ -465,6 +394,7 @@
 	
 	{% include "tree_of_knowledge_frontend/includes/create_attribute_modal.html" %} 
 	{% include "tree_of_knowledge_frontend/includes/edit_attribute_modal.html" %} 
+	{% include "tree_of_knowledge_frontend/includes/additional_facts_functions.html" %} 
 	
 
 
@@ -539,7 +469,7 @@
 													'</div>' + 
 												'</div>' + 
 												'<input type="hidden" id="attribute' + fact_number + '" name="attribute' + fact_number + '" value="">' + 
-												'<div class="form-group inline operator" style="position: absolute; margin-left: 102px;">' + 
+												'<div class="form-group inline operator">' + 
 													'<select class="form-control form-control-lg" id="operator' + fact_number + '" name="operator' + fact_number + '">' + 
 														'<option value="=" selected>=</option>' + 
 														'<option value=">">></option>' + 
@@ -547,11 +477,11 @@
 														'<option value="in">in</option>' +
 													'</select>' + 
 												'</div> ' + 
-												'<div class="form-group inline value" style="position: absolute;margin-left: 165px;">' + 
+												'<div class="form-group inline value">' + 
 													'<input type="text" class="form-control" id="value' + fact_number + '" name="value' + fact_number + '" size="15">' + 
 												'</div>' + 
 											'</div>' +
-											'<button type="button" id="format_violation' + fact_number + '" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>' +
+											'<button type="button" id="format_violation' + fact_number + '" class="btn btn-danger" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>' +
 										'</li>';
 										
 		$(additionalFactHTMLString).insertBefore(insert_before);
@@ -663,6 +593,7 @@
 		$("#save_new_object_type_button").attr("style", "display:none;");
 		$("#cancel_object_modifictaion_button").attr("style", "display:none;");
 		$("#new_object_name").html('facts about the<br>new object type');
+		$('#jstree-result2').html('');
 	
 	}
 	
@@ -874,6 +805,8 @@
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send(JSON.stringify({'object_id':node_id}));
 		
+		$('#jstree-result2').html('');
+		
 	};
 	
 	
@@ -937,7 +870,7 @@
 								
 										
 	/*=============  POPULATE AdditionalAttribute-DROPDOWNS  ================================================================ */
-	
+	/*
 	function makeObjectsAdditionalAttributesDropdown(object_type_id, attribute_number){
 
 		var xhttp = new XMLHttpRequest();       
@@ -961,8 +894,8 @@
 		xhttp.open("GET", "/tool/get_possible_attributes?object_type_id=" + object_type_id , true);
 		xhttp.send();
 	}
-	
-	
+	*/
+	/*
 	function filterAttributeDropDown(attribute_number){	
 		var current_query = $('#dropDonwSearch' + attribute_number).val().toLowerCase();
 		if (current_query !== "") {
@@ -977,15 +910,18 @@
 			$("#drop-down-display" + attribute_number + " li").show();
 		};
 	}
-
+*/
 
 	/*=============  SELECT DROPDOWN OPTION  ================================================================ */
+	/*
 	function selectAdditionalAttribute(attribute_number , attribute_name, attribute_id) {
 		$('#attribute-name' + attribute_number).html(attribute_name);
 		$('#attribute' + attribute_number).attr('value', attribute_id);									
 	}
+	*/
 	
 	/*=============  CHECK ADDITIONAL FACTS FORMATS  ================================================================ */
+	/*
 	function checkAdditionalFactFormats() {
 		for (var fact_number = 1; fact_number <= number_of_additional_object_facts; fact_number++) {
 			var attribute_id = $('#attribute' + fact_number).val();
@@ -1020,9 +956,10 @@
 			xhttp.send();
 		}									
 	}
-	
+	*/
 	
 	/*=============  RESET DROPDOWN SELECTION  ================================================================ */
+	/*
 	function resetAttribute(attribute_number){
 		$('#attribute-name' + attribute_number).html('Attribute');
 		document.getElementById('attribute' + attribute_number).value = '';	
@@ -1030,6 +967,7 @@
 		document.getElementById('value' + attribute_number).value = '';	
 		checkAdditionalFactFormats();
 	}
+	*/
 	
 	
 	//========================================================================

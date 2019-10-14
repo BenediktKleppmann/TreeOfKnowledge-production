@@ -47,13 +47,13 @@
 
 
 	
-	#name {
+	#edit-name {
 		width: 200px;
 		margin-left: 165px;
 		margin-bottom:27px;
 	}
 	
-	#first_applicable_object_type {
+	#edit-first_applicable_object_type {
 		margin-top:3px;
 	}
 	
@@ -78,19 +78,19 @@
 		  <div class="modal-body">
 			  <div class="container-fluid">
 				<div class="form">
-					<input type="text" class="form-control" id="name" name="name" placeholder="Attribute Name" value="">
+					<input type="text" class="form-control" id="edit-name" name="name" placeholder="Attribute Name" value="">
 					<div class="form-group row">
 						<label for="description" class="col-sm-4">Description</label>
 						<div class="col-sm-8">
-							<textarea class="form-control" id="description" name="description" rows="2"></textarea>
+							<textarea class="form-control" id="edit-description" name="description" rows="2"></textarea>
 						</div>
 					</div> 
-					<input type="hidden" id="attribute_id" name="attribute_id" value="">
+					<input type="hidden" id="edit-attribute_id" name="attribute_id" value="">
 					<br>
 					<div class="form-group row">
 						<label for="expected_valid_period" class="col-sm-7">Is this a slow or fast changing attribute? Estimated time until the attribute changes significantly:</label>
 						<div class="col-sm-5">
-							<select class="form-control form-control-lg" id="expected_valid_period" name="expected_valid_period">
+							<select class="form-control form-control-lg" id="edit-expected_valid_period" name="expected_valid_period">
 								<option value="" selected></option>
 								<option value=3153600000>constant throughout the object's existence</option>
 								<option value=315360000>10 years</option>
@@ -121,7 +121,7 @@
 					<div class="form-group row">
 						<label for="first_applicable_object_type" class="col-sm-7">Most general Object Type for which it makes sence to have this attribute</label>
 						<div class="col-sm-5">
-							<select class="form-control form-control-lg" id="first_applicable_object_type" name="first_applicable_object_type">
+							<select class="form-control form-control-lg" id="edit-first_applicable_object_type" name="first_applicable_object_type">
 							</select>
 						</div>
 					</div>
@@ -147,7 +147,7 @@
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-secondary" onclick="closeModal()" id="editAttributeCloseButton" data-dismiss="modal">Cancel</button>
 			<button type="button" class="btn btn-primary" onclick="saveChanges()">Save Changes</button>
-			<button type="button" class="btn btn-danger" onclick="deleteAttribute()">Delete Attribute</button>
+			<button type="button" class="btn btn-danger" onclick="deleteAttribute()" data-dismiss="modal">Delete Attribute</button>
 		  </div>
 		  
 		</div>
@@ -181,13 +181,12 @@ var selected_attribute_id = "1";
 			if (this.readyState == 4 && this.status == 200) {
 				
 				
-				console.log(this.responseText)
 				var response_dict = JSON.parse(this.responseText)
 				
-				$("#editAttributeModal #name").val(response_dict["name"]);
-				$("#editAttributeModal #attribute_id").val(response_dict["id"]);
-				$("#editAttributeModal #description").html(response_dict["description"]);
-				$("#editAttributeModal #expected_valid_period").val(response_dict["expected_valid_period"]);
+				$("#editAttributeModal #edit-name").val(response_dict["name"]);
+				$("#editAttributeModal #edit-attribute_id").val(response_dict["id"]);
+				$("#editAttributeModal #edit-description").html(response_dict["description"]);
+				$("#editAttributeModal #edit-expected_valid_period").val(response_dict["expected_valid_period"]);
 				first_applicable_object_type = response_dict["first_applicable_object_type"];
 				$("#editAttributeModal #type_edit").val(response_dict["data_type"]);
 
@@ -200,46 +199,47 @@ var selected_attribute_id = "1";
 												'<div class="form-group row">' +
 													'<label for="min" class="col-sm-7">Minimum allowed value</label>' +
 													'<div class="col-sm-5">' +
-														'<input type="text" class="form-control" id="min" name="min" value="' + response_dict["format_specification"]["fields"]["column"]["min"] + '">' +
+														'<input type="text" class="form-control" id="edit-min" name="min" value="' + response_dict["format_specification"]["fields"]["column"]["min"] + '">' +
 													'</div>' +
 												'</div>' +
 												'<br>' +
 												'<div class="form-group row">' +
 													'<label for="max" class="col-sm-7">Maximum allowed value</label>' +
 													'<div class="col-sm-5">' +
-														'<input type="text" class="form-control" id="max" name="max" value="' + response_dict["format_specification"]["fields"]["column"]["max"] + '">' +
+														'<input type="text" class="form-control" id="edit-max" name="max" value="' + response_dict["format_specification"]["fields"]["column"]["max"] + '">' +
 													'</div>' +
 												'</div>';
 				}
 				
 				if (response_dict["data_type"] == "string") {
 					var allowed_values = JSON.stringify(response_dict["format_specification"]["fields"]["column"]["allowed_values"])
+					allowed_values = allowed_values.split('"').join('&quot;');
 					var checked  =  (typeof allowed_values === "undefined") ? "" : "checked";
 					dataTypeSpecificOptions += 	'<br>' +
 												'<div class="form-group row">' +
 													'<label for="min_length" class="col-sm-7">Minimum string length</label>' +
 													'<div class="col-sm-5">' +
-														'<input type="text" class="form-control" id="min_length" name="min_length" value="' + response_dict["format_specification"]["fields"]["column"]["min_length"] + '">' +
+														'<input type="text" class="form-control" id="edit-min_length" name="min_length" value="' + response_dict["format_specification"]["fields"]["column"]["min_length"] + '">' +
 													'</div>' +
 												'</div>' +
 												'<br>' +
 												'<div class="form-group row">' +
 													'<label for="max_length" class="col-sm-7">Maximum string length</label>' +
 													'<div class="col-sm-5">' +
-														'<input type="text" class="form-control" id="max_length" name="max_length" value="' + response_dict["format_specification"]["fields"]["column"]["max_length"] + '">' +
+														'<input type="text" class="form-control" id="edit-max_length" name="max_length" value="' + response_dict["format_specification"]["fields"]["column"]["max_length"] + '">' +
 													'</div>' +
 												'</div>' +
 												'<br>' +
 												'<div class="row">' +
 													'<div class="custom-control custom-checkbox">' +
-														'<input type="checkbox" class="custom-control-input" id="is_categorical" onchange="toggleCategoricalField()" ' + checked + '>' +
+														'<input type="checkbox" class="custom-control-input" id="edit-is_categorical" onchange="toggleCategoricalField()" ' + checked + '>' +
 														'<label class="custom-control-label" for="is_categorical">&nbsp;Categorical</label>' +
 													'</div>' +
 												'</div>' +
 												'<div id="allowed-values-group" class="row" style="display:none;">' +
 													'<label for="allowed_values" class="form-group col-sm-7">Allowed Values</label>' +
 													'<div class="col-sm-5">' +
-														'<input type="text" class="form-control" id="allowed_values" name="allowed_values" placeholder="' + allowed_values + '">' +
+														'<input type="text" class="form-control" id="edit-allowed_values" name="allowed_values" value="' + allowed_values + '">' +
 													'</div>' +
 												'</div>';
 
@@ -263,7 +263,7 @@ var selected_attribute_id = "1";
 								options_html_string += '<option value="' + list_of_objects[i]["id"] + '">' + list_of_objects[i]["name"] + '</option>'
 							}
 						}
-						$("#editAttributeModal #first_applicable_object_type").html(options_html_string);
+						$("#editAttributeModal #edit-first_applicable_object_type").html(options_html_string);
 						
 					}
 				};
@@ -291,7 +291,7 @@ var selected_attribute_id = "1";
 	/*========================================================================*/
 		
 	/*=============  LOAD LIST OF PARENT OBJECTS  ================================================================ */
-	function loadListOfParentObjects(object_type_id) {
+	function edit_loadListOfParentObjects(object_type_id) {
 		
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
@@ -306,7 +306,7 @@ var selected_attribute_id = "1";
 						options_html_string += '<option value="' + list_of_parent_objects[i]["id"] + '">' + list_of_parent_objects[i]["name"] + '</option>'
 					}
 				}
-				$("#first_applicable_object_type").html(options_html_string);
+				$("#edit-first_applicable_object_type").html(options_html_string);
 			}
 		};
 		xhttp.open("GET", "/tool/get_list_of_parent_objects?object_type_id=" + object_type_id , true);
@@ -327,14 +327,14 @@ var selected_attribute_id = "1";
 										'<div class="form-group row">' +
 											'<label for="min" class="col-sm-7">Minimum allowed value</label>' +
 											'<div class="col-sm-5">' +
-												'<input type="text" class="form-control" id="min" name="min">' +
+												'<input type="text" class="form-control" id="edit-min" name="min">' +
 											'</div>' +
 										'</div>' +
 										'<br>' +
 										'<div class="form-group row">' +
 											'<label for="max" class="col-sm-7">Maximum allowed value</label>' +
 											'<div class="col-sm-5">' +
-												'<input type="text" class="form-control" id="max" name="max">' +
+												'<input type="text" class="form-control" id="edit-max" name="max">' +
 											'</div>' +
 										'</div>';
 		}
@@ -344,27 +344,27 @@ var selected_attribute_id = "1";
 										'<div class="form-group row">' +
 											'<label for="min_length" class="col-sm-7">Minimum string length</label>' +
 											'<div class="col-sm-5">' +
-												'<input type="text" class="form-control" id="min_length" name="min_length">' +
+												'<input type="text" class="form-control" id="edit-min_length" name="min_length">' +
 											'</div>' +
 										'</div>' +
 										'<br>' +
 										'<div class="form-group row">' +
 											'<label for="max_length" class="col-sm-7">Maximum string length</label>' +
 											'<div class="col-sm-5">' +
-												'<input type="text" class="form-control" id="max_length" name="max_length">' +
+												'<input type="text" class="form-control" id="edit-max_length" name="max_length">' +
 											'</div>' +
 										'</div>' +
 										'<br>' +
 										'<div class="row">' +
 											'<div class="custom-control custom-checkbox">' +
-												'<input type="checkbox" class="custom-control-input" id="is_categorical" onchange="toggleCategoricalField()">' +
+												'<input type="checkbox" class="custom-control-input" id="edit-is_categorical" onchange="toggleCategoricalField()">' +
 												'<label class="custom-control-label" for="is_categorical">&nbsp;Categorical</label>' +
 											'</div>' +
 										'</div>' +
 										'<div id="allowed-values-group" class="row" style="display:none;">' +
 											'<label for="allowed_values" class="form-group col-sm-7">Allowed Values</label>' +
 											'<div class="col-sm-5">' +
-												'<input type="text" class="form-control" id="allowed_values" name="allowed_values" placeholder=' + "'" + '["value1","value2"]' + "'" + '>' +
+												'<input type="text" class="form-control" id="edit-allowed_values" name="allowed_values" placeholder=' + "'" + '["value1","value2"]' + "'" + '>' +
 											'</div>' +
 										'</div>';
 
@@ -377,17 +377,17 @@ var selected_attribute_id = "1";
 	/*=============  'Save Changes' BUTTON  ================================================================ */	
 	function saveChanges() {
 		
-		var attribute_id = $("#attribute_id").val();
-		var name = $("#editAttributeModal #name").val();
-		var description = $("#editAttributeModal #description").val();
-		var expected_valid_period = $("#editAttributeModal #expected_valid_period").val();
-		var first_applicable_object_type = $("#editAttributeModal #first_applicable_object_type").val();
+		var attribute_id = $("#edit-attribute_id").val();
+		var name = $("#editAttributeModal #edit-name").val();
+		var description = $("#editAttributeModal #edit-description").val();
+		var expected_valid_period = $("#editAttributeModal #edit-expected_valid_period").val();
+		var first_applicable_object_type = $("#editAttributeModal #edit-first_applicable_object_type").val();
 		var type = $("#editAttributeModal #type_edit").val();
-		var min = $("#editAttributeModal #min").val();
-		var max = $("#editAttributeModal #max").val();
-		var min_length = $("#editAttributeModal #min_length").val();
-		var max_length = $("#editAttributeModal #max_length").val();
-		var allowed_values = $("#editAttributeModal #allowed_values").val();
+		var min = $("#editAttributeModal #edit-min").val();
+		var max = $("#editAttributeModal #edit-max").val();
+		var min_length = $("#editAttributeModal #edit-min_length").val();
+		var max_length = $("#editAttributeModal #edit-max_length").val();
+		var allowed_values = $("#editAttributeModal #editallowed_values").val();
 		
 		message_body = {} 
 		message_body['attribute_id'] = parseInt(attribute_id);
@@ -431,8 +431,8 @@ var selected_attribute_id = "1";
 			min_length = parseInt(min_length);
 			max_length = parseInt(max_length);
 			
-			if (max_length <= min_length) {
-				alert("'Maximum string length' must be bigger than 'Minimum string length'");
+			if (max_length < min_length) {
+				alert("'Maximum string length' must be bigger or equal the 'Minimum string length'");
 				return;
 			}
 			
@@ -443,7 +443,7 @@ var selected_attribute_id = "1";
 				try {
 					allowed_values_list  = JSON.parse(allowed_values)
 					if (!Array.isArray(allowed_values_list)) {
-						alert("Allowed Values - the value submitted here is not a list");
+						alert('Allowed Values - the value submitted here is not a list. Please use the format ["value1", "value2"]');
 						return;
 					} else {
 						message_body['format_specification']['fields']['column']['allowed_values'] = allowed_values;
@@ -512,9 +512,9 @@ var selected_attribute_id = "1";
 	
 		// CLEAN UP -------------------------
 		// empty the input fields
-		$("#name").val("");
-		$("#description").val("");
-		$("#expected_valid_period").val("");
+		$("#edit-name").val("");
+		$("#edit-description").val("");
+		$("#edit-expected_valid_period").val("");
 		$("#type_edit").val("");
 		$("#edited-attribute-further-fields").html("");
 		
@@ -527,7 +527,7 @@ var selected_attribute_id = "1";
 	
 	/*=============  'Delete Attribute' BUTTON  ================================================================ */	
 	function deleteAttribute() {
-		var attribute_id = $("#attribute_id").val();
+		var attribute_id = $("#edit-attribute_id").val();
 		
 		var xmlhttp = new XMLHttpRequest();  
 		xmlhttp.open("POST", "/tool/delete_attribute/");
@@ -540,11 +540,11 @@ var selected_attribute_id = "1";
 	/*=============  'Cancel' BUTTON (or the X) ================================================================ */	
 	function closeModal() {
 	
-		$("#editAttributeModal #name").val("");
-		$("#editAttributeModal #attribute_id").val("");
-		$("#editAttributeModal #description").html("");
-		$("#editAttributeModal #expected_valid_period").val("");
-		$("#editAttributeModal #first_applicable_object_type").val("");
+		$("#editAttributeModal #edit-name").val("");
+		$("#editAttributeModal #edit-attribute_id").val("");
+		$("#editAttributeModal #edit-description").html("");
+		$("#editAttributeModal #edit-expected_valid_period").val("");
+		$("#editAttributeModal #edit-first_applicable_object_type").val("");
 		$("#editAttributeModal #type_edit").val("");		
 		$("#edited-attribute-further-fields").html("");
 

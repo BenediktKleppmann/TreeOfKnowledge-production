@@ -454,7 +454,7 @@
 		left_panel__design = '<div class="accordion md-accordion" id="accordion-left" role="tablist" aria-multiselectable="true">' +	
 								'<div class="card">' +
 									'<div class="card-header" role="tab" id="accordion-left-header-1">' +
-										'<button class="btn left-panel-header collapsed accordion-toggle" data-toggle="collapse" data-parent="#accordion-left" href="#accordion-left-content-1" aria-expanded="false" aria-controls="accordion-left-content-1">Environment</button>' +
+										'<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-1" aria-expanded="false" aria-controls="accordion-left-content-1">Environment</button>' +
 									'</div>' +
 									'<div id="accordion-left-content-1" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-1" data-parent="#accordion-left">' +
 										'<div class="card-body">' +
@@ -477,7 +477,7 @@
 								'</div>' +
 								'<div class="card">' +
 									'<div class="card-header" role="tab" id="accordion-left-header-2">' +
-										'<button class="btn left-panel-header collapsed accordion-toggle" data-toggle="collapse" data-parent="#accordion-left" href="#accordion-left-content-2" aria-expanded="false" aria-controls="accordion-left-content-2">Objects</button>' +
+										'<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-2" aria-expanded="false" aria-controls="accordion-left-content-2">Objects</button>' +
 									'</div>' +
 									'<div id="accordion-left-content-2" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-2" data-parent="#accordion-left">' +
 										'<div class="card-body">' +
@@ -510,7 +510,7 @@
 								'</div>' +
 								'<div class="card">' +
 									'<div class="card-header" role="tab" id="accordion-left-header-3">' +
-										'<button class="btn left-panel-header collapsed accordion-toggle" data-toggle="collapse" data-parent="#accordion-left" href="#accordion-left-content-3" aria-expanded="false" aria-controls="accordion-left-content-3">Relations</button>' +
+										'<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-3" aria-expanded="false" aria-controls="accordion-left-content-3">Relations</button>' +
 									'</div>' +
 									'<div id="accordion-left-content-3" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-3" data-parent="#accordion-left">' +
 										'<div id="relations-card" class="card-body">' +
@@ -555,6 +555,17 @@
 			simulation_end_time = Math.round(ev.date.getTime() / 1000);
 		});
 		
+		
+		$('.accordion-toggle').click(function() {
+			content_element = $($(this).attr('href'));
+			if (content_element.hasClass('in')) {
+				content_element.hide();
+				content_element.removeClass('in')
+			} else {
+				content_element.show();
+				content_element.addClass('in')
+			}
+		});
 	}		
 	
 	
@@ -1410,15 +1421,6 @@
 		}
 		
 		
-		
-			
-		$('.accordion-toggle').click(function() {
-			content_element = $($(this).attr('href'));
-			if (content_element.hasClass('in')) {
-				content_element.hide();
-				content_element.removeClass('in')
-			}
-		});
 	
 	};
 	

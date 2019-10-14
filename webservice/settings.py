@@ -85,6 +85,9 @@ DATABASES = {
     }
 }
 
+DB_CONNECTION_URL = 'sqlite:///' + DATABASES['default']['NAME']
+# POOL_RECYCLE = 3600  # <- after how many seconds a connection will be recycled, the default was -1 (= never)
+
 
 # EMAIL_BACKEND = 'django_smtp_ssl.SSLEmailBackend'
 # MAILER_EMAIL_BACKEND = EMAIL_BACKEND
@@ -175,3 +178,6 @@ EMAIL_USE_TLS = False
 
 LOGIN_REDIRECT_URL = "main_menu"
 # LOGIN_URL = "accounts/login/"
+
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000

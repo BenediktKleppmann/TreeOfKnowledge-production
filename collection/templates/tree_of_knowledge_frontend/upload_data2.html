@@ -130,7 +130,7 @@
 					<div class="form-group row">  
 						<label class="col-sm-4 col-form-label">Correctness of the data</label>
 						<div class="col-sm-8">
-							<div class="rate">
+							<div class="rate" id="correctness_of_data">
 								<input type="radio" id="star5" name="correctness_of_data" value=5 />
 								<label for="star5" title="text">5 stars</label>
 								<input type="radio" id="star4" name="correctness_of_data" value=4 />
@@ -179,8 +179,9 @@
 				error_div.setAttribute("class", "form-error");  
 				error_div.innerHTML = error_dict[keys[i]];
 				
-				var input = document.getElementById(keys[i])
-				input.setAttribute("style", "display: inline-block;");  
+				
+				var input = document.getElementById(keys[i]);
+				input.setAttribute('style','display: inline-block;');
 				input.parentNode.insertBefore(error_div, input.nextSibling);
 
 			}

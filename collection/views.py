@@ -82,6 +82,12 @@ def main_menu(request):
 
 
 @login_required
+def open_your_simulation(request):
+    simulation_models = Simulation_model.objects.filter(user=request.user).order_by('-id') 
+    return render(request, 'tree_of_knowledge_frontend/open_your_simulation.html', {'simulation_models': simulation_models})
+
+
+@login_required
 def profile_and_settings(request):
     errors = []
     
@@ -117,7 +123,7 @@ def profile_and_settings(request):
 @login_required
 def upload_data1_new(request):
     errors = []
-
+    print('upload_data1_new')
     if request.method == 'POST':
         form1 = UploadFileForm(request.POST, request.FILES)
         if not form1.is_valid():
@@ -127,6 +133,7 @@ def upload_data1_new(request):
             if data_file.name[-4:] !=".csv":
                 errors.append("Error: Uploaded file is not a csv-file.")
             else:
+                print('save_new_upload_details')
                 (upload_id, upload_error, new_errors) = upload_data.save_new_upload_details(request)
                 if upload_error:
                     errors.extend(new_errors)
@@ -143,6 +150,7 @@ def upload_data1_new(request):
 
 @login_required
 def upload_data1(request, upload_id, errors=[]):
+    print('upload_data1')
     # if the upload_id was wrong, send the user back to the first page
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
@@ -158,12 +166,14 @@ def upload_data1(request, upload_id, errors=[]):
             if data_file.name[-4:] !=".csv":
                 errors.append("Error: Uploaded file is not a csv-file.")
             else:
+                print('save_existing_upload_details')
                 (upload_error, new_errors) = upload_data.save_existing_upload_details(upload_id, request)
                 if upload_error:
                     errors.extend(new_errors)
                     return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_error':upload_error, 'errors': errors, 'uploaded_dataset':uploaded_dataset})
                 else:
                     return redirect('upload_data1', upload_id=upload_id)
+
 
     return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
@@ -395,6 +405,10 @@ def get_possible_attributes(request):
 def get_list_of_parent_objects(request):
     object_type_id = request.GET.get('object_type_id', '')
     list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
+    print('___________________________________________________________')
+    print(object_type_id)
+    print(list_of_parent_objects)
+    print('___________________________________________________________')
     return HttpResponse(json.dumps(list_of_parent_objects))
 
 
@@ -581,17 +595,19 @@ def get_data_from_random_related_object(request):
 @login_required
 def get_data_from_objects_behind_the_relation(request):
     request_body = json.loads(request.body)
+    object_type_id = request_body['object_type_id']
     object_ids = request_body['object_ids']
     specified_start_time = request_body['specified_start_time']
     specified_end_time = request_body['specified_end_time']
     print('*******************************************************')
     print(request_body.keys())
+    print(request_body['object_type_id'])
     print(request_body['object_ids'])
     print(request_body['specified_start_time'])
     print(request_body['specified_end_time'])
     print('*******************************************************')
 
-    response = query_datapoints.get_data_from_objects_behind_the_relation(object_ids, specified_start_time, specified_end_time)   
+    response = query_datapoints.get_data_from_objects_behind_the_relation(object_type_id, object_ids, specified_start_time, specified_end_time)   
     return HttpResponse(json.dumps(response))
 
 
@@ -1033,7 +1049,6 @@ def get_columns_format_violations(request):
     request_body = json.loads(request.body)
     attribute_id = request_body['attribute_id']
     column_values = request_body['column_values']
-
     violating_rows = tdda_functions.get_columns_format_violations(attribute_id, column_values)
     return HttpResponse(json.dumps(violating_rows))
 
@@ -1408,10 +1423,8 @@ def test_page1(request):
 def test_page2(request):
     # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
     # bla = list(Object.objects.filter(object_type_id__in=['j1_5']).values_list('id'))
+    # bla = Uploaded_dataset.objects.get(id=94).data_table_json
     bla = list(Attribute.objects.all().values())
-    # bla = list(Object.objects.all().values())
-
-
 
     # return HttpResponse('success')
     return HttpResponse(json.dumps(bla))
