@@ -30,6 +30,8 @@
 		<!-- added for submenu -->
 
 	<style>
+	
+		/* carousel ------------------------------------------------------ */
 		.carousel-indicators {
 			top: 620px;
 			left: 200px;
@@ -46,7 +48,29 @@
 			margin-top: 100px;
 			margin-left: 20px;
 		}
+		
+		/* top 4 arguments ------------------------------------------------------ */
+		.top-4-argument-row {
+			padding: 35px 2%;
+		}
+		
+		.col-sm-6 {
+			padding: 15px 39px;
+		}
+		
+		.top-4-argument-title {
+			font-size: 34px;
+			font-family:Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif;
+			color:rgb(255, 242, 204);
+		}
+		
+		
+		.top-4-argument-text {
+		
+		}
+		
 
+		
 	</style>
 
 </head>
@@ -187,42 +211,105 @@
 			
 	</div>
 	
-	<div class="container-fluid" style="background-color: rgb(130, 99, 74);">
-	<!--rgb(66, 62, 57) , rgb(89, 81, 74) , rgb(112, 96, 83), rgb(142, 112, 87)-->
-	<div class="row row-eq-height">
-		<div class="col-sm-6">
-			<div class="top-3-argument-title">Don't model an individual dataset - model the world!</div>
-			<div class="top-3-argument-text">All existing Statistical- and Machine Learning- models are trained on one single dataset which was captured in one specific setting. 
-			The Tree of Knowledge models however are universally applicable and are trained on many different datasets. The findings from Tree of Knowledge are therefore many orders of magnitude more accurate and robust.</div>
-		</div>
-		<div class="col-sm-6">
-			<div class="top-3-argument-title">Don't just make predictions - fully understand the complex behaviours of the system</div>
-			<div class="top-3-argument-text">At the core of Tree of Knowledge lies a Probabilistic Programming engine. This allows the user to easily model complex behaviours and accurately learn dependencies, even if they are small or indirectly observed.</div>
-		</div>
-	</div>
-	<div class="row row-eq-height">
-		<div class="col-sm-6">
-			<div class="top-3-argument-title">Being accurate about Uncertainty</div>
-			<div class="top-3-argument-text">Due to bayesian inference and monte-carlo simulations, the uncertainties of the system are accurately captured and modelled. The error-margins of the simulation results exactly reflect the true uncertainty of the system.</div>
-		</div>
-		<div class="col-sm-6">
-			<div class="top-3-argument-title">Be part of something great!</div>
-			<div class="top-3-argument-text">By modelling your dataset in your specific domain you are automatically contributing to a powerful wholistic model of the world, which one day will e.g. be able to accurately simulate all interactions in an economy.
-			By using Tree of Knowledge, you are automatically using and building uppon this wholistic model. Missuse is discouraged by all models being public.
-			</div>
-		</div>
+	<div class="container-fluid" style="background-color: rgb(61, 58, 55);">
+	<!--rgb(130, 99, 74), rgb(66, 62, 57) , rgb(89, 81, 74) , rgb(112, 96, 83), rgb(142, 112, 87)-->
+		<div class="row row-eq-height top-4-argument-row"  style="padding-bottom:10px;">
+			<div class="col-sm-6">
+				<div class="top-4-argument-title">Don't model an individual dataset,<br>model the world!</div>
 		
-	</div>
-					
-		<div class="teaser-text">
-			<br><br>
-			<h1 class="yellowish">A non-profit project from and for Data Scientists.</h1>
-			Our goal with the Tree of Knowledge is to enable truly fact-based decision making to be applied to the world’s most pressing problems and thereby minimizing the role of rhetoric, prejudice and misinformation. We believe that objective solutions to these problems in the environment and society can only be found by creating accurate models of the world that reflect the true complexity and uncertainty of the world!<br>
-			<p>For this goal we are building a novel and very powerful simulation-modelling environment.</p>
-			<br>
-			<br>		
+				<div class="top-4-argument-text">
+					All existing Statistics- and Machine Learning- models are trained on an individual dataset. They don't learn general patterns, but only those occuring in this dataset.
+					The Tree of Knowledge models are however trained on many different datasets with observations from many different scenarios. 
+					The findings from Tree of Knowledge are therefore generally valid and many orders of magnitude more accurate and robust.</div>
+				</div>
+				<!--
+				<div class="top-4-argument-title">Don't model an individual dataset,<br>model the world!</div>
+				<div class="top-4-argument-text">
+				All existing Statistics- and Machine Learning- models are trained on a single dataset which was captured in one specific setting. 
+				The Tree of Knowledge models are however trained on many different datasets. 
+				The findings from Tree of Knowledge are therefore many orders of magnitude more accurate and robust.</div>
+			-->
+			<div class="col-sm-6">
+				<div class="top-4-argument-title">Don't just make predictions,<br>fully understand the system!</div>
+				<div class="top-4-argument-text">At the core of Tree of Knowledge lies a Probabilistic Programming engine. This allows the user to easily understand and model complex behaviours, even if they are only indirectly observed.</div>
+			</div>	
 		</div>
+		<div class="row row-eq-height top-4-argument-row" style="padding-top:6px;padding-bottom: 44px;">
+			<div class="col-sm-6">
+				<div class="top-4-argument-title">Be certain about uncertainty!</div>
+				<div class="top-4-argument-text">Due to bayesian inference and monte-carlo simulations, the uncertainties of the system are accurately captured and modelled. The error-margins of the simulations exactly reflect the true uncertainty of the system.</div>
+			</div>
+			<div class="col-sm-6">
+				<div class="top-4-argument-title">Be part of something great!</div>
+				<div class="top-4-argument-text">By modelling your dataset in your specific domain you are automatically building uppon and contributing to a powerful holistic model of the world. This model will one day be able to accurately simulate all interactions in an economy.
+				</div>
+			</div>
+			
+		</div>
+					
 	</div>
+	
+	
+		
+	<div class="container-fluid" style="background:rgb(39, 40, 34)">
+		<br><br>
+		<h1 class="yellowish">How it works</h1><br>
+		
+		
+		<h2 class="yellowish">Hierachy of Objects</h2>
+		At the core of the holistic model lies a hierachy of objects - see figure 1.
+		
+		The objects in this hierachy have a set inherited or own of behaviours. 
+		To model/simulate a system you use these objects and, if necessary, add additional specific behaviours to them.
+		
+		The simulations are automatically verified with data from the knowledge base - the simulation results must match the real observations of the system. 
+		
+		
+		<h2 class="yellowish">Learning Behaviours</h2>
+		Behaviour rules are learned the same way. For each simulation in which a certain object occurs, the system automatically checks which combination of the object's rules produce the most correct simulations. 
+		Rules that improve the results of many different simulations are considered to be more correct than rules that worsen the results. 
+		All this is done within the rigorous formalism of likelyhood-free bayesian inference, the learned probability distributions
+		
+		
+		Similarly, the rules are learned 
+
+		Data from the modelled system
+		r
+		Simultaneously 
+		The information
+		
+		models a system she/he 
+		
+		When a user 
+		
+		
+		When a user models the behaviour of a specific objects, 
+		these behaviours get added to the object types, considering the environment of the objects. 
+		
+		Whenever similar 
+		
+		
+		
+		Any data uploaded is integrated into a knowledge base 
+		Behaviour rules and data are both saved to these objects. 
+		
+		
+		framework of objects 
+		
+		you are creating simulation rules 
+		
+		<h2 class="yellowish">Integrated data repository</h2>
+
+		Data from any source that is uploaded to this online platform and is mapped to the holistic data model. The holistic data model contains all the data and meta-data to exactly specify any data value. <br>
+		<br>
+	</div>
+
+
+
+
+
+
+	
 	
 	<div class="container-fluid" style="background:rgb(39, 40, 34)">
 		<br><br>
