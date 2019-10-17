@@ -32,15 +32,20 @@
 	<style>
 	
 		/* carousel ------------------------------------------------------ */
-		.carousel-indicators {
-			top: 620px;
-			left: 200px;
+		.carousel-container {
+			width:100%;
+			height:600px;
+			padding: 0px;
 		}
-		
+		.carousel-text-field {
+			width:auto;
+			height:600px;
+			overflow:hidden;
+		}
 		.carousel-image {
 			height: 600px !important;
 			width: auto !important;
-			float: right;
+			float:right;
 		}
 		
 		.carousel-title {
@@ -49,9 +54,32 @@
 			margin-left: 20px;
 		}
 		
+		#first-carousel-text {
+			margin-top: 190px;
+
+		}
+		
+		#first-carousel-text h1 {		
+			font-family: Garamond, Baskerville, Baskerville Old Face, Hoefler Text, Times New Roman, serif;
+			font-weight:100;
+			font-size:48px;
+			margin-bottom:25px
+		}
+		
+		#first-carousel-image {
+			height: 600px !important;
+			width: 829px !important;
+			margin-right: auto;
+		}
+		
+		.carousel-indicators {
+			top: 665px;
+			left: 50%;
+		}
+		
 		/* top 4 arguments ------------------------------------------------------ */
 		.top-4-argument-row {
-			padding: 35px 2%;
+			padding: 44px 2%;
 		}
 		
 		.col-sm-6 {
@@ -69,7 +97,49 @@
 		
 		}
 		
+		/* How it works  ------------------------------------------------------ */
+		
+		.container {
+			width: 75% !important;
+		}
+		
+		#how-it-works-overall-title {
+			color:rgb(196, 189, 168);
+			font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+			font-size:38px;
+			font-weight:600;
+		}
 
+		.how-it-works-title {
+			text-align: left;
+			margin-left: 23px;
+			margin-bottom: 10px;
+		}
+		
+		h2.yellowish {
+			padding-top: 20px;
+		}
+		
+		.how-it-works-block {
+			text-align: left;
+			margin-left: 20px;
+		}
+		
+		#object_hierachy-image {
+			margin-top: 10px;
+			height: 190px;
+		}
+		
+		#probability_distribution-image {
+			margin-top: 10px;
+			height: 130px;
+		}
+		
+		#bottom-logo {
+		    height: 200px;
+		}
+		
+		
 		
 	</style>
 
@@ -102,7 +172,7 @@
       </div>
     </nav>
 	
-	<div id="myCarousel" class="carousel slide" data-ride="carousel">
+	<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="false" >
 		<!-- Indicators -->
 		<ol class="carousel-indicators">
 		  <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
@@ -117,90 +187,58 @@
 		<div class="carousel-inner">
 			<div class="item active">
 				<div class="row row-eq-height">
-					<div class="col-sm-6 carousel-text-field ">
+					<div id="first-carousel-text" class="col-sm-6">
 						<h1>Tree of Knowledge</h1>
-						the world’s most accurate and insightful<br>data mining tool<br><br><br>
+						the most accurate and powerful tool<br>for modelling complex economic systems<br><br><br>
 						<a class="btn btn-lg btn-success" href="../../components/#navbar" role="button">Sign up for free</a><br>
 					</div>
-					<div class="col-sm-6" style="margin-top:55px;">
-						<img class="carousel-image" src="{% static 'images/logo_collage.png'%}" alt="collage of machine learning- and statistics- tool logos"  style="width:100%; height:100%;">
+					<div class="col-sm-6" style="margin-top:55px;padding:0px;">
+						<img id="first-carousel-image" src="{% static 'images/logo_collage.png'%}" alt="collage of machine learning- and statistics- tool logos"  style="width:100%; height:100%;">
 					</div>
 				</div>
 			</div>
 			<div class="item">
-				<div class="row row-eq-height">
-					<div class="col-sm-3 carousel-text-field ">
-						<h1 class="carousel-title"> Complex interaction modelling</h2>
-					</div>
-					<div class="col-sm-9" style="margin-top:55px;">
-						<img class="carousel-image" src="{% static 'images/Screenshot1.png'%}" alt="screenshot of edit simulation screen"  style="width:100%; height:100%;">
+				<div class="carousel-container">
+					<img class="carousel-image" src="{% static 'images/Screenshot1.png'%}" alt="screenshot of edit simulation screen">
+					<div class="carousel-text-field">
+						<h1 class="carousel-title"> Complex interaction modelling</h1>
 					</div>
 				</div>
 			</div>
 			<div class="item">
-				<div class="row row-eq-height">
-					<div class="col-sm-3 carousel-text-field ">
+				<div class="carousel-container">
+					<img class="carousel-image" src="{% static 'images/Screenshot5.png'%}" alt="screenshot of analyse simulation screen">
+					<div class="carousel-text-field">
 						<h1 class="carousel-title"> Bayesian Inference</h1>
 					</div>
-					<div class="col-sm-9" style="margin-top:55px;">
-						<img class="carousel-image" src="{% static 'images/Screenshot5.png'%}" alt="screenshot of analyse simulation screen"  style="width:100%; height:100%;">
-					</div>
 				</div>
 			</div>
 			<div class="item">
-				<div class="row row-eq-height">
-					<div class="col-sm-3 carousel-text-field ">
+				<div class="carousel-container">
+					<img class="carousel-image" src="{% static 'images/Screenshot2.png'%}" alt="screenshot of analyse simulation screen">
+					<div class="carousel-text-field">
 						<h1 class="carousel-title"> Exact model evaluation</h1>
 					</div>
-					<div class="col-sm-9" style="margin-top:55px;">
-						<img class="carousel-image" src="{% static 'images/Screenshot2.png'%}" alt="screenshot of analyse simulation screen"  style="width:100%; height:100%;">
-					</div>
 				</div>
 			</div>
-			
 			<div class="item">
-				<div class="row row-eq-height">
-					<div class="col-sm-3 carousel-text-field ">
+				<div class="carousel-container">
+					<img class="carousel-image" src="{% static 'images/Screenshot3.png'%}" alt="screenshot of analyse simulation screen">
+					<div class="carousel-text-field">
 						<h1 class="carousel-title"> Sophisticated model integration</h1>
 					</div>
-					<div class="col-sm-9" style="margin-top:55px;">
-						<img class="carousel-image" src="{% static 'images/Screenshot3.png'%}" alt="screenshot of analyse simulation screen"  style="width:100%; height:100%;">
-					</div>
 				</div>
 			</div>
 			<div class="item">
-				<div class="row row-eq-height">
-					<div class="col-sm-3 carousel-text-field ">
-						<h1 class="carousel-title"> Advanced data portal </h1>
-					</div>
-					<div class="col-sm-9" style="margin-top:55px;">
-						<img class="carousel-image" src="{% static 'images/Screenshot4.png'%}" alt="screenshot of analyse simulation screen"  style="width:100%; height:100%;">
+				<div class="carousel-container">
+					<img class="carousel-image" src="{% static 'images/Screenshot4.png'%}" alt="screenshot of analyse simulation screen">
+					<div class="carousel-text-field">
+						<h1 class="carousel-title"> Advanced data portal</h1>
 					</div>
 				</div>
 			</div>
-	<!--<div class="item">
-			<div class="row row-eq-height">
-				<div class="col-sm-6 carousel-text-field ">
-					<h1>Tree of Knowledge<h1>
-					the world’s most accurate and insightful data mining tool
-				</div>
-				<div class="col-sm-6">
-					<img src="{% static 'images/sim_city.jpg'%}" alt="Los Angeles" style="width:100%; height:550px">
-				</div>
-			</div>
 		</div>
-		<div class="item">
-			<div class="row row-eq-height">
-				<div class="col-sm-6 carousel-text-field ">
-					<h1>Tree of Knowledge<h1>
-					the world’s most accurate and insightful data mining tool
-				</div>
-				<div class="col-sm-6">
-					<img src="{% static 'images/sim_city.jpg'%}" alt="Los Angeles" style="width:100%; height:550px">
-				</div>
-			</div>
-		</div>
-		
+		<!--
 		<a class="prev" href="#myCarousel" data-slide="prev">
 			<i class="fa fa-chevron-left"></i>
 		</a> 
@@ -208,7 +246,7 @@
 			data-slide="next"><i class="fa fa-chevron-right"></i>
 		</a>
 		 -->
-			
+				
 	</div>
 	
 	<div class="container-fluid" style="background-color: rgb(61, 58, 55);">
@@ -234,10 +272,10 @@
 				<div class="top-4-argument-text">At the core of Tree of Knowledge lies a Probabilistic Programming engine. This allows the user to easily understand and model complex behaviours, even if they are only indirectly observed.</div>
 			</div>	
 		</div>
-		<div class="row row-eq-height top-4-argument-row" style="padding-top:6px;padding-bottom: 44px;">
+		<div class="row row-eq-height top-4-argument-row" style="padding-top:6px;">
 			<div class="col-sm-6">
 				<div class="top-4-argument-title">Be certain about uncertainty!</div>
-				<div class="top-4-argument-text">Due to bayesian inference and monte-carlo simulations, the uncertainties of the system are accurately captured and modelled. The error-margins of the simulations exactly reflect the true uncertainty of the system.</div>
+				<div class="top-4-argument-text">Due to bayesian inference and monte-carlo simulations, the uncertainties of the system are accurately captured and modelled. The error-margins of the simulations correspond <i>exactly</i> to the true uncertainties of the system.</div>
 			</div>
 			<div class="col-sm-6">
 				<div class="top-4-argument-title">Be part of something great!</div>
@@ -251,66 +289,166 @@
 	
 	
 		
-	<div class="container-fluid" style="background:rgb(39, 40, 34)">
+	<div class="container" style="background:rgb(39, 40, 34)">
 		<br><br>
-		<h1 class="yellowish">How it works</h1><br>
-		
-		
-		<h2 class="yellowish">Hierachy of Objects</h2>
-		At the core of the holistic model lies a hierachy of objects - see figure 1.
-		
-		The objects in this hierachy have a set inherited or own of behaviours. 
-		To model/simulate a system you use these objects and, if necessary, add additional specific behaviours to them.
-		
-		The simulations are automatically verified with data from the knowledge base - the simulation results must match the real observations of the system. 
-		
-		
-		<h2 class="yellowish">Learning Behaviours</h2>
-		Behaviour rules are learned the same way. For each simulation in which a certain object occurs, the system automatically checks which combination of the object's rules produce the most correct simulations. 
-		Rules that improve the results of many different simulations are considered to be more correct than rules that worsen the results. 
-		All this is done within the rigorous formalism of likelyhood-free bayesian inference, the learned probability distributions
-		
-		
-		Similarly, the rules are learned 
-
-		Data from the modelled system
-		r
-		Simultaneously 
-		The information
-		
-		models a system she/he 
-		
-		When a user 
-		
-		
-		When a user models the behaviour of a specific objects, 
-		these behaviours get added to the object types, considering the environment of the objects. 
-		
-		Whenever similar 
+		<h1 id="how-it-works-overall-title-title">How it works</h1>
 		
 		
 		
-		Any data uploaded is integrated into a knowledge base 
-		Behaviour rules and data are both saved to these objects. 
-		
-		
-		framework of objects 
-		
-		you are creating simulation rules 
-		
-		<h2 class="yellowish">Integrated data repository</h2>
-
-		Data from any source that is uploaded to this online platform and is mapped to the holistic data model. The holistic data model contains all the data and meta-data to exactly specify any data value. <br>
+		<div class="row" style="display:flex; align-items:center;">
+			<div class="col-md-9">
+				<p class="lead left-aligned">	
+					<div class="how-it-works-title">
+						<span class="icon-frame yellowish" style="float:left;";>
+							<img src="{% static 'images/si-glyph-person-2.svg'%}" style="height:36px;width:36px; margin-bottom:3px">
+						</span>
+						<h2 class="yellowish">Objects/Agents</h2>
+					</div>
+					<div class="how-it-works-block">
+						At the core of the Tree of Knowledge lies a hierachy of objects (Figure 1). <br>
+						Each object in this hierachy has a set of own or inherited behaviours, that specify how it's internal state changes depending on inside and outside conditions (agent-based, monte-carlo simulation).
+						To create a simulation model of a system you use these objects with their pre-defined behaviours and, if necessary, add new behaviours to them model.<br>
+					</div>
+					<br>
+					<div class="how-it-works-title">
+						<span class="icon-frame yellowish" style="float:left;padding-top:3px;";>
+							<i class="fas fa-cogs" aria-hidden="true"></i>
+						</span>
+						<h2 class="yellowish">Learning Behaviours</h2>
+					</div>
+					<div class="how-it-works-block">
+						Created simulation models are automatically verified with data from the knowledge base - the simulation results must match the real observations of the system as accurately as possible.<br>
+						Behaviour rules are also learned this way: for each simulation in which a certain object occurs, the system automatically checks which combination of the object's rules produce the most correct simulation. 
+						Rules that improve the results of many different simulations are considered to be more correct than rules that worsen their results. <br>
+						All this is done within the rigorous formalism of likelyhood-free bayesian inference => the learned probability distributions accurately reflect the certainty about the rules.
+					</div>
+				</p>
+			</div>
+			<div class="col-md-3">
+				<br>
+				<br>
+				<a href="{% static 'images/object_hierachy.png'%}"><img id="object_hierachy-image" src="{% static 'images/object_hierachy.png'%}" class="img-responsive mr-3 img-thumbnail"></a><br>
+				Figure 1: Hierachy of Objects<br><br>
+				<a href="{% static 'images/probability_distribution.png'%}"><img id="probability_distribution-image" src="{% static 'images/probability_distribution.png'%}" class="img-responsive mr-3 img-thumbnail"></a><br>
+				Figure 2: Learned probability distribution
+			</div>
+		</div>
+		<br>
+		<div class="how-it-works-title">
+			<span class="icon-frame yellowish" style="float:left;";>
+				<img src="{% static 'images/data_integration_icon.png'%}" style="height:36px;width:36px; margin-bottom:3px">
+			</span>
+			<h2 class="yellowish">Knowledge Base</h2>
+		</div>
+		<div class="how-it-works-block">
+			Above we mentioned a centralized repository of object behaviours. The second key component of the Tree of Knowledge is the knowledge base.<br>
+			A knowledge base is a database in which the data is automatically integrated. Like with existing knowledge bases (dbpedia, yago, etc.), any structured data can be uploaded to the Tree of Knowledge's knowledge base. 
+			The Tree of Knowledge's knowledge base is however much more advanced. For any datapoint in the knowledge base we know everything: when it was observed, what attribute/relation of what specific object was being observed, etc.
+			Furthermore, the data quality is assured through strict data monitoring and data validation. <br>
+			This powerful knowledge base enables much of the other functionality such as automatic model validation, automatic model initalisation and advanced querying. <br>
+		</div>
+		<br>
+		<div class="how-it-works-title">
+			<span class="icon-frame yellowish" style="float:left; padding-top:2px;";>
+				<i class="fas fa-signal" style="margin-left:-2px"></i>
+			</span>
+			<h2 class="yellowish">Growing the world's most detailed and accurate model</h2>
+		</div>
+		<div class="how-it-works-block">
+			Both the repository of object behaviours and the knowledge base grow over time.<br>
+			As users upload datasets to the knowledge base, it grows to an extensive data portal, accurately cataloging <b style="color:rgb(235,235,235)">large parts of human knowledge</b>.<br>
+			<br>
+			The growth/refinement of object behaviours is even more impressive!
+			As users make new models portraying the objects in new scenarios (the scenarios they are trying to understand/for which they have data), 
+			the object's behaviour gets increasingly comprehensive and exact. If objects have been simulated and evaluated in sufficiently many environments, they can be used to create the by far the <b style="color:rgb(235,235,235)">most accurate models of the world!</b>		
+		</div>
+		<br>
+		<div class="how-it-works-title">
+			<span class="icon-frame yellowish" style="float:left;padding-top:3px;";>
+				<i class="fas fa-ruler" aria-hidden="true"></i>
+			</span>
+			<h2 class="yellowish">Accurate predictions</h2>
+		</div>
+		<div class="how-it-works-block">
+			The increasing exactness of behaviour rules can be observed in the narrower proability density functions associated with them.<br>
+			In other words: the uncertainty about behaviour rules (due to imperfect knowledge of the world) are always accurately determined through likelyhood-free bayesian inference and bayesian updating.<br>
+			When making predictions these uncertainties are accurately propagated through the system through monte-carlo simulations.
+			
+		</div>
+		<br>
+		<br>
+		<br>
+		<br>
+		<br>
+		<img id="bottom-logo" src="{% static 'images/logo_light.png'%}" >
+		<br>
+		<br>
+		<div style="font-size:22px">
+			Be part of the project that will change social sciences forever
+		</div>
+		<br>
+		<br>
 		<br>
 	</div>
 
 
 
+  	<section id="resources">
+		<div class="container">
+			<div class="box">
+				<div class="center">
+					<br><h1 class="yellowish">Resources</h1><br>
+				</div>
+				<!--  /.center -->
+				<div class="row">
+					<div class="col-md-4">
+						<div class="center">
+							<a href="https://github.com/BenediktKleppmann/TreeOfKnowledge" target="_blank">
+								<i class="fab fa-github icon-md icon-color2"></i>
+							</a>
+							<h4>GitHub repository</h4>
+							<p>The official GitHub repository for this open source project.</p>
+						</div>
+					</div>
+					<!--/.col-md-4-->
+					
+					<div class="col-md-4">
+						<div class="center">
+							<a href="https://www.youtube.com" target="_blank">
+								<i class="fab fa-youtube icon-md icon-color1"></i>
+							</a>
+							<h4>Video tutorials</h4>
+							<p>None exist yet.</p>
+						</div>
+					</div>
+					<!--/.col-md-4-->
+					
+					<div class="col-md-4">
+						<div class="center">
+							<a href="{% url 'contact' %}" target="_blank">
+							
+								<i class="icon-md icon-color3"><img src="{% static 'images/email_icon.png'%}" style="height:28px;width:28px; margin-bottom:4px"></i>
+								
+							</a>
+							<h4>Contact</h4>
+							<p>Contact details and impressum.</p>
+						</div>
+					</div>
+					<!--/.col-md-4-->
+				</div>
+				<!--/.row-->
+				<br><br><br>
+			</div>
+			<!--/.box-->
+		</div>
+		<!--/.container-->
+	</section>
+	<!--/#services-->
 
 
 
 	
-	
+	<!--
 	<div class="container-fluid" style="background:rgb(39, 40, 34)">
 		<br><br>
 		<h1 class="yellowish">Key Components</h1><br>
@@ -389,58 +527,9 @@
 		<br>
 		<br>
 	</div>
+	-->
+	
 
-  	<section id="resources">
-		<div class="container">
-			<div class="box">
-				<div class="center">
-					<br><h1 class="yellowish">Resources</h1><br>
-				</div>
-				<!--  /.center -->
-				<div class="row">
-					<div class="col-md-4">
-						<div class="center">
-							<a href="https://github.com/BenediktKleppmann/TreeOfKnowledge" target="_blank">
-								<i class="fab fa-github icon-md icon-color2"></i>
-							</a>
-							<h4>GitHub repository</h4>
-							<p>The official GitHub repository for this open source project.</p>
-						</div>
-					</div>
-					<!--/.col-md-4-->
-					
-					<div class="col-md-4">
-						<div class="center">
-							<a href="https://www.youtube.com" target="_blank">
-								<i class="fab fa-youtube icon-md icon-color1"></i>
-							</a>
-							<h4>Video tutorials</h4>
-							<p>None exist yet.</p>
-						</div>
-					</div>
-					<!--/.col-md-4-->
-					
-					<div class="col-md-4">
-						<div class="center">
-							<a href="{% url 'contact' %}" target="_blank">
-							
-								<i class="icon-md icon-color3"><img src="{% static 'images/email_icon.png'%}" style="height:28px;width:28px; margin-bottom:4px"></i>
-								
-							</a>
-							<h4>Contact</h4>
-							<p>Contact details and impressum.</p>
-						</div>
-					</div>
-					<!--/.col-md-4-->
-				</div>
-				<!--/.row-->
-				<br><br><br>
-			</div>
-			<!--/.box-->
-		</div>
-		<!--/.container-->
-	</section>
-	<!--/#services-->
 	
 	<footer id="footer">
 		<div class="container">

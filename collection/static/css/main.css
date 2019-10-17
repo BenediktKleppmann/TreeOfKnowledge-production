@@ -60,7 +60,7 @@ span.title{
 }
 
 #resources .box {
-	background-color: #f3f3f3;
+	background-color: rgb(21, 21, 21);
 }
 
 a {
@@ -244,10 +244,13 @@ a:focus {
   margin-left: 1px;
 }
 .navbar-default .navbar-nav > li > a {
-  padding: 20px 20px;
-  font-size: 19px;
-  line-height: 18px;
-  color: #999;
+	padding-top:19px;
+	padding-bottom:18px;
+	padding-left:27px;
+	padding-right:27px;
+	font-size: 19px;
+	line-height: 18px;
+	color: #999;
 }
 .navbar-default .navbar-nav > li > a > i {
   display: inline-block;

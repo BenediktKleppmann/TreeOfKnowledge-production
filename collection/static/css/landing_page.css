@@ -97,12 +97,12 @@ h2 {
 	/*background-color: rgb(68, 66, 63);*/
 	background-color:rgb(61, 58, 55);
 	color: rgb(234, 230, 222);
-	border-bottom-color:rgb(70, 70, 70);
+	border: none;
 }
 
 .navbar-default .navbar-brand {
   margin-right: 14px;
-  margin-left: 20px;
+  margin-left: -3px !important;
   width: 50px;
   height: 50px;
   background: url(../images/logo_only_background.png) no-repeat 0 100%;
@@ -130,10 +130,10 @@ h2 {
 }
 
 .navbar-nav > li  > a {
-	padding-top:16px;
-	padding-bottom:16px;
-	padding-left:25px;
-	padding-right:25px;
+	padding-top:18px;
+	padding-bottom:17px;
+	padding-left:27.7px;
+	padding-right:27.7px;
 }
 
 .navbar > .navbar-nav > li  >a {
