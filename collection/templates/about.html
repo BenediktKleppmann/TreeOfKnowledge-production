@@ -13,9 +13,10 @@
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
 	<!--<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />-->
 	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<link rel="stylesheet" href="{% static 'css/main.css' %}" />
 	<link rel="stylesheet" href="{% static 'css/landing_page.css' %}" />
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	
 	
 	<link rel="shortcut icon" href="{% static 'images/logo.png'%}">
 	<style>
@@ -26,6 +27,42 @@
 
 	.box.first {
 		margin-top: -20px;
+	}
+	
+	.container {
+		width: 75% !important;
+		padding-left: 35px;
+	}
+	
+	h2 {
+		padding-left: 0px;
+	}
+
+	h1 {
+		margin-top: 40px;
+		margin-bottom: 47px;
+	}
+	
+	.col-md-3 {
+		padding-left: 4%;
+		padding-right: 4%;
+	}
+	
+	/* Bottom  ------------------------------------------------------ */
+	
+	#bottom-logo {
+		height: 200px;
+	}
+	
+	
+	.bottom-slogan {
+		font-size: 23px;
+		margin-left: 13px;
+		font-family: Garamond, Baskerville, Baskerville Old Face, Hoefler Text, Times New Roman, serif;
+		font-weight: 700;
+		margin-top: 18px;
+		color: rgb(71, 64, 56);
+		margin-bottom: 24px;
 	}
 	</style>
 		
@@ -64,33 +101,36 @@
 	
 	
 	<section id="background-picture-outer" class="carousel">
-		<div id="background-picture-inner">
-			<div style="background-image: url(../static/images/old_tree.png);
+		<div id="background-picture-inner" style="height:600px">
+			<div style="background-image: url(../static/images/old_tree2.png);
 						background-attachment: fixed;
 						background-size: 100%;
 						background-repeat: no-repeat;
 						padding: 200px 0;
 						background-position: 35% 0%;
-						margin-top:53px;
-						height:640px;">
+						position: absolute;
+						top:54px;
+						height:550px;
+						width:100%;
+						z-index:-1;">
 			</div>
 		</div>
 	</section>
 
 	
 
-	<div class="container-fluid" style="background-color: rgb(130, 99, 74);">
+	<div class="container-fluid" style="background-color: rgb(115, 83, 61);">
 		<div class="teaser-text">
 			<br>
 			<h1 class="yellowish">Our Mission</h1>
 			Our mission is to make public policy making a science.<br>
 			<br>
 			We are concerned about issues like global warming, natural habitat loss and social justice. 
-			But, more importantly, we believe that disscussions about these important issues should be based on real facts instead of rethorics and feelings. <br>
+			But, more importantly, we believe that disscussions about such important issues should be based on real facts instead of rethorics and feelings. <br>
 			<br>
 			The real world is extremely complex and it is impossible to make 100% accurate predictions, but it <i>is</i> possible to make predictions that are as <i>good as theoretically possible</i> 
 			i.e. predictions that take into account all existing knowledge and exactly quantify all uncertainties. This is what Tree of Knowledge does.<br><br>
-			With Tree of Knowledge we empower politicians to exactly model and compare the effect of different policies. We also give them the power to create undeniable arguments: if anybody disagrees with the predictions made by the Tree of Knowledge and they have additional facts/data, they can they can easily add it to the model and observe the refinement of the model. 
+			With Tree of Knowledge we empower politicians to exactly model and compare the effect of different policies. We also give them the power to create undeniable arguments: if anybody disagrees with the predictions made by the Tree of Knowledge and they have additional facts/data, they can they can easily add it to the model and observe the changes/refinements to the model. 
 			If they don't have any additional facts/data, they are just talking bullshit.
 			
 			<!--
@@ -112,58 +152,99 @@
 	</div>
 	
 	
-	<section id="about_simulation_based_modelling">
-		<div class="container">
-			<div class="box">
-				<div class="center">
-					<h2>Capabilities of the Tool</h2>
-				</div>
-				<div class="row" style="display:flex; align-items:center;">
-					<div class="col-md-9">
-						<p class="lead left-aligned">	
-							Understand your system
-							observe interactions, measure hidden quantities 
-							
-							Test Hypotheses
-							
-							Simulate new scenarios
-							
-							Find the ideal 
-							Optimize your system
-							
-							
-							
-							
-							
-							
-							
+
+	<div class="container" style="background:rgb(39, 40, 34)">
+		<br>
+		<br>
+		<h1>Functionality<!--Capabilities of the tool--></h1>
+		<div class="lead left-aligned" style="text-align: left;">	
+			The easiest way to find out about Tree of Knowledge's functionality is to sign up (top right of this screen) and try it out.
+			It's free for everyone to use. The user accounts are only for personalisation and to identify users that are being actively harmful to the holistic model.<br><br>
+			Anyway, here's what you can do with Tree of Knowledge:
+			<br>
+	
+			<div class="row" style="display:flex; align-items:center;">
+				<div class="col-md-9">
+					<p class="lead left-aligned">	
+					
+						<h2 class="yellowish">Model your system</h2>
+						Whether you are interested in a country's macro economic developments, consumer behaviour or international trade - whatever your system of interest - you can model your system in less than 5 minutes.
 						
-							With Tree of Knowledge 
-							
-							We are in the age of machine learning. Machine learning models are changing the world. 
-							Their accurate predictions allow for the automation of many new tasks. <br><br>
-							You don't however want to automate decision making. Instead you’d want 
-							to inform decision making with insights gained from data. Due to their 
-							black-box nature, it is not possible to gain insight with machine learning models. 
-							Statistical models and traditional-AI models are also not ideal. <br><br>
-							Simulation models on the other hand are ideally suited for gaining insights from data. 
-							The goal here is to create a virtual twin of any real system. I.e. you create a simulation 
-							which behaves in the exact same way as the real world. These models are therefore very intuitive. 
-							You can watch the behavior of the system, understand the mechanisms and identify key components. 
-							You can also investigate what-if questions by re-running the simulation with some detail changed.
-						</p>
-					</div>
-					<div class="col-md-3">
-						<a href="{% static 'images/simio.png'%}"><img src="{% static 'images/simio.png'%}" class="img-responsive mr-3 img-thumbnail"></a>
-						<a href="{% static 'images/sim_city.jpg'%}"><img src="{% static 'images/sim_city.jpg'%}" class="img-responsive mr-3 img-thumbnail"></a>
-						<div style="margin-left:10px">top: Simio<br>bottom: Simcity</div>
-					</div>
+						All you have to do is set the scene i.e. through drag&amp;dropping, specify the agents/actors of the system and how they relate and press 'play' to observe the system unfold.
+						To improve the model, you can easily change the agents' initial values and the default behaviour, which the system provided.
+			
+			
+						<h2 class="yellowish">Evaluate models</h2>
+						If you upload data relating to your system to the knowledge base, Tree of Knowledge will automatically use this data to score the simulation, set the initial values of the agents to those of your system and refine the simulation rules.
+						
+
+						<h2 class="yellowish">Understand your system</h2>
+						In the analysis environment you can gain a full understanding of your system by watching the simulations unfold. 
+						You can inspect any aspect of the simulations. For simulations with many agents, you can e.g. create summary statistics and follow their evolution.<br>
+						
+						
+						<h2 class="yellowish">Test Hypotheses</h2>
+						To check whether a relation or causal dependency holds, you only have to formulate it as a new rule. The system automatically learns with what probability this new rule holds.
+						
+						<h2 class="yellowish">Make Predictions</h2>
+						To see what the future will look like, you only need to run the simulation. Due to the bayesian probability distributions and monte-carlo simulations, there are accurate error-margins for all predictions.
+						
+						<h2 class="yellowish">Simulate new scenarios</h2>
+						You can easily simulate new scenarios, by changing some of the inital values e.g. a tax rate or the price of a product.
+						
+						<h2 class="yellowish">Find optimum strategies</h2>
+						This hasn't been implemented yet, but in future you will be able to e.g. determine the tax rate or price of a product. For this you have to specfy what you want to optimize for and 
+						the system learns which tax rate/product price optimizes this metric.			
+					</p>
 				</div>
-			  </div>
+				<div class="col-md-3">
+					<br>
+					<br>
+					<br>
+					<a href="{% static 'images/tree_of_knowledge_schematic.png'%}"><img id="object_hierachy-image" src="{% static 'images/tree_of_knowledge_schematic.png'%}" class="img-responsive mr-3 img-thumbnail"></a><br>
+					The holistic model which is the Tree of Knowledge grows as more datasets are added to the knowledge base and as more behaviours are modelled and evaluated.
+				</div>
 			</div>
 		</div>
-	</section>
+		<br>
+		<br>
+		<br>
+		<br>
+		<br>
+		<br>
+		<br>
+		<br>
+		<img id="bottom-logo" src="{% static 'images/logo_brown.png'%}" >
+		<br>
+		<div class="bottom-slogan">
+			Revolutionize Social Sciences
+		</div>
+		<br>
+	</div>
+	<br>
+
 	
+	
+	
+	<!--
+	<section id="about_simulation_based_modelling">
+		<div class="container">
+			<p class="lead left-aligned" >	
+				We are in the age of machine learning. Machine learning models are changing the world. 
+				Their accurate predictions allow for the automation of many new tasks. <br><br>
+				You don't however want to automate decision making. Instead you’d want 
+				to inform decision making with insights gained from data. Due to their 
+				black-box nature, it is not possible to gain insight with machine learning models. 
+				Statistical models and traditional-AI models are also not ideal. <br><br>
+				Simulation models on the other hand are ideally suited for gaining insights from data. 
+				The goal here is to create a virtual twin of any real system. I.e. you create a simulation 
+				which behaves in the exact same way as the real world. These models are therefore very intuitive. 
+				You can watch the behavior of the system, understand the mechanisms and identify key components. 
+				You can also investigate what-if questions by re-running the simulation with some detail changed.
+			</p>
+
+		</div>
+	</section>
 	
 	
 	
@@ -188,7 +269,7 @@
 			</div>
 		</div>
 	</section>
-	<!--/#introduction-->
+
 	
 	<section id="about_simulation_based_modelling">
 		<div class="container">
@@ -222,7 +303,7 @@
 			</div>
 		</div>
 	</section>
-	<!--/#about_simulation_based_modelling-->
+
 	
 		
 	
@@ -272,7 +353,7 @@
 			</div>
 		</div>
 	</section>
-	<!--/#about_tree_of_knowledge-->
+
 	
 	
 	
@@ -295,7 +376,7 @@
 			</div>
 		</div>
 	</section>
-	<!--/#our_philosophy-->
+-->
 	
 	
 	

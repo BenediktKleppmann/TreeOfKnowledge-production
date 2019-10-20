@@ -135,10 +135,23 @@
 			height: 130px;
 		}
 		
+		
+		/* Bottom  ------------------------------------------------------ */
+		
 		#bottom-logo {
 		    height: 200px;
 		}
 		
+		
+		.bottom-slogan {
+			font-size: 23px;
+			margin-left: 13px;
+			font-family: Garamond, Baskerville, Baskerville Old Face, Hoefler Text, Times New Roman, serif;
+			font-weight: 700;
+			margin-top: 18px;
+			color: rgb(71, 64, 56);
+			margin-bottom: 24px;
+		}
 		
 		
 	</style>
@@ -188,7 +201,7 @@
 			<div class="item active">
 				<div class="row row-eq-height">
 					<div id="first-carousel-text" class="col-sm-6">
-						<h1>Tree of Knowledge</h1>
+						<h1 style="font-size:56px;">Tree of Knowledge</h1>
 						the most accurate and powerful tool<br>for modelling complex economic systems<br><br><br>
 						<a class="btn btn-lg btn-success" href="../../components/#navbar" role="button">Sign up for free</a><br>
 					</div>
@@ -269,7 +282,7 @@
 			-->
 			<div class="col-sm-6">
 				<div class="top-4-argument-title">Don't just make predictions,<br>fully understand the system!</div>
-				<div class="top-4-argument-text">At the core of Tree of Knowledge lies a Probabilistic Programming engine. This allows the user to easily understand and model complex behaviours, even if they are only indirectly observed.</div>
+				<div class="top-4-argument-text">At the core of Tree of Knowledge lies a Probabilistic Programming engine. This allows the user to easily understand and model complex behaviours and interactions, even if they are only indirectly observed.</div>
 			</div>	
 		</div>
 		<div class="row row-eq-height top-4-argument-row" style="padding-top:6px;">
@@ -290,7 +303,7 @@
 	
 		
 	<div class="container" style="background:rgb(39, 40, 34)">
-		<br><br>
+		<br><br><br>
 		<h1 id="how-it-works-overall-title-title">How it works</h1>
 		
 		
@@ -305,8 +318,8 @@
 						<h2 class="yellowish">Objects/Agents</h2>
 					</div>
 					<div class="how-it-works-block">
-						At the core of the Tree of Knowledge lies a hierachy of objects (Figure 1). <br>
-						Each object in this hierachy has a set of own or inherited behaviours, that specify how it's internal state changes depending on inside and outside conditions (agent-based, monte-carlo simulation).
+						When modelling your system of interest with Tree of Knowledge, you are not really making a new model, rather you are using a part of a holistic model of the world and, if necessary, adding to it. <br>
+						At the core of this holistic model lies a hierachy of objects (Figure 1). Each object in this hierachy has a set of own or inherited behaviours, that specify how it's internal state changes depending on inside and outside conditions (agent-based, monte-carlo simulation).
 						To create a simulation model of a system you use these objects with their pre-defined behaviours and, if necessary, add new behaviours to them model.<br>
 					</div>
 					<br>
@@ -317,7 +330,7 @@
 						<h2 class="yellowish">Learning Behaviours</h2>
 					</div>
 					<div class="how-it-works-block">
-						Created simulation models are automatically verified with data from the knowledge base - the simulation results must match the real observations of the system as accurately as possible.<br>
+						Your simulation models are automatically verified with data from the knowledge base - the simulation results must match the real observations of the system as accurately as possible.<br>
 						Behaviour rules are also learned this way: for each simulation in which a certain object occurs, the system automatically checks which combination of the object's rules produce the most correct simulation. 
 						Rules that improve the results of many different simulations are considered to be more correct than rules that worsen their results. <br>
 						All this is done within the rigorous formalism of likelyhood-free bayesian inference => the learned probability distributions accurately reflect the certainty about the rules.
@@ -327,7 +340,7 @@
 			<div class="col-md-3">
 				<br>
 				<br>
-				<a href="{% static 'images/object_hierachy.png'%}"><img id="object_hierachy-image" src="{% static 'images/object_hierachy.png'%}" class="img-responsive mr-3 img-thumbnail"></a><br>
+				<a href="{% static 'images/object_hierachy2.png'%}"><img id="object_hierachy-image" src="{% static 'images/object_hierachy2.png'%}" class="img-responsive mr-3 img-thumbnail"></a><br>
 				Figure 1: Hierachy of Objects<br><br>
 				<a href="{% static 'images/probability_distribution.png'%}"><img id="probability_distribution-image" src="{% static 'images/probability_distribution.png'%}" class="img-responsive mr-3 img-thumbnail"></a><br>
 				Figure 2: Learned probability distribution
@@ -341,7 +354,7 @@
 			<h2 class="yellowish">Knowledge Base</h2>
 		</div>
 		<div class="how-it-works-block">
-			Above we mentioned a centralized repository of object behaviours. The second key component of the Tree of Knowledge is the knowledge base.<br>
+			Above we mentioned a centralized repository of object behaviours. The second key component of the Tree of Knowledge's holistic model is the knowledge base.<br>
 			A knowledge base is a database in which the data is automatically integrated. Like with existing knowledge bases (dbpedia, yago, etc.), any structured data can be uploaded to the Tree of Knowledge's knowledge base. 
 			The Tree of Knowledge's knowledge base is however much more advanced. For any datapoint in the knowledge base we know everything: when it was observed, what attribute/relation of what specific object was being observed, etc.
 			Furthermore, the data quality is assured through strict data monitoring and data validation. <br>
@@ -356,11 +369,11 @@
 		</div>
 		<div class="how-it-works-block">
 			Both the repository of object behaviours and the knowledge base grow over time.<br>
-			As users upload datasets to the knowledge base, it grows to an extensive data portal, accurately cataloging <b style="color:rgb(235,235,235)">large parts of human knowledge</b>.<br>
+			As users upload datasets to the knowledge base, it grows to an extensive data portal, accurately cataloging <b style="color:rgb(222, 217, 200)">large parts of human knowledge</b>.<br>
 			<br>
 			The growth/refinement of object behaviours is even more impressive!
 			As users make new models portraying the objects in new scenarios (the scenarios they are trying to understand/for which they have data), 
-			the object's behaviour gets increasingly comprehensive and exact. If objects have been simulated and evaluated in sufficiently many environments, they can be used to create the by far the <b style="color:rgb(235,235,235)">most accurate models of the world!</b>		
+			the object's behaviour gets increasingly comprehensive and exact (due to bayesian updating). If objects have been simulated and evaluated in sufficiently many environments, they can be used to create the by far the <b style="color:rgb(222, 217, 200)">most accurate models of the world!</b>		
 		</div>
 		<br>
 		<div class="how-it-works-title">
@@ -380,26 +393,26 @@
 		<br>
 		<br>
 		<br>
-		<img id="bottom-logo" src="{% static 'images/logo_light.png'%}" >
 		<br>
 		<br>
-		<div style="font-size:22px">
-			Be part of the project that will change social sciences forever
+		<br>
+		<img id="bottom-logo" src="{% static 'images/logo_brown.png'%}" >
+		<br>
+		<div class="bottom-slogan">
+			Revolutionize Social Sciences
 		</div>
 		<br>
-		<br>
-		<br>
 	</div>
+	<br>
 
 
-
+<!--
   	<section id="resources">
 		<div class="container">
 			<div class="box">
 				<div class="center">
 					<br><h1 class="yellowish">Resources</h1><br>
 				</div>
-				<!--  /.center -->
 				<div class="row">
 					<div class="col-md-4">
 						<div class="center">
@@ -410,8 +423,6 @@
 							<p>The official GitHub repository for this open source project.</p>
 						</div>
 					</div>
-					<!--/.col-md-4-->
-					
 					<div class="col-md-4">
 						<div class="center">
 							<a href="https://www.youtube.com" target="_blank">
@@ -421,8 +432,6 @@
 							<p>None exist yet.</p>
 						</div>
 					</div>
-					<!--/.col-md-4-->
-					
 					<div class="col-md-4">
 						<div class="center">
 							<a href="{% url 'contact' %}" target="_blank">
@@ -434,16 +443,12 @@
 							<p>Contact details and impressum.</p>
 						</div>
 					</div>
-					<!--/.col-md-4-->
 				</div>
-				<!--/.row-->
 				<br><br><br>
 			</div>
-			<!--/.box-->
 		</div>
-		<!--/.container-->
 	</section>
-	<!--/#services-->
+	-->
 
 
 
@@ -530,7 +535,7 @@
 	-->
 	
 
-	
+	<!--
 	<footer id="footer">
 		<div class="container">
 			<div class="row center">
@@ -540,7 +545,7 @@
 			</div>
 		</div>
 	</footer>
-	<!--/#footer-->
+	-->
   
 	
 	
