@@ -3,16 +3,16 @@
 	
 	/*background-color: rgb(21, 21, 19);*/
     /*background-color: rgb(33, 38, 41);*/
-    /*background-color: rgb(39, 40, 34);*/
+    background-color: rgb(39, 40, 34);
 	/*background-color: rgb(68, 68, 65);*/
 	/*background-color: rgb(91, 93, 88);*/
 	/*background-color: black;*/
-	background-color: rgb(21, 21, 21);
+	/*background-color: rgb(21, 21, 21);*/
 	font-family: Calibri, Candara, Segoe, Segoe UI, Optima, Arial, sans-serif;
 	font-size: 19px;
-	  color: rgb(196, 189, 168);
-	  
-	  text-align:center;
+	/*color: rgb(219, 211, 193);*/
+	color: rgb(226,221,204); 
+	text-align:center;
 }
 
 h1 {
@@ -21,8 +21,9 @@ h1 {
 	/*font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;*/
 	font-size:47px;
 	font-weight:300;
-	margin-bottom:26px;
-	/*color: rgb(226, 221, 204);*/	
+	margin-bottom: 27px;
+    margin-top: 31px;
+	color: rgb(242, 190, 131);
 }
 
 
@@ -35,7 +36,11 @@ h2 {
 }
 
 .yellowish {
-	color: rgb(255, 242, 204);
+	color: rgb(232, 197, 158);
+	/*color: rgb(230, 192, 149);*/
+	/*color: rgb(209, 170, 134);*/
+	/*color: rgb(196, 162, 130);*/
+	/*color: rgb(255, 242, 204);*/
 }
 
 .whitish {
@@ -45,10 +50,13 @@ h2 {
 .icon-frame {
     border: 3px solid white;
     border-radius: 5px;
-	border-color: rgb(255, 242, 204);
+	/*border-color: rgb(255, 242, 204);*/
+    border-color: rgb(242, 219, 191);
+    color: rgb(242, 219, 191);
 	font-size:30px;
-	padding-left:5px;
-	padding-right:5px;
+	padding-left:4px;
+	padding-right:4px;
+	padding-top:1px;
 	height:51px;
 	width:51px;
 }
@@ -76,8 +84,6 @@ h2 {
 	text-align:center;
 	margin-top:55px;
 	padding-top:7%;
-	padding-right: 25px;
-	padding-left: 25px;
 	font-size:21px;
 	font-weight:100;
 	color: rgb(226, 221, 204);
@@ -95,7 +101,8 @@ h2 {
 .navbar-default {
 	/*background-color: rgb(68, 64, 57);*/
 	/*background-color: rgb(68, 66, 63);*/
-	background-color:rgb(61, 58, 55);
+	/*background-color:rgb(61, 58, 55);*/
+	background-color:rgb(66, 67, 62);
 	color: rgb(234, 230, 222);
 	border: none;
 }
@@ -141,7 +148,7 @@ h2 {
 }
 
 .navbar-default .navbar-nav > li > a {
-		color: rgb(214, 214, 214);
+		color: rgb(235, 229, 211);
 }
 
 .navbar-header {

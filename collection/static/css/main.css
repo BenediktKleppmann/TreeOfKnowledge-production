@@ -14,7 +14,8 @@
 
 body {
   	font-family: Calibri, Candara, Segoe, Segoe UI, Optima, Arial, sans-serif;
-  background: #e5e5e5;
+  /*background: #e5e5e5;*/
+  background:rgb(40, 41,35);
   color: rgb(65,65,65);
 }
 
