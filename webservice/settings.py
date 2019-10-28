@@ -85,8 +85,6 @@ DATABASES = {
     }
 }
 
-DB_CONNECTION_URL = 'sqlite:///' + DATABASES['default']['NAME']
-# POOL_RECYCLE = 3600  # <- after how many seconds a connection will be recycled, the default was -1 (= never)
 
 
 # EMAIL_BACKEND = 'django_smtp_ssl.SSLEmailBackend'
@@ -101,18 +99,33 @@ DB_CONNECTION_URL = 'sqlite:///' + DATABASES['default']['NAME']
 # EMAIL_USE_SSL = False
 
 
-EMAIL_HOST = 'mail.gmx.net'
+# EMAIL_HOST = 'mail.gmx.net'
+# EMAIL_PORT = 465
+# EMAIL_HOST_USER = 'bene3@gmx.net'
+# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# DEFAULT_TO_EMAIL = EMAIL_HOST_USER
+# EMAIL_HOST_PASSWORD = '1q2W3e4R5t6Z'
+# EMAIL_USE_TLS = False
+# EMAIL_USE_SSL = True
+# EMAIL_TIMEOUT = 3600
+# DEFAULT_CHARSET = 'utf-8'
+# EMAIL_USE_LOCALTIME = True
+# SERVER_EMAIL = 'bene3@gmx.net'
+
+
+EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 465
-EMAIL_HOST_USER = 'bene3@gmx.net'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-DEFAULT_TO_EMAIL = EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = '1q2W3e4R5t6Z'
+EMAIL_HOST_USER = 'apikey'
+DEFAULT_FROM_EMAIL = 'noreply@treeofknowledge.ai'
+SERVER_MAIL = 'noreply@treeofknowledge.ai'
+EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
 EMAIL_TIMEOUT = 3600
 DEFAULT_CHARSET = 'utf-8'
 EMAIL_USE_LOCALTIME = True
-SERVER_EMAIL = 'bene3@gmx.net'
+
+
 
 
 

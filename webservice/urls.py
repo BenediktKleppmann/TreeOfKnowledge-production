@@ -12,6 +12,7 @@ from django.contrib.auth.views import (
     password_reset_confirm,
     password_reset_complete
 )
+import os
 
 from django.conf import settings
 settings.EMAIL_HOST = 'smtp.sendgrid.net'
@@ -19,7 +20,7 @@ settings.EMAIL_PORT = 465
 settings.EMAIL_HOST_USER = 'apikey'
 settings.DEFAULT_FROM_EMAIL = 'noreply@treeofknowledge.ai'
 settings.SERVER_MAIL = 'noreply@treeofknowledge.ai'
-settings.EMAIL_HOST_PASSWORD = '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'
+settings.EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
 settings.EMAIL_USE_TLS = False
 settings.EMAIL_USE_SSL = True
 settings.EMAIL_TIMEOUT = 3600
