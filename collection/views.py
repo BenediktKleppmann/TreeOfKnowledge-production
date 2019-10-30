@@ -86,6 +86,11 @@ def open_your_simulation(request):
     simulation_models = Simulation_model.objects.filter(user=request.user).order_by('-id') 
     return render(request, 'tree_of_knowledge_frontend/open_your_simulation.html', {'simulation_models': simulation_models})
 
+@login_required
+def browse_simulations(request):
+    simulation_models = Simulation_model.objects.all().order_by('-id') 
+    return render(request, 'tree_of_knowledge_frontend/browse_simulations.html', {'simulation_models': simulation_models})
+
 
 @login_required
 def profile_and_settings(request):

@@ -1,4 +1,6 @@
 {% extends 'layouts/base_tool.html' %}
+{% load staticfiles %}
+
 
 {% block title %}
 	Tree of Knowledge - Main Menu
@@ -95,21 +97,20 @@
 		<div class="menu-item-box">
 			<a href="{% url 'edit_simulation_new' %}">
 				<button type="button" class="menu-item-button btn btn-light" id="simulation-button" href="{% url 'edit_simulation_new' %}">
-					<div class="icon-box"><i class="fas fa-cogs" aria-hidden="true"></i></div>
-					Make Simulation
+					<div class="icon-box"><i class="fas fa-hammer" aria-hidden="true"></i></div>
+					Make a Simulation
 				</button>
 			</a>
-			<br>
-			<div class="existing-simulations-box">
-				<div class="existing-simulations-title">
-					Existing Simulations:
-				</div>
-				<ul>
-					{% for simulation in simulation_models %}
-						<li><a class="existing-simulation-link" href="{% url 'edit_simulation' simulation_id=simulation.id %}">Simulation {{ simulation.id }}</a></li>
-					{% endfor %}
-				</ul>
-			</div>
+		</div>
+		<div class="menu-item-box">
+			<a href="{% url 'browse_simulations' %}">
+				<button type="button" class="menu-item-button btn btn-light">
+					<div class="icon-box">
+						<img src="{% static 'images/si-glyph-trees_dark_grey.svg'%}" style="height:47px;width:47px;margin-right:3px;">
+					</div>
+					Browse Simulations
+				</button>
+			</a>
 		</div>
 		<div class="menu-item-box">
 			<a href="{% url 'query_data' %}">

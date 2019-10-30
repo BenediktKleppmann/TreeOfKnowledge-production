@@ -55,6 +55,7 @@ urlpatterns = [
     # ==================================================
     url(r'^tool/main_menu/$', views.main_menu, name='main_menu'),
     url(r'^tool/open_your_simulation/$', views.open_your_simulation, name='open_your_simulation'),
+    url(r'^tool/browse_simulations/$', views.browse_simulations, name='browse_simulations'),
     url(r'^tool/profile_and_settings/$', views.profile_and_settings, name='profile_and_settings'),
 
     # Upload data  -------------------------------------------------------------------------
