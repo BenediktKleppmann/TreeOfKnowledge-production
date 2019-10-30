@@ -58,9 +58,10 @@ def contact(request):
     return render(request, 'contact.html')
 
 
+
+
 def subscriber_page(request, userid):
     subscriber = Newsletter_subscriber.objects.get(userid=userid)
-    
     is_post_request = False
     if request.method == 'POST':
         is_post_request = True
@@ -68,7 +69,6 @@ def subscriber_page(request, userid):
         form = form_class(data=request.POST, instance=subscriber)
         if form.is_valid():
             form.save()
-
     return render(request, 'subscriber_page.html', {'subscriber':subscriber, 'is_post_request':is_post_request, })
 
 

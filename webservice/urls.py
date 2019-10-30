@@ -36,7 +36,7 @@ urlpatterns = [
     url(r'^about/$', views.about, name='about'),
     url(r'^subscribe/$', views.subscribe, name='subscribe'),
     url(r'^contact/$', views.contact, name='contact'),
-    url(r'^subscriber/(?P<userid>[-\d]+)/$', views.subscriber_page, name='user_page'),
+    url(r'^subscriber/(?P<userid>[-\d]+)/$', views.subscriber_page, name='subscriber_page'),
 
     # Registration  -------------------------------------------------------------------------
     url(r'^accounts/password/reset/$', password_reset, {'template_name': 'registration/password_reset_form.html'}, name='password_reset'),
