@@ -15,11 +15,11 @@ from django.contrib.auth.views import (
 import os
 
 from django.conf import settings
-settings.EMAIL_HOST = 'smtp.sendgrid.net'
+settings.EMAIL_HOST = 'mail.gmx.net'
 settings.EMAIL_PORT = 465
-settings.EMAIL_HOST_USER = 'apikey'
-settings.DEFAULT_FROM_EMAIL = 'noreply@treeofknowledge.ai'
-settings.SERVER_MAIL = 'noreply@treeofknowledge.ai'
+settings.EMAIL_HOST_USER = 'bene3@gmx.net'
+settings.DEFAULT_FROM_EMAIL = 'bene3@gmx.net'
+settings.SERVER_MAIL = 'bene3@gmx.net'
 settings.EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
 settings.EMAIL_USE_TLS = False
 settings.EMAIL_USE_SSL = True
