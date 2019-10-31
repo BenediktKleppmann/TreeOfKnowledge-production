@@ -1418,9 +1418,8 @@ def upload_file(request):
             errors.append("Error: Form not valid.")
         else:
             data_file = request.FILES['file']
-            if data_file.name[-4:] !=".csv":
-
-            with open('static/webservice files/db_backup/' + data_file.name, 'wb+') as destination:
+            print(os.getcwd())
+            with open('collection/static/webservice files/db_backup/' + data_file.name, 'wb+') as destination:
                 for chunk in data_file.chunks():
                     destination.write(chunk)
 
