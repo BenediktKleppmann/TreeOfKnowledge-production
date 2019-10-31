@@ -140,6 +140,7 @@ urlpatterns = [
     url(r'^clear_database/$', views.clear_database, name='clear_database'),
     url(r'^populate_database/$', views.populate_database, name='populate_database'),
     url(r'^backup_database/$', views.backup_database, name='backup_database'),
+    url(r'^upload_file/$', views.upload_file, name='upload_file'),
     url(r'^test_page1/$', views.test_page1, name='test_page1'),
     url(r'^test_page2/$', views.test_page2, name='test_page2'),
     url(r'^test_page3/$', views.test_page3, name='test_page3'),

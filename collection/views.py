@@ -1410,6 +1410,25 @@ def backup_database(request):
     else:
         return HttpResponse('An error occured')
 
+def upload_file(request):
+    errors = []
+    if request.method == 'POST':
+        form1 = UploadFileForm(request.POST, request.FILES)
+        if not form1.is_valid():
+            errors.append("Error: Form not valid.")
+        else:
+            data_file = request.FILES['file']
+            if data_file.name[-4:] !=".csv":
+
+            with open('static/webservice files/db_backup/' + data_file.name, 'wb+') as destination:
+                for chunk in data_file.chunks():
+                    destination.write(chunk)
+
+            request.FILES['file']
+            errors.append("The file was successfully uploaded.")
+
+    return render(request, 'upload_file.html', {'errors': errors})
+
 
 
 def test_page1(request):
