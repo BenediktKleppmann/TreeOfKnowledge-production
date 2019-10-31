@@ -1,9 +1,7 @@
 from django.contrib import admin
 
 # import the models
-from collection.models import Newsletter_subscriber
-from collection.models import Simulation_model
-from collection.models import Uploaded_dataset
+from collection.models import (Profile, Newsletter_subscriber, Uploaded_dataset, Data_point, Object_hierachy_tree_history, Object_types, Object, Attribute, Simulation_model, Rule, Likelihood_fuction)
 
 
 # automated email_hash creation for Newsletter subscribers
@@ -22,6 +20,15 @@ class Uploaded_datasetAdmin(admin.ModelAdmin):
 
 
 # register the models
+admin.site.register(Profile)
 admin.site.register(Newsletter_subscriber, Newsletter_subscriberAdmin)
-admin.site.register(Simulation_model)
 admin.site.register(Uploaded_dataset, Uploaded_datasetAdmin)
+admin.site.register(Data_point)
+admin.site.register(Object_hierachy_tree_history)
+admin.site.register(Object_types)
+admin.site.register(Object)
+admin.site.register(Attribute)
+admin.site.register(Simulation_model)
+admin.site.register(Rule)
+admin.site.register(Likelihood_fuction)
+
