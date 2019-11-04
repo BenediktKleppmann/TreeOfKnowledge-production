@@ -343,11 +343,26 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
                               LIMIT 10 '''
             cursor.execute(query_string)
             print(str([str(entry) for entry in cursor.fetchall()]))
+
+            query_string = '''SELECT id 
+                              FROM collection_object
+                              WHERE object_type_id = 'j1_14'
+                              LIMIT 10 '''
+            cursor.execute(query_string)
+            print(str([str(entry) for entry in cursor.fetchall()]))
+
+            query_string = '''SELECT id 
+                              FROM collection_object
+                              WHERE object_type_id IN ('j1_14')
+                              LIMIT 10 '''
+            cursor.execute(query_string)
+            print(str([str(entry) for entry in cursor.fetchall()]))
         
         print('===========================================================================================')
         with connection.cursor() as cursor:
             query_string = 'SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);' % (', '.join("'{0}'".format(object_type_id) for object_type_id in child_object_ids))
             cursor.execute(query_string)
+            print(query_string)
             object_ids = [entry[0] for entry in cursor.fetchall()]
 
          # get broad_table_df
