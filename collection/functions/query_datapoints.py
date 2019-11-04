@@ -312,6 +312,20 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
         child_object_types = get_from_db.get_list_of_child_objects(object_type_id)
         child_object_ids = [el['id'] for el in child_object_types]
         print('1')
+
+        print('========================================= TESTING =========================================')
+        bla = list(Object.objects.filter(object_type_id="j1_14").values())
+
+        print(json.dumps(bla))
+        with connection.cursor() as cursor:
+            query_string = '''SELECT table_name
+                              FROM information_schema.tables
+                              WHERE table_schema='public'
+                               AND table_type='BASE TABLE';'''
+            cursor.execute(query_string)
+            print(str([str(entry) for entry in cursor.fetchall()]))
+        
+        print('===========================================================================================')
         with connection.cursor() as cursor:
             query_string = 'SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);' % (', '.join('"{0}"'.format(object_type_id) for object_type_id in child_object_ids))
             cursor.execute(query_string)
@@ -567,16 +581,11 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
         print('=====  broad_table_df  =====================================================================')
         print(object_type_id)
         list_of_parent_object_types = [el['id'] for el in get_from_db.get_list_of_parent_objects(object_type_id)]
-        print(list_of_parent_object_types)
         all_attribute_ids = Attribute.objects.filter(first_applicable_object_type__in = list_of_parent_object_types).values_list('id', flat=True)
         all_attribute_ids = [str(attribute_id) for attribute_id in all_attribute_ids]
         existing_columns = list(broad_table_df.columns)
-        print(existing_columns)
-        print(type(existing_columns[0]))
-        print(all_attribute_ids)
         for attribute_id in all_attribute_ids:
             if attribute_id not in existing_columns:
-                print('adding ' + str(attribute_id) + 'to the broad_table_df')
                 broad_table_df[attribute_id] = None
 
         
