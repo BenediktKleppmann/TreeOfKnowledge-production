@@ -1447,7 +1447,7 @@ def test_page2(request):
     # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
     # bla = list(Object.objects.filter(object_type_id__in=['j1_5']).values_list('id'))
     # bla = Uploaded_dataset.objects.get(id=94).data_table_json
-    bla = list(Attribute.objects.all().values())
+    bla = list(Object.objects.filter(object_type_id="j1_14").values())
 
     # return HttpResponse('success')
     return HttpResponse(json.dumps(bla))
