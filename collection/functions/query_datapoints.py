@@ -471,6 +471,7 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
                   AND object_id IN (%s)
         ''' 
         object_ids = [str(object_id) for object_id in object_ids]
+        print(sql_string1 % (specified_start_time, specified_end_time, ','.join(object_ids)))
         cursor.execute(sql_string1 % (specified_start_time, specified_end_time, ','.join(object_ids)))
 
         # apply filter-facts
