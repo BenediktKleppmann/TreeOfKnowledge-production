@@ -314,6 +314,7 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
         print('1')
 
         print('========================================= TESTING =========================================')
+        with connection.cursor() as cursor:
             query_string = '''SELECT id 
                               FROM collection_object
                               WHERE object_type_id IN ('j1_14')
