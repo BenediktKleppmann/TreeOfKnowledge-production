@@ -475,6 +475,7 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
 
         # apply filter-facts
         unfiltered_object_ids = cursor.execute('SELECT object_id FROM unfiltered_object_ids')
+        print(str([result[0] for result in unfiltered_object_ids]))
         valid_ranges_df = pd.DataFrame({'object_id':[result[0] for result in unfiltered_object_ids]})
         valid_ranges_df['valid_range'] = [[[specified_start_time,specified_end_time]] for i in valid_ranges_df.index]
 
