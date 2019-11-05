@@ -1438,8 +1438,9 @@ def test_page1(request):
     # response = query_datapoints.get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time)
     # attributes = list(Attribute.objects.all().values())
     # list_of_child_objects = get_from_db.get_list_of_child_objects("j1_5")
-    # return HttpResponse(json.dumps(list_of_child_objects))
-    return render(request, 'tree_of_knowledge_frontend/test_page1.html')
+    Data_point.objects.all().delete()
+    return HttpResponse("success")
+    # return render(request, 'tree_of_knowledge_frontend/test_page1.html')
 
 
 
