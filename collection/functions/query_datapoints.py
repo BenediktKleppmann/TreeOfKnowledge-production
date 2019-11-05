@@ -476,126 +476,130 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
 
         # apply filter-facts
         unfiltered_object_ids = cursor.execute('SELECT object_id FROM unfiltered_object_ids')
-        print(str([result[0] for result in unfiltered_object_ids]))
-        valid_ranges_df = pd.DataFrame({'object_id':[result[0] for result in unfiltered_object_ids]})
-        valid_ranges_df['valid_range'] = [[[specified_start_time,specified_end_time]] for i in valid_ranges_df.index]
-
-        for fact_index, filter_fact in enumerate(filter_facts):
-
-            sql_string2 = '''
-                    SELECT object_id, '[' || GROUP_CONCAT('[' || valid_time_start || ',' || valid_time_end || ']', ',') || ']' AS new_valid_range
-                    FROM collection_data_point
-                    WHERE object_id IN (SELECT object_id FROM unfiltered_object_ids)
-                      AND 
-            '''   
-            if filter_fact['operation'] == '=':     
-                sql_string2 += 'attribute_id == %s AND string_value == "%s"' % (filter_fact['attribute_id'], filter_fact['value'])
-            elif filter_fact['operation'] == '>':
-                sql_string2 += 'attribute_id == %s AND numeric_value > %s' % (filter_fact['attribute_id'], filter_fact['value'])
-            elif filter_fact['operation'] == '<':
-                sql_string2 += 'attribute_id == %s AND numeric_value < %s' % (filter_fact['attribute_id'], filter_fact['value'])
-            elif filter_fact['operation'] == 'in':
-                values = ['"%s"' % value for value in filter_fact['value']]
-                sql_string2 += 'attribute_id == %s AND string_value IN (%s)' % (filter_fact['attribute_id'], ', '.join(values))
-
-            sql_string2 += '''
-                    GROUP BY object_id '''
-            new_valid_ranges_df = pd.read_sql_query(sql_string2, connection)
-            new_valid_ranges_df['new_valid_range'] = new_valid_ranges_df['new_valid_range'].apply(json.loads)
-            new_valid_ranges_df['object_id'] = new_valid_ranges_df['object_id'].astype(int)
-            
-            # find the intersecting time ranges (= the overlap between the known valid_ranges and the valid_ranges from the new filter fact)
-            valid_ranges_df = pd.merge(valid_ranges_df, new_valid_ranges_df, on='object_id', how='left')
-            valid_ranges_df = valid_ranges_df[valid_ranges_df['new_valid_range'].notnull()]
-            if len(valid_ranges_df) == 0:
-                return None
-            valid_ranges_df['valid_range'] = valid_ranges_df.apply(generally_useful_functions.intersections, axis=1)
-            valid_ranges_df = valid_ranges_df[['object_id', 'valid_range']]
-
-
-
-        # choose the first time interval that satisfies all filter-fact conditions
-        valid_ranges_df['satisfying_time_start'] = [object_ranges[0][0] if len(object_ranges)>0 else None for object_ranges in valid_ranges_df['valid_range'] ]
-        valid_ranges_df['satisfying_time_end'] = [object_ranges[0][1] if len(object_ranges)>0 else None for object_ranges in valid_ranges_df['valid_range']]
-        valid_ranges_df = valid_ranges_df[valid_ranges_df['satisfying_time_start'].notnull()]
-
-        # make long table with all datapoints of the found objects
-        found_objects = [str(result[0]) for result in cursor.execute('SELECT object_id FROM unfiltered_object_ids')]
-        if len(found_objects) == 0:
+        if unfiltered_object_ids is None:
             return None
-        sql_string3 = 'SELECT * FROM collection_data_point WHERE object_id IN (%s)' % (','.join(found_objects))
-        long_table_df = pd.read_sql_query(sql_string3, connection)
+
+        else:
+            print(str([result[0] for result in unfiltered_object_ids]))
+            valid_ranges_df = pd.DataFrame({'object_id':[result[0] for result in unfiltered_object_ids]})
+            valid_ranges_df['valid_range'] = [[[specified_start_time,specified_end_time]] for i in valid_ranges_df.index]
+
+            for fact_index, filter_fact in enumerate(filter_facts):
+
+                sql_string2 = '''
+                        SELECT object_id, '[' || GROUP_CONCAT('[' || valid_time_start || ',' || valid_time_end || ']', ',') || ']' AS new_valid_range
+                        FROM collection_data_point
+                        WHERE object_id IN (SELECT object_id FROM unfiltered_object_ids)
+                          AND 
+                '''   
+                if filter_fact['operation'] == '=':     
+                    sql_string2 += 'attribute_id == %s AND string_value == "%s"' % (filter_fact['attribute_id'], filter_fact['value'])
+                elif filter_fact['operation'] == '>':
+                    sql_string2 += 'attribute_id == %s AND numeric_value > %s' % (filter_fact['attribute_id'], filter_fact['value'])
+                elif filter_fact['operation'] == '<':
+                    sql_string2 += 'attribute_id == %s AND numeric_value < %s' % (filter_fact['attribute_id'], filter_fact['value'])
+                elif filter_fact['operation'] == 'in':
+                    values = ['"%s"' % value for value in filter_fact['value']]
+                    sql_string2 += 'attribute_id == %s AND string_value IN (%s)' % (filter_fact['attribute_id'], ', '.join(values))
+
+                sql_string2 += '''
+                        GROUP BY object_id '''
+                new_valid_ranges_df = pd.read_sql_query(sql_string2, connection)
+                new_valid_ranges_df['new_valid_range'] = new_valid_ranges_df['new_valid_range'].apply(json.loads)
+                new_valid_ranges_df['object_id'] = new_valid_ranges_df['object_id'].astype(int)
+                
+                # find the intersecting time ranges (= the overlap between the known valid_ranges and the valid_ranges from the new filter fact)
+                valid_ranges_df = pd.merge(valid_ranges_df, new_valid_ranges_df, on='object_id', how='left')
+                valid_ranges_df = valid_ranges_df[valid_ranges_df['new_valid_range'].notnull()]
+                if len(valid_ranges_df) == 0:
+                    return None
+                valid_ranges_df['valid_range'] = valid_ranges_df.apply(generally_useful_functions.intersections, axis=1)
+                valid_ranges_df = valid_ranges_df[['object_id', 'valid_range']]
 
 
-        # found_objects = list(set(data_point_records.values_list('object_id', flat=True)))
-        # all_data_points = Data_point.objects.filter(object_id__in=found_objects)    
-        # long_table_df = pd.DataFrame(list(all_data_points.values()))
+
+            # choose the first time interval that satisfies all filter-fact conditions
+            valid_ranges_df['satisfying_time_start'] = [object_ranges[0][0] if len(object_ranges)>0 else None for object_ranges in valid_ranges_df['valid_range'] ]
+            valid_ranges_df['satisfying_time_end'] = [object_ranges[0][1] if len(object_ranges)>0 else None for object_ranges in valid_ranges_df['valid_range']]
+            valid_ranges_df = valid_ranges_df[valid_ranges_df['satisfying_time_start'].notnull()]
+
+            # make long table with all datapoints of the found objects
+            found_objects = [str(result[0]) for result in cursor.execute('SELECT object_id FROM unfiltered_object_ids')]
+            if len(found_objects) == 0:
+                return None
+            sql_string3 = 'SELECT * FROM collection_data_point WHERE object_id IN (%s)' % (','.join(found_objects))
+            long_table_df = pd.read_sql_query(sql_string3, connection)
 
 
-        # filter out the observations from not-satisfying times
-        long_table_df = pd.merge(long_table_df, valid_ranges_df, how='inner', on='object_id')
-        long_table_df = long_table_df[(long_table_df['valid_time_end'] > long_table_df['satisfying_time_start']) & (long_table_df['valid_time_start'] < long_table_df['satisfying_time_end'])]
+            # found_objects = list(set(data_point_records.values_list('object_id', flat=True)))
+            # all_data_points = Data_point.objects.filter(object_id__in=found_objects)    
+            # long_table_df = pd.DataFrame(list(all_data_points.values()))
 
 
-        # select satisfying time (and remove the records from other times)
-        total_data_quality_df = long_table_df.groupby(['object_id','satisfying_time_start']).aggregate({'object_id':'first','satisfying_time_start':'first', 'data_quality': np.sum, 'attribute_id': 'count'})
-        total_data_quality_df = total_data_quality_df.rename(columns={"data_quality": "total_data_quality", "attribute_id":"attriubte_count"})
-
-        total_data_quality_df.index = range(len(total_data_quality_df))
-        total_data_quality_df = total_data_quality_df.sort_values(['total_data_quality','satisfying_time_start'], ascending=[False, True])
-        total_data_quality_df = total_data_quality_df.drop_duplicates(subset=['object_id'], keep='first')
-        long_table_df = pd.merge(long_table_df, total_data_quality_df, how='inner', on=['object_id','satisfying_time_start'])
-
-        # remove the duplicates (=duplicate values within the satisfying time)
-        long_table_df['time_difference_of_start'] = abs(long_table_df['satisfying_time_start'] - long_table_df['valid_time_start'])
-        long_table_df = long_table_df.sort_values(['data_quality','time_difference_of_start'], ascending=[False, True])
-        long_table_df = long_table_df.drop_duplicates(subset=['object_id','attribute_id'], keep='first')
-
-        # pivot the long table
-        long_table_df = long_table_df.reindex()
-        long_table_df = long_table_df[['object_id','satisfying_time_start','attribute_id', 'string_value', 'numeric_value','boolean_value' ]]
-        long_table_df.set_index(['object_id','satisfying_time_start','attribute_id'],inplace=True)
-        broad_table_df = long_table_df.unstack('attribute_id')
-
-        # there are columns for the different datatypes, determine which to keep
-        columns_to_keep = []
-        for column in broad_table_df.columns:
-            attribute_data_type = Attribute.objects.get(id=column[1]).data_type
-            if attribute_data_type=='string' and column[0]=='string_value':
-                columns_to_keep.append(column)
-            elif attribute_data_type in ['real', 'int', 'relation'] and column[0]=='numeric_value':
-                columns_to_keep.append(column)
-            elif attribute_data_type == 'boolean' and column[0]=='boolean_value':
-                columns_to_keep.append(column)
+            # filter out the observations from not-satisfying times
+            long_table_df = pd.merge(long_table_df, valid_ranges_df, how='inner', on='object_id')
+            long_table_df = long_table_df[(long_table_df['valid_time_end'] > long_table_df['satisfying_time_start']) & (long_table_df['valid_time_start'] < long_table_df['satisfying_time_end'])]
 
 
-        broad_table_df = broad_table_df[columns_to_keep]
-        new_column_names = [column[1] for column in columns_to_keep]
-        broad_table_df.columns = new_column_names
+            # select satisfying time (and remove the records from other times)
+            total_data_quality_df = long_table_df.groupby(['object_id','satisfying_time_start']).aggregate({'object_id':'first','satisfying_time_start':'first', 'data_quality': np.sum, 'attribute_id': 'count'})
+            total_data_quality_df = total_data_quality_df.rename(columns={"data_quality": "total_data_quality", "attribute_id":"attriubte_count"})
 
-        # clean up the broad table
-        broad_table_df['object_id'] = [val[0] for val in broad_table_df.index]
-        list_of_datetimes = [datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=(val[1])) for val in broad_table_df.index]
-        broad_table_df['time'] = [val.strftime('%Y-%m-%d') for val in list_of_datetimes]
+            total_data_quality_df.index = range(len(total_data_quality_df))
+            total_data_quality_df = total_data_quality_df.sort_values(['total_data_quality','satisfying_time_start'], ascending=[False, True])
+            total_data_quality_df = total_data_quality_df.drop_duplicates(subset=['object_id'], keep='first')
+            long_table_df = pd.merge(long_table_df, total_data_quality_df, how='inner', on=['object_id','satisfying_time_start'])
 
-        broad_table_df.reindex()
-        broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
+            # remove the duplicates (=duplicate values within the satisfying time)
+            long_table_df['time_difference_of_start'] = abs(long_table_df['satisfying_time_start'] - long_table_df['valid_time_start'])
+            long_table_df = long_table_df.sort_values(['data_quality','time_difference_of_start'], ascending=[False, True])
+            long_table_df = long_table_df.drop_duplicates(subset=['object_id','attribute_id'], keep='first')
 
-        # insert missing columns
-        print('=====  broad_table_df  =====================================================================')
-        print(object_type_id)
-        list_of_parent_object_types = [el['id'] for el in get_from_db.get_list_of_parent_objects(object_type_id)]
-        all_attribute_ids = Attribute.objects.filter(first_applicable_object_type__in = list_of_parent_object_types).values_list('id', flat=True)
-        all_attribute_ids = [str(attribute_id) for attribute_id in all_attribute_ids]
-        existing_columns = list(broad_table_df.columns)
-        for attribute_id in all_attribute_ids:
-            if attribute_id not in existing_columns:
-                broad_table_df[attribute_id] = None
+            # pivot the long table
+            long_table_df = long_table_df.reindex()
+            long_table_df = long_table_df[['object_id','satisfying_time_start','attribute_id', 'string_value', 'numeric_value','boolean_value' ]]
+            long_table_df.set_index(['object_id','satisfying_time_start','attribute_id'],inplace=True)
+            broad_table_df = long_table_df.unstack('attribute_id')
 
-        
-        print(list(broad_table_df.columns))
-        print('============================================================================================')
-    return broad_table_df
+            # there are columns for the different datatypes, determine which to keep
+            columns_to_keep = []
+            for column in broad_table_df.columns:
+                attribute_data_type = Attribute.objects.get(id=column[1]).data_type
+                if attribute_data_type=='string' and column[0]=='string_value':
+                    columns_to_keep.append(column)
+                elif attribute_data_type in ['real', 'int', 'relation'] and column[0]=='numeric_value':
+                    columns_to_keep.append(column)
+                elif attribute_data_type == 'boolean' and column[0]=='boolean_value':
+                    columns_to_keep.append(column)
+
+
+            broad_table_df = broad_table_df[columns_to_keep]
+            new_column_names = [column[1] for column in columns_to_keep]
+            broad_table_df.columns = new_column_names
+
+            # clean up the broad table
+            broad_table_df['object_id'] = [val[0] for val in broad_table_df.index]
+            list_of_datetimes = [datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=(val[1])) for val in broad_table_df.index]
+            broad_table_df['time'] = [val.strftime('%Y-%m-%d') for val in list_of_datetimes]
+
+            broad_table_df.reindex()
+            broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
+
+            # insert missing columns
+            print('=====  broad_table_df  =====================================================================')
+            print(object_type_id)
+            list_of_parent_object_types = [el['id'] for el in get_from_db.get_list_of_parent_objects(object_type_id)]
+            all_attribute_ids = Attribute.objects.filter(first_applicable_object_type__in = list_of_parent_object_types).values_list('id', flat=True)
+            all_attribute_ids = [str(attribute_id) for attribute_id in all_attribute_ids]
+            existing_columns = list(broad_table_df.columns)
+            for attribute_id in all_attribute_ids:
+                if attribute_id not in existing_columns:
+                    broad_table_df[attribute_id] = None
+
+            
+            print(list(broad_table_df.columns))
+            print('============================================================================================')
+            return broad_table_df
 
 
 
