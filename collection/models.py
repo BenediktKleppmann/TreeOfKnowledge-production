@@ -97,8 +97,8 @@ class Data_point(models.Model):
     numeric_value = models.FloatField(null=True, db_index=True)
     string_value = models.TextField(null=True, db_index=True)
     boolean_value = models.NullBooleanField() 
-    valid_time_start = models.IntegerField(db_index=True)
-    valid_time_end = models.IntegerField(db_index=True)
+    valid_time_start = models.BigIntegerField(db_index=True)
+    valid_time_end = models.BigIntegerField(db_index=True)
     data_quality = models.IntegerField()
 
 
@@ -151,8 +151,8 @@ class Simulation_model(models.Model):
     object_type_counts = models.TextField()
     total_object_count= models.IntegerField()
     number_of_additional_object_facts = models.IntegerField()
-    simulation_start_time = models.IntegerField()
-    simulation_end_time = models.IntegerField()
+    simulation_start_time = models.BigIntegerField()
+    simulation_end_time = models.BigIntegerField()
     timestep_size = models.IntegerField(null=True)
     just_learned_rules = models.TextField(null=True)
     rule_infos = models.TextField(null=True)
