@@ -384,8 +384,6 @@ class Simulator:
         y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
         for period in range(len(times)-1):
             for rule in rules:
-                # print('Test11 - ' + str(rule['learn_posterior']) + '; ' + str(rule['is_conditionless']) + '; ' + str(rule['has_probability_1']) + '; ' + str(rule['condition_exec']) + '; ' + str(rule['effect_is_calculation']) + '; ' + str(rule['effect_exec']) + '; ')
-                # --------  IF  --------
                 if rule['is_conditionless']:
                     satisfying_rows = [True] * batch_size
                 else:
@@ -395,13 +393,11 @@ class Simulator:
                     else:
                         triggered_rules = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
 
-                    print(rule['condition_exec'])
                     condition_fulfilled_rules = pd.eval(rule['condition_exec'])
                     satisfying_rows = triggered_rules  & condition_fulfilled_rules   
 
                 # --------  THEN  --------
                 if rule['effect_is_calculation']:
-                    print(rule['effect_exec'])
                     new_values = pd.eval(rule['effect_exec'])
                     if rule['changed_var_data_type'] in ['relation','int']:
                         nan_rows = new_values.isnull()
@@ -652,7 +648,6 @@ class Simulator:
 
 
     def n_dimensional_distance(self, u, v):
-        print('10.1')  
         u = np.asarray(u, dtype=object, order='c').squeeze()
         u = np.atleast_1d(u)
         v = np.asarray(v, dtype=object, order='c').squeeze()
@@ -662,19 +657,15 @@ class Simulator:
         u_df = u_df.fillna(np.nan)
         v_df = v_df.fillna(np.nan)
         
-        print('10.2')  
         total_error = np.zeros(shape=len(u))
         dimensionality = np.zeros(shape=len(u))
         for y0_column in self.y0_columns:
-            print('10.3')  
             period_columns = [col for col in u_df.columns if col.split('period')[0] == y0_column]
             if self.y0_column_dt[y0_column] in ['string','bool','relation']:
-                print('10.4')  
                 for period_column in period_columns:
                     total_error += 1. - np.equal(np.array(u_df[period_column]), np.array(v_df[period_column])).astype(int)
                     dimensionality += 1 - np.array(u_df[period_column].isnull().astype(int))
             if self.y0_column_dt[y0_column] in ['int','real']:
-                print('10.5')  
                 for period_column in period_columns:
                     period_number = max(int(period_column.split('period')[1]), 1)
                     true_change_percent_per_period = ((np.array(v_df[period_column]) - np.array(v_df[period_column.split('period')[0]]))/np.array(v_df[period_column.split('period')[0]]))/period_number
@@ -689,17 +680,14 @@ class Simulator:
                     error[np.isnan(error)] = 0
                     total_error += error 
 
-        print('10.6')  
         dimensionality = np.maximum(dimensionality, [1]*len(u))
         error = total_error/dimensionality
 
         # posterior_values_to_delete   (delete value from posterior if it's rule was not used in the simulation)
-        print('10.7')  
         rule_ids = [int(col_name[24:]) for col_name in u_df.columns if col_name[:24] == 'rule_used_in_simulation_']
         for rule_id in rule_ids:
             to_be_deleted_rows = np.array(error < 0.5)  &  np.invert(u_df['rule_used_in_simulation_' + str(rule_id)])
             self.posterior_values_to_delete[rule_id].extend(list(u_df.loc[to_be_deleted_rows, 'triggerThresholdForRule' + str(rule_id)]))
-        print('10.8')  
         return error
             
 
