@@ -190,6 +190,7 @@ class Simulator:
 
         
         (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(1000)
+        print('11')
         self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df)
 
 
@@ -260,6 +261,7 @@ class Simulator:
     def __post_process_data(self, simulation_data_df, triggered_rules_df, errors_df):
 
         # rule_infos
+        print('12')
         triggered_rules_df = triggered_rules_df[triggered_rules_df['triggered_rule'].notnull()]
         rule_ids = [triggered_rule_info['id'] for triggered_rule_info  in list(triggered_rules_df['triggered_rule'])]
         rule_ids = list(set(rule_ids))
@@ -271,6 +273,7 @@ class Simulator:
 
 
         # triggered_rules
+        print('13')
         triggered_rules_per_period = triggered_rules_df.groupby(['batch_number','initial_state_id','attribute_id','period']).aggregate({'initial_state_id':'first',
                                                                                                         'batch_number':'first',
                                                                                                         'attribute_id':'first',
@@ -289,6 +292,7 @@ class Simulator:
 
 
         # simulation_data
+        print('14')
         simulation_data = {}
         attribute_ids = [attr_id for attr_id in simulation_data_df.columns if attr_id not in ['batch_number','initial_state_id','attribute_id','period', 'randomNumber', 'cross_join_column']]
         aggregation_dict = {attr_id:list for attr_id in attribute_ids}
@@ -308,6 +312,7 @@ class Simulator:
 
 
         # errors
+        print('15')
         errors = {}
         errors['score'] = 1 - errors_df['error'].mean()
         errors['correct_simulations'] = list(errors_df.loc[errors_df['error'] < 0.25, 'simulation_number'])
@@ -316,6 +321,7 @@ class Simulator:
 
 
         # Front-End too slow?
+        print('16')
         number_of_megabytes =len(json.dumps(simulation_data))/1000000
         if number_of_megabytes > 3:
             number_of_simulations_to_keep = int(len(simulation_data) * 3 / number_of_megabytes)
@@ -325,7 +331,7 @@ class Simulator:
             # simulation_data = {k: d[k]) for k in keys if k in d} simulation_data
             # triggered_rules = triggered_rules[:number_of_simulations_to_send]
 
-
+        print('17')
         simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
         simulation_model_record.just_learned_rules = json.dumps(self.just_learned_rules)
         simulation_model_record.rule_infos = json.dumps(rule_infos)
@@ -589,6 +595,7 @@ class Simulator:
               
             print('10')  
             errors = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), self.y0_values)
+            print('10.9') 
             # print('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
             # y0_values_in_simulation_dict = y0_values_in_simulation.to_dict('records')
             # with open("C:/Users/l412/Documents/2 temporary stuff/2019-08-13/y0_values_in_simulation.txt", "w") as text_file:
@@ -604,7 +611,7 @@ class Simulator:
             errors_df = errors_df.append(error_df)
 
 
-
+            print('10.10') 
         return (simulation_data_df, triggered_rules_df, errors_df)
 
 
@@ -645,6 +652,7 @@ class Simulator:
 
 
     def n_dimensional_distance(self, u, v):
+        print('10.1')  
         u = np.asarray(u, dtype=object, order='c').squeeze()
         u = np.atleast_1d(u)
         v = np.asarray(v, dtype=object, order='c').squeeze()
@@ -654,15 +662,19 @@ class Simulator:
         u_df = u_df.fillna(np.nan)
         v_df = v_df.fillna(np.nan)
         
+        print('10.2')  
         total_error = np.zeros(shape=len(u))
         dimensionality = np.zeros(shape=len(u))
         for y0_column in self.y0_columns:
+            print('10.3')  
             period_columns = [col for col in u_df.columns if col.split('period')[0] == y0_column]
             if self.y0_column_dt[y0_column] in ['string','bool','relation']:
+                print('10.4')  
                 for period_column in period_columns:
                     total_error += 1. - np.equal(np.array(u_df[period_column]), np.array(v_df[period_column])).astype(int)
                     dimensionality += 1 - np.array(u_df[period_column].isnull().astype(int))
             if self.y0_column_dt[y0_column] in ['int','real']:
+                print('10.5')  
                 for period_column in period_columns:
                     period_number = max(int(period_column.split('period')[1]), 1)
                     true_change_percent_per_period = ((np.array(v_df[period_column]) - np.array(v_df[period_column.split('period')[0]]))/np.array(v_df[period_column.split('period')[0]]))/period_number
@@ -677,15 +689,17 @@ class Simulator:
                     error[np.isnan(error)] = 0
                     total_error += error 
 
+        print('10.6')  
         dimensionality = np.maximum(dimensionality, [1]*len(u))
         error = total_error/dimensionality
 
         # posterior_values_to_delete   (delete value from posterior if it's rule was not used in the simulation)
+        print('10.7')  
         rule_ids = [int(col_name[24:]) for col_name in u_df.columns if col_name[:24] == 'rule_used_in_simulation_']
         for rule_id in rule_ids:
             to_be_deleted_rows = np.array(error < 0.5)  &  np.invert(u_df['rule_used_in_simulation_' + str(rule_id)])
             self.posterior_values_to_delete[rule_id].extend(list(u_df.loc[to_be_deleted_rows, 'triggerThresholdForRule' + str(rule_id)]))
-
+        print('10.8')  
         return error
             
 
