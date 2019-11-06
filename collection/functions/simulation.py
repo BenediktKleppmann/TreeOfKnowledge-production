@@ -458,11 +458,13 @@ class Simulator:
         batch_size = len(y0)
 
 
+        print('1')
         simulation_data_df = pd.DataFrame()
         triggered_rules_df = pd.DataFrame()
         errors_df = pd.DataFrame()
 
 
+        print('2')
         number_of_batches = math.ceil(nb_of_simulations/batch_size)
         for batch_number in range(number_of_batches):
 
@@ -482,9 +484,11 @@ class Simulator:
                 times = [self.simulation_start_time, self.simulation_end_time]
 
 
+            print('3')
             y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
             for period in range(len(times)-1):
                 for rule in self.rules:
+                    print('4')
 
                     # Apply Rule  ================================================================
                     if rule['is_conditionless']:
@@ -523,6 +527,7 @@ class Simulator:
 
                     # Save the Simulation State  =======================================================
                     # triggered rules
+                    print('5')
                     if rule['is_conditionless']: 
                         trigger_thresholds = [0] * batch_size
                     else:
@@ -547,6 +552,7 @@ class Simulator:
                                                             'v': calculated_values,         # v = new_value
                                                             'error':errors})
 
+                    print('6')
                     triggered_rule_infos = triggered_rule_infos_df.to_dict('records')
                     triggered_rule_infos = [rule_info if rule_info['condition_satisfied'] else None for rule_info in triggered_rule_infos]
                     for i in range(len(triggered_rule_infos)):
@@ -556,6 +562,7 @@ class Simulator:
                                     del triggered_rule_infos[i]['error']
 
 
+                    print('7')
                     currently_triggered_rules = pd.DataFrame({  'initial_state_id':df.index,
                                                                 'batch_number':[batch_number]*batch_size,
                                                                 'attribute_id':[rule['column_to_change']]*batch_size,
@@ -568,16 +575,19 @@ class Simulator:
 
                 
                 # simulated values
+                print('8')
                 df['initial_state_id'] = df.index
                 df['batch_number'] = batch_number
                 df['period'] = period
                 simulation_data_df = simulation_data_df.append(df)
 
                 # error
+                print('9')
                 y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
                 y0_values_in_this_period.columns = [col + 'period' + str(period) for col in y0_values_in_this_period.columns] #faster version
                 y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
-                
+              
+            print('10')  
             errors = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), self.y0_values)
             # print('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
             # y0_values_in_simulation_dict = y0_values_in_simulation.to_dict('records')
