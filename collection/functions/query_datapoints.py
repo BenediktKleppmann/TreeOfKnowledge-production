@@ -463,7 +463,7 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
 
     with connection.cursor() as cursor:
 
-        cursor.execute('DROP TABLE IF EXISTS temp.unfiltered_object_ids')
+        cursor.execute('DROP TABLE IF EXISTS unfiltered_object_ids')
         sql_string1 = '''
             CREATE TEMPORARY TABLE unfiltered_object_ids AS
                 SELECT DISTINCT object_id
