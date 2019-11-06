@@ -135,7 +135,7 @@ class Object(models.Model):
 class Attribute(models.Model):
     name = models.TextField()
     data_type = models.TextField()
-    expected_valid_period = models.IntegerField()
+    expected_valid_period = models.BigIntegerField()
     description = models.TextField()
     format_specification = models.TextField()
     first_applicable_object_type = models.TextField()
