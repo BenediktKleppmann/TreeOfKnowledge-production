@@ -460,22 +460,10 @@ def get_training_data(object_type_id, filter_facts, valid_times):
 def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time):
 
 
-    print('========================================= TESTING =========================================')
-    with connection.cursor() as cursor:
-        query_string = '''SELECT DISTINCT object_id
-                            FROM collection_data_point
-                            WHERE valid_time_start >= -1262307600
-                            AND valid_time_start < 1577836800
-                            AND object_id IN (10930,10931,10932,10933,10934,10935,10936,10937,10938,10939,10940,10941,10942,10943,10944,10945,10946,10947,10948,10949,10950,10951,10952,10953,10954,10955,10956,10957,10958,10959,10960,10961,10962,10963,10964,10965,10966,10967,10968,10969,10970,10971,10972,10973,10974,10975,10976,10977,10978,10979,10980,10981,10982,10983,10984,10985,10986,10987,10988,10989,10990,10991,10992,10993,10994,10995,10996,10997,10998,10999,11000,11001,11002,11003,11004,11005,11006,11007,11008,11009,11010,11011,11012,11013,11014,11015,11016,11017,11018,11019,11020,11021,11022,11023,11024,11025,11026,11027,11028,11029,11030,11031,11032,11033,11034,11035,11036,11037,11038,11039,11040,11041,11042,11043,11044,11045,11046,11047,11048,11049,11050,11051,11052,11053,11054,11055,11056,11057,11058,11059,11060,11061,11062,11063,11064,11065,11066,11067,11068,11069,11070,11071,11072,11073,11074,11075,11076,11077,11078,11079)'''
-        cursor.execute(query_string)
-        print(str([str(entry) for entry in cursor.fetchall()]))
-
-    print('===========================================================================================')
 
     with connection.cursor() as cursor:
-        print('2.1')
+
         cursor.execute('DROP TABLE IF EXISTS temp.unfiltered_object_ids')
-        print('2.2')
         sql_string1 = '''
             CREATE TEMPORARY TABLE unfiltered_object_ids AS
                 SELECT DISTINCT object_id
@@ -484,11 +472,8 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
                   AND valid_time_start < %s
                   AND object_id IN (%s)
         ''' 
-        print('2.3')
         object_ids = [str(object_id) for object_id in object_ids]
-        print('2.4')
         print(sql_string1 % (specified_start_time, specified_end_time, ','.join(object_ids)))
-        print('2.5')
         cursor.execute(sql_string1 % (specified_start_time, specified_end_time, ','.join(object_ids)))
 
 
@@ -510,11 +495,14 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             return None
 
         else:
+            print('2.1')
             print(str([result[0] for result in unfiltered_object_ids]))
             valid_ranges_df = pd.DataFrame({'object_id':[result[0] for result in unfiltered_object_ids]})
             valid_ranges_df['valid_range'] = [[[specified_start_time,specified_end_time]] for i in valid_ranges_df.index]
 
+            print('2.2')
             for fact_index, filter_fact in enumerate(filter_facts):
+                print('2.3')
 
                 sql_string2 = '''
                         SELECT object_id, '[' || GROUP_CONCAT('[' || valid_time_start || ',' || valid_time_end || ']', ',') || ']' AS new_valid_range
@@ -537,6 +525,7 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
                 new_valid_ranges_df = pd.read_sql_query(sql_string2, connection)
                 new_valid_ranges_df['new_valid_range'] = new_valid_ranges_df['new_valid_range'].apply(json.loads)
                 new_valid_ranges_df['object_id'] = new_valid_ranges_df['object_id'].astype(int)
+                print('2.4')
                 
                 # find the intersecting time ranges (= the overlap between the known valid_ranges and the valid_ranges from the new filter fact)
                 valid_ranges_df = pd.merge(valid_ranges_df, new_valid_ranges_df, on='object_id', how='left')
@@ -549,11 +538,13 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
 
 
             # choose the first time interval that satisfies all filter-fact conditions
+            print('2.5')
             valid_ranges_df['satisfying_time_start'] = [object_ranges[0][0] if len(object_ranges)>0 else None for object_ranges in valid_ranges_df['valid_range'] ]
             valid_ranges_df['satisfying_time_end'] = [object_ranges[0][1] if len(object_ranges)>0 else None for object_ranges in valid_ranges_df['valid_range']]
             valid_ranges_df = valid_ranges_df[valid_ranges_df['satisfying_time_start'].notnull()]
 
             # make long table with all datapoints of the found objects
+            print('2.6')
             unfiltered_object_ids = [str(result[0]) for result in unfiltered_object_ids]
             if len(unfiltered_object_ids) == 0:
                 return None
@@ -567,25 +558,30 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
 
 
             # filter out the observations from not-satisfying times
+            print('2.7')
             long_table_df = pd.merge(long_table_df, valid_ranges_df, how='inner', on='object_id')
             long_table_df = long_table_df[(long_table_df['valid_time_end'] > long_table_df['satisfying_time_start']) & (long_table_df['valid_time_start'] < long_table_df['satisfying_time_end'])]
 
 
             # select satisfying time (and remove the records from other times)
+            print('2.8')
             total_data_quality_df = long_table_df.groupby(['object_id','satisfying_time_start']).aggregate({'object_id':'first','satisfying_time_start':'first', 'data_quality': np.sum, 'attribute_id': 'count'})
             total_data_quality_df = total_data_quality_df.rename(columns={"data_quality": "total_data_quality", "attribute_id":"attriubte_count"})
 
+            print('2.9')
             total_data_quality_df.index = range(len(total_data_quality_df))
             total_data_quality_df = total_data_quality_df.sort_values(['total_data_quality','satisfying_time_start'], ascending=[False, True])
             total_data_quality_df = total_data_quality_df.drop_duplicates(subset=['object_id'], keep='first')
             long_table_df = pd.merge(long_table_df, total_data_quality_df, how='inner', on=['object_id','satisfying_time_start'])
 
             # remove the duplicates (=duplicate values within the satisfying time)
+            print('2.10')
             long_table_df['time_difference_of_start'] = abs(long_table_df['satisfying_time_start'] - long_table_df['valid_time_start'])
             long_table_df = long_table_df.sort_values(['data_quality','time_difference_of_start'], ascending=[False, True])
             long_table_df = long_table_df.drop_duplicates(subset=['object_id','attribute_id'], keep='first')
 
             # pivot the long table
+            print('2.11')
             long_table_df = long_table_df.reindex()
             long_table_df = long_table_df[['object_id','satisfying_time_start','attribute_id', 'string_value', 'numeric_value','boolean_value' ]]
             long_table_df.set_index(['object_id','satisfying_time_start','attribute_id'],inplace=True)
@@ -593,6 +589,7 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
 
             # there are columns for the different datatypes, determine which to keep
             columns_to_keep = []
+            print('2.12')
             for column in broad_table_df.columns:
                 print('v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^')
                 print(column)
