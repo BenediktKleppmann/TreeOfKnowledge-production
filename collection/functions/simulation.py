@@ -144,9 +144,10 @@ class Simulator:
 
 
                     if rule['learn_posterior']:
-                        # print('===================================================')
-                        # print('prior__object' + str(object_number) + '_rule' + str(rule_id))
-                        # print('===================================================')
+                        print('===================================================')
+                        print('prior__object' + str(object_number) + '_rule' + str(rule_id))
+                        print('===================================================')
+
                         new_prior = elfi.Prior('uniform', 0, 1, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
                         # new_prior = elfi.Prior('uniform', 0, 1, model=self.elfi_model, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
                         self.rule_priors.append(new_prior)
