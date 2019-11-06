@@ -594,6 +594,9 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             # there are columns for the different datatypes, determine which to keep
             columns_to_keep = []
             for column in broad_table_df.columns:
+                print('v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^')
+                print(column)
+                print(column[1])
                 attribute_data_type = Attribute.objects.get(id=column[1]).data_type
                 if attribute_data_type=='string' and column[0]=='string_value':
                     columns_to_keep.append(column)
