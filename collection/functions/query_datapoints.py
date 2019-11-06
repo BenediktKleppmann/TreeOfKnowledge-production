@@ -497,13 +497,15 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
         unfiltered_object_ids = cursor.execute('SELECT * FROM pg_catalog.pg_tables')
         print(str([str(entry) for entry in cursor.fetchall()]))
 
-        unfiltered_object_ids = cursor.execute('SELECT object_id FROM unfiltered_object_ids')
+        query = cursor.execute('SELECT object_id FROM unfiltered_object_ids')
+        unfiltered_object_ids = [entry[0] for entry in cursor.fetchall()]
         print(str([str(entry) for entry in cursor.fetchall()]))
+        print(unfiltered_object_ids)
         print('===========================================================================================')
 
 
         # apply filter-facts
-        unfiltered_object_ids = cursor.execute('SELECT object_id FROM unfiltered_object_ids')
+        # unfiltered_object_ids = cursor.execute('SELECT object_id FROM unfiltered_object_ids')
         if unfiltered_object_ids is None:
             return None
 
