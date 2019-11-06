@@ -540,6 +540,7 @@ def get_single_pdf(request):
 
     smooth_pdf = True
     if smooth_pdf:
+        print(histogram)
         hist_dist = scipy.stats.rv_histogram(histogram)
         hist_sample = hist_dist.rvs(size=10000)
         a, b, min_value, value_range = beta.fit(hist_sample) 
