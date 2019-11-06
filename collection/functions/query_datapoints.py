@@ -476,8 +476,9 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
     print('===========================================================================================')
 
     with connection.cursor() as cursor:
-
+        print('2.1')
         cursor.execute('DROP TABLE IF EXISTS temp.unfiltered_object_ids')
+        print('2.2')
         sql_string1 = '''
             CREATE TEMPORARY TABLE unfiltered_object_ids AS
                 SELECT DISTINCT object_id
@@ -486,8 +487,11 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
                   AND valid_time_start < %s
                   AND object_id IN (%s)
         ''' 
+        print('2.3')
         object_ids = [str(object_id) for object_id in object_ids]
+        print('2.4')
         print(sql_string1 % (specified_start_time, specified_end_time, ','.join(object_ids)))
+        print('2.5')
         cursor.execute(sql_string1 % (specified_start_time, specified_end_time, ','.join(object_ids)))
 
 
