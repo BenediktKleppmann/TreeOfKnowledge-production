@@ -554,10 +554,10 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             valid_ranges_df = valid_ranges_df[valid_ranges_df['satisfying_time_start'].notnull()]
 
             # make long table with all datapoints of the found objects
-            found_objects = [str(result[0]) for result in cursor.execute('SELECT object_id FROM unfiltered_object_ids')]
-            if len(found_objects) == 0:
+            unfiltered_object_ids = [str(result[0]) for result in unfiltered_object_ids]
+            if len(unfiltered_object_ids) == 0:
                 return None
-            sql_string3 = 'SELECT * FROM collection_data_point WHERE object_id IN (%s)' % (','.join(found_objects))
+            sql_string3 = 'SELECT * FROM collection_data_point WHERE object_id IN (%s)' % (','.join(unfiltered_object_ids))
             long_table_df = pd.read_sql_query(sql_string3, connection)
 
 
