@@ -51,7 +51,7 @@ class Simulator:
         self.simulation_id = simulation_id
         simulation_model_record = Simulation_model.objects.get(id=simulation_id)
 
-        # self.elfi_model = elfi.ElfiModel() 
+        self.elfi_model = elfi.ElfiModel() 
         self.objects_dict = json.loads(simulation_model_record.objects_dict)
         self.simulation_start_time = simulation_model_record.simulation_start_time
         self.simulation_end_time = simulation_model_record.simulation_end_time
@@ -146,10 +146,11 @@ class Simulator:
                     if rule['learn_posterior']:
                         print('===================================================')
                         print('prior__object' + str(object_number) + '_rule' + str(rule_id))
+                        print(str(len(self.rule_priors)))
                         print('===================================================')
 
-                        new_prior = elfi.Prior('uniform', 0, 1, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
-                        # new_prior = elfi.Prior('uniform', 0, 1, model=self.elfi_model, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
+                        # new_prior = elfi.Prior('uniform', 0, 1, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
+                        new_prior = elfi.Prior('uniform', 0, 1, model=self.elfi_model, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
                         self.rule_priors.append(new_prior)
         
                         rule['prior_index'] = number_of_priors
@@ -203,14 +204,14 @@ class Simulator:
         # PART 1 - Run the Simulation
         batch_size = len(self.df)
 
-        Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values)
-        # Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values, model=self.elfi_model)
-        S1 = elfi.Summary(self.unchanged, Y)
-        # S1 = elfi.Summary(self.unchanged, Y, model=self.elfi_model)
-        d = elfi.Distance(self.n_dimensional_distance, S1)
-        # d = elfi.Distance(self.n_dimensional_distance, S1, model=self.elfi_model)
-        rej = elfi.Rejection(d, batch_size=batch_size, seed=30052017)
-        # rej = elfi.Rejection(self.elfi_model, d, batch_size=batch_size, seed=30052017)
+        # Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values)
+        Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values, model=self.elfi_model)
+        # S1 = elfi.Summary(self.unchanged, Y)
+        S1 = elfi.Summary(self.unchanged, Y, model=self.elfi_model)
+        # d = elfi.Distance(self.n_dimensional_distance, S1)
+        d = elfi.Distance(self.n_dimensional_distance, S1, model=self.elfi_model)
+        # rej = elfi.Rejection(d, batch_size=batch_size, seed=30052017)
+        rej = elfi.Rejection(self.elfi_model, d, batch_size=batch_size, seed=30052017)
 
         result = rej.sample(nb_of_accepted_simulations, threshold=.5)
 
