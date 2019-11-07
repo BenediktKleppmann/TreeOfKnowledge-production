@@ -102,10 +102,6 @@ class Simulator:
             self.y0_values = [row for index, row in sorted(merged_periods_df.to_dict('index').items())]
 
         else:
-            print('################################################################')
-            print(self.df.columns)
-            print(self.y0_columns)
-            print('################################################################')
             df_copy = pd.DataFrame(self.df[self.y0_columns].copy())
             df_copy.columns = [col + 'period0' for col in df_copy.columns]
             df_copy = df_copy[[col for col in df_copy.columns if col.split('period')[0] in self.y0_columns]]
@@ -145,9 +141,6 @@ class Simulator:
 
 
                     if rule['learn_posterior']:
-                        print('===================================================')
-                        print('prior__object' + str(object_number) + '_rule' + str(rule_id))
-                        print('===================================================')
 
                         new_prior = elfi.Prior('uniform', 0, 1, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
                         # new_prior = elfi.Prior('uniform', 0, 1, model=self.elfi_model, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
@@ -188,13 +181,10 @@ class Simulator:
 
     def run(self):
 
-        print('len(self.rule_priors) = ' + str(len(self.rule_priors)))
         if len(self.rule_priors) > 0:
             self.__learn_likelihoods(10000)
 
-        print('len(self.rule_priors) = ' + str(len(self.rule_priors)))
         (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(1000)
-        print('len(self.rule_priors) = ' + str(len(self.rule_priors)))
         self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df)
 
 
@@ -265,7 +255,6 @@ class Simulator:
     def __post_process_data(self, simulation_data_df, triggered_rules_df, errors_df):
 
         # rule_infos
-        print('12')
         triggered_rules_df = triggered_rules_df[triggered_rules_df['triggered_rule'].notnull()]
         rule_ids = [triggered_rule_info['id'] for triggered_rule_info  in list(triggered_rules_df['triggered_rule'])]
         rule_ids = list(set(rule_ids))
@@ -277,7 +266,6 @@ class Simulator:
 
 
         # triggered_rules
-        print('13')
         triggered_rules_per_period = triggered_rules_df.groupby(['batch_number','initial_state_id','attribute_id','period']).aggregate({'initial_state_id':'first',
                                                                                                         'batch_number':'first',
                                                                                                         'attribute_id':'first',
@@ -296,7 +284,6 @@ class Simulator:
 
 
         # simulation_data
-        print('14')
         simulation_data = {}
         attribute_ids = [attr_id for attr_id in simulation_data_df.columns if attr_id not in ['batch_number','initial_state_id','attribute_id','period', 'randomNumber', 'cross_join_column']]
         aggregation_dict = {attr_id:list for attr_id in attribute_ids}
@@ -316,7 +303,6 @@ class Simulator:
 
 
         # errors
-        print('15')
         errors = {}
         errors['score'] = 1 - errors_df['error'].mean()
         errors['correct_simulations'] = list(errors_df.loc[errors_df['error'] < 0.25, 'simulation_number'])
@@ -325,7 +311,6 @@ class Simulator:
 
 
         # Front-End too slow?
-        print('16')
         number_of_megabytes =len(json.dumps(simulation_data))/1000000
         if number_of_megabytes > 3:
             number_of_simulations_to_keep = int(len(simulation_data) * 3 / number_of_megabytes)
@@ -335,7 +320,7 @@ class Simulator:
             # simulation_data = {k: d[k]) for k in keys if k in d} simulation_data
             # triggered_rules = triggered_rules[:number_of_simulations_to_send]
 
-        print('17')
+
         simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
         simulation_model_record.just_learned_rules = json.dumps(self.just_learned_rules)
         simulation_model_record.rule_infos = json.dumps(rule_infos)
@@ -456,10 +441,6 @@ class Simulator:
 
     #  Monte-Carlo  ---------------------------------------------------------------------------------
     def __run_monte_carlo_simulation(self, nb_of_simulations=1000):
-        print('################################################################')
-        print(self.df.columns)
-        print(self.y0_columns)
-        print('################################################################')
 
         y0 = np.asarray(self.df[self.y0_columns].copy())
         batch_size = len(y0)
@@ -546,12 +527,7 @@ class Simulator:
                     calculated_values = list(df[rule['column_to_change']])
                     errors = self.error_of_single_values(np.array(calculated_values), rule['column_to_change'], period)
 
-                    # print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-                    # print(rule['id'])
-                    # print(period)
-                    # print(np.array(calculated_values))
-                    # print(errors)
-                    # print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+
                     triggered_rule_infos_df = pd.DataFrame({'condition_satisfied': condition_satisfying_rows,
                                                             'id':[rule['id']]* batch_size,
                                                             'pt': satisfying_rows,          # pt = probability_triggered
@@ -596,7 +572,7 @@ class Simulator:
               
             print('10')  
             errors = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), self.y0_values)
-            print('10.9') 
+
             # print('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
             # y0_values_in_simulation_dict = y0_values_in_simulation.to_dict('records')
             # with open("C:/Users/l412/Documents/2 temporary stuff/2019-08-13/y0_values_in_simulation.txt", "w") as text_file:
@@ -612,7 +588,7 @@ class Simulator:
             errors_df = errors_df.append(error_df)
 
 
-            print('10.10') 
+
         return (simulation_data_df, triggered_rules_df, errors_df)
 
 

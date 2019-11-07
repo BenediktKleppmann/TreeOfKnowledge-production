@@ -473,36 +473,21 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
                   AND object_id IN (%s)
         ''' 
         object_ids = [str(object_id) for object_id in object_ids]
-        print(sql_string1 % (specified_start_time, specified_end_time, ','.join(object_ids)))
         cursor.execute(sql_string1 % (specified_start_time, specified_end_time, ','.join(object_ids)))
 
 
-        print('========================================= TESTING =========================================')
-
-        # unfiltered_object_ids = cursor.execute('SELECT * FROM pg_catalog.pg_tables')
-        # print(str([str(entry) for entry in cursor.fetchall()]))
-
+        # apply filter-facts
         query = cursor.execute('SELECT object_id FROM unfiltered_object_ids')
         unfiltered_object_ids = cursor.fetchall()
-        print(str([str(entry) for entry in cursor.fetchall()]))
-        print(unfiltered_object_ids)
-        print('===========================================================================================')
-
-
-        # apply filter-facts
-        # unfiltered_object_ids = cursor.execute('SELECT object_id FROM unfiltered_object_ids')
         if unfiltered_object_ids is None:
             return None
 
         else:
-            print('2.1')
-            print(str([result[0] for result in unfiltered_object_ids]))
             valid_ranges_df = pd.DataFrame({'object_id':[result[0] for result in unfiltered_object_ids]})
             valid_ranges_df['valid_range'] = [[[specified_start_time,specified_end_time]] for i in valid_ranges_df.index]
 
-            print('2.2')
+
             for fact_index, filter_fact in enumerate(filter_facts):
-                print('2.3')
 
                 sql_string2 = '''
                         SELECT object_id, '[' || GROUP_CONCAT('[' || valid_time_start || ',' || valid_time_end || ']', ',') || ']' AS new_valid_range
@@ -525,7 +510,6 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
                 new_valid_ranges_df = pd.read_sql_query(sql_string2, connection)
                 new_valid_ranges_df['new_valid_range'] = new_valid_ranges_df['new_valid_range'].apply(json.loads)
                 new_valid_ranges_df['object_id'] = new_valid_ranges_df['object_id'].astype(int)
-                print('2.4')
                 
                 # find the intersecting time ranges (= the overlap between the known valid_ranges and the valid_ranges from the new filter fact)
                 valid_ranges_df = pd.merge(valid_ranges_df, new_valid_ranges_df, on='object_id', how='left')
@@ -591,9 +575,6 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             columns_to_keep = []
             print('2.12')
             for column in broad_table_df.columns:
-                print('v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^')
-                print(column)
-                print(column[1])
                 attribute_data_type = Attribute.objects.get(id=column[1]).data_type
                 if attribute_data_type=='string' and column[0]=='string_value':
                     columns_to_keep.append(column)
@@ -616,8 +597,6 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
 
             # insert missing columns
-            print('=====  broad_table_df  =====================================================================')
-            print(object_type_id)
             list_of_parent_object_types = [el['id'] for el in get_from_db.get_list_of_parent_objects(object_type_id)]
             all_attribute_ids = Attribute.objects.filter(first_applicable_object_type__in = list_of_parent_object_types).values_list('id', flat=True)
             all_attribute_ids = [str(attribute_id) for attribute_id in all_attribute_ids]
@@ -627,8 +606,7 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
                     broad_table_df[attribute_id] = None
 
             
-            print(list(broad_table_df.columns))
-            print('============================================================================================')
+
             return broad_table_df
 
 
