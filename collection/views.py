@@ -1285,6 +1285,7 @@ def edit_simulation(request, simulation_id):
     if request.method == 'POST':
         the_simulator = simulation.Simulator(simulation_id)
         the_simulator.run()
+        print('simulation completed, redirecting..')
         return redirect('analyse_simulation', simulation_id=simulation_id)
 
     
@@ -1297,8 +1298,10 @@ def edit_simulation(request, simulation_id):
 
 @login_required
 def analyse_simulation(request, simulation_id):
+    print('analyse_simulation')
    
     if request.method == 'POST':
+        print('analyse_simulation - post')
         the_simulator = simulation.Simulator(simulation_id)
         the_simulator.run()
         simulation_model = Simulation_model.objects.get(id=simulation_id)
@@ -1316,8 +1319,9 @@ def analyse_simulation(request, simulation_id):
         # simulation_model.attribute_errors = json.dumps(attribute_errors)
         # simulation_model.save()
         # return redirect('analyse_simulation', simulation_id=simulation_id)
-
+    print('analyse_simulation - not post')
     simulation_model = Simulation_model.objects.get(id=simulation_id)
+    print('got the model, now loading page')
     return render(request, 'tree_of_knowledge_frontend/analyse_simulation.html', {'simulation_model':simulation_model})
 
 
