@@ -1286,7 +1286,7 @@ def edit_simulation(request, simulation_id):
         the_simulator = simulation.Simulator(simulation_id)
         the_simulator.run()
         print('simulation completed, redirecting..')
-        return redirect('https://www.treeofknowledge.ai/tool/analyse_simulation', simulation_id=simulation_id)
+        return redirect('http://www.treeofknowledge.ai/tool/analyse_simulation', simulation_id=simulation_id)
         # return redirect('analyse_simulation', simulation_id=simulation_id)
 
     
