@@ -364,8 +364,9 @@ class Simulator:
         self.number_of_batches += 1
 
 
-        for rule in rules:
-            rule['rule_was_used_in_simulation'] = [False]*batch_size
+        for rule_np in range(len(rules)):
+            rules[rule_np]['rule_was_used_in_simulation'] = [False]*batch_size
+            rule = rules[rule_np]
 
             if rule['learn_posterior']:
                 df['triggerThresholdForRule' + str(rule['id'])] = rule_priors[rule['prior_index']]
