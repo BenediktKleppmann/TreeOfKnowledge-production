@@ -1286,7 +1286,8 @@ def edit_simulation(request, simulation_id):
         the_simulator = simulation.Simulator(simulation_id)
         the_simulator.run()
         print('simulation completed, redirecting..')
-        return redirect('analyse_simulation', simulation_id=simulation_id)
+        return redirect('https://www.treeofknowledge.ai/tool/analyse_simulation', simulation_id=simulation_id)
+        # return redirect('analyse_simulation', simulation_id=simulation_id)
 
     
     available_object_types = get_from_db.get_most_common_object_types()
