@@ -205,6 +205,7 @@ class Simulator:
         batch_size = len(self.df)
 
         # Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values)
+        print(elfi.draw(self.elfi_model))
         Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values, model=self.elfi_model)
         # S1 = elfi.Summary(self.unchanged, Y)
         S1 = elfi.Summary(self.unchanged, Y, model=self.elfi_model)
