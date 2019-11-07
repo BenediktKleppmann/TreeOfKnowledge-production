@@ -573,16 +573,16 @@ class Simulator:
             print('10')  
             errors = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), self.y0_values)
 
-            # print('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+            print('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
             # y0_values_in_simulation_dict = y0_values_in_simulation.to_dict('records')
             # with open("C:/Users/l412/Documents/2 temporary stuff/2019-08-13/y0_values_in_simulation.txt", "w") as text_file:
             #     text_file.write(json.dumps(y0_values_in_simulation_dict))
 
             # with open("C:/Users/l412/Documents/2 temporary stuff/2019-08-13/y0_values.txt", "w") as text_file:
             #     text_file.write(json.dumps(self.y0_values))
-            # print(len(df.index))
-            # print(len(list(errors)))
-            # print('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+            print(len(df.index))
+            print(len(list(errors)))
+            print('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
             error_df = pd.DataFrame({  'simulation_number': [str(index) + '-' + str(batch_number) for index in df.index],
                                         'error': errors})
             errors_df = errors_df.append(error_df)

@@ -19,6 +19,22 @@
 	<script type="text/javascript" src="{% static 'js/bootstrap-3.4.0.min.js' %}"></script>
 	-->
 	
+	<style>
+		.navbar-default .navbar-nav > li > a {
+			color: rgb(194, 188, 174) !important;
+			font-size: 16px;
+			padding-top: 18px;
+			padding-bottom: 18px;
+			padding-left: 25px;
+			padding-right: 25px;
+		}
+		
+		#profile-drop-down {
+			padding: 13px;
+			font-size: 30px;
+		}
+	</style>	
+	
 	{% block additionalcss %}{% endblock %}
 	<link rel="shortcut icon" href="{% static 'images/logo_with_background.png'%}">
 
@@ -62,7 +78,7 @@
           </ul>
 		   <ul class="nav navbar-nav navbar-right">
 			<li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user"></i> <span class="caret" style="border-top-color:rgb(226,221,204);"></span></a>
+                <a id="profile-drop-down" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user"></i> <span class="caret" style="border-top-color:rgb(226,221,204);"></span></a>
                 <ul class="dropdown-menu">
 				  <li><a href="{% url 'profile_and_settings' %}">Profile & Settings</a></li>
                   <li><a href="#">Change Password</a></li>
