@@ -186,6 +186,7 @@ class Simulator:
 
         (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(1000)
         self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df)
+        print('end of simulation')
 
 
 
@@ -255,6 +256,7 @@ class Simulator:
     def __post_process_data(self, simulation_data_df, triggered_rules_df, errors_df):
 
         # rule_infos
+        print('__post_process_data1')
         triggered_rules_df = triggered_rules_df[triggered_rules_df['triggered_rule'].notnull()]
         rule_ids = [triggered_rule_info['id'] for triggered_rule_info  in list(triggered_rules_df['triggered_rule'])]
         rule_ids = list(set(rule_ids))
@@ -266,13 +268,14 @@ class Simulator:
 
 
         # triggered_rules
+        print('__post_process_data2')
         triggered_rules_per_period = triggered_rules_df.groupby(['batch_number','initial_state_id','attribute_id','period']).aggregate({'initial_state_id':'first',
                                                                                                         'batch_number':'first',
                                                                                                         'attribute_id':'first',
                                                                                                         'period':'first',
                                                                                                         'triggered_rule':list,
                                                                                                         'correct_value':'first',})  
-
+        print('__post_process_data3')
         attribute_dict = {attribute_id: {} for attribute_id in triggered_rules_df['attribute_id'].unique().tolist()}
         triggered_rules = {}
         for batch_number in triggered_rules_df['batch_number'].unique().tolist():
@@ -284,6 +287,7 @@ class Simulator:
 
 
         # simulation_data
+        print('__post_process_data4')
         simulation_data = {}
         attribute_ids = [attr_id for attr_id in simulation_data_df.columns if attr_id not in ['batch_number','initial_state_id','attribute_id','period', 'randomNumber', 'cross_join_column']]
         aggregation_dict = {attr_id:list for attr_id in attribute_ids}
@@ -303,6 +307,7 @@ class Simulator:
 
 
         # errors
+        print('__post_process_data5')
         errors = {}
         errors['score'] = 1 - errors_df['error'].mean()
         errors['correct_simulations'] = list(errors_df.loc[errors_df['error'] < 0.25, 'simulation_number'])
@@ -311,6 +316,7 @@ class Simulator:
 
 
         # Front-End too slow?
+        print('__post_process_data6')
         number_of_megabytes =len(json.dumps(simulation_data))/1000000
         if number_of_megabytes > 3:
             number_of_simulations_to_keep = int(len(simulation_data) * 3 / number_of_megabytes)
@@ -321,6 +327,7 @@ class Simulator:
             # triggered_rules = triggered_rules[:number_of_simulations_to_send]
 
 
+        print('__post_process_data7')
         simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
         simulation_model_record.just_learned_rules = json.dumps(self.just_learned_rules)
         simulation_model_record.rule_infos = json.dumps(rule_infos)
@@ -329,6 +336,7 @@ class Simulator:
         simulation_model_record.correct_values = json.dumps(correct_values)
         simulation_model_record.errors = json.dumps(errors)
         simulation_model_record.save()
+        print('__post_process_data8')
 
 
 
