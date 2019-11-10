@@ -123,18 +123,21 @@ def get_attributes_concluding_format(attribute_id, object_type_id, upload_id):
         parent_object_record = Object_types.objects.get(id=parent_object['id'])
         li_attr = json.loads(parent_object_record.li_attr)
         if (li_attr != {}):
+            print('4.3.1')
             (format_specification, comments) = compare_facts_with_format_specification(li_attr['attribute_values'], attribute_id,  parent_object_record.name, format_specification, comments)
            
     # Additional Format Restrictions from the Meta Data
     print('4.4')
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id)
     meta_data_facts_list = json.loads(uploaded_dataset.meta_data_facts)
+    print('4.5')
     (format_specification, comments) = compare_facts_with_format_specification(meta_data_facts_list, attribute_id, "Meta Data", format_specification, comments)
 
-    print('4.5')
+    print('4.6')
     concluding_format = {}
     concluding_format['format_specification'] = format_specification
     concluding_format['comments'] = comments
+    print('4.7')
     return concluding_format
 
 
