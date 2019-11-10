@@ -291,7 +291,7 @@
 			<div class="col-sm-6">
 				<div class="top-4-argument-title">Don't just make predictions,<br>fully understand the system!</div>
 				<div class="top-4-argument-text">At the core of Tree of Knowledge lies a Probabilistic Programming engine which allows users to create simulation-based models. With this type of model you can easily model and understand complex behaviours and interactions. 
-				Furthermore, the simulation-based models make it is easy to investigate phenomena that aren't directly observed or that are entangled with other phenomena - you no longer have to control for variables, use instrumental variables, etc.
+				Furthermore, the simulation-based models make it is easy to investigate phenomena that are not directly observed or that are entangled with other phenomena - you no longer have to control for variables, use instrumental variables, etc.
 				<!--
 				Also, it is no longer required 
 				It also allows learning from messy real-world data without having to isolate phenomena (by e.g. ). Due to the nature of these models the phenomenon of interest doesn't even have to be directly observed or relate to an observed variable.-->
@@ -413,7 +413,7 @@
 						The Rule Learning can also easily be used for hypothesis testing: You can formulate any relation, dependence or behaviour as a new rule and the system will learn the probability that it is true.
 						Actually, due to the Bayesian inference and updating, the system doesn't only learn the probabilities that rules are true but also the exact confidence for these predictions (in form of pdfs - see figure 2).
 						<br>
-						Using simulations has the added advantage that behaviours/phenomena can be tested even if they weren't directly observed or if they co-occur with other phenomena.
+						Using simulations has the added advantage that behaviours/phenomena can be tested even if they were not directly observed or if they co-occur with other phenomena.
 					</div>		
 						
 					
@@ -461,7 +461,7 @@
 				<br>
 				<br>
 				<a href="{% static 'images/probability_distribution.png'%}"><img id="probability_distribution-image" src="{% static 'images/probability_distribution.png'%}" class="img-responsive mr-3 img-thumbnail"></a><br>
-				Figure 2: This probability density function (pdf) shows that the corresponding rule is likely to be 100% true, but the probability of it being true could also be a bit lower. The more data and simulations a rule has been evaluated on, the pointier its pdf it becomes i.e. the more confidently it's probability can be determined.
+				Figure 2: This probability density function (pdf) shows that the corresponding rule is likely to be 100% true, but the probability of it being true could also be lower (tail to the left). The more data and simulations a rule has been evaluated on, the narrower its pdf becomes i.e. the more precisely its probability can be determined.
 			</div>
 		</div>
 		<br>
@@ -472,7 +472,7 @@
 			<h2 class="yellowish">Knowledge Base</h2>
 		</div>
 		<div class="how-it-works-block">
-			Above we mentioned that there is a centralized repository for object behaviours. The second key component of the Tree of Knowledge's holistic model is the knowledge base - a centralized store for all the data.<br>
+			As already mentioned, there is a centralized repository for object behaviours. The second key component of the Tree of Knowledge's holistic model is the knowledge base - a centralized store for all the data.<br>
 			<br>
 			A knowledge base is a database which stores data in an integrated fashion. As with existing knowledge bases (dbpedia, yago, etc.), any structured data can be uploaded to the Tree of Knowledge's knowledge base. 
 			The Tree of Knowledge's knowledge base, however, goes much further: for any datapoint in the knowledge base we know everything: when it was observed, what attribute/relation of what specific object was being observed and much more.
@@ -487,12 +487,12 @@
 			<h2 class="yellowish">Growing the most detailed and accurate model</h2>
 		</div>
 		<div class="how-it-works-block">
-			The holistic model behind the Tree of Knowledge grows the more it's used. It is the only existing data-based model that whose capability and accuracy grow in this way.<br>
+			The holistic model behind the Tree of Knowledge grows the more it is used. It is the only existing data-based model that whose capability and accuracy grow in this way.<br>
 			As users upload new datasets to the knowledge base it will grow to an extensive data portal. It has the capability of accurately cataloging most of human knowledge.<br>
 			<br>
 			The growth/refinement of object behaviours is even more significant!<br>
 			As users make new models portraying the objects in new scenarios (the scenarios they are trying to understand/for which they have data), 
-			the object's behaviour gets increasingly comprehensive and exact. If objects have been simulated and evaluated in sufficiently many environments, we suspect that it will be possible to create the most exact economic models with them!
+			the object's behaviour gets increasingly comprehensive and exact. If objects have been simulated and evaluated in sufficiently many environments, we expect that it will be possible to create the most accurate economic models with them!
 		</div>
 		<br>
 		<div class="how-it-works-title">
@@ -503,9 +503,9 @@
 		</div>
 		<div class="how-it-works-block">
 			The Tree of Knowledge uses likelihood-free Bayesian inference and Bayesian updating to determine the rule probabilities. 
-			This is a robust, statistically rigorous formalism that exactly captures all uncertainties (those originating from imperfect knowledge of the world, and those from inherent randomness).
+			This is a robust, statistically rigorous formalism that captures all uncertainties (those originating from imperfect knowledge of the world, and those from inherent randomness).
 			<br><br>
-			When making predictions with Tree of Knowledge, the Monte-Carlo simulation engine exactly captures and propagates all previously learned uncertainties => the predicted outcomes and the uncertainty of these predictions correspond exactly to the true uncertainty.
+			When making predictions with Tree of Knowledge, the Monte-Carlo simulation engine captures and propagates all previously learned uncertainties => the predicted outcomes and the uncertainty of these predictions correspond exactly to the true uncertainty.
 		    <!--
 			The increasing exactness of behaviour rules can be observed in the narrower proability density functions associated with them.<br>
 			In other words: the uncertainty about behaviour rules (due to imperfect knowledge of the world) are always accurately determined through likelyhood-free bayesian inference and bayesian updating.<br>
