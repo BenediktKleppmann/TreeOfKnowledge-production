@@ -651,16 +651,23 @@ def find_suggested_attributes2(request):
     object_type_id = request_body['object_type_id']
     upload_id = int(request_body['upload_id'])
     column_values = request_body['column_values']
+    print('1')
 
     list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
     list_of_parent_object_ids = [el['id'] for el in list_of_parent_objects]
   
+    print('2')
     response = []
     attributes = Attribute.objects.all().filter(first_applicable_object_type__in=list_of_parent_object_ids)
 
+    print('3')
     for attribute in attributes:
+        print('4')
         concluding_format = get_from_db.get_attributes_concluding_format(attribute.id, object_type_id, upload_id)
+        print('5')
         response.append({'attribute_id': attribute.id, 'attribute_name': attribute.name, 'description': attribute.description, 'format': concluding_format['format_specification'], 'comments': concluding_format['comments'], 'data_type': attribute.data_type, 'object_type_id_of_related_object': attribute.first_relation_object_type})
+
+    print('6')
     return HttpResponse(json.dumps(response))
 
 
