@@ -127,10 +127,10 @@ def get_attributes_concluding_format(attribute_id, object_type_id, upload_id):
             (format_specification, comments) = compare_facts_with_format_specification(li_attr['attribute_values'], attribute_id,  parent_object_record.name, format_specification, comments)
            
     # Additional Format Restrictions from the Meta Data
-    print('4.4')
+    # The next SECTION WORKS WELL
+    # it's however TEMPORARILY REMOVED, because it's TOO SLOW
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id)
     meta_data_facts_list = json.loads(uploaded_dataset.meta_data_facts)
-    print('4.5')
     (format_specification, comments) = compare_facts_with_format_specification(meta_data_facts_list, attribute_id, "Meta Data", format_specification, comments)
 
     print('4.6')
