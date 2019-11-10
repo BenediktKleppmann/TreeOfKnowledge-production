@@ -107,15 +107,18 @@ def compare_facts_with_format_specification(list_of_facts, attribute_id, source_
 
 
 def get_attributes_concluding_format(attribute_id, object_type_id, upload_id):
+    print('4.1')
     list_of_parent_objects = get_list_of_parent_objects(object_type_id)
     list_of_parent_objects.reverse()
 
+    print('4.2')
     attribute_record = Attribute.objects.get(id=attribute_id)
     constraint_dict =  json.loads(attribute_record.format_specification)
     format_specification  = constraint_dict['fields']['column']
     comments = {'min':'','max':'','allowed_values':''}
     
     # Additional Format Restrictions from the Object Type 
+    print('4.3')
     for parent_object in list_of_parent_objects:
         parent_object_record = Object_types.objects.get(id=parent_object['id'])
         li_attr = json.loads(parent_object_record.li_attr)
@@ -123,10 +126,12 @@ def get_attributes_concluding_format(attribute_id, object_type_id, upload_id):
             (format_specification, comments) = compare_facts_with_format_specification(li_attr['attribute_values'], attribute_id,  parent_object_record.name, format_specification, comments)
            
     # Additional Format Restrictions from the Meta Data
+    print('4.4')
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id)
     meta_data_facts_list = json.loads(uploaded_dataset.meta_data_facts)
     (format_specification, comments) = compare_facts_with_format_specification(meta_data_facts_list, attribute_id, "Meta Data", format_specification, comments)
 
+    print('4.5')
     concluding_format = {}
     concluding_format['format_specification'] = format_specification
     concluding_format['comments'] = comments
@@ -223,7 +228,6 @@ def get_single_pdf(simulation_id, object_number, rule_id):
     if len(likelihood_functions) > 0:
 
         list_of_probabilities = json.loads(likelihood_functions[0]['list_of_probabilities'])
-        list_of_probabilities = np.minimum(list_of_probabilities, 1000000)
         histogram = (list(list_of_probabilities), list(np.linspace(0,1,31)))
 
         x_values = np.linspace(0,0.966666666666667,30) + 1/60
