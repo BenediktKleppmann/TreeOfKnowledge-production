@@ -63,7 +63,7 @@ def find_matching_entities(match_attributes, match_values):
             flattened_list = [y for x in rows_to_insert for y in x]
             print(insert_statement)
             print(flattened_list)
-            cursor.execute(insert_statement % flattened_list)
+            cursor.execute(insert_statement % tuple(flattened_list))
 
 
 
