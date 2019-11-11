@@ -10,6 +10,7 @@ import json
 import sqlite3
 import itertools
 import math
+from django.conf import settings
 
 
 def find_matching_entities(match_attributes, match_values):
@@ -77,19 +78,34 @@ def find_matching_entities(match_attributes, match_values):
         cursor.execute(matched_data_points_string)
 
 
+        # group_concat (sqlite) vs. string_agg (postgres)
+        if settings.DB_CONNECTION_URL[:8] == 'postgres':
+            matched_objects_string = """
+                CREATE TEMPORARY TABLE matched_objects AS
+                    SELECT  row_number, 
+                            object_id, 
+                            '{"object_id":' || object_id || ', ' || string_agg(dictionary_element, ',') || '}' AS object_dict, 
+                            COUNT(*) AS number_of_attributes_found,
+                            SUM(data_quality) AS data_quality,
+                            RANK () OVER (PARTITION BY row_number ORDER BY SUM(data_quality) DESC) AS match_number
+                    FROM matched_data_points
+                    GROUP BY row_number, object_id;
+            """
+            cursor.execute(matched_objects_string)
+        else:
+            matched_objects_string = """
+                CREATE TEMPORARY TABLE matched_objects AS
+                    SELECT  row_number, 
+                            object_id, 
+                            '{"object_id":' || object_id || ', ' || group_concat(dictionary_element) || '}' AS object_dict, 
+                            COUNT(*) AS number_of_attributes_found,
+                            SUM(data_quality) AS data_quality,
+                            RANK () OVER (PARTITION BY row_number ORDER BY data_quality DESC) AS match_number
+                    FROM matched_data_points
+                    GROUP BY row_number, object_id;
+            """
+            cursor.execute(matched_objects_string)
 
-        matched_objects_string = """
-            CREATE TEMPORARY TABLE matched_objects AS
-                SELECT  row_number, 
-                        object_id, 
-                        '{"object_id":' || object_id || ', ' || string_agg(dictionary_element, ',') || '}' AS object_dict, 
-                        COUNT(*) AS number_of_attributes_found,
-                        SUM(data_quality) AS data_quality,
-                        RANK () OVER (PARTITION BY row_number ORDER BY data_quality DESC) AS match_number
-                FROM matched_data_points
-                GROUP BY row_number, object_id;
-        """
-        cursor.execute(matched_objects_string)
 
 
 
