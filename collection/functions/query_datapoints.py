@@ -55,7 +55,7 @@ def find_matching_entities(match_attributes, match_values):
                 VALUES ''' 
             insert_statement += ','.join(['(%s, %s, %s)']*len(rows_to_insert))
             cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
-            print(insert_statement)
+            print(connection.queries)
 
 
 
