@@ -58,6 +58,37 @@ def find_matching_entities(match_attributes, match_values):
 
 
         # match table_to_match with collection_data_point   ----------------------------------------
+        # ---- TESTING ----------------------------------------------------
+        print('- -3 ------------------------------------------------------------------')
+        get_matching_objects_json = """
+            SELECT * 
+            FROM table_to_match
+            LIMIT 10
+        """
+        result = cursor.execute(get_matching_objects_json)
+        print(str(result))
+
+
+        print('- -2 ------------------------------------------------------------------')
+        get_matching_objects_json = """
+            SELECT * 
+            FROM collection_data_point
+            WHERE attribute_id = '22' AND value_as_string='Afghanistan'
+            LIMIT 10
+        """
+        result = cursor.execute(get_matching_objects_json)
+        print(str(result))
+
+        print('- -1 ------------------------------------------------------------------')
+        get_matching_objects_json = """
+            SELECT * 
+            FROM table_to_match
+            WHERE attribute_id = '22' AND value_as_string='Afghanistan'
+            LIMIT 10
+        """
+        result = cursor.execute(get_matching_objects_json)
+        print(str(result))
+        # -----------------------------------------------------------------
 
         matched_data_points_string = """
             CREATE TEMPORARY TABLE matched_data_points AS
