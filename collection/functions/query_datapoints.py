@@ -23,6 +23,7 @@ def find_matching_entities(match_attributes, match_values):
     with connection.cursor() as cursor:
 
         # create table_to_match   ----------------------------------------
+        cursor.execute('DROP TABLE IF EXISTS table_to_match')
         create_match_table = '''
             CREATE TEMPORARY TABLE table_to_match (
                row_number INT,
@@ -54,6 +55,7 @@ def find_matching_entities(match_attributes, match_values):
                 VALUES ''' 
             insert_statement += ','.join(['(%s, %s, %s)']*len(rows_to_insert))
             cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+            print(insert_statement)
 
 
 
