@@ -82,6 +82,17 @@ def find_matching_entities(match_attributes, match_values):
         # group_concat (sqlite) vs. string_agg (postgres)
         if settings.DB_CONNECTION_URL[:8] == 'postgres':
               
+            # ---- TESTING ----------------------------------------------------
+            print('- 0 ------------------------------------------------------------------')
+            get_matching_objects_json = """
+                SELECT * 
+                FROM matched_data_points
+                LIMIT 10
+            """
+            result = cursor.execute(get_matching_objects_json)
+            print(str(result))
+            # -----------------------------------------------------------------
+
             matched_objects_string = """
                 CREATE TEMPORARY TABLE matched_objects AS
                     SELECT  row_number, 
@@ -95,6 +106,16 @@ def find_matching_entities(match_attributes, match_values):
             """
             cursor.execute(matched_objects_string)
 
+            # ---- TESTING ----------------------------------------------------
+            print('- 1 ------------------------------------------------------------------')
+            get_matching_objects_json = """
+                SELECT * 
+                FROM matched_objects
+                LIMIT 10
+            """
+            result = cursor.execute(get_matching_objects_json)
+            print(str(result))
+            # -----------------------------------------------------------------
 
             matched_rows_string = """
                 CREATE TEMPORARY TABLE matched_rows AS
@@ -108,6 +129,16 @@ def find_matching_entities(match_attributes, match_values):
             """
             cursor.execute(matched_rows_string)
 
+            # ---- TESTING ----------------------------------------------------
+            print('- 2 ------------------------------------------------------------------')
+            get_matching_objects_json = """
+                SELECT * 
+                FROM matched_rows
+                LIMIT 10
+            """
+            result = cursor.execute(get_matching_objects_json)
+            print(str(result))
+            # -----------------------------------------------------------------
 
             row_number_string = """
                 CREATE TEMPORARY TABLE row_number AS
@@ -117,6 +148,16 @@ def find_matching_entities(match_attributes, match_values):
             """
             cursor.execute(row_number_string)
 
+            # ---- TESTING ----------------------------------------------------
+            print('- 3 ------------------------------------------------------------------')
+            get_matching_objects_json = """
+                SELECT * 
+                FROM row_number
+                LIMIT 10
+            """
+            result = cursor.execute(get_matching_objects_json)
+            print(str(result))
+            # -----------------------------------------------------------------
 
             get_matching_objects_json = """
                 SELECT '[' || string_agg(foo.matching_objects_json, ',') || ']' AS matching_objects_json
