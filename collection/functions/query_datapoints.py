@@ -49,7 +49,7 @@ def find_matching_entities(match_attributes, match_values):
 
             rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
             insert_statement = '''
-                INSERT INTO temp.table_to_match (row_number, attribute_id, value_as_string) 
+                INSERT INTO table_to_match (row_number, attribute_id, value_as_string) 
                 VALUES ''' 
             insert_statement += ','.join(['(%s, %s, %s)']*len(rows_to_insert))
             cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
@@ -66,7 +66,7 @@ def find_matching_entities(match_attributes, match_values):
                         dp.value_as_string, 
                         '"' || dp.attribute_id || '":"' || dp.value_as_string || '"' AS dictionary_element,
                         MAX(data_quality) AS data_quality
-                FROM temp.table_to_match AS ttm
+                FROM table_to_match AS ttm
                 LEFT JOIN collection_data_point AS dp
                 ON ttm.attribute_id = dp.attribute_id AND 
                    ttm.value_as_string = dp.value_as_string 
@@ -86,7 +86,7 @@ def find_matching_entities(match_attributes, match_values):
                         COUNT(*) AS number_of_attributes_found,
                         SUM(data_quality) AS data_quality,
                         RANK () OVER (PARTITION BY row_number ORDER BY data_quality DESC) AS match_number
-                FROM temp.matched_data_points
+                FROM matched_data_points
                 GROUP BY row_number, object_id;
         """
         cursor.execute(matched_objects_string)
@@ -98,7 +98,7 @@ def find_matching_entities(match_attributes, match_values):
                 SELECT 
                     row_number, 
                     '[' || group_concat(object_dict) || ']'  AS matching_objects_json
-                FROM temp.matched_objects
+                FROM matched_objects
                 WHERE number_of_attributes_found > 0
                   AND match_number <=3
                 GROUP BY row_number;
@@ -111,7 +111,7 @@ def find_matching_entities(match_attributes, match_values):
         row_number_string = """
             CREATE TEMPORARY TABLE row_number AS
                 SELECT DISTINCT row_number
-                FROM temp.table_to_match  
+                FROM table_to_match  
                 ORDER BY row_number;
         """
         cursor.execute(row_number_string)
@@ -122,8 +122,8 @@ def find_matching_entities(match_attributes, match_values):
             SELECT '[' || group_concat(matching_objects_json) || ']' AS matching_objects_json
             FROM (
                 SELECT  COALESCE(mr.matching_objects_json, '[]') AS matching_objects_json
-                FROM temp.row_number AS rn
-                LEFT JOIN temp.matched_rows  AS mr
+                FROM row_number AS rn
+                LEFT JOIN matched_rows  AS mr
                 ON rn.row_number = mr.row_number
                 ORDER BY rn.row_number
             );
