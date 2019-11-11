@@ -50,12 +50,18 @@ def find_matching_entities(match_attributes, match_values):
         for chunk_index in range(number_of_chunks):
 
             rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
+            # insert_statement = '''
+            #     INSERT INTO table_to_match (row_number, attribute_id, value_as_string) 
+            #     VALUES ''' 
+            # insert_statement += ','.join(['(%s, %s, %s)']*len(rows_to_insert))
+            # cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+            print(connection.queries)
             insert_statement = '''
                 INSERT INTO table_to_match (row_number, attribute_id, value_as_string) 
                 VALUES ''' 
-            insert_statement += ','.join(['(%s, %s, %s)']*len(rows_to_insert))
-            cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
-            print(connection.queries)
+            insert_statement += ','.join(['(%s, "%s", "%s")']*len(rows_to_insert))
+            flattened_list = [y for x in rows_to_insert for y in x]
+            cursor.execute(insert_statement % flattened_list)
 
 
 
