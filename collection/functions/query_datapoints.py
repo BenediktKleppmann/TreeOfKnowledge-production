@@ -38,7 +38,7 @@ def find_matching_entities(match_attributes, match_values):
         attribute_id_column = []
         value_as_string_column = []
         for column_number, match_attribute in enumerate(match_attributes):
-            attribute_id_column.extend( [match_attribute['attribute_id']] * number_of_rows)
+            attribute_id_column.extend( [str(match_attribute['attribute_id'])] * number_of_rows)
             value_as_string_column.extend([str(value) for value in match_values[column_number]])
 
 
