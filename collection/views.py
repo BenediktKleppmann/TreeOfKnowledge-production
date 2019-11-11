@@ -374,6 +374,17 @@ def upload_data_success(request, number_of_datapoints_saved, new_model_id):
 
 
 
+@login_required
+def get_upload_progress(request):
+    upload_id = request.GET.get('upload_id', '')
+
+    with open('collection/static/webservice files/runtime_data/upload_progress_' + upload_id + '.txt') as file:       
+        progress = file.readline().strip()
+
+    return HttpResponse(progress)
+
+
+
  # =================================================================================
  #  _    _      _                   ______                _   _                 
  # | |  | |    | |                 |  ____|              | | (_)                

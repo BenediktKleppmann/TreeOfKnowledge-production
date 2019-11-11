@@ -162,9 +162,16 @@ def perform_uploading(uploaded_dataset, request):
     """
         Main upload function for non-timeseries data.
     """
+    print('1')
+    upload_id = uploaded_dataset.id
+    progress_tracking_file_name = 'collection/static/webservice files/runtime_data/upload_progress_' + str(upload_id) + '.txt'
+    with open(progress_tracking_file_name, "w") as progress_tracking_file:
+        progress_tracking_file.write('0')
+
     with connection.cursor() as cursor:
 
         # PART 0: Variables
+        print('2')
         object_type_id = uploaded_dataset.object_type_id
         data_quality = uploaded_dataset.correctness_of_data
         attribute_selection = json.loads(uploaded_dataset.attribute_selection)
@@ -174,34 +181,43 @@ def perform_uploading(uploaded_dataset, request):
         data_table_json = json.loads(uploaded_dataset.data_table_json)
         table_body = data_table_json["table_body"]
         object_id_column = []
-        print(table_body)
+        print('3')
+
+
 
 
         # PART 1: Create missing objects/ Remove not-matched rows
-        print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-        print(upload_only_matched_entities)
-        print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        print('4')
         if upload_only_matched_entities == 'True':
+            print('4.1')
             object_id_column = [match_id for match_id in list_of_matches if match_id is not None]
+            print('4.2')
             for column_number, attribute_id in enumerate(attribute_selection):
+                print('4.3')
                 # remove all the not matched rows
                 table_body[str(column_number)] = [value for index, value in enumerate(table_body[str(column_number)]) if list_of_matches[index] is not None]
             
         else:
             # make new_object_ids
+            print('4.1')
             not_matched_indexes = [index for index, match_id in enumerate(list_of_matches) if match_id is None]
             maximum_object_id = Object.objects.all().order_by('-id').first().id
             new_object_ids = range(maximum_object_id + 1, maximum_object_id + len(not_matched_indexes) + 1)
 
+            print('4.2')
             object_id_column = list_of_matches
             if len(not_matched_indexes) > 0:
+                print('4.3')
                 for not_matched_index, new_object_id in zip(not_matched_indexes, new_object_ids):
                     object_id_column[not_matched_index] = new_object_id
 
-                # create new object records        
+                # create new object records  
+                print('4.4')      
                 table_rows = list(map(list, zip(*[new_object_ids, [object_type_id] * len(not_matched_indexes)])))
                 number_of_chunks =  math.ceil(len(not_matched_indexes) / 100)
+                print('4.5')
                 for chunk_index in range(number_of_chunks):
+                    print('4.6')
 
                     rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
                     insert_statement = '''
@@ -209,6 +225,17 @@ def perform_uploading(uploaded_dataset, request):
                         VALUES ''' 
                     insert_statement += ','.join(['(%s, %s)']*len(rows_to_insert))
                     cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+                    print('4.7')
+
+                    with open(progress_tracking_file_name, "w") as progress_tracking_file:
+                        percent_of_upload_completed = 5 * (chunk_index+1) / number_of_chunks
+                        progress_tracking_file.write(str(percent_of_upload_completed))
+
+
+        print('5')
+        with open(progress_tracking_file_name, "w") as progress_tracking_file:
+            progress_tracking_file.write('5')
+        print('6')
 
 
 
@@ -282,6 +309,11 @@ def perform_uploading(uploaded_dataset, request):
                 cursor.fast_executemany = True 
                 cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
             print('4 - ' + str(time.time()))
+
+            with open(progress_tracking_file_name, "w") as progress_tracking_file:
+                percent_of_upload_completed = 5 + (92 * (column_number+1) / len(attribute_selection)) 
+                progress_tracking_file.write(str(percent_of_upload_completed))
+                
      
 
         
@@ -313,6 +345,10 @@ def perform_uploading(uploaded_dataset, request):
 
         simulation_model.save()
         new_model_id = simulation_model.id
+
+
+        with open(progress_tracking_file_name, "w") as progress_tracking_file:
+            progress_tracking_file.write('100')
 
         return (number_of_entities, new_model_id)
 
