@@ -59,7 +59,7 @@ def find_matching_entities(match_attributes, match_values):
             insert_statement = '''
                 INSERT INTO table_to_match (row_number, attribute_id, value_as_string) 
                 VALUES ''' 
-            insert_statement += ','.join(['(%s, "%s", "%s")']*len(rows_to_insert))
+            insert_statement += ','.join(["(%s, '%s', '%s')"]*len(rows_to_insert))
             flattened_list = [y for x in rows_to_insert for y in x]
             print(insert_statement)
             print(flattened_list)
