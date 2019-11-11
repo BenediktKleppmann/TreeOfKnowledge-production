@@ -25,7 +25,7 @@ def find_matching_entities(match_attributes, match_values):
         create_match_table = '''
             CREATE TEMPORARY TABLE table_to_match (
                row_number INT,
-               attribute_id INT, 
+               attribute_id TEXT, 
                value_as_string TEXT
             ); ''' 
         cursor.execute(create_match_table)
