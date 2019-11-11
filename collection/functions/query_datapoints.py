@@ -119,14 +119,14 @@ def find_matching_entities(match_attributes, match_values):
 
 
             get_matching_objects_json = """
-                SELECT '[' || string_agg(matching_objects_json, ',') || ']' AS matching_objects_json
+                SELECT '[' || string_agg(foo.matching_objects_json, ',') || ']' AS matching_objects_json
                 FROM (
                     SELECT  COALESCE(mr.matching_objects_json, '[]') AS matching_objects_json
                     FROM row_number AS rn
                     LEFT JOIN matched_rows  AS mr
                     ON rn.row_number = mr.row_number
                     ORDER BY rn.row_number
-                );
+                ) foo;
             """
 
             result = cursor.execute(get_matching_objects_json)
