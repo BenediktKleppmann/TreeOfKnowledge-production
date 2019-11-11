@@ -61,7 +61,7 @@ def find_matching_entities(match_attributes, match_values):
                 VALUES ''' 
             insert_statement += ','.join(["(%s, '%s', '%s')"]*len(rows_to_insert))
             flattened_list = [y for x in rows_to_insert for y in x]
-            flattened_list = [el.replace("'","''") for el in flattened_list]
+            flattened_list = [el.replace("'","''") if isinstance(el,str) else el for el in flattened_list]
             print(insert_statement)
             print(flattened_list)
             cursor.execute(insert_statement % tuple(flattened_list))
