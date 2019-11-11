@@ -82,7 +82,7 @@ def find_matching_entities(match_attributes, match_values):
             CREATE TEMPORARY TABLE matched_objects AS
                 SELECT  row_number, 
                         object_id, 
-                        '{"object_id":' || object_id || ', ' || group_concat(dictionary_element) || '}' AS object_dict, 
+                        '{"object_id":' || object_id || ', ' || string_agg(dictionary_element, ',') || '}' AS object_dict, 
                         COUNT(*) AS number_of_attributes_found,
                         SUM(data_quality) AS data_quality,
                         RANK () OVER (PARTITION BY row_number ORDER BY data_quality DESC) AS match_number
