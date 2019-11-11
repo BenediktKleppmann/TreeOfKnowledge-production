@@ -100,7 +100,7 @@ def find_matching_entities(match_attributes, match_values):
                 CREATE TEMPORARY TABLE matched_rows AS
                     SELECT 
                         row_number, 
-                        '[' || group_concat(object_dict) || ']'  AS matching_objects_json
+                        '[' || string_agg(object_dict, ',') || ']'  AS matching_objects_json
                     FROM matched_objects
                     WHERE number_of_attributes_found > 0
                       AND match_number <=3
@@ -119,7 +119,7 @@ def find_matching_entities(match_attributes, match_values):
 
 
             get_matching_objects_json = """
-                SELECT '[' || group_concat(matching_objects_json) || ']' AS matching_objects_json
+                SELECT '[' || string_agg(matching_objects_json, ',') || ']' AS matching_objects_json
                 FROM (
                     SELECT  COALESCE(mr.matching_objects_json, '[]') AS matching_objects_json
                     FROM row_number AS rn
