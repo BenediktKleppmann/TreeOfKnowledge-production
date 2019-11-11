@@ -74,12 +74,14 @@ def find_matching_entities(match_attributes, match_values):
                 WHERE ttm.value_as_string != 'None'
                 GROUP BY row_number, object_id, dp.attribute_id, dp.value_as_string ; 
         """
-
         cursor.execute(matched_data_points_string)
 
 
+
+        # ----------  POSTGRES VS. SQLITE  ----------
         # group_concat (sqlite) vs. string_agg (postgres)
         if settings.DB_CONNECTION_URL[:8] == 'postgres':
+              
             matched_objects_string = """
                 CREATE TEMPORARY TABLE matched_objects AS
                     SELECT  row_number, 
@@ -92,6 +94,47 @@ def find_matching_entities(match_attributes, match_values):
                     GROUP BY row_number, object_id;
             """
             cursor.execute(matched_objects_string)
+
+
+            matched_rows_string = """
+                CREATE TEMPORARY TABLE matched_rows AS
+                    SELECT 
+                        row_number, 
+                        '[' || group_concat(object_dict) || ']'  AS matching_objects_json
+                    FROM matched_objects
+                    WHERE number_of_attributes_found > 0
+                      AND match_number <=3
+                    GROUP BY row_number;
+            """
+            cursor.execute(matched_rows_string)
+
+
+            row_number_string = """
+                CREATE TEMPORARY TABLE row_number AS
+                    SELECT DISTINCT row_number
+                    FROM table_to_match  
+                    ORDER BY row_number;
+            """
+            cursor.execute(row_number_string)
+
+
+            get_matching_objects_json = """
+                SELECT '[' || group_concat(matching_objects_json) || ']' AS matching_objects_json
+                FROM (
+                    SELECT  COALESCE(mr.matching_objects_json, '[]') AS matching_objects_json
+                    FROM row_number AS rn
+                    LEFT JOIN matched_rows  AS mr
+                    ON rn.row_number = mr.row_number
+                    ORDER BY rn.row_number
+                );
+            """
+
+            result = cursor.execute(get_matching_objects_json)
+            matching_objects_entire_list_string = list(result)[0][0]
+            return matching_objects_entire_list_string
+
+
+
         else:
             matched_objects_string = """
                 CREATE TEMPORARY TABLE matched_objects AS
@@ -107,48 +150,44 @@ def find_matching_entities(match_attributes, match_values):
             cursor.execute(matched_objects_string)
 
 
+            matched_rows_string = """
+                CREATE TEMPORARY TABLE matched_rows AS
+                    SELECT 
+                        row_number, 
+                        '[' || group_concat(object_dict) || ']'  AS matching_objects_json
+                    FROM matched_objects
+                    WHERE number_of_attributes_found > 0
+                      AND match_number <=3
+                    GROUP BY row_number;
+            """
+            cursor.execute(matched_rows_string)
 
 
-        matched_rows_string = """
-            CREATE TEMPORARY TABLE matched_rows AS
-                SELECT 
-                    row_number, 
-                    '[' || group_concat(object_dict) || ']'  AS matching_objects_json
-                FROM matched_objects
-                WHERE number_of_attributes_found > 0
-                  AND match_number <=3
-                GROUP BY row_number;
-        """
-        cursor.execute(matched_rows_string)
+            row_number_string = """
+                CREATE TEMPORARY TABLE row_number AS
+                    SELECT DISTINCT row_number
+                    FROM table_to_match  
+                    ORDER BY row_number;
+            """
+            cursor.execute(row_number_string)
 
 
+            get_matching_objects_json = """
+                SELECT '[' || group_concat(matching_objects_json) || ']' AS matching_objects_json
+                FROM (
+                    SELECT  COALESCE(mr.matching_objects_json, '[]') AS matching_objects_json
+                    FROM row_number AS rn
+                    LEFT JOIN matched_rows  AS mr
+                    ON rn.row_number = mr.row_number
+                    ORDER BY rn.row_number
+                );
+            """
+
+            result = cursor.execute(get_matching_objects_json)
+            matching_objects_entire_list_string = list(result)[0][0]
+            return matching_objects_entire_list_string
 
 
-        row_number_string = """
-            CREATE TEMPORARY TABLE row_number AS
-                SELECT DISTINCT row_number
-                FROM table_to_match  
-                ORDER BY row_number;
-        """
-        cursor.execute(row_number_string)
-
-
-
-        get_matching_objects_json = """
-            SELECT '[' || group_concat(matching_objects_json) || ']' AS matching_objects_json
-            FROM (
-                SELECT  COALESCE(mr.matching_objects_json, '[]') AS matching_objects_json
-                FROM row_number AS rn
-                LEFT JOIN matched_rows  AS mr
-                ON rn.row_number = mr.row_number
-                ORDER BY rn.row_number
-            );
-        """
-
-        result = cursor.execute(get_matching_objects_json)
-        matching_objects_entire_list_string = list(result)[0][0]
-
-    return matching_objects_entire_list_string
 
 
 
