@@ -70,13 +70,22 @@ def find_matching_entities(match_attributes, match_values):
 
         # match table_to_match with collection_data_point   ----------------------------------------
         # ---- TESTING ----------------------------------------------------
-        print('- -4 ------------------------------------------------------------------')
+        print('- -5 ------------------------------------------------------------------')
         get_matching_objects_json = """
             ANALYZE VERBOSE table_to_match;
         """
         result = cursor.execute(get_matching_objects_json)
         print(str(result))
 
+
+        print('- -4 ------------------------------------------------------------------')
+        get_matching_objects_json = """
+            SELECT * 
+            FROM collection_data_point
+            LIMIT 10;
+        """
+        result = cursor.execute(get_matching_objects_json)
+        print(str(result))
 
         print('- -3 ------------------------------------------------------------------')
         get_matching_objects_json = """
@@ -85,7 +94,7 @@ def find_matching_entities(match_attributes, match_values):
             LIMIT 10;
         """
         result = cursor.execute(get_matching_objects_json)
-        print(str(result))
+        print(str(result)
 
 
         print('- -2 ------------------------------------------------------------------')
