@@ -221,8 +221,7 @@ def find_matching_entities(match_attributes, match_values):
             """
 
             result = cursor.execute(get_matching_objects_json)
-            print(cursor.fetchall()[0])
-            matching_objects_entire_list_string = cursor.fetchall()
+            matching_objects_entire_list_string = cursor.fetchall()[0][0]
             return matching_objects_entire_list_string
 
 
