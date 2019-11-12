@@ -50,61 +50,22 @@ def find_matching_entities(match_attributes, match_values):
         for chunk_index in range(number_of_chunks):
 
             rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
-            # insert_statement = '''
-            #     INSERT INTO table_to_match (row_number, attribute_id, value_as_string) 
-            #     VALUES ''' 
-            # insert_statement += ','.join(['(%s, %s, %s)']*len(rows_to_insert))
-            # cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
-            print(connection.queries)
             insert_statement = '''
                 INSERT INTO table_to_match (row_number, attribute_id, value_as_string) 
                 VALUES ''' 
-            insert_statement += ','.join(["(%s, '%s', '%s')"]*len(rows_to_insert))
-            flattened_list = [y for x in rows_to_insert for y in x]
-            flattened_list = [el.replace("'","''") if isinstance(el,str) else el for el in flattened_list]
-            print(insert_statement)
-            print(flattened_list)
-            cursor.execute(insert_statement % tuple(flattened_list))
+            insert_statement += ','.join(['(%s, %s, %s)']*len(rows_to_insert))
+            cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+            # insert_statement = '''
+            #     INSERT INTO table_to_match (row_number, attribute_id, value_as_string) 
+            #     VALUES ''' 
+            # insert_statement += ','.join(["(%s, '%s', '%s')"]*len(rows_to_insert))
+            # flattened_list = [y for x in rows_to_insert for y in x]
+            # flattened_list = [el.replace("'","''") if isinstance(el,str) else el for el in flattened_list]
+            # cursor.execute(insert_statement % tuple(flattened_list))
 
 
 
         # match table_to_match with collection_data_point   ----------------------------------------
-        # ---- TESTING ----------------------------------------------------
-
-        print('- -3 ------------------------------------------------------------------')
-        get_matching_objects_json = """
-            SELECT * 
-            FROM table_to_match
-            LIMIT 10;
-        """
-        result = cursor.execute(get_matching_objects_json)
-        if cursor.rowcount > 0:
-            print(str(cursor.fetchall()))
-
-
-        print('- -2 ------------------------------------------------------------------')
-        get_matching_objects_json = """
-            SELECT * 
-            FROM collection_data_point
-            WHERE attribute_id = '22' AND value_as_string='Afghanistan'
-            LIMIT 10;
-        """
-        result = cursor.execute(get_matching_objects_json)
-        if cursor.rowcount > 0:
-            print(str(cursor.fetchall()))
-
-        print('- -1 ------------------------------------------------------------------')
-        get_matching_objects_json = """
-            SELECT * 
-            FROM table_to_match
-            WHERE attribute_id = '22' AND value_as_string='Afghanistan'
-            LIMIT 10;
-        """
-        result = cursor.execute(get_matching_objects_json)
-        if cursor.rowcount > 0:
-            print(str(cursor.fetchall()))
-        # -----------------------------------------------------------------
-
         matched_data_points_string = """
             CREATE TEMPORARY TABLE matched_data_points AS
                 SELECT  row_number, 
@@ -128,17 +89,6 @@ def find_matching_entities(match_attributes, match_values):
         # group_concat (sqlite) vs. string_agg (postgres)
         if settings.DB_CONNECTION_URL[:8] == 'postgres':
               
-            # ---- TESTING ----------------------------------------------------
-            print('- 0 ------------------------------------------------------------------')
-            get_matching_objects_json = """
-                SELECT * 
-                FROM matched_data_points
-                LIMIT 10;
-            """
-            result = cursor.execute(get_matching_objects_json)
-            if cursor.rowcount > 0:
-                print(str(cursor.fetchall()))
-            # -----------------------------------------------------------------
 
             matched_objects_string = """
                 CREATE TEMPORARY TABLE matched_objects AS
@@ -153,17 +103,7 @@ def find_matching_entities(match_attributes, match_values):
             """
             cursor.execute(matched_objects_string)
 
-            # ---- TESTING ----------------------------------------------------
-            print('- 1 ------------------------------------------------------------------')
-            get_matching_objects_json = """
-                SELECT * 
-                FROM matched_objects
-                LIMIT 10;
-            """
-            result = cursor.execute(get_matching_objects_json)
-            if cursor.rowcount > 0:
-                print(str(cursor.fetchall()))
-            # -----------------------------------------------------------------
+
 
             matched_rows_string = """
                 CREATE TEMPORARY TABLE matched_rows AS
@@ -177,17 +117,6 @@ def find_matching_entities(match_attributes, match_values):
             """
             cursor.execute(matched_rows_string)
 
-            # ---- TESTING ----------------------------------------------------
-            print('- 2 ------------------------------------------------------------------')
-            get_matching_objects_json = """
-                SELECT * 
-                FROM matched_rows
-                LIMIT 10;
-            """
-            result = cursor.execute(get_matching_objects_json)
-            if cursor.rowcount > 0:
-                print(str(cursor.fetchall()))
-            # -----------------------------------------------------------------
 
             row_number_string = """
                 CREATE TEMPORARY TABLE row_number AS
@@ -197,17 +126,6 @@ def find_matching_entities(match_attributes, match_values):
             """
             cursor.execute(row_number_string)
 
-            # ---- TESTING ----------------------------------------------------
-            print('- 3 ------------------------------------------------------------------')
-            get_matching_objects_json = """
-                SELECT * 
-                FROM row_number
-                LIMIT 10;
-            """
-            result = cursor.execute(get_matching_objects_json)
-            if cursor.rowcount > 0:
-                print(str(cursor.fetchall()))
-            # -----------------------------------------------------------------
 
             get_matching_objects_json = """
                 SELECT '[' || string_agg(foo.matching_objects_json, ',') || ']' AS matching_objects_json
