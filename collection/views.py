@@ -689,6 +689,8 @@ def find_matching_entities(request):
     match_attributes = request_body['match_attributes']
     match_values = request_body['match_values']
     matching_objects_entire_list_string = query_datapoints.find_matching_entities(match_attributes, match_values)
+    print(matching_objects_entire_list_string)
+    print(type(matching_objects_entire_list_string))
     return HttpResponse(matching_objects_entire_list_string)
 
 
