@@ -70,11 +70,19 @@ def find_matching_entities(match_attributes, match_values):
 
         # match table_to_match with collection_data_point   ----------------------------------------
         # ---- TESTING ----------------------------------------------------
+        print('- -4 ------------------------------------------------------------------')
+        get_matching_objects_json = """
+            ANALYZE VERBOSE table_to_match;
+        """
+        result = cursor.execute(get_matching_objects_json)
+        print(str(result))
+
+
         print('- -3 ------------------------------------------------------------------')
         get_matching_objects_json = """
             SELECT * 
             FROM table_to_match
-            LIMIT 10
+            LIMIT 10;
         """
         result = cursor.execute(get_matching_objects_json)
         print(str(result))
@@ -85,7 +93,7 @@ def find_matching_entities(match_attributes, match_values):
             SELECT * 
             FROM collection_data_point
             WHERE attribute_id = '22' AND value_as_string='Afghanistan'
-            LIMIT 10
+            LIMIT 10;
         """
         result = cursor.execute(get_matching_objects_json)
         print(str(result))
@@ -95,7 +103,7 @@ def find_matching_entities(match_attributes, match_values):
             SELECT * 
             FROM table_to_match
             WHERE attribute_id = '22' AND value_as_string='Afghanistan'
-            LIMIT 10
+            LIMIT 10;
         """
         result = cursor.execute(get_matching_objects_json)
         print(str(result))
@@ -129,7 +137,7 @@ def find_matching_entities(match_attributes, match_values):
             get_matching_objects_json = """
                 SELECT * 
                 FROM matched_data_points
-                LIMIT 10
+                LIMIT 10;
             """
             result = cursor.execute(get_matching_objects_json)
             print(str(result))
@@ -153,7 +161,7 @@ def find_matching_entities(match_attributes, match_values):
             get_matching_objects_json = """
                 SELECT * 
                 FROM matched_objects
-                LIMIT 10
+                LIMIT 10;
             """
             result = cursor.execute(get_matching_objects_json)
             print(str(result))
@@ -176,7 +184,7 @@ def find_matching_entities(match_attributes, match_values):
             get_matching_objects_json = """
                 SELECT * 
                 FROM matched_rows
-                LIMIT 10
+                LIMIT 10;
             """
             result = cursor.execute(get_matching_objects_json)
             print(str(result))
@@ -195,7 +203,7 @@ def find_matching_entities(match_attributes, match_values):
             get_matching_objects_json = """
                 SELECT * 
                 FROM row_number
-                LIMIT 10
+                LIMIT 10;
             """
             result = cursor.execute(get_matching_objects_json)
             print(str(result))
