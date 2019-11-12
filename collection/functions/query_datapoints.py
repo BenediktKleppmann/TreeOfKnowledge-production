@@ -94,7 +94,7 @@ def find_matching_entities(match_attributes, match_values):
             LIMIT 10;
         """
         result = cursor.execute(get_matching_objects_json)
-        print(str(result)
+        print(str(result))
 
 
         print('- -2 ------------------------------------------------------------------')
