@@ -75,7 +75,8 @@ def find_matching_entities(match_attributes, match_values):
             ANALYZE VERBOSE table_to_match;
         """
         result = cursor.execute(get_matching_objects_json)
-        print(str(cursor.fetchall()))
+        if cursor.rowcount > 0:
+            print(str(cursor.fetchall()))
 
 
         print('- -4 ------------------------------------------------------------------')
@@ -85,7 +86,8 @@ def find_matching_entities(match_attributes, match_values):
             LIMIT 10;
         """
         result = cursor.execute(get_matching_objects_json)
-        print(str(cursor.fetchall()))
+        if cursor.rowcount > 0:
+            print(str(cursor.fetchall()))
 
         print('- -3 ------------------------------------------------------------------')
         get_matching_objects_json = """
@@ -94,7 +96,8 @@ def find_matching_entities(match_attributes, match_values):
             LIMIT 10;
         """
         result = cursor.execute(get_matching_objects_json)
-        print(str(cursor.fetchall()))
+        if cursor.rowcount > 0:
+            print(str(cursor.fetchall()))
 
 
         print('- -2 ------------------------------------------------------------------')
@@ -105,7 +108,8 @@ def find_matching_entities(match_attributes, match_values):
             LIMIT 10;
         """
         result = cursor.execute(get_matching_objects_json)
-        print(str(cursor.fetchall()))
+        if cursor.rowcount > 0:
+            print(str(cursor.fetchall()))
 
         print('- -1 ------------------------------------------------------------------')
         get_matching_objects_json = """
@@ -115,7 +119,8 @@ def find_matching_entities(match_attributes, match_values):
             LIMIT 10;
         """
         result = cursor.execute(get_matching_objects_json)
-        print(str(cursor.fetchall()))
+        if cursor.rowcount > 0:
+            print(str(cursor.fetchall()))
         # -----------------------------------------------------------------
 
         matched_data_points_string = """
@@ -149,7 +154,8 @@ def find_matching_entities(match_attributes, match_values):
                 LIMIT 10;
             """
             result = cursor.execute(get_matching_objects_json)
-            print(str(cursor.fetchall()))
+            if cursor.rowcount > 0:
+                print(str(cursor.fetchall()))
             # -----------------------------------------------------------------
 
             matched_objects_string = """
@@ -173,7 +179,8 @@ def find_matching_entities(match_attributes, match_values):
                 LIMIT 10;
             """
             result = cursor.execute(get_matching_objects_json)
-            print(str(cursor.fetchall()))
+            if cursor.rowcount > 0:
+                print(str(cursor.fetchall()))
             # -----------------------------------------------------------------
 
             matched_rows_string = """
@@ -196,7 +203,8 @@ def find_matching_entities(match_attributes, match_values):
                 LIMIT 10;
             """
             result = cursor.execute(get_matching_objects_json)
-            print(str(cursor.fetchall()))
+            if cursor.rowcount > 0:
+                print(str(cursor.fetchall()))
             # -----------------------------------------------------------------
 
             row_number_string = """
@@ -215,7 +223,8 @@ def find_matching_entities(match_attributes, match_values):
                 LIMIT 10;
             """
             result = cursor.execute(get_matching_objects_json)
-            print(str(cursor.fetchall()))
+            if cursor.rowcount > 0:
+                print(str(cursor.fetchall()))
             # -----------------------------------------------------------------
 
             get_matching_objects_json = """
