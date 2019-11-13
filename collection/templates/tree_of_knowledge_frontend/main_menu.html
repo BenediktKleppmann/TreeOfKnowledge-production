@@ -57,6 +57,30 @@
 		font-size: 37px;
 	}
 	
+	
+	/* Log out button ---------------------------*/
+	.log-out-button {
+	    position: absolute;
+		bottom: 55px;
+		left: 64px;
+		border: 2px solid rgb(130, 111, 94);
+		background: rgb(250, 247, 245);
+		color: rgb(130, 111, 94) !important;
+	}
+	
+	.log-out-button i {
+		font-size: 25px;
+	}
+	
+	.log-out-button-text {
+		display: inline-block;
+		padding-left: 9px;
+		padding-top: 2px;
+		float: right;
+		font-size: 16px;
+	}
+
+	
 	/* Existing Simulations ---------------------------*/
 	.existing-simulations-box {
 		margin-top: 18px;
@@ -123,6 +147,15 @@
 	</div>
 	
 	
+	
+
+	<a href="{% url 'landing_page' %}">
+		<button type="button" class="log-out-button btn btn-outline-secondary">
+			<i class="fas fa-arrow-left"></i>
+			<div class="log-out-button-text">Go to landing pages</div>
+		</button>
+	</a>
+
 	
 		
 		

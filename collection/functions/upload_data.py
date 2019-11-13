@@ -377,6 +377,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
     attribute_selection = json.loads(uploaded_dataset.attribute_selection)
     datetime_column = json.loads(uploaded_dataset.datetime_column)
     data_quality = uploaded_dataset.correctness_of_data
+    upload_only_matched_entities = uploaded_dataset.upload_only_matched_entities
 
     # prepare list of data_types and of expected_valid_periods
     data_types = []
@@ -408,6 +409,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
         grouped_data_table_json = make_data_table_json_with_distinct_entities(uploaded_dataset)
         object_ids_df = pd.DataFrame(grouped_data_table_json['table_body'])
         object_ids_df['object_id'] = list_of_matches
+
 
         for index, row in object_ids_df.iterrows():
             if row['object_id'] is None:
@@ -448,6 +450,9 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 
 
     # loop through rows and values 
+    if upload_only_matched_entities == 'True':
+        submitted_data_table_df = submitted_data_table_df[submitted_data_table_df['object_id'].notnull()]
+
     for row_nb, row in submitted_data_table_df.iterrows():
         print("row_nb: " + str(row_nb))
             
