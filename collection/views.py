@@ -20,6 +20,7 @@ import numpy as np
 import math
 from scipy.stats import beta
 import scipy
+from django.conf import settings
 
 
  # ===============================================================================
@@ -326,12 +327,18 @@ def upload_data6B(request, upload_id):
 
     if request.method == 'POST':
         form6 = Uploaded_datasetForm6(data=request.POST, instance=uploaded_dataset)
+        print(request.POST.get('list_of_matches', None))
+        print(request.POST.get('upload_only_matched_entities', None))
+        
         if not form6.is_valid():
             errors.append('Error: the form is not valid.')
         else:
             form6.save()
             (number_of_datapoints_saved, new_model_id) = upload_data.perform_uploading_for_timeseries(uploaded_dataset, request)
-            return redirect('upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
+            if settings.DB_CONNECTION_URL[:8] == 'postgres':
+                return redirect('https://www.treeofknowledge.ai/tool/upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
+            else:
+                return redirect('upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
    
     
     table_attributes = upload_data.make_table_attributes_dict(uploaded_dataset)
@@ -362,7 +369,10 @@ def upload_data7(request, upload_id):
         else:
             form7.save()
             (number_of_datapoints_saved, new_model_id) = upload_data.perform_uploading(uploaded_dataset, request)
-            return redirect('upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
+            if settings.DB_CONNECTION_URL[:8] == 'postgres':
+                return redirect('https://www.treeofknowledge.ai/tool/upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
+            else:
+                return redirect('upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
    
     return render(request, 'tree_of_knowledge_frontend/upload_data7.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
@@ -1306,7 +1316,7 @@ def edit_simulation(request, simulation_id):
         the_simulator = simulation.Simulator(simulation_id)
         the_simulator.run()
         print('simulation completed, redirecting..')
-        return redirect('http://www.treeofknowledge.ai/tool/analyse_simulation', simulation_id=simulation_id)
+        return redirect('https://www.treeofknowledge.ai/tool/analyse_simulation', simulation_id=simulation_id)
         # return redirect('analyse_simulation', simulation_id=simulation_id)
 
     

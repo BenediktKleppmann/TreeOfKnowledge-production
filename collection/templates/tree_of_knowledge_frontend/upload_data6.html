@@ -327,7 +327,9 @@
 				
 
 				
-				<button id="select-all-button" class="btn btn-primary pull-right" type="button" onclick="next()">Upload the data!</button>
+				<button id="select-all-button" class="btn btn-primary pull-right" type="button" data-toggle="modal" data-target="#pleaseWaitModal" onclick="setTimeout('next();', 0);">Upload the data!</button> 
+				<button id="open-modal-button" class="btn" type="button" data-toggle="modal" data-target="#pleaseWaitModal" ></button> 
+				<!--  -->
 
 
 				
@@ -444,8 +446,13 @@
 	}
 
 	//===  the "Next" Button  =======================================================================================================================	
-	function next() {
 	
+	
+	
+
+	
+	
+	function next() {
 		//list_of_matches
 		var list_of_matches = [];
 		for (var i = 0; i < table_body[0].length; i++) {
@@ -467,29 +474,40 @@
 		//upload_only_matched_entities
 		$('#upload_only_matched_entities').val(  $(".upload_only_matched_entities.active").children().first().val() );
 
-	
-		$("#next-form").submit();
+		//submit form
+		setTimeout('submit_form();', 1000); 
 		
-		$('#pleaseWaitModal').modal('show');
-		var url_components = window.location.href.split("/");
-		var upload_id = url_components[url_components.length - 2]
-		var progress = '0';
-		while (progress < 100) {
-			setTimeout(function(){     
-				var xhttp = new XMLHttpRequest();       
-				xhttp.onreadystatechange = function() {
-					if (this.readyState == 4 && this.status == 200) {		
-						var progress = this.responseText;
-						$('#upload-progress-bar').attr('style','width:' + progress + '%')
-					}
-				};
-				xhttp.open("GET", "/tool/get_upload_progress?upload_id=" + upload_id , true);
-				xhttp.send();
-			}, 300);
-		}
-		
-		
+		//update_the_progress_bar
+		//setTimeout('update_the_progress_bar();', 2000);		
 	}
+	
+
+
+	
+	function submit_form() {
+		$("#next-form").submit();
+		update_the_progress_bar();
+		//$("#next-form").submit(update_the_progress_bar());
+	}
+	
+	
+	function update_the_progress_bar() {
+		var progress = '0';
+  		var url_components = window.location.href.split("/");
+		var upload_id = url_components[url_components.length - 2]
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {		
+				var progress = this.responseText;
+				$('#upload-progress-bar').attr('style','width:' + progress + '%')
+			}
+		};
+		xhttp.open("GET", "/tool/get_upload_progress?upload_id=" + upload_id , true);
+		xhttp.send();
+				
+		setTimeout(update_the_progress_bar(upload_id), 1000);
+	}
+	
 	
 
 	//====================================================================================================

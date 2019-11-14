@@ -11,15 +11,12 @@
 	<h1>Uploading Data was successful!</h1> ({{ number_of_datapoints_saved }} datapoints have been integrated into the knowledge base)<br>
 	<br>
 	
-	Would you like to continue and
-	<ul>
-		<li><a href="{% url 'edit_simulation'  simulation_id=new_model_id %}">model the systen that generated the data?</a></li>
-		<li><a href="{% url 'upload_data1_new' %}">query the data you just now uploaded?</a></li>
-	</ul>	
+	Suggestion: <a href="{% url 'edit_simulation'  simulation_id=new_model_id %}">Model the system that generated the data</a>.
+	
 	
 	<br>
 	<br>
-	Or would you like to
+	Alternatively you could:
 	<ul>
 		<li><a href="{% url 'query_data' %}">query data</a></li>
 		<li><a href="{% url 'upload_data1_new' %}">upload data</a></li>

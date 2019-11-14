@@ -10,7 +10,7 @@ import json
 import sqlite3
 import itertools
 import math
-from django.conf import settings
+import os
 
 
 def find_matching_entities(match_attributes, match_values):
@@ -87,7 +87,7 @@ def find_matching_entities(match_attributes, match_values):
 
         # ----------  POSTGRES VS. SQLITE  ----------
         # group_concat (sqlite) vs. string_agg (postgres)
-        if settings.DB_CONNECTION_URL[:8] == 'postgres':
+        if 'DB_CONNECTION_URL' in os.environ:
               
 
             matched_objects_string = """

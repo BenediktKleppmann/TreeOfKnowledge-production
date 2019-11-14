@@ -15,18 +15,6 @@ from django.contrib.auth.views import (
 import os
 
 from django.conf import settings
-# settings.EMAIL_HOST = 'mail.gmx.net'
-# settings.EMAIL_PORT = 465
-# settings.EMAIL_HOST_USER = 'bene3@gmx.net'
-# settings.DEFAULT_FROM_EMAIL = 'bene3@gmx.net'
-# settings.SERVER_MAIL = 'bene3@gmx.net'
-# settings.EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
-# settings.EMAIL_USE_TLS = False
-# settings.EMAIL_USE_SSL = True
-# settings.EMAIL_TIMEOUT = 3600
-# settings.DEFAULT_CHARSET = 'utf-8'
-# settings.EMAIL_USE_LOCALTIME = True
-
 settings.EMAIL_HOST = 'smtp.fastmail.com'
 settings.EMAIL_PORT = 465
 settings.EMAIL_HOST_USER = 'benedikt@kleppmann.de'
@@ -37,6 +25,7 @@ settings.EMAIL_USE_TLS = False
 settings.EMAIL_USE_SSL = True
 settings.EMAIL_TIMEOUT = 3600
 settings.DEFAULT_CHARSET = 'utf-8'
+settings.EMAIL_USE_LOCALTIME = True
 settings.EMAIL_USE_LOCALTIME = True
 
 urlpatterns = [
@@ -81,6 +70,7 @@ urlpatterns = [
     url(r'^tool/upload_data6B/(?P<upload_id>[-\d]+)/$', views.upload_data6B, name='upload_data6B'),
     url(r'^tool/upload_data7/(?P<upload_id>[-\d]+)/$', views.upload_data7, name='upload_data7'),
     url(r'^tool/upload_data_success/(?P<number_of_datapoints_saved>[-\d]+)-(?P<new_model_id>[-\d]+)/$', views.upload_data_success, name='upload_data_success'),
+    url(r'^tool/get_upload_progress/', views.get_upload_progress, name='get_upload_progress'),
 
     # Helper Functions  -------------------------------------------------------------------------
     # get
