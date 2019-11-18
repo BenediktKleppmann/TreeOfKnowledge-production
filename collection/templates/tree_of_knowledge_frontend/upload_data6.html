@@ -475,26 +475,24 @@
 		$('#upload_only_matched_entities').val(  $(".upload_only_matched_entities.active").children().first().val() );
 
 		//submit form
-		setTimeout('submit_form();', 1000); 
+		setTimeout('update_the_progress_bar();', 500);
+		setTimeout('submit_form();', 500); 
 		
-		//update_the_progress_bar
-		//setTimeout('update_the_progress_bar();', 2000);		
 	}
 	
 
 
 	
-	function submit_form() {
+	async function submit_form() {
 		$("#next-form").submit();
-		update_the_progress_bar();
 		//$("#next-form").submit(update_the_progress_bar());
 	}
 	
 	
-	function update_the_progress_bar() {
+	async function update_the_progress_bar() {
 		var progress = '0';
   		var url_components = window.location.href.split("/");
-		var upload_id = url_components[url_components.length - 2]
+		var upload_id = url_components[url_components.length - 2];
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {		
@@ -505,7 +503,8 @@
 		xhttp.open("GET", "/tool/get_upload_progress?upload_id=" + upload_id , true);
 		xhttp.send();
 				
-		setTimeout(update_the_progress_bar(upload_id), 1000);
+		//setTimeout(update_the_progress_bar(), 5000);
+		window.setTimeout(() => { update_the_progress_bar();}, 2000);
 	}
 	
 	

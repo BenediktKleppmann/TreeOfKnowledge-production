@@ -1,0 +1,1 @@
+{"learning_likelihoods":False, "nb_of_accepted_simulations_total": 1000, "nb_of_accepted_simulations_current": 1000, "learning__post_processing": "" , "running_monte_carlo": "true", "monte_carlo__simulation_number": 1000, "monte_carlo__number_of_simulations":  1000, "monte_carlo__post_processing":"Post-processing:  calculating the simulated values errors"}

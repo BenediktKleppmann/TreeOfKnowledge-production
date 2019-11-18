@@ -1,3 +1,4 @@
+{% load staticfiles %}
 <!--                 EDIT SIMULATION - SIMULATE                   -->
 <!-- This is used edit_simulation.html. It was extracted, because edit_model.html was getting a bit long  -->
 
@@ -442,6 +443,37 @@
 		width: 195px;
 	}
 
+	/* --------------------------------------------------------------------------------------------------------*/
+	/* Simulation Progress Modal  -----------------------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------------------------------------*/
+
+	#simulationProgressModal .modal-dialog {
+		position:absolute; 
+		left:15%; 
+		width:70%;
+	}
+
+	.modal-title {
+		font-size: 22px; 
+		margin-top: 2px;
+	}
+	
+	.progress {
+		margin-bottom: 0px;
+	}
+	
+	.progress-description {
+		font-size: 12px;
+	    margin-bottom: 20px;
+	}
+	
+	
+	#simulation-explanation-image-div {
+		width:98%; 
+		margin-left:1%;
+	}
+
+	
 </style>
 
 	<!-- Choose Rule Modal -->
@@ -487,6 +519,41 @@
 	</div>
 	-->
 	
+	<!-- Simulation Progress Modal -->
+	<div class="modal fade" id="simulationProgressModal" tabindex="-1" role="dialog" aria-labelledby="simulationProgressModal" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header row">
+					<h5 class="modal-title col-md-11">Running Simulations ...</h5>
+					<button type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:2px; margin-right:19px;font-size:29px">
+						<span aria-hidden="true" >&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" style="margin-top:15px;">
+					<div class="container-fluid">
+						<div id="bayesian-learning-progress-box" class="progress">
+							<div id="bayesian-learning-progress" class="progress-bar" style="width:0%"></div>
+						</div>
+						<div id="bayesian-learning-progress-description" class="progress-description"></div>
+						<div class="progress">
+							<div id="monte-carlo-progress" class="progress-bar" style="width:0%"></div>
+						</div>
+						<div id="monte-carlo-progress-description" class="progress-description"></div>
+					</div>
+					<div id="simulation-explanation">
+					</div>
+				    <b>How the simulations work</b><br>
+					At every timestep all of the objects' attributes are updated according to the rules for those attributes e.g. in the image below the attribute 'walking direction' is being updated.<br>
+					For the updating, the all the rules whose conditions are met are executed (whereby probabilistic rules are only executed with a certain probability), starting from the top. Lower rules can therefore potentially overwrite higher ones. It is therefore recommended to sort the rules according to their importance, with the most important at the bottom.<br>
+					<br>
+					<img id="simulation-explanation-image-div" src="{% static 'images/simulation_explanation.png'%}">
+					<br><br>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
 	
 <script>
 	// GLOBAL VARIABLES:
@@ -526,7 +593,6 @@
 				got_object_data = true;	
 				var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Got the data.<br>Please click on the object again.</div>';
 				$("#right-sidebar-body").html(no_results_string);
-				
 			}
 		};
 
@@ -670,15 +736,114 @@
 			return;
 		}
 		
-		
+		$('#simulationProgressModal').modal('show');
 		saveSimulation();
 		
+		setTimeout('prepare_the_progress_bar();', 100); 
+		setTimeout('update_the_progress_bar();', 1000); 
+		setTimeout('submit_form();', 300);
+
+		
+
+	
+	}
+	
+	
+	async function prepare_the_progress_bar() {
+		// get number_of_rules_to_learn
+		var number_of_rules_to_learn = 0;
+		object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length ; i++) {
+			object_number = object_numbers[i];
+			object_rules = Object.keys(objects_dict[object_number]['object_rules']);
+			for (var j = 0; j < object_rules.length ; j++) {
+				used_rules = Object.keys(objects_dict[object_number]['object_rules'][object_rules[j]]['used_rules']);
+				for (var k = 0; k < used_rules.length ; k++) {
+					if (objects_dict[object_number]['object_rules'][object_rules[j]]['used_rules'][used_rules[k]]['learn_posterior']) {
+						number_of_rules_to_learn += 1;
+					}
+				}
+			}
+		}	
+		
+		// write text
+		if (number_of_rules_to_learn > 0) {
+			simulation_explanation = 	'There are two steps to the current simulations: /n' + 
+					'<ul>' + 
+					'    <li>First: the probability of ' + String(number_of_rules_to_learn) + ' rules are being learned by running 1 000 - 5 000 simulations</li>' + 
+					'    <li>Second: 300 simulations are run using the learned rule probabilities. Due to their probabilistic nature the individual simulations vary, with the 300 simulations you can however get an idea of the overall probabilities for different outcomes. </li>' + 
+					'</ul><br><br>';
+			$('#simulation-explanation').html(simulation_explanation);
+			$('#bayesian-learning-progress-box').css('display','block');
+			$('#bayesian-learning-progress-description').css('display','block');
+		} else {
+			simulation_explanation = 	'The simulation is currently being run 300 times. Due to its probabilistic nature the individual simulations have varying outcomes, with the 300 simulations you can however get an idea of the overall probabilities for the different outcomes.<br><br>';
+			$('#simulation-explanation').html(simulation_explanation);
+			$('#bayesian-learning-progress-box').css('display','none');
+			$('#bayesian-learning-progress-description').css('display','none');
+		}
+	}
+	
+	
+	async function update_the_progress_bar() {
+		var progress = '0';
+		var url_components = window.location.href.split("/");
+		var simulation_id = url_components[url_components.length - 2];
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				
+				var progress_dict = JSON.parse(this.responseText);
+				console.log(progress_dict["monte_carlo__simulation_number"]);
+				console.log(progress_dict["monte_carlo__number_of_simulations"]);
+				console.log(progress_dict['monte_carlo__post_processing']);
+				console.log('----------------------------');
+				//progress_dict = {"learning_likelihoods":False, 
+				//				"nb_of_accepted_simulations_total": 500, 
+				//				"nb_of_accepted_simulations_current": 500, 
+				//				"learning__post_processing": "" , 
+				//				"running_monte_carlo": "true", 
+				//				"monte_carlo__simulation_number": 300, 
+				//				"monte_carlo__number_of_simulations":  300, 
+				//				"monte_carlo__post_processing":"Post-processing:  calculating the simulated values errors"};
+				
+				
+				//bayesian-learning-progress
+				$('#bayesian-learning-progress').attr('style','width:' + String(100 * progress_dict['nb_of_accepted_simulations_current']/progress_dict['nb_of_accepted_simulations_total']) + '%')
+				if (progress_dict['learning__post_processing']) {
+					$('#bayesian-learning-progress-description').html('Number of sufficiently correct simulations: ' +  String(progress_dict['nb_of_accepted_simulations_current']) + '/' + String(progress_dict['nb_of_accepted_simulations_total']) + ' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ' + progress_dict['learning__post_processing']);
+				} else {
+					$('#bayesian-learning-progress-description').html('');
+				}
+				
+				//monte-carlo-simulation-progress
+				$('#monte-carlo-simulation-progress').attr('style','width:' + String(100 * progress_dict['monte_carlo__simulation_number']/progress_dict['monte_carlo__number_of_simulations']) + '%')
+				if (progress_dict['running_monte_carlo']) {
+					$('#monte-carlo-progress-description').html('Number of simulations: ' +  String(progress_dict['monte_carlo__simulation_number']) + '/' + String(progress_dict['monte_carlo__number_of_simulations']) + ' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ' + progress_dict['monte_carlo__post_processing']);
+				} else {
+					$('#monte-carlo-progress-description').html('');
+				}
+						
+						
+				
+				
+				window.setTimeout(() => { update_the_progress_bar();}, 2000);
+			}
+		};
+		xhttp.open("GET", "/tool/get_simulation_progress?simulation_id=" + simulation_id , true);
+		xhttp.send();
+	}
+	
+	
+	async function submit_form() {
 		form_html_string =	"<form role='form' action='' method='post' class='form' enctype='multipart/form-data'>" + 
 								"{% csrf_token %}" +
 							"</form>";
 		$(form_html_string).appendTo("body").submit();
-		
 	}
+	
+	
+	
 	
 	
 	function saveSimulation() {

@@ -70,7 +70,7 @@ urlpatterns = [
     url(r'^tool/upload_data6B/(?P<upload_id>[-\d]+)/$', views.upload_data6B, name='upload_data6B'),
     url(r'^tool/upload_data7/(?P<upload_id>[-\d]+)/$', views.upload_data7, name='upload_data7'),
     url(r'^tool/upload_data_success/(?P<number_of_datapoints_saved>[-\d]+)-(?P<new_model_id>[-\d]+)/$', views.upload_data_success, name='upload_data_success'),
-    url(r'^tool/get_upload_progress/', views.get_upload_progress, name='get_upload_progress'),
+    url(r'^tool/get_upload_progress/$', views.get_upload_progress, name='get_upload_progress'),
 
     # Helper Functions  -------------------------------------------------------------------------
     # get
@@ -128,6 +128,7 @@ urlpatterns = [
 	# Simulation  -------------------------------------------------------------------------    
     url(r'^tool/edit_simulation/$', views.edit_simulation_new, name='edit_simulation_new'),
     url(r'^tool/edit_simulation/(?P<simulation_id>[-\d]+)/$', views.edit_simulation, name='edit_simulation'),
+    url(r'^tool/get_simulation_progress/$', views.get_simulation_progress, name='get_simulation_progress'),
     url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/$', views.analyse_simulation, name='analyse_simulation'),
     url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/setup_rule_learning/$', views.setup_rule_learning, name='setup_rule_learning'),
     url(r'^tool/learn_rule/(?P<learned_rule_id>[-\d]+)/$', views.learn_rule, name='learn_rule'),

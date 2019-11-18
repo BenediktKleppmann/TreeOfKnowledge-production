@@ -335,7 +335,7 @@ def upload_data6B(request, upload_id):
         else:
             form6.save()
             (number_of_datapoints_saved, new_model_id) = upload_data.perform_uploading_for_timeseries(uploaded_dataset, request)
-            if settings.DB_CONNECTION_URL[:8] == 'postgres':
+            if 'DB_CONNECTION_URL' in os.environ:
                 return redirect('https://www.treeofknowledge.ai/tool/upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
             else:
                 return redirect('upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
@@ -369,7 +369,7 @@ def upload_data7(request, upload_id):
         else:
             form7.save()
             (number_of_datapoints_saved, new_model_id) = upload_data.perform_uploading(uploaded_dataset, request)
-            if settings.DB_CONNECTION_URL[:8] == 'postgres':
+            if 'DB_CONNECTION_URL' in os.environ:
                 return redirect('https://www.treeofknowledge.ai/tool/upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
             else:
                 return redirect('upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
@@ -1316,14 +1316,32 @@ def edit_simulation(request, simulation_id):
         the_simulator = simulation.Simulator(simulation_id)
         the_simulator.run()
         print('simulation completed, redirecting..')
-        return redirect('https://www.treeofknowledge.ai/tool/analyse_simulation', simulation_id=simulation_id)
-        # return redirect('analyse_simulation', simulation_id=simulation_id)
+        if 'DB_CONNECTION_URL' in os.environ:
+            return redirect('https://www.treeofknowledge.ai/tool/analyse_simulation', simulation_id=simulation_id)
+        else:
+            return redirect('analyse_simulation', simulation_id=simulation_id)
+
 
     
     available_object_types = get_from_db.get_most_common_object_types()
     object_icons = [icon_name[:-4] for icon_name in os.listdir("collection/static/images/object_icons/")]
     available_relations = get_from_db.get_available_relations()
     return render(request, 'tree_of_knowledge_frontend/edit_simulation.html', {'simulation_model':simulation_model, 'available_object_types': available_object_types, 'object_icons': object_icons, 'available_relations':available_relations})
+
+
+
+@login_required
+def get_simulation_progress(request):
+    simulation_id = request.GET.get('simulation_id', '')
+
+    with open('collection/static/webservice files/runtime_data/simulation_progress_' + simulation_id + '.txt') as file:       
+        progress = file.readline()
+
+    print('<<<<<<<<< ((((((((((((((((((((((((((((((((((((((( )))))))))))))))))))))))))))))))))))))))))) >>>>>>>>>>>')
+    print(progress)
+    print('<<<<<<<<< ((((((((((((((((((((((((((((((((((((((( )))))))))))))))))))))))))))))))))))))))))) >>>>>>>>>>>')
+    return HttpResponse(progress)
+
 
 
 
