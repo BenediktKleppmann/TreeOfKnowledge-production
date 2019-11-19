@@ -768,7 +768,7 @@
 		
 		// write text
 		if (number_of_rules_to_learn > 0) {
-			simulation_explanation = 	'There are two steps to the current simulations: /n' + 
+			simulation_explanation = 	'There are two steps to the current simulations: ' + 
 					'<ul>' + 
 					'    <li>First: the probability of ' + String(number_of_rules_to_learn) + ' rules are being learned by running 1 000 - 5 000 simulations</li>' + 
 					'    <li>Second: 300 simulations are run using the learned rule probabilities. Due to their probabilistic nature the individual simulations vary, with the 300 simulations you can however get an idea of the overall probabilities for different outcomes. </li>' + 
@@ -810,7 +810,7 @@
 				
 				//bayesian-learning-progress
 				$('#bayesian-learning-progress').attr('style','width:' + String(100 * progress_dict['nb_of_accepted_simulations_current']/progress_dict['nb_of_accepted_simulations_total']) + '%')
-				if (progress_dict['learning__post_processing']) {
+				if (progress_dict['learning_likelihoods']) {
 					$('#bayesian-learning-progress-description').html('Number of sufficiently correct simulations: ' +  String(progress_dict['nb_of_accepted_simulations_current']) + '/' + String(progress_dict['nb_of_accepted_simulations_total']) + ' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ' + progress_dict['learning__post_processing']);
 				} else {
 					$('#bayesian-learning-progress-description').html('');

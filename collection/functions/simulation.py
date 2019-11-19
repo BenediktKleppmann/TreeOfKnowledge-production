@@ -69,7 +69,7 @@ class Simulator:
 
         # #(simulations)
         self.nb_of_accepted_simulations = 500
-        self.rej = None
+        self.elfi_sampler = None
 
 
         #  --- colors ---
@@ -224,10 +224,10 @@ class Simulator:
         d = elfi.Distance(self.n_dimensional_distance, S1)
         # d = elfi.Distance(self.n_dimensional_distance, S1, model=self.elfi_model)
         rej = elfi.Rejection(d, batch_size=batch_size, seed=30052017)
-        self.rej = rej
         # rej = elfi.Rejection(self.elfi_model, d, batch_size=batch_size, seed=30052017)
-
+        self.elfi_sampler = rej
         result = rej.sample(self.nb_of_accepted_simulations, threshold=.5)
+
 
         # PART 2 - Post Processing
         for rule_number, rule in enumerate(self.rules):
@@ -274,6 +274,8 @@ class Simulator:
                                                         nb_of_sim_in_which_rule_was_used=nb_of_sim_in_which_rule_was_used,
                                                         nb_of_values_in_posterior=nb_of_values_in_posterior)
                 likelihood_fuction.save()
+
+        
 
 
 
@@ -395,11 +397,12 @@ class Simulator:
 # ===========================================================================================================
 
 
+
     #  Rule Learning  ---------------------------------------------------------------------------------
     def likelihood_learning_simulator(self, df, rules, *rule_priors, batch_size, random_state=None):
         self.number_of_batches += 1
 
-        nb_of_accepted_simulations_current = self.rej.extract_result()['n_batches']
+        nb_of_accepted_simulations_current = get_nb_of_accepted_simulations_current(self)
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_dict_string = json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_accepted_simulations, "nb_of_accepted_simulations_current": nb_of_accepted_simulations_current , "learning__post_processing": "" , "running_monte_carlo": False })
             print(progress_dict_string)
@@ -631,17 +634,6 @@ class Simulator:
               
             print('10')  
             errors = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), self.y0_values)
-
-            print('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-            # y0_values_in_simulation_dict = y0_values_in_simulation.to_dict('records')
-            # with open("C:/Users/l412/Documents/2 temporary stuff/2019-08-13/y0_values_in_simulation.txt", "w") as text_file:
-            #     text_file.write(json.dumps(y0_values_in_simulation_dict))
-
-            # with open("C:/Users/l412/Documents/2 temporary stuff/2019-08-13/y0_values.txt", "w") as text_file:
-            #     text_file.write(json.dumps(self.y0_values))
-            print(len(df.index))
-            print(len(list(errors)))
-            print('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
             error_df = pd.DataFrame({  'simulation_number': [str(index) + '-' + str(batch_number) for index in df.index],
                                         'error': errors})
             errors_df = errors_df.append(error_df)
@@ -800,10 +792,10 @@ class Simulator:
 
 
 
-
-
-
-
-
-
-    
+def get_nb_of_accepted_simulations_current(simulation_class):
+    # ELFI's Progressbar shows the number of completed batches vs. the number of expected batches
+    # i.e.: simulation_class.elfi_sampler.state['n_batches']  vs.  simulation_class.elfi_sampler._objective_n_batches
+    if simulation_class.elfi_sampler.state['samples'] is not None:
+        return len(simulation_class.elfi_sampler.state['samples'].keys())
+    else:
+        return 0
