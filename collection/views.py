@@ -5,7 +5,7 @@ from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
-from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_datapoints, simulate, simulation, rule_learner
+from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_datapoints, simulation
 from django.http import HttpResponse
 import json
 import traceback
@@ -21,6 +21,7 @@ import math
 from scipy.stats import beta
 import scipy
 from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
 
 
  # ===============================================================================
@@ -47,7 +48,15 @@ def subscribe(request):
         if form.is_valid():
             form.save()
             email = form.cleaned_data['email']
+            first_name = form.cleaned_data['first_name']
             subscriber = Newsletter_subscriber.objects.get(email=email)
+
+            message = '''Hi ''' + first_name + ''',
+
+            Thank you for subscribing to the Tree of Knowledge newsletter.
+            '''
+            email_message = EmailMultiAlternatives('Tree of Knowledge Newsletter', message, 'noreply@treeofknowledge.ai', [email])
+            email_message.send()
             return redirect('subscriber_page', userid=subscriber.userid)
         else:
             return render(request, 'subscribe.html', {'error_occured': True,})
@@ -908,24 +917,24 @@ def save_changed_simulation(request):
 
 
 # used in: learn_rule.html
-@login_required
-def save_learned_rule(request):
-    if request.method == 'POST':
-        try:
-            request_body = json.loads(request.body)
+# @login_required
+# def save_learned_rule(request):
+#     if request.method == 'POST':
+#         try:
+#             request_body = json.loads(request.body)
 
-            learned_rule_record = Learned_rule.objects.get(id=request_body['learned_rule_id'])
-            learned_rule_record.object_type_id = request_body['object_type_id']
-            learned_rule_record.object_filter_facts = json.dumps(request_body['object_filter_facts'])
-            learned_rule_record.specified_factors = json.dumps(request_body['specified_factors'])
-            learned_rule_record.save()
+#             learned_rule_record = Learned_rule.objects.get(id=request_body['learned_rule_id'])
+#             learned_rule_record.object_type_id = request_body['object_type_id']
+#             learned_rule_record.object_filter_facts = json.dumps(request_body['object_filter_facts'])
+#             learned_rule_record.specified_factors = json.dumps(request_body['specified_factors'])
+#             learned_rule_record.save()
 
-            return HttpResponse("success")
-        except Exception as error:
-            traceback.print_exc()
-            return HttpResponse(str(error))
-    else:
-        return HttpResponse("This must be a POST request.")
+#             return HttpResponse("success")
+#         except Exception as error:
+#             traceback.print_exc()
+#             return HttpResponse(str(error))
+#     else:
+#         return HttpResponse("This must be a POST request.")
 
 
 # used in: learn_rule.html
@@ -1056,13 +1065,13 @@ def edit_column(request):
 
 
 # used in learn_rule.html
-@login_required
-def learn_rule_from_factors(request):
-    learned_rule_id = int(request.GET.get('learned_rule_id', 0))
-    the_rule_learner = rule_learner.Rule_Learner(learned_rule_id)
-    response = the_rule_learner.run()
+# @login_required
+# def learn_rule_from_factors(request):
+#     learned_rule_id = int(request.GET.get('learned_rule_id', 0))
+#     the_rule_learner = rule_learner.Rule_Learner(learned_rule_id)
+#     response = the_rule_learner.run()
 
-    return HttpResponse(json.dumps(response))
+#     return HttpResponse(json.dumps(response))
 
 
 
@@ -1330,6 +1339,7 @@ def edit_simulation(request, simulation_id):
 
 
 
+
 @login_required
 def get_simulation_progress(request):
     simulation_id = request.GET.get('simulation_id', '')
@@ -1337,9 +1347,6 @@ def get_simulation_progress(request):
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + simulation_id + '.txt') as file:       
         progress = file.readline()
 
-    print('<<<<<<<<< ((((((((((((((((((((((((((((((((((((((( )))))))))))))))))))))))))))))))))))))))))) >>>>>>>>>>>')
-    print(progress)
-    print('<<<<<<<<< ((((((((((((((((((((((((((((((((((((((( )))))))))))))))))))))))))))))))))))))))))) >>>>>>>>>>>')
     return HttpResponse(progress)
 
 
@@ -1350,78 +1357,65 @@ def analyse_simulation(request, simulation_id):
     print('analyse_simulation')
    
     if request.method == 'POST':
-        print('analyse_simulation - post')
         the_simulator = simulation.Simulator(simulation_id)
         the_simulator.run()
         simulation_model = Simulation_model.objects.get(id=simulation_id)
         return render(request, 'tree_of_knowledge_frontend/analyse_simulation.html', {'simulation_model':simulation_model})
 
-        # the_simulator = simulate.Simulation(simulation_id)
-        # the_simulator.run()
 
-        # # save simulation results in simulation object
-        # timeline_visualisation_data = the_simulator.get_timeline_visualisation_data()
-        # simulation_model.timeline_visualisation_data = json.dumps(timeline_visualisation_data)
-        # linegraph_data = the_simulator.get_linegraph_data()
-        # simulation_model.linegraph_data = json.dumps(linegraph_data)
-        # attribute_errors = the_simulator.get_attribute_errors()
-        # simulation_model.attribute_errors = json.dumps(attribute_errors)
-        # simulation_model.save()
-        # return redirect('analyse_simulation', simulation_id=simulation_id)
-    print('analyse_simulation - not post')
+    with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
+        progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
     simulation_model = Simulation_model.objects.get(id=simulation_id)
-    print('got the model, now loading page')
     return render(request, 'tree_of_knowledge_frontend/analyse_simulation.html', {'simulation_model':simulation_model})
 
 
-@login_required
-def setup_rule_learning(request, simulation_id):
-
-    simulation_model = Simulation_model.objects.get(id=simulation_id)
-    objects_dict = json.loads(simulation_model.objects_dict)
-
-    object_number = int(request.POST.get('object_number', None))
-    attribute_id = int(request.POST.get('attribute_id', None))
-
-    valid_times = []
-    times = np.arange(simulation_model.simulation_start_time + simulation_model.timestep_size, simulation_model.simulation_end_time, simulation_model.timestep_size)
-    for index in range(len(times)-1):
-        valid_times.append([int(times[index]), int(times[index + 1])])
-
-    learned_rule = Learned_rule(object_type_id=objects_dict[str(object_number)]['object_type_id'], 
-                                object_type_name=objects_dict[str(object_number)]['object_type_name'],
-                                attribute_id=attribute_id,
-                                attribute_name=objects_dict[str(object_number)]['object_attributes'][str(attribute_id)]['attribute_name'],
-                                object_filter_facts=json.dumps(objects_dict[str(object_number)]['object_filter_facts']),
-                                specified_factors = json.dumps({}),
-                                sorted_factor_numbers = json.dumps([]),
-                                valid_times= json.dumps(valid_times),
-                                min_score_contribution = 0.01,
-                                max_p_value = 0.05,
-                                user=request.user)
-
-    learned_rule.save()
-    learned_rule_id = learned_rule.id
-
-    # if you wanted the learn-rule-page to be initialized with the all the plain variables as factors: 
-    # the_rule_learner = rule_learner.Rule_Learner(learned_rule_id)
-    # response = the_rule_learner.run()
 
 
-    return redirect('learn_rule', learned_rule_id=learned_rule_id)
+# @login_required
+# def setup_rule_learning(request, simulation_id):
+
+#     simulation_model = Simulation_model.objects.get(id=simulation_id)
+#     objects_dict = json.loads(simulation_model.objects_dict)
+
+#     object_number = int(request.POST.get('object_number', None))
+#     attribute_id = int(request.POST.get('attribute_id', None))
+
+#     valid_times = []
+#     times = np.arange(simulation_model.simulation_start_time + simulation_model.timestep_size, simulation_model.simulation_end_time, simulation_model.timestep_size)
+#     for index in range(len(times)-1):
+#         valid_times.append([int(times[index]), int(times[index + 1])])
+
+#     learned_rule = Learned_rule(object_type_id=objects_dict[str(object_number)]['object_type_id'], 
+#                                 object_type_name=objects_dict[str(object_number)]['object_type_name'],
+#                                 attribute_id=attribute_id,
+#                                 attribute_name=objects_dict[str(object_number)]['object_attributes'][str(attribute_id)]['attribute_name'],
+#                                 object_filter_facts=json.dumps(objects_dict[str(object_number)]['object_filter_facts']),
+#                                 specified_factors = json.dumps({}),
+#                                 sorted_factor_numbers = json.dumps([]),
+#                                 valid_times= json.dumps(valid_times),
+#                                 min_score_contribution = 0.01,
+#                                 max_p_value = 0.05,
+#                                 user=request.user)
+
+#     learned_rule.save()
+#     learned_rule_id = learned_rule.id
 
 
 
-@login_required
-def learn_rule(request, learned_rule_id):
-    learned_rule = Learned_rule.objects.get(id=learned_rule_id)
+#     return redirect('learn_rule', learned_rule_id=learned_rule_id)
 
-    available_attributes = []
-    list_of_parent_objects = get_from_db.get_list_of_parent_objects(learned_rule.object_type_id)
-    for parent_object in list_of_parent_objects:
-        available_attributes.extend(list(Attribute.objects.filter(first_applicable_object_type=parent_object['id']).values('name', 'id', 'data_type')))
 
-    return render(request, 'tree_of_knowledge_frontend/learn_rule.html', {'learned_rule':learned_rule, 'available_attributes': available_attributes})
+
+# @login_required
+# def learn_rule(request, learned_rule_id):
+#     learned_rule = Learned_rule.objects.get(id=learned_rule_id)
+
+#     available_attributes = []
+#     list_of_parent_objects = get_from_db.get_list_of_parent_objects(learned_rule.object_type_id)
+#     for parent_object in list_of_parent_objects:
+#         available_attributes.extend(list(Attribute.objects.filter(first_applicable_object_type=parent_object['id']).values('name', 'id', 'data_type')))
+
+#     return render(request, 'tree_of_knowledge_frontend/learn_rule.html', {'learned_rule':learned_rule, 'available_attributes': available_attributes})
 
 
 
@@ -1485,6 +1479,14 @@ def upload_file(request):
 
 
 def test_page1(request):
+
+    message = '''Hi ''' + user.username + ''',
+
+Thank you for signing up to the Tree of Knowledge.'''
+    email_message = EmailMultiAlternatives('Tree of Knowledge Newsletter', message, 'noreply@treeofknowledge.ai', ['benedikt@kleppmann.de'])
+    email_message.send()
+
+
     # object_type_id = "j1_12"
     # filter_facts = []
     # specified_start_time = 946684800
@@ -1492,8 +1494,8 @@ def test_page1(request):
     # response = query_datapoints.get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time)
     # attributes = list(Attribute.objects.all().values())
     # list_of_child_objects = get_from_db.get_list_of_child_objects("j1_5")
-    # return HttpResponse("success")
-    return render(request, 'tree_of_knowledge_frontend/test_page1.html')
+    return HttpResponse("success")
+    # return render(request, 'tree_of_knowledge_frontend/test_page1.html')
 
 
 

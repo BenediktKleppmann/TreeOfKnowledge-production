@@ -458,6 +458,26 @@
 		margin-top: 2px;
 	}
 	
+	#progress-bars {
+		display: inline-block;
+		width: calc(100% - 105px);
+	}
+	
+	#cancel-simulation-button {
+		display: inline-block;
+		float: right;
+		font-size: 14px;
+		padding: 7px 7px;
+	    background: white;
+		border: 1px solid rgb(220, 53, 69);
+		color: rgb(220, 53, 69);
+	}
+	
+	#cancel-simulation-button:hover {
+	    background: rgb(220, 53, 69);
+		color: white;
+	}
+	
 	.progress {
 		margin-bottom: 0px;
 	}
@@ -530,7 +550,7 @@
 					</button>
 				</div>
 				<div class="modal-body" style="margin-top:15px;">
-					<div class="container-fluid">
+					<div id="progress-bars">
 						<div id="bayesian-learning-progress-box" class="progress">
 							<div id="bayesian-learning-progress" class="progress-bar" style="width:0%"></div>
 						</div>
@@ -540,6 +560,7 @@
 						</div>
 						<div id="monte-carlo-progress-description" class="progress-description"></div>
 					</div>
+					<button id="cancel-simulation-button" type="button" class="btn btn-outline-danger" onclick="abort_simulation();" >Cancel<br>Simulations</button>
 					<div id="simulation-explanation">
 					</div>
 				    <b>How the simulations work</b><br>
@@ -567,6 +588,7 @@
 	var delta_t_list = ['delta_t (years)', 'delta_t (months)', 'delta_t (days)', 'delta_t (hours)', 'delta_t (minutes)', 'delta_t (seconds)'];
 	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1];
 	var got_object_data = false;
+	var run_simulation_post_request;
 	
 	
 
@@ -618,7 +640,13 @@
 	// Draw the Left Panel (For the Design-State)    =============================================================================
 	function drawLeftPanel__simulate() {
 	
-
+		if (is_timeseries_analysis){
+			timeseries_option = 'selected';
+			cross_section_option = '';
+		} else {
+			timeseries_option = '';
+			cross_section_option = 'selected';		
+		}
 								
 		left_panel__simulate = 	'<div class="left-panel-title">Simulation</div>' +
 								'<div class="form left-panel-body">' +
@@ -626,8 +654,8 @@
 										'<label for="analysis_type" class="col-sm-5">Analysis Type</label>' +
 										'<div class="col-sm-7">' +
 											'<select id="analysis_type" class="form-control col-sm-7" onchange="changeAnalysisType()">' +
-												'<option selected>Timeseries Analysis</option>' +
-												'<option>Cross-sectional Analysis</option>' +
+												'<option ' + timeseries_option + '>Timeseries Analysis</option>' +
+												'<option ' + cross_section_option + '>Cross-sectional Analysis</option>' +
 											'</select>' +
 										'</div>' + 
 									'</div>' + 
@@ -647,6 +675,7 @@
 		var analysis_type = $('#analysis_type').find(":selected").text();
 		
 		if (analysis_type == 'Timeseries Analysis'){
+			is_timeseries_analysis = true;
 			analysis_details_html_string = 	'<div class="form-group row">' +
 												'<label for="max" class="col-sm-5">Start Time</label>' +
 												'<div class="col-sm-7">' +
@@ -722,7 +751,7 @@
 			}
 			
 		} else if (analysis_type == 'Cross-sectional Analysis'){
-		
+			is_timeseries_analysis = false;
 			$('#analysis-details-box').html('');
 		}
 	}
@@ -772,7 +801,7 @@
 					'<ul>' + 
 					'    <li>First: the probability of ' + String(number_of_rules_to_learn) + ' rules are being learned by running 1 000 - 5 000 simulations</li>' + 
 					'    <li>Second: 300 simulations are run using the learned rule probabilities. Due to their probabilistic nature the individual simulations vary, with the 300 simulations you can however get an idea of the overall probabilities for different outcomes. </li>' + 
-					'</ul><br><br>';
+					'</ul><br>';
 			$('#simulation-explanation').html(simulation_explanation);
 			$('#bayesian-learning-progress-box').css('display','block');
 			$('#bayesian-learning-progress-description').css('display','block');
@@ -794,24 +823,14 @@
 			if (this.readyState == 4 && this.status == 200) {
 				
 				var progress_dict = JSON.parse(this.responseText);
-				console.log(progress_dict["monte_carlo__simulation_number"]);
-				console.log(progress_dict["monte_carlo__number_of_simulations"]);
-				console.log(progress_dict['monte_carlo__post_processing']);
-				console.log('----------------------------');
-				//progress_dict = {"learning_likelihoods":False, 
-				//				"nb_of_accepted_simulations_total": 500, 
-				//				"nb_of_accepted_simulations_current": 500, 
-				//				"learning__post_processing": "" , 
-				//				"running_monte_carlo": "true", 
-				//				"monte_carlo__simulation_number": 300, 
-				//				"monte_carlo__number_of_simulations":  300, 
-				//				"monte_carlo__post_processing":"Post-processing:  calculating the simulated values errors"};
-				
-				
 				//bayesian-learning-progress
 				$('#bayesian-learning-progress').attr('style','width:' + String(100 * progress_dict['nb_of_accepted_simulations_current']/progress_dict['nb_of_accepted_simulations_total']) + '%')
 				if (progress_dict['learning_likelihoods']) {
-					$('#bayesian-learning-progress-description').html('Number of sufficiently correct simulations: ' +  String(progress_dict['nb_of_accepted_simulations_current']) + '/' + String(progress_dict['nb_of_accepted_simulations_total']) + ' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ' + progress_dict['learning__post_processing']);
+					if (progress_dict['learning__post_processing'].substring(0, 12) == 'Initializing') {
+						$('#bayesian-learning-progress-description').html(progress_dict['learning__post_processing']);
+					} else {
+						$('#bayesian-learning-progress-description').html('Number of sufficiently correct simulations: ' +  String(progress_dict['nb_of_accepted_simulations_current']) + '/' + String(progress_dict['nb_of_accepted_simulations_total']) + ' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ' + progress_dict['learning__post_processing']);
+					}
 				} else {
 					$('#bayesian-learning-progress-description').html('');
 				}
@@ -819,15 +838,20 @@
 				//monte-carlo-simulation-progress
 				$('#monte-carlo-simulation-progress').attr('style','width:' + String(100 * progress_dict['monte_carlo__simulation_number']/progress_dict['monte_carlo__number_of_simulations']) + '%')
 				if (progress_dict['running_monte_carlo']) {
-					$('#monte-carlo-progress-description').html('Number of simulations: ' +  String(progress_dict['monte_carlo__simulation_number']) + '/' + String(progress_dict['monte_carlo__number_of_simulations']) + ' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ' + progress_dict['monte_carlo__post_processing']);
+					if (progress_dict['monte_carlo__post_processing'].substring(0, 12) == 'Initializing') {
+						$('#bayesian-learning-progress-description').html(progress_dict['monte_carlo__post_processing']);
+					} else {
+						$('#monte-carlo-progress-description').html('Number of simulations: ' +  String(progress_dict['monte_carlo__simulation_number']) + '/' + String(progress_dict['monte_carlo__number_of_simulations']) + ' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ' + progress_dict['monte_carlo__post_processing']);
+					}			
 				} else {
 					$('#monte-carlo-progress-description').html('');
 				}
 						
 						
 				
-				
-				window.setTimeout(() => { update_the_progress_bar();}, 2000);
+				if (run_simulation_post_request.readyState < 4) {
+					window.setTimeout(() => { update_the_progress_bar();}, 2000);
+				}
 			}
 		};
 		xhttp.open("GET", "/tool/get_simulation_progress?simulation_id=" + simulation_id , true);
@@ -836,12 +860,51 @@
 	
 	
 	async function submit_form() {
-		form_html_string =	"<form role='form' action='' method='post' class='form' enctype='multipart/form-data'>" + 
+	
+		var url_components = window.location.href.split("/");
+		var simulation_id = url_components[url_components.length - 2];
+		
+		run_simulation_post_request = new XMLHttpRequest();   // new HttpRequest instance 
+		run_simulation_post_request.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log('!!!!!!!!!!!!  completed simulation  !!!!!!!!!!!!!!!!!');
+				var w = window.open("/tool/edit_simulation/" + simulation_id + "/");
+				w.document.open();
+				w.document.write(this.response);
+				w.document.close();
+				$('#simulationProgressModal').modal('hide');
+				
+			}
+		};
+		run_simulation_post_request.open("POST", "/tool/edit_simulation/" + simulation_id + "/");
+		run_simulation_post_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		run_simulation_post_request.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		run_simulation_post_request.send();
+			
+		/*	
+		var url_components = window.location.href.split("/");
+		var simulation_id = url_components[url_components.length - 2];
+		run_simulation_post_request = $.post("/tool/edit_simulation/" + simulation_id + "/", {csrfmiddlewaretoken: "{% csrf_token %}"}, function(result){
+			var w = window.open('about:blank');
+			w.document.open();
+			w.document.write(result);
+			w.document.close();
+		}); */
+
+		/*form_html_string =	"<form role='form' action='' method='post' class='form' enctype='multipart/form-data'>" + 
 								"{% csrf_token %}" +
 							"</form>";
-		$(form_html_string).appendTo("body").submit();
+		$(form_html_string).appendTo("body").submit();*/
 	}
 	
+	function abort_simulation() {
+		if (run_simulation_post_request) {
+			run_simulation_post_request.abort();
+		}
+		
+		$('#simulationProgressModal').modal('hide');
+		
+	}
 	
 	
 	

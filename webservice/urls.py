@@ -1,5 +1,6 @@
 # from registration.backends.simple.views import RegistrationView
 from collection.backends import TOKRegistrationView
+from registration.forms import RegistrationFormUniqueEmail
 from django.contrib import admin
 from collection import views
 from django.views.generic import RedirectView
@@ -45,7 +46,7 @@ urlpatterns = [
     url(r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', password_reset_confirm, {'template_name': 'registration/password_reset_confirm.html'}, name='password_reset_confirm'),
     url(r'^accounts/password/done/$', password_reset_complete, {'template_name': 'registration/password_reset_complete.html'}, name='password_reset_complete'),
     # url(r'^accounts/register/$', RegistrationView.as_view(),name='registration_register'),
-    url(r'^accounts/register/$', TOKRegistrationView.as_view(),name='registration_register'),
+    url(r'^accounts/register/$', TOKRegistrationView.as_view(), name='registration_register'),
     url(r'^accounts/register/complete/$', TemplateView.as_view(template_name='registration/registration_complete.html'), name='registration_complete'),
     url(r'^accounts/', include('registration.backends.simple.urls')),
     url(r'^', include('django.contrib.auth.urls')),
@@ -104,7 +105,7 @@ urlpatterns = [
     url(r'^tool/save_changed_attribute/$', views.save_changed_attribute, name='save_changed_attribute'),
     url(r'^tool/save_rule/$', views.save_rule, name='save_rule'),
     url(r'^tool/save_changed_simulation/$', views.save_changed_simulation, name='save_changed_simulation'),
-    url(r'^tool/save_learned_rule/$', views.save_learned_rule, name='save_learned_rule'),
+    # url(r'^tool/save_learned_rule/$', views.save_learned_rule, name='save_learned_rule'),
     url(r'^tool/save_changed_object_type_icon/$', views.save_changed_object_type_icon, name='save_changed_object_type_icon'),
     # delete
     url(r'^tool/delete_object_type/$', views.delete_object_type, name='delete_object_type'),
@@ -112,7 +113,7 @@ urlpatterns = [
     url(r'^tool/delete_rule/$', views.delete_rule, name='delete_rule'),
     # process
     url(r'^tool/edit_column/$', views.edit_column, name='edit_column'),
-    url(r'^tool/learn_rule_from_factors/$', views.learn_rule_from_factors, name='learn_rule_from_factors'),
+    # url(r'^tool/learn_rule_from_factors/$', views.learn_rule_from_factors, name='learn_rule_from_factors'),
     # column format
     url(r'^tool/suggest_attribute_format/$', views.suggest_attribute_format, name='suggest_attribute_format'),
     url(r'^tool/get_columns_format_violations/$', views.get_columns_format_violations, name='get_columns_format_violations'),
@@ -130,8 +131,8 @@ urlpatterns = [
     url(r'^tool/edit_simulation/(?P<simulation_id>[-\d]+)/$', views.edit_simulation, name='edit_simulation'),
     url(r'^tool/get_simulation_progress/$', views.get_simulation_progress, name='get_simulation_progress'),
     url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/$', views.analyse_simulation, name='analyse_simulation'),
-    url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/setup_rule_learning/$', views.setup_rule_learning, name='setup_rule_learning'),
-    url(r'^tool/learn_rule/(?P<learned_rule_id>[-\d]+)/$', views.learn_rule, name='learn_rule'),
+    # url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/setup_rule_learning/$', views.setup_rule_learning, name='setup_rule_learning'),
+    # url(r'^tool/learn_rule/(?P<learned_rule_id>[-\d]+)/$', views.learn_rule, name='learn_rule'),
     
 
 	# catching missspellt urls...

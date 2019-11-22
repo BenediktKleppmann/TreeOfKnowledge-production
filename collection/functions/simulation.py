@@ -52,6 +52,7 @@ class Simulator:
         simulation_model_record = Simulation_model.objects.get(id=simulation_id)
 
         # self.elfi_model = elfi.ElfiModel() 
+        elfi.new_model()
         self.objects_dict = json.loads(simulation_model_record.objects_dict)
         self.simulation_start_time = simulation_model_record.simulation_start_time
         self.simulation_end_time = simulation_model_record.simulation_end_time
@@ -153,7 +154,6 @@ class Simulator:
 
 
                     if rule['learn_posterior']:
-
                         new_prior = elfi.Prior('uniform', 0, 1, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
                         # new_prior = elfi.Prior('uniform', 0, 1, model=self.elfi_model, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
                         self.rule_priors.append(new_prior)
@@ -200,7 +200,7 @@ class Simulator:
 
         (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(300)
         self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df, 300)
-        print('end of simulation')
+
 
 
 
@@ -213,7 +213,6 @@ class Simulator:
 
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_dict_string = json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_accepted_simulations, "nb_of_accepted_simulations_current": 0,  "learning__post_processing": "" , "running_monte_carlo": False })
-            print(progress_dict_string)
             progress_tracking_file.write(progress_dict_string)
 
 
@@ -289,7 +288,6 @@ class Simulator:
 
 
         # rule_infos
-        print('__post_process_data1')
         triggered_rules_df = triggered_rules_df[triggered_rules_df['triggered_rule'].notnull()]
         rule_ids = [triggered_rule_info['id'] for triggered_rule_info  in list(triggered_rules_df['triggered_rule'])]
         rule_ids = list(set(rule_ids))
@@ -301,14 +299,13 @@ class Simulator:
 
 
         # triggered_rules
-        print('__post_process_data2')
         triggered_rules_per_period = triggered_rules_df.groupby(['batch_number','initial_state_id','attribute_id','period']).aggregate({'initial_state_id':'first',
                                                                                                         'batch_number':'first',
                                                                                                         'attribute_id':'first',
                                                                                                         'period':'first',
                                                                                                         'triggered_rule':list,
                                                                                                         'correct_value':'first',})  
-        print('__post_process_data3')
+
         attribute_dict = {attribute_id: {} for attribute_id in triggered_rules_df['attribute_id'].unique().tolist()}
         triggered_rules = {}
         for batch_number in triggered_rules_df['batch_number'].unique().tolist():
@@ -325,7 +322,7 @@ class Simulator:
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write(json.dumps({"learning_likelihoods": (len(self.rule_priors) > 0) , "nb_of_accepted_simulations_total": self.nb_of_accepted_simulations, "nb_of_accepted_simulations_current": self.nb_of_accepted_simulations , "learning__post_processing": "" , "running_monte_carlo": "true", "monte_carlo__simulation_number": number_of_simulations, "monte_carlo__number_of_simulations":  number_of_simulations, "monte_carlo__post_processing":"Post-processing:  formatting simulated values"}))
 
-        print('__post_process_data4')
+
         simulation_data = {}
         attribute_ids = [attr_id for attr_id in simulation_data_df.columns if attr_id not in ['batch_number','initial_state_id','attribute_id','period', 'randomNumber', 'cross_join_column']]
         aggregation_dict = {attr_id:list for attr_id in attribute_ids}
@@ -349,7 +346,6 @@ class Simulator:
             progress_tracking_file.write(json.dumps({"learning_likelihoods": (len(self.rule_priors) > 0), "nb_of_accepted_simulations_total": self.nb_of_accepted_simulations, "nb_of_accepted_simulations_current": self.nb_of_accepted_simulations, "learning__post_processing": "" , "running_monte_carlo": True, "monte_carlo__simulation_number": number_of_simulations, "monte_carlo__number_of_simulations":  number_of_simulations, "monte_carlo__post_processing":"Post-processing:  calculating the simulated values' errors"}))
 
 
-        print('__post_process_data5')
         errors = {}
         errors['score'] = 1 - errors_df['error'].mean()
         errors['correct_simulations'] = list(errors_df.loc[errors_df['error'] < 0.25, 'simulation_number'])
@@ -358,7 +354,6 @@ class Simulator:
 
 
         # Front-End too slow?
-        print('__post_process_data6')
         number_of_megabytes =len(json.dumps(simulation_data))/1000000
         if number_of_megabytes > 3:
             number_of_simulations_to_keep = int(len(simulation_data) * 3 / number_of_megabytes)
@@ -369,7 +364,7 @@ class Simulator:
             # triggered_rules = triggered_rules[:number_of_simulations_to_send]
 
 
-        print('__post_process_data7')
+
         simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
         simulation_model_record.just_learned_rules = json.dumps(self.just_learned_rules)
         simulation_model_record.rule_infos = json.dumps(rule_infos)
@@ -378,7 +373,6 @@ class Simulator:
         simulation_model_record.correct_values = json.dumps(correct_values)
         simulation_model_record.errors = json.dumps(errors)
         simulation_model_record.save()
-        print('__post_process_data8')
 
 
 
@@ -405,7 +399,6 @@ class Simulator:
         nb_of_accepted_simulations_current = get_nb_of_accepted_simulations_current(self)
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_dict_string = json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_accepted_simulations, "nb_of_accepted_simulations_current": nb_of_accepted_simulations_current , "learning__post_processing": "" , "running_monte_carlo": False })
-            print(progress_dict_string)
             progress_tracking_file.write(progress_dict_string)
 
         for rule_np in range(len(rules)):
@@ -502,19 +495,16 @@ class Simulator:
         batch_size = len(y0)
 
 
-        print('1')
         simulation_data_df = pd.DataFrame()
         triggered_rules_df = pd.DataFrame()
         errors_df = pd.DataFrame()
 
 
-        print('2')
         number_of_batches = math.ceil(nb_of_simulations/batch_size)
         for batch_number in range(number_of_batches):
 
             with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
                 progress_dict_string = json.dumps({"learning_likelihoods": (len(self.rule_priors) > 0), "nb_of_accepted_simulations_total": self.nb_of_accepted_simulations, "nb_of_accepted_simulations_current": self.nb_of_accepted_simulations, "learning__post_processing": "" , "running_monte_carlo": "true", "monte_carlo__simulation_number": (batch_number*batch_size), "monte_carlo__number_of_simulations":  nb_of_simulations, "monte_carlo__post_processing":""})
-                print(progress_dict_string)
                 progress_tracking_file.write(progress_dict_string)
 
 
@@ -534,20 +524,21 @@ class Simulator:
                 times = [self.simulation_start_time, self.simulation_end_time]
 
 
-            print('3')
+
             y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
             for period in range(len(times)-1):
                 for rule in self.rules:
-                    print('4')
 
                     # Apply Rule  ================================================================
                     if rule['is_conditionless']:
                         satisfying_rows = [True] * batch_size
                         condition_satisfying_rows = [True] * batch_size
+                        trigger_thresholds = [0] * batch_size
                     else:
                         df['randomNumber'] = np.random.random(batch_size)
                         satisfying_rows = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']) + '  & ' + str(rule['condition_exec'])).tolist()
                         condition_satisfying_rows = pd.eval(str(rule['condition_exec']))
+                        trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
                         
 
                     if rule['effect_is_calculation']:
@@ -567,21 +558,22 @@ class Simulator:
                             nan_rows = all_new_values.isnull()
                             all_new_values = all_new_values.astype(str)
                             all_new_values[nan_rows] = np.nan
+
                     else:
                         all_new_values = [json.loads(rule['effect_exec'])] * batch_size
+
 
                     new_values = [value for value, satisfying in zip(all_new_values,satisfying_rows) if satisfying]
                     df.loc[satisfying_rows,rule['column_to_change']] = new_values
 
 
 
+
                     # Save the Simulation State  =======================================================
-                    # triggered rules
-                    print('5')
-                    if rule['is_conditionless']: 
-                        trigger_thresholds = [0] * batch_size
-                    else:
-                        trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
+                    # if rule['is_conditionless']: 
+                    #     trigger_thresholds = [0] * batch_size
+                    # else:
+                    #     trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
 
 
 
@@ -597,7 +589,7 @@ class Simulator:
                                                             'v': calculated_values,         # v = new_value
                                                             'error':errors})
 
-                    print('6')
+
                     triggered_rule_infos = triggered_rule_infos_df.to_dict('records')
                     triggered_rule_infos = [rule_info if rule_info['condition_satisfied'] else None for rule_info in triggered_rule_infos]
                     for i in range(len(triggered_rule_infos)):
@@ -607,7 +599,6 @@ class Simulator:
                                     del triggered_rule_infos[i]['error']
 
 
-                    print('7')
                     currently_triggered_rules = pd.DataFrame({  'initial_state_id':df.index,
                                                                 'batch_number':[batch_number]*batch_size,
                                                                 'attribute_id':[rule['column_to_change']]*batch_size,
@@ -620,19 +611,17 @@ class Simulator:
 
                 
                 # simulated values
-                print('8')
                 df['initial_state_id'] = df.index
                 df['batch_number'] = batch_number
                 df['period'] = period
                 simulation_data_df = simulation_data_df.append(df)
 
                 # error
-                print('9')
                 y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
                 y0_values_in_this_period.columns = [col + 'period' + str(period) for col in y0_values_in_this_period.columns] #faster version
                 y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
               
-            print('10')  
+
             errors = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), self.y0_values)
             error_df = pd.DataFrame({  'simulation_number': [str(index) + '-' + str(batch_number) for index in df.index],
                                         'error': errors})
@@ -750,7 +739,7 @@ class Simulator:
 
 
 
-    def error_of_single_values(self, calculated_values, column_name, period):
+    def error_of_single_values(self, calculated_values, column_name, period):      
         initial_values = np.array(self.df[column_name])
         correct_values = np.array(pd.DataFrame(self.y0_values)[column_name + 'period' + str(period)])
 
