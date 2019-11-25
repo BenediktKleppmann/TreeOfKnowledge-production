@@ -17,12 +17,12 @@ def get_object_hierachy_tree():
         object_dict['parent'] = hierachy_object.parent
         object_dict['text'] = hierachy_object.name
         if hierachy_object.li_attr is not None:
-            # print("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUU")
-            # print(hierachy_object.name)
-            # print(hierachy_object.id)
-            # print(hierachy_object.li_attr)
-            # print(hierachy_object.a_attr)
-            # print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+            print("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUU")
+            print(hierachy_object.name)
+            print(hierachy_object.id)
+            print(hierachy_object.li_attr)
+            print(hierachy_object.a_attr)
+            print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
             object_dict['li_attr'] = json.loads(hierachy_object.li_attr)
         if hierachy_object.a_attr is not None:
             object_dict['a_attr'] = json.loads(hierachy_object.a_attr)
