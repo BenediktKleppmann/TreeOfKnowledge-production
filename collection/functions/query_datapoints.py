@@ -87,7 +87,7 @@ def find_matching_entities(match_attributes, match_values):
 
         # ----------  POSTGRES VS. SQLITE  ----------
         # group_concat (sqlite) vs. string_agg (postgres)
-        if 'DB_CONNECTION_URL' in os.environ:
+        if dict(os.environ)['DATABASE_URL'][:8]=='postgres':
               
 
             matched_objects_string = """
