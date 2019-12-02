@@ -302,10 +302,10 @@ def perform_uploading(uploaded_dataset, request):
                     INSERT INTO collection_data_point (object_id, attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end, data_quality) 
                     VALUES ''' 
                 insert_statement += ','.join(['(%s, %s, %s, %s, %s, %s, %s, %s, %s)']*len(rows_to_insert))
-                # print('=================================================')
+                print('=================================================')
                 # print(insert_statement)
-                # print('#############')
-                # print(rows_to_insert)
+                print('#############')
+                print(rows_to_insert)
                 cursor.fast_executemany = True 
                 cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
             print('4 - ' + str(time.time()))
