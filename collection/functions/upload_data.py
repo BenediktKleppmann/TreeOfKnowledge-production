@@ -259,9 +259,9 @@ def perform_uploading(uploaded_dataset, request):
                 string_value_column = [None]*number_of_entities
                 boolean_value_column = [None]*number_of_entities
             elif data_type == "bool": 
-                numeric_value_column = table_body[str(column_number)]
+                numeric_value_column = [None]*number_of_entities
                 string_value_column = [None]*number_of_entities
-                boolean_value_column = [None]*number_of_entities
+                boolean_value_column = table_body[str(column_number)]
             
 
             attribute_id_column = [attribute_id]*number_of_entities
