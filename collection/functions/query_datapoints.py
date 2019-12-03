@@ -230,7 +230,7 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
 
 
     with connection.cursor() as cursor:
-        query_string = 'SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);' % (', '.join('"{0}"'.format(object_type_id) for object_type_id in child_object_ids))
+        query_string = "SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);" % (", ".join("'{0}'".format(object_type_id) for object_type_id in child_object_ids))
         cursor.execute(query_string)
         object_ids = [entry[0] for entry in cursor.fetchall()]
 
@@ -389,7 +389,7 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
 
 
         with connection.cursor() as cursor:
-            query_string = 'SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);' % (', '.join("'{0}'".format(object_type_id) for object_type_id in child_object_ids))
+            query_string = "SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);" % (", ".join("'{0}'".format(object_type_id) for object_type_id in child_object_ids))
             cursor.execute(query_string)
             print(query_string)
             object_ids = [entry[0] for entry in cursor.fetchall()]
@@ -505,7 +505,7 @@ def get_training_data(object_type_id, filter_facts, valid_times):
     child_object_ids = [el['id'] for el in child_object_types]
 
     with connection.cursor() as cursor:
-        query_string = 'SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);' % (', '.join('"{0}"'.format(object_type_id) for object_type_id in child_object_ids))
+        query_string = 'SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);' % (', '.join("'{0}'".format(object_type_id) for object_type_id in child_object_ids))
         cursor.execute(query_string)
         object_ids = [entry[0] for entry in cursor.fetchall()]
 
