@@ -185,7 +185,7 @@ var selected_attribute_id = "1";
 				
 				$("#editAttributeModal #edit-name").val(response_dict["name"]);
 				$("#editAttributeModal #edit-attribute_id").val(response_dict["id"]);
-				$("#editAttributeModal #edit-description").html(response_dict["description"]);
+				$("#editAttributeModal #edit-description").val(response_dict["description"]);
 				$("#editAttributeModal #edit-expected_valid_period").val(response_dict["expected_valid_period"]);
 				first_applicable_object_type = response_dict["first_applicable_object_type"];
 				$("#editAttributeModal #type_edit").val(response_dict["data_type"]);
