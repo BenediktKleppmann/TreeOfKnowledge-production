@@ -1458,6 +1458,16 @@ def backup_database(request):
     else:
         return HttpResponse('An error occured')
 
+
+def remove_duplicate_datapoints(request):
+    populate_db.remove_duplicates()
+    return HttpResponse('success')
+
+def find_possibly_duplicate_objects(request):
+    response = populate_db.find_possibly_duplicate_objects()
+    return HttpResponse(response)
+
+
 def upload_file(request):
     errors = []
     if request.method == 'POST':
