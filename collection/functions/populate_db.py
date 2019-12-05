@@ -150,64 +150,65 @@ def remove_duplicates():
 
 
 def find_possibly_duplicate_objects():
-    if dict(os.environ)['DATABASE_URL'][:8]=='postgres':
+    if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]=='postgres':
+
+        with connection.cursor() as cursor:
+            
+            sql_string1 = """
+                CREATE TEMPORARY TABLE objects_object_id_lists AS
+                    SELECT object_id,
+                            list_of_object_id,
+                            number_of_object_id,
+                            ROW_NUMBER() OVER(PARTITION BY object_id ORDER BY COUNT(*) DESC) AS rank
+                    FROM 
+                    (
+                        SELECT  object_id,
+                                string_agg(DISTINCT object_id, ',')  OVER (PARTITION BY attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end ORDER BY object_id)  AS list_of_object_id,
+                                count(DISTINCT object_id)  OVER (PARTITION BY attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end) AS number_of_object_id
+                        FROM collection_data_point
+                    ) 
+                    GROUP BY object_id, list_of_object_id, number_of_object_id;
+            """
+            cursor.execute(sql_string1)
 
 
-        sql_string1 = """
-            CREATE TEMPORARY TABLE objects_object_id_lists AS
-                SELECT object_id,
-                        list_of_object_id,
-                        number_of_object_id,
-                        ROW_NUMBER() OVER(PARTITION BY object_id ORDER BY COUNT(*) DESC) AS rank
+            sql_string2 = '''
+                SELECT most_common_list_of_object_id.list_of_object_id
                 FROM 
                 (
+                    SELECT  object_id
+                    FROM objects_object_id_lists
+                    GROUP BY object_id
+                    HAVING MIN(number_of_object_id) > 1 
+                      AND COUNT(DISTINCT list_of_object_id) < 3
+                ) allowed_object_id
+                INNER JOIN (
                     SELECT  object_id,
-                            string_agg(DISTINCT object_id, ',')  OVER (PARTITION BY attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end ORDER BY object_id)  AS list_of_object_id,
-                            count(DISTINCT object_id)  OVER (PARTITION BY attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end) AS number_of_object_id
-                    FROM collection_data_point
-                ) 
-                GROUP BY object_id, list_of_object_id, number_of_object_id;
-        """
-        cursor.execute(sql_string1)
+                            list_of_object_id
+                    FROM objects_object_id_lists
+                    WHERE rank = 1
+                ) most_common_list_of_object_id
+                ON allowed_object_id.object_id = most_common_list_of_object_id.object_id
+                '''
 
+            result = cursor.execute(sql_string2)
+            list_of_lists__duplicate_objects = list(result)[0][0]
+            all_duplicate_objects = []
+            for duplicate_objects in list_of_lists__duplicate_objects:
 
-        sql_string2 = '''
-            SELECT most_common_list_of_object_id.list_of_object_id
-            FROM 
-            (
-                SELECT  object_id
-                FROM objects_object_id_lists
-                GROUP BY object_id
-                HAVING MIN(number_of_object_id) > 1 
-                  AND COUNT(DISTINCT list_of_object_id) < 3
-            ) allowed_object_id
-            INNER JOIN (
-                SELECT  object_id,
-                        list_of_object_id
-                FROM objects_object_id_lists
-                WHERE rank = 1
-            ) most_common_list_of_object_id
-            ON allowed_object_id.object_id = most_common_list_of_object_id.object_id
-            '''
+                # sql = '''
+                #     SELECT *
+                #     FROM crosstab(
+                #       'select object_id, attribute_id, value_as_string
+                #        from collection_data_point');
+                # '''
 
-        result = cursor.execute(sql_string2)
-        list_of_lists__duplicate_objects = list(result)[0][0]
-        all_duplicate_objects = []
-        for duplicate_objects in list_of_lists__duplicate_objects:
-
-            # sql = '''
-            #     SELECT *
-            #     FROM crosstab(
-            #       'select object_id, attribute_id, value_as_string
-            #        from collection_data_point');
-            # '''
-
-            duplicate_object_values_df = pd.read_sql_query('SELECT object_id, attribute_id, valid_time_start, valid_time_end,  value_as_string, FROM collection_data_point', connection)
-            duplicate_objects_df = duplicate_object_values_df.pivot(index='object_id', columns=['attribute_id', 'valid_time_start', 'valid_time_end'], values='value_as_string')
-            duplicate_objects = duplicate_objects_df.values.tolist()
-            all_duplicate_objects.append(duplicate_objects)
-        
-        return json.dumps(all_duplicate_objects)
+                duplicate_object_values_df = pd.read_sql_query('SELECT object_id, attribute_id, valid_time_start, valid_time_end,  value_as_string, FROM collection_data_point', connection)
+                duplicate_objects_df = duplicate_object_values_df.pivot(index='object_id', columns=['attribute_id', 'valid_time_start', 'valid_time_end'], values='value_as_string')
+                duplicate_objects = duplicate_objects_df.values.tolist()
+                all_duplicate_objects.append(duplicate_objects)
+            
+            return json.dumps(all_duplicate_objects)
 
     else:
         return 'This function only works on PostgreSQL databases'
