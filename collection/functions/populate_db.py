@@ -153,21 +153,21 @@ def find_possibly_duplicate_objects():
     if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]=='postgres':
 
         with connection.cursor() as cursor:
-            
+
             sql_string1 = """
                 CREATE TEMPORARY TABLE objects_object_id_lists AS
-                    SELECT object_id,
-                            list_of_object_id,
-                            number_of_object_id,
-                            ROW_NUMBER() OVER(PARTITION BY object_id ORDER BY COUNT(*) DESC) AS rank
+                    SELECT partitioned.object_id,
+                            partitioned.list_of_object_id,
+                            partitioned.number_of_object_id,
+                            ROW_NUMBER() OVER(PARTITION BY partitioned.object_id ORDER BY COUNT(*) DESC) AS rank
                     FROM 
                     (
                         SELECT  object_id,
                                 string_agg(DISTINCT object_id, ',')  OVER (PARTITION BY attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end ORDER BY object_id)  AS list_of_object_id,
                                 count(DISTINCT object_id)  OVER (PARTITION BY attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end) AS number_of_object_id
                         FROM collection_data_point
-                    ) 
-                    GROUP BY object_id, list_of_object_id, number_of_object_id;
+                    ) partitioned
+                    GROUP BY partitioned.object_id, partitioned.list_of_object_id, partitioned.number_of_object_id;
             """
             cursor.execute(sql_string1)
 
