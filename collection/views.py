@@ -1,11 +1,12 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404
 from django.shortcuts import render, redirect
 from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule, Likelihood_fuction
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
-from collection.functions import upload_data, get_from_db, populate_db, tdda_functions, query_datapoints, simulation
+from collection.functions import upload_data, get_from_db, admin_fuctions, tdda_functions, query_datapoints, simulation
 from django.http import HttpResponse
 import json
 import traceback
@@ -1433,25 +1434,30 @@ def analyse_simulation(request, simulation_id):
  # 
  # ==========================================================================
 
-
+@staff_member_required
 def newsletter_subscribers(request):
     newsletter_subscribers = Newsletter_subscriber.objects.all().order_by('email')
     return render(request, 'newsletter_subscribers.html', {'newsletter_subscribers': newsletter_subscribers,})
 
 
+@staff_member_required
 def clear_database(request):
-    populate_db.clear_object_types()
-    populate_db.clear_attributes()
+    admin_fuctions.clear_object_types()
+    admin_fuctions.clear_attributes()
     return HttpResponse('done')
 
+
+@staff_member_required
 def populate_database(request):
-    populate_db.populate_object_types()
-    populate_db.populate_attributes()
+    admin_fuctions.populate_object_types()
+    admin_fuctions.populate_attributes()
     return HttpResponse('done')
 
+
+@staff_member_required
 def backup_database(request):
-    success_for_object_types = populate_db.backup_object_types()
-    success_for_attributes = populate_db.backup_attributes()
+    success_for_object_types = admin_fuctions.backup_object_types()
+    success_for_attributes = admin_fuctions.backup_attributes()
 
     if (success_for_object_types and success_for_attributes):
         return HttpResponse('success')
@@ -1459,15 +1465,37 @@ def backup_database(request):
         return HttpResponse('An error occured')
 
 
+@staff_member_required
 def remove_duplicate_datapoints(request):
-    populate_db.remove_duplicates()
+    admin_fuctions.remove_duplicates()
     return HttpResponse('success')
 
+
+@staff_member_required
 def find_possibly_duplicate_objects(request):
-    response = populate_db.find_possibly_duplicate_objects()
-    return HttpResponse(response)
+    possibly_duplicate_objects = admin_fuctions.find_possibly_duplicate_objects()
+    return render(request, 'tree_of_knowledge_frontend/admin__find_possibly_duplicate_objects.html', {'possibly_duplicate_objects': possibly_duplicate_objects, 'object_types_names':object_types_names})
 
 
+@staff_member_required
+def inspect_individual_object_empty(request):
+    return render(request, 'tree_of_knowledge_frontend/admin__inspect_individual_object.html', {'individual_object': {}})
+
+@staff_member_required
+def inspect_individual_object(request, object_id):
+    individual_object = admin_fuctions.inspect_individual_object(object_id)
+    return render(request, 'tree_of_knowledge_frontend/admin__inspect_individual_object.html', {'individual_object': individual_object})
+
+@staff_member_required
+def get_individual_object(request):
+    object_id = request.GET.get('object_id', '')
+    individual_object = admin_fuctions.inspect_individual_object(object_id)
+    return HttpResponse(json.dumps(individual_object))
+
+
+
+
+@staff_member_required
 def upload_file(request):
     errors = []
     if request.method == 'POST':

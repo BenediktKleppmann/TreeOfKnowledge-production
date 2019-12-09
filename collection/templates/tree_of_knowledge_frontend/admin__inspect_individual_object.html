@@ -1,0 +1,259 @@
+{% extends 'layouts/base_admin.html' %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+
+{% block title %}
+	ToK Admin - Duplicate Objects
+{% endblock %}
+
+{% block additionalcss %}
+
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<!--<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>-->
+
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<link href="{% static 'css/contextmenu.min.css' %}" rel="stylesheet" />
+
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+<script src="{% static 'js/contextmenu.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/upload_table_frame.css' %}" />
+
+
+
+<style>
+	/* --------------------------------------------------------------------------*/
+	/* Top Panel ----------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+	
+	.top-panel {
+		width: 100%;
+		border-bottom: 1px solid;
+	}
+
+	#select-all-button-box {
+		
+	}
+	
+	#are-duplicates-text {
+		float:right;
+		font-size: 16px;
+		margin-top: 24px;
+		margin-right: 24px;
+	}
+	
+
+
+
+				
+	/* --------------------------------------------------------------------------*/
+	/* Left Panel ---------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/	
+	
+	.left-panel {
+		float:left;
+		display: inline-block;
+		width: 256px;
+		height:calc(100vh - 59px);
+		background: rgb(226, 226, 226);
+	}
+	
+	.object-selection-area {
+	    margin-top: 34px;
+		margin-left: 15px;
+		width: 217px;
+	}	
+
+	#object-type-title {
+		font-size: 16px;
+		margin-bottom: 4px;
+	}
+	
+	
+	.object-selection-button {
+		width: 100%;
+		background: rgb(248, 248, 248);
+		border: 1px solid rgb(210, 210, 210);
+	}
+	
+	.object-selection-button.active {
+		background: rgb(219, 219, 219)
+	}
+	
+	
+	/* --------------------------------------------------------------------------*/
+	/* Right Panel --------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/	
+	
+	.right-panel-container {
+		display: inline-block;
+		display: flex;
+		flex-direction: column;
+		border: 1px solid silver;
+		overflow: hidden;
+		xtouch-action: none; /* avoid browser level touch actions */
+		height:calc(100vh - 40px);
+	}
+	
+	#duplicate-tables {
+		overflow-x: hidden;
+		height: calc(100vh - 190px);
+		border-bottom: 1px solid rgb(220,220,220);
+	}
+	
+	.data-table {
+		margin-left: 30px;
+		margin-top: 48px;
+		border: 1px solid rgb(200,200,200);
+		display: inline-block;
+		max-height: 250px;
+		overflow-y: scroll;
+		max-width: calc(100vw - 280px);
+	}
+	
+	.checkbox-div {
+		display: inline-block;
+		float: right !important;
+		margin-right: 45px;
+		margin-top: 100px;
+	}
+	
+	/* --------------------------------------------------------------------------*/
+	/* Bottom Panel --------------------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/	
+	
+	#select-all-button {
+		display: inline-block;
+		float: right;
+		margin-right: 26px;
+		margin-top: 2px;
+	}
+	
+</style>
+{% endblock %}
+
+
+	
+	
+
+{% block content %}
+
+	<div class="top-panel">
+		<div class="window-title-top">Inspect Individual Object</div>
+		<br>
+		<div class="form">
+			<div class="form-group">
+				Object Id: <input id="object-id" type="text" name="object_id"><br>
+				<button id="get-object-button" type="button" class="btn btn-primary" onclick="display_individual_object()" style="margin-right:5px;">Show Object</button>
+			</div>
+		</div>		
+	</div>
+	
+	<div id="object-table"></div>
+	
+
+	
+
+
+	
+
+<script>
+
+
+	// THE DATA
+	var individual_object = {{ individual_object|safe }}
+	var selected_object_type_id = null;
+
+
+	// GLOBAL VARIABLES ==========================================
+
+	
+	
+	
+	//====================================================================================================
+	//====  Main window  =================================================================================
+	//====================================================================================================
+	
+	
+	//===  Draw the table  =============================================================================	
+    function display_individual_object() {
+
+		object_id = $('#object-id').val()
+		get_and_draw_object(object_id);
+		
+		// set form-input-text
+		$('#object-id').val(object_id);
+		
+	}
+	
+	
+	function get_and_draw_object(object_id) {	
+	
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {	
+			
+				var individual_object = JSON.parse(this.responseText);
+				table_data = individual_object["table_data"];
+				table_headers = individual_object["table_headers"];
+			
+				table_html_string ='<div class="table-section">' +	
+										'<table class="table table-sm table-condensed data-table" style="width:' + (150*table_headers.length + 20) + 'px;">' +
+											'<thead>' +
+												'<tr>';
+
+				for (var j = 0; j < table_headers.length; j++) {
+					table_html_string +=  			'<th scope="col">' + table_headers[j] + '</th>';
+				}
+				
+				table_html_string +=  			'</tr>' +
+											'</thead>' +
+											'<tbody>';
+
+				for (var j = 0; j < table_data.length; j++) {
+					table_html_string +=  		'<tr>';
+					for (var k = 0; k < table_data[j].length; k++) {
+						table_html_string +=  		'<td>' + table_data[j][k] + '</td>';
+					}
+					table_html_string +=  		'</tr>';
+				}
+
+				table_html_string += 		'</tbody>' +
+										'</table>';
+				$("#object-table").html(table_html_string);
+				
+
+
+			}
+		};
+		xhttp.open("GET", "/get_individual_object?object_id=" + object_id , true);
+		xhttp.send();	
+	}
+
+
+
+						
+	//====================================================================================================
+	//====  Main  ========================================================================================
+	//====================================================================================================
+
+	
+	
+	window.onload = function() {
+	
+	  	var url_components = window.location.href.split("/");
+		var object_id = url_components[4];
+		
+		if (object_id.length > 0) {
+			get_and_draw_object(object_id);
+		
+			// set form-input-text
+			$('#object-id').val(object_id);
+		}
+	};
+</script>
+
+
+	
+{% endblock %}

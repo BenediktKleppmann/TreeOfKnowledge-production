@@ -277,6 +277,7 @@ def perform_uploading(uploaded_dataset, request):
             print(len([valid_time_start]*number_of_entities))
             print(len([valid_time_end]*number_of_entities))
             print(len([data_quality]*number_of_entities))
+            print(len([upload_id]*number_of_entities))
 
             new_datapoints_dict = {'object_id':object_id_column,
                                     'attribute_id':[str(attribute_id)]*number_of_entities,
@@ -286,7 +287,8 @@ def perform_uploading(uploaded_dataset, request):
                                     'boolean_value':boolean_value_column,
                                     'valid_time_start': [valid_time_start]*number_of_entities,
                                     'valid_time_end':[valid_time_end]*number_of_entities,
-                                    'data_quality':[data_quality]*number_of_entities}
+                                    'data_quality':[data_quality]*number_of_entities,
+                                    'upload_id': [upload_id]*number_of_entities}
             # print(new_datapoints_dict)
             new_datapoint_records = pd.DataFrame(new_datapoints_dict)
 
@@ -299,9 +301,9 @@ def perform_uploading(uploaded_dataset, request):
             for chunk_index in range(number_of_chunks):
                 rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
                 insert_statement = '''
-                    INSERT INTO collection_data_point (object_id, attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end, data_quality) 
+                    INSERT INTO collection_data_point (object_id, attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end, data_quality, upload_id) 
                     VALUES ''' 
-                insert_statement += ','.join(['(%s, %s, %s, %s, %s, %s, %s, %s, %s)']*len(rows_to_insert))
+                insert_statement += ','.join(['(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)']*len(rows_to_insert))
                 print('=================================================')
                 # print(insert_statement)
                 print('#############')

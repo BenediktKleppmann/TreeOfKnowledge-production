@@ -1,0 +1,95 @@
+{% load staticfiles %}
+
+<!doctype html>
+<html lang="en">
+<head>
+
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151938988-1"></script>
+	<script>   window.dataLayer = window.dataLayer || [];   function gtag(){dataLayer.push(arguments);}   gtag('js', new Date());    gtag('config', 'UA-151938988-1'); </script>
+
+
+	<meta charset="utf-8">
+	<meta name="HandheldFriendly" content="true" />
+	<meta name="author" content="Benedikt Kleppmann">
+	<title>{% block title %}{% endblock %}</title>
+	
+
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/themes/default/style.min.css" />
+	<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+	<link rel="stylesheet" href="{% static 'css/tool.css' %}" />	
+	
+	<!--
+	<script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/bootstrap-3.4.0.min.js' %}"></script>
+	-->
+	
+	<style>
+		.navbar-default .navbar-nav > li > a {
+			color: rgb(194, 188, 174) !important;
+			font-size: 15px;
+			padding-top: 18px;
+			padding-bottom: 18px;
+			padding-left: 25px;
+			padding-right: 25px;
+		}
+		
+		#navbar-main {
+			background-color:rgb(50, 51, 84);
+		}
+		
+	</style>	
+	
+	{% block additionalcss %}{% endblock %}
+	<link rel="shortcut icon" href="{% static 'images/logo_with_background.png'%}">
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-fixed-top" id="navbar-main">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+          </button>
+          <a class="navbar-brand" href="{% url 'main_menu' %}" ></a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+		<ul class="nav navbar-nav">
+			<li><a href="#">Inspect Database Records</a></li>
+			
+			<li class="dropdown">
+                <a href="{% url 'edit_simulation_new' %}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Data Cleaning<span class="caret" style="border-top-color:rgb(226,221,204);"></span></a>
+                <ul class="dropdown-menu">
+				  <li><a href="#">Overview</a></li>
+				  <li><a href="{% url 'find_possibly_duplicate_objects' %}">Find possibly duplicate objects</a></li>
+                </ul>
+            </li>
+            
+			
+			<li><a href="{% url 'query_data' %}">Database Management</a></li>
+			
+            <li><a href="#">Help</a></li>
+          </ul>
+        </div>
+    </nav>
+	
+	<div style="background-color:rgb(50, 51, 84); height:58px">
+	</div>
+	
+	<div class="content">
+	{% block content %}{% endblock %}
+	</div>
+	
+	
+	<script src="{% static 'js/jquery.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/jstree.min.js"></script>
+
+	
+
+</body>
+</html>
+
+

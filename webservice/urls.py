@@ -146,11 +146,14 @@ urlpatterns = [
     url(r'^backup_database/$', views.backup_database, name='backup_database'),
     url(r'^remove_duplicate_datapoints/$', views.remove_duplicate_datapoints, name='remove_duplicate_datapoints'),
     url(r'^find_possibly_duplicate_objects/$', views.find_possibly_duplicate_objects, name='find_possibly_duplicate_objects'),
+    url(r'^inspect_individual_object/$', views.inspect_individual_object_empty, name='inspect_individual_object_empty'),
+    url(r'^inspect_individual_object/(?P<object_id>[-\d]+)/$', views.inspect_individual_object, name='inspect_individual_object'),
+    url(r'^get_individual_object/$', views.get_individual_object, name='get_individual_object'),
     url(r'^upload_file/$', views.upload_file, name='upload_file'),
     url(r'^test_page1/$', views.test_page1, name='test_page1'),
     url(r'^test_page2/$', views.test_page2, name='test_page2'),
     url(r'^test_page3/$', views.test_page3, name='test_page3'),
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls, name='inspect_database_records'),
 
 
 ]

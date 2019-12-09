@@ -596,7 +596,7 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             unfiltered_object_ids = [str(result[0]) for result in unfiltered_object_ids]
             if len(unfiltered_object_ids) == 0:
                 return None
-            sql_string3 = 'SELECT * FROM collection_data_point WHERE object_id IN (%s)' % (','.join(unfiltered_object_ids))
+            sql_string3 = 'SELECT object_id, attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end, data_quality FROM collection_data_point WHERE object_id IN (%s)' % (','.join(unfiltered_object_ids))
             long_table_df = pd.read_sql_query(sql_string3, connection)
 
 

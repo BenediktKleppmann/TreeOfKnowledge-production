@@ -100,6 +100,7 @@ class Data_point(models.Model):
     valid_time_start = models.BigIntegerField(db_index=True)
     valid_time_end = models.BigIntegerField(db_index=True)
     data_quality = models.IntegerField()
+    upload_id = models.IntegerField()
 
 
 
