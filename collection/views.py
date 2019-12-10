@@ -89,18 +89,18 @@ def subscriber_page(request, userid):
 @login_required
 def main_menu(request):
     simulation_models = Simulation_model.objects.all().order_by('id') 
-    return render(request, 'tree_of_knowledge_frontend/main_menu.html', {'simulation_models': simulation_models})
+    return render(request, 'tool/main_menu.html', {'simulation_models': simulation_models})
 
 
 @login_required
 def open_your_simulation(request):
     simulation_models = Simulation_model.objects.filter(user=request.user).order_by('-id') 
-    return render(request, 'tree_of_knowledge_frontend/open_your_simulation.html', {'simulation_models': simulation_models})
+    return render(request, 'tool/open_your_simulation.html', {'simulation_models': simulation_models})
 
 @login_required
 def browse_simulations(request):
     simulation_models = Simulation_model.objects.all().order_by('-id') 
-    return render(request, 'tree_of_knowledge_frontend/browse_simulations.html', {'simulation_models': simulation_models})
+    return render(request, 'tool/browse_simulations.html', {'simulation_models': simulation_models})
 
 
 @login_required
@@ -120,7 +120,7 @@ def profile_and_settings(request):
                 profile_form.save()
                 return redirect('main_menu')
    
-    return render(request, 'tree_of_knowledge_frontend/profile_and_settings.html', {'errors': errors})
+    return render(request, 'tool/profile_and_settings.html', {'errors': errors})
 
 
 
@@ -153,14 +153,14 @@ def upload_data1_new(request):
                 (upload_id, upload_error, new_errors) = upload_data.save_new_upload_details(request)
                 if upload_error:
                     errors.extend(new_errors)
-                    return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_error':upload_error, 'errors': errors})
+                    return render(request, 'tool/upload_data1.html', {'upload_error':upload_error, 'errors': errors})
                 else:
                     return redirect('upload_data1', upload_id=upload_id)
 
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+        return render(request, 'tool/upload_data1.html', {'errors': errors})
         # return redirect('upload_data1', upload_id=upload_id, errors=errors)
     else:
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+        return render(request, 'tool/upload_data1.html', {'errors': errors})
 
 
 
@@ -171,7 +171,7 @@ def upload_data1(request, upload_id, errors=[]):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'errors': errors})
+        return render(request, 'tool/upload_data1.html', {'errors': errors})
 
     if request.method == 'POST':
         form1 = UploadFileForm(request.POST, request.FILES)
@@ -186,12 +186,12 @@ def upload_data1(request, upload_id, errors=[]):
                 (upload_error, new_errors) = upload_data.save_existing_upload_details(upload_id, request)
                 if upload_error:
                     errors.extend(new_errors)
-                    return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_error':upload_error, 'errors': errors, 'uploaded_dataset':uploaded_dataset})
+                    return render(request, 'tool/upload_data1.html', {'upload_error':upload_error, 'errors': errors, 'uploaded_dataset':uploaded_dataset})
                 else:
                     return redirect('upload_data1', upload_id=upload_id)
 
 
-    return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
+    return render(request, 'tool/upload_data1.html', {'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
 
@@ -205,7 +205,7 @@ def upload_data2(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
+        return render(request, 'tool/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
 
     if request.method == 'POST':
         form2 = Uploaded_datasetForm2(data=request.POST, instance=uploaded_dataset)
@@ -217,7 +217,7 @@ def upload_data2(request, upload_id):
             return redirect('upload_data3', upload_id=upload_id)
 
     known_data_sources = get_from_db.get_known_data_sources()
-    return render(request, 'tree_of_knowledge_frontend/upload_data2.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'known_data_sources': known_data_sources, 'errors': errors, 'error_dict': error_dict})
+    return render(request, 'tool/upload_data2.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'known_data_sources': known_data_sources, 'errors': errors, 'error_dict': error_dict})
 
 
 @login_required
@@ -227,7 +227,7 @@ def upload_data3(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
+        return render(request, 'tool/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
 
     
     if request.method == 'POST':
@@ -242,7 +242,7 @@ def upload_data3(request, upload_id):
             return redirect('upload_data4', upload_id=upload_id)
 
     object_hierachy_tree = get_from_db.get_object_hierachy_tree()
-    return render(request, 'tree_of_knowledge_frontend/upload_data3.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'object_hierachy_tree':object_hierachy_tree, 'errors': errors})
+    return render(request, 'tool/upload_data3.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'object_hierachy_tree':object_hierachy_tree, 'errors': errors})
 
 
 @login_required
@@ -252,7 +252,7 @@ def upload_data4(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
+        return render(request, 'tool/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
 
     
     if request.method == 'POST':
@@ -271,7 +271,7 @@ def upload_data4(request, upload_id):
     data_generation_year = "2015"
     if uploaded_dataset.data_generation_date is not None:
         data_generation_year = uploaded_dataset.data_generation_date.year
-    return render(request, 'tree_of_knowledge_frontend/upload_data4.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'data_generation_year':data_generation_year, 'errors': errors})
+    return render(request, 'tool/upload_data4.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'data_generation_year':data_generation_year, 'errors': errors})
 
 
 
@@ -283,7 +283,7 @@ def upload_data5(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
+        return render(request, 'tool/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
     
     if request.method == 'POST':
         form5 = Uploaded_datasetForm5(data=request.POST, instance=uploaded_dataset)
@@ -296,7 +296,7 @@ def upload_data5(request, upload_id):
             else:
                 return redirect('upload_data6B', upload_id=upload_id) #timeseries
  
-    return render(request, 'tree_of_knowledge_frontend/upload_data5.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'errors': errors})
+    return render(request, 'tool/upload_data5.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
 
@@ -307,7 +307,7 @@ def upload_data6A(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
+        return render(request, 'tool/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
 
     if request.method == 'POST':
         form6 = Uploaded_datasetForm6(data=request.POST, instance=uploaded_dataset)
@@ -322,7 +322,7 @@ def upload_data6A(request, upload_id):
                 return redirect('upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
    
     table_attributes = upload_data.make_table_attributes_dict(uploaded_dataset)
-    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'upload_id': upload_id, 'data_table_json': uploaded_dataset.data_table_json, 'table_attributes': table_attributes, 'errors': errors})
+    return render(request, 'tool/upload_data6.html', {'upload_id': upload_id, 'data_table_json': uploaded_dataset.data_table_json, 'table_attributes': table_attributes, 'errors': errors})
 
 
 
@@ -333,7 +333,7 @@ def upload_data6B(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
+        return render(request, 'tool/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
 
     if request.method == 'POST':
         form6 = Uploaded_datasetForm6(data=request.POST, instance=uploaded_dataset)
@@ -357,7 +357,7 @@ def upload_data6B(request, upload_id):
     else: 
         data_table_json_dict = upload_data.make_data_table_json_with_distinct_entities(uploaded_dataset)
         data_table_json = json.dumps(data_table_json_dict)
-    return render(request, 'tree_of_knowledge_frontend/upload_data6.html', {'upload_id': upload_id, 'data_table_json': data_table_json, 'table_attributes': table_attributes, 'errors': errors})
+    return render(request, 'tool/upload_data6.html', {'upload_id': upload_id, 'data_table_json': data_table_json, 'table_attributes': table_attributes, 'errors': errors})
 
 
 
@@ -369,7 +369,7 @@ def upload_data7(request, upload_id):
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id, user=request.user)
     if uploaded_dataset is None:
         errors.append('Error: %s is not a valid upload_id' % str(upload_id))
-        return render(request, 'tree_of_knowledge_frontend/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
+        return render(request, 'tool/upload_data1.html', {'upload_id': upload_id, 'errors': errors})
 
     
     if request.method == 'POST':
@@ -384,13 +384,13 @@ def upload_data7(request, upload_id):
             else:
                 return redirect('upload_data_success', number_of_datapoints_saved=number_of_datapoints_saved, new_model_id=new_model_id)
    
-    return render(request, 'tree_of_knowledge_frontend/upload_data7.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'errors': errors})
+    return render(request, 'tool/upload_data7.html', {'upload_id': upload_id, 'uploaded_dataset': uploaded_dataset, 'errors': errors})
 
 
 @login_required
 def upload_data_success(request, number_of_datapoints_saved, new_model_id):
     all_simulation_models = Simulation_model.objects.all().order_by('id') 
-    return render(request, 'tree_of_knowledge_frontend/upload_data_success.html', {'number_of_datapoints_saved':number_of_datapoints_saved, 'new_model_id':new_model_id, 'all_simulation_models': all_simulation_models})
+    return render(request, 'tool/upload_data_success.html', {'number_of_datapoints_saved':number_of_datapoints_saved, 'new_model_id':new_model_id, 'all_simulation_models': all_simulation_models})
 
 
 
@@ -1213,7 +1213,7 @@ def check_single_fact_format(request):
 @login_required
 def query_data(request):
     object_hierachy_tree = get_from_db.get_object_hierachy_tree()
-    return render(request, 'tree_of_knowledge_frontend/query_data.html',{'object_hierachy_tree':object_hierachy_tree})
+    return render(request, 'tool/query_data.html',{'object_hierachy_tree':object_hierachy_tree})
 
 
 def download_file1(request):
@@ -1336,7 +1336,7 @@ def edit_simulation(request, simulation_id):
     available_object_types = get_from_db.get_most_common_object_types()
     object_icons = [icon_name[:-4] for icon_name in os.listdir("collection/static/images/object_icons/")]
     available_relations = get_from_db.get_available_relations()
-    return render(request, 'tree_of_knowledge_frontend/edit_simulation.html', {'simulation_model':simulation_model, 'available_object_types': available_object_types, 'object_icons': object_icons, 'available_relations':available_relations})
+    return render(request, 'tool/edit_simulation.html', {'simulation_model':simulation_model, 'available_object_types': available_object_types, 'object_icons': object_icons, 'available_relations':available_relations})
 
 
 
@@ -1361,13 +1361,13 @@ def analyse_simulation(request, simulation_id):
         the_simulator = simulation.Simulator(simulation_id)
         the_simulator.run()
         simulation_model = Simulation_model.objects.get(id=simulation_id)
-        return render(request, 'tree_of_knowledge_frontend/analyse_simulation.html', {'simulation_model':simulation_model})
+        return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model})
 
 
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
         progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
     simulation_model = Simulation_model.objects.get(id=simulation_id)
-    return render(request, 'tree_of_knowledge_frontend/analyse_simulation.html', {'simulation_model':simulation_model})
+    return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model})
 
 
 
@@ -1416,7 +1416,7 @@ def analyse_simulation(request, simulation_id):
 #     for parent_object in list_of_parent_objects:
 #         available_attributes.extend(list(Attribute.objects.filter(first_applicable_object_type=parent_object['id']).values('name', 'id', 'data_type')))
 
-#     return render(request, 'tree_of_knowledge_frontend/learn_rule.html', {'learned_rule':learned_rule, 'available_attributes': available_attributes})
+#     return render(request, 'tool/learn_rule.html', {'learned_rule':learned_rule, 'available_attributes': available_attributes})
 
 
 
@@ -1550,12 +1550,12 @@ Thank you for signing up to the Tree of Knowledge.'''
     # attributes = list(Attribute.objects.all().values())
     # list_of_child_objects = get_from_db.get_list_of_child_objects("j1_5")
     return HttpResponse("success")
-    # return render(request, 'tree_of_knowledge_frontend/test_page1.html')
+    # return render(request, 'tool/test_page1.html')
 
 
 
 def test_page2(request):
-    # return render(request, 'tree_of_knowledge_frontend/test_page2.html')
+    # return render(request, 'tool/test_page2.html')
     # bla = list(Object.objects.filter(object_type_id__in=['j1_5']).values_list('id'))
     # bla = Uploaded_dataset.objects.get(id=94).data_table_json
     bla = list(Data_point.objects.filter(valid_time_start__gte=-1262307600, valid_time_start__lt=1577836800, object_id__in=[10930,10931,10932,10933,10934,10935,10936,10937,10938,10939,10940,10941,10942,10943,10944,10945,10946,10947,10948,10949,10950,10951,10952,10953,10954,10955,10956,10957,10958,10959,10960,10961,10962,10963,10964,10965,10966,10967,10968,10969,10970,10971,10972,10973,10974,10975,10976,10977,10978,10979,10980,10981,10982,10983,10984,10985,10986,10987,10988,10989,10990,10991,10992,10993,10994,10995,10996,10997,10998,10999,11000,11001,11002,11003,11004,11005,11006,11007,11008,11009,11010,11011,11012,11013,11014,11015,11016,11017,11018,11019,11020,11021,11022,11023,11024,11025,11026,11027,11028,11029,11030,11031,11032,11033,11034,11035,11036,11037,11038,11039,11040,11041,11042,11043,11044,11045,11046,11047,11048,11049,11050,11051,11052,11053,11054,11055,11056,11057,11058,11059,11060,11061,11062,11063,11064,11065,11066,11067,11068,11069,11070,11071,11072,11073,11074,11075,11076,11077,11078,11079]).values() )
@@ -1576,7 +1576,7 @@ def test_page3(request):
     #     del current_object_type[i]['data_generation_date']
 
     return HttpResponse(json.dumps(current_object_type))
-    # return render(request, 'tree_of_knowledge_frontend/test_page3.html')
+    # return render(request, 'tool/test_page3.html')
 
 
 
