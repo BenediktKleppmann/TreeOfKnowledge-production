@@ -1,4 +1,4 @@
-from collection.models import Object_types, Attribute, Data_point, Object
+from collection.models import Object_types, Attribute, Data_point, Object, Uploaded_dataset
 import pandas as pd
 import json
 import datetime
@@ -138,7 +138,7 @@ def backup_attributes():
 
 def inspect_individual_object(object_id):
 
-    sql_query = 'SELECT object_id, attribute_id, valid_time_start, valid_time_end,  value_as_string FROM collection_data_point WHERE object_id = %s' % (object_id)
+    sql_query = 'SELECT object_id, attribute_id, valid_time_start, valid_time_end,  value_as_string, upload_id FROM collection_data_point WHERE object_id = %s' % (object_id)
     object_values_df = pd.read_sql_query(sql_query, connection)
 
     # attribute name mappings
@@ -150,6 +150,8 @@ def inspect_individual_object(object_id):
     object_values_df['valid_time_end'] = pd.to_datetime(object_values_df['valid_time_end']).dt.strftime('%Y-%m-%d')
     object_values_df['Attribute and Time'] = object_values_df['attribute_name'] + ' (' + object_values_df['valid_time_start'] + ' - ' + object_values_df['valid_time_end'] + ')'
     object_values_df = object_values_df.rename(columns={"value_as_string": "Value"})
+
+    upload_ids = list(object_values_df['upload_id'])
     print('=========================================================')
     print(object_values_df.columns)
     print('=========================================================')
@@ -158,12 +160,13 @@ def inspect_individual_object(object_id):
     # object_dict
     object_type_id = Object.objects.get(id=object_id).object_type_id
     object_type = Object_types.objects.get(id=object_type_id).name
-    object_dict = {'table_headers':list(object_values_df.columns), 'table_data':object_values_df.values.tolist(),'object_type_id':object_type_id, 'object_type':object_type}
+    object_dict = {'table_headers':list(object_values_df.columns), 'table_data':object_values_df.values.tolist(),'object_type_id':object_type_id, 'object_type':object_type, 'upload_ids':upload_ids}
     return object_dict
 
 
-
-
+def inspect_individual_upload(upload_id):
+    uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id).values()
+    return uploaded_dataset
 # ====================================================================
 #    _____ _                    _____        _        
 #   / ____| |                  |  __ \      | |       
@@ -243,6 +246,7 @@ def find_possibly_duplicate_objects():
                 ) objects
                 GROUP BY objects.concatenated_values
                 HAVING COUNT(*) > 1
+                LIMIT 10
                 '''
             cursor.execute(sql_string2)
             result = cursor.fetchall()
@@ -271,6 +275,7 @@ def find_possibly_duplicate_objects():
                 ) objects
                 GROUP BY objects.concatenated_values
                 HAVING COUNT(*) > 1
+                LIMIT 10
                 '''
             cursor.execute(sql_string2)
             result = cursor.fetchall()
@@ -280,6 +285,7 @@ def find_possibly_duplicate_objects():
 
     all_duplicate_objects = []
     for entry_nb, duplicate_objects in enumerate(list_of_lists__duplicate_objects):
+        print()
 
 
         # name mappings

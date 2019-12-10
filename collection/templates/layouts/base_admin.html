@@ -57,10 +57,16 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
 		<ul class="nav navbar-nav">
-			<li><a href="#">Inspect Database Records</a></li>
+			<li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-eye"></i>&nbsp;Inspect&nbsp;<span class="caret" style="border-top-color:rgb(226,221,204);"></span></a>
+                <ul class="dropdown-menu">
+				  <li><a href="{% url 'inspect_object_empty' %}">Object</a></li>
+				  <li><a href="{% url 'inspect_upload_empty' %}">Upload</a></li>
+                </ul>
+            </li>
 			
 			<li class="dropdown">
-                <a href="{% url 'edit_simulation_new' %}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Data Cleaning<span class="caret" style="border-top-color:rgb(226,221,204);"></span></a>
+                <a href="{% url 'edit_simulation_new' %}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-broom"></i>&nbsp;Data Cleaning&nbsp;<span class="caret" style="border-top-color:rgb(226,221,204);"></span></a>
                 <ul class="dropdown-menu">
 				  <li><a href="#">Overview</a></li>
 				  <li><a href="{% url 'find_possibly_duplicate_objects' %}">Find possibly duplicate objects</a></li>
@@ -68,7 +74,7 @@
             </li>
             
 			
-			<li><a href="{% url 'query_data' %}">Database Management</a></li>
+			<li><a href="{% url 'query_data' %}"><i class="fas fa-database"></i>&nbsp;Database Management</a></li>
 			
             <li><a href="#">Help</a></li>
           </ul>

@@ -1474,24 +1474,41 @@ def remove_duplicate_datapoints(request):
 @staff_member_required
 def find_possibly_duplicate_objects(request):
     possibly_duplicate_objects = admin_fuctions.find_possibly_duplicate_objects()
+    object_types = list(Object_types.objects.all().values())
+    object_types_names = {str(object_type['id']):object_type['name'] for object_type in object_types}
     return render(request, 'tree_of_knowledge_frontend/admin__find_possibly_duplicate_objects.html', {'possibly_duplicate_objects': possibly_duplicate_objects, 'object_types_names':object_types_names})
 
 
-@staff_member_required
-def inspect_individual_object_empty(request):
-    return render(request, 'tree_of_knowledge_frontend/admin__inspect_individual_object.html', {'individual_object': {}})
+
 
 @staff_member_required
-def inspect_individual_object(request, object_id):
-    individual_object = admin_fuctions.inspect_individual_object(object_id)
-    return render(request, 'tree_of_knowledge_frontend/admin__inspect_individual_object.html', {'individual_object': individual_object})
+def inspect_object(request, object_id):
+    return render(request, 'tree_of_knowledge_frontend/admin__inspect_object.html', {'object_id': object_id})
 
 @staff_member_required
-def get_individual_object(request):
+def get_object(request):
     object_id = request.GET.get('object_id', '')
     individual_object = admin_fuctions.inspect_individual_object(object_id)
     return HttpResponse(json.dumps(individual_object))
 
+
+
+@staff_member_required
+def inspect_upload(request, upload_id):
+    return render(request, 'tree_of_knowledge_frontend/admin__inspect_upload.html', {'upload_id': upload_id})
+
+@staff_member_required
+def get_uploaded_dataset(request):
+    upload_id = request.GET.get('upload_id', None)
+    uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id)
+    uploaded_dataset_dict = {   'data_table_json':json.loads(uploaded_dataset.data_table_json),
+                                'data_source':uploaded_dataset.data_source,
+                                'data_generation_date':uploaded_dataset.data_generation_date.strftime('%Y-%m-%d %H:%M'),
+                                'correctness_of_data':uploaded_dataset.correctness_of_data,
+                                'object_type_name':uploaded_dataset.object_type_name,
+                                'meta_data_facts':uploaded_dataset.meta_data_facts}
+
+    return HttpResponse(json.dumps(uploaded_dataset_dict))
 
 
 
