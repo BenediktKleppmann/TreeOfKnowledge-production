@@ -164,9 +164,7 @@ def inspect_individual_object(object_id):
     return object_dict
 
 
-def inspect_individual_upload(upload_id):
-    uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id).values()
-    return uploaded_dataset
+
 # ====================================================================
 #    _____ _                    _____        _        
 #   / ____| |                  |  __ \      | |       
@@ -231,7 +229,7 @@ def find_possibly_duplicate_objects():
             print('2')
             sql_string2 = '''
                 SELECT 
-                    string_agg(objects.object_id, ',') as object_ids
+                    string_agg(CAST(objects.object_id AS TEXT), ',') as object_ids
                 FROM 
                 (
                     SELECT ordered_data_points.object_id,
