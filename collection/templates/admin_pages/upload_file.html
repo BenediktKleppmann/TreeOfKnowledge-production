@@ -1,9 +1,9 @@
-{% extends 'layouts/base_tool.html' %}
+{% extends 'layouts/base_admin.html' %}
 {% load staticfiles %}
 {% load bootstrap3 %}
 
 {% block title %}
-	Tree of Knowledge - Upload Data 1
+	ToK Admin - Upload File
 {% endblock %}
 
 
@@ -12,9 +12,9 @@
 {% endblock %}
 
 
-
 {% block content %}
-
+	<br>
+	<div class="window-title-top">&nbsp;&nbsp;Upload a file to the Heroku Server (Folder: webservice/collection/static/webservice files/db_backup/)</div>
 	{% for error in errors %}
 		<div class="error">{{ error }}</div>
 	{% endfor %}

@@ -62,13 +62,13 @@
                 <ul class="dropdown-menu">
 				  <li><a href="{% url 'inspect_object_empty' %}">Object</a></li>
 				  <li><a href="{% url 'inspect_upload_empty' %}">Upload</a></li>
+				  <li><a href="{% url 'newsletter_subscribers' %}">Newsletter Subscribers</a></li>
                 </ul>
             </li>
 			
 			<li class="dropdown">
                 <a href="{% url 'edit_simulation_new' %}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-broom"></i>&nbsp;Data Cleaning&nbsp;<span class="caret" style="border-top-color:rgb(226,221,204);"></span></a>
                 <ul class="dropdown-menu">
-				  <li><a href="#">Overview</a></li>
 				  <li><a href="{% url 'find_possibly_duplicate_objects' %}">Find possibly duplicate objects</a></li>
                 </ul>
             </li>
@@ -76,7 +76,7 @@
 			
 			<li><a href="{% url 'query_data' %}"><i class="fas fa-database"></i>&nbsp;Database Management</a></li>
 			
-            <li><a href="#">Help</a></li>
+            <li><a href="{% url 'upload_file' %}"><i class="fas fa-upload"></i>&nbsp; Upload File</a></li>
           </ul>
         </div>
     </nav>

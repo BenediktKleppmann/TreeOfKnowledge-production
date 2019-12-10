@@ -140,7 +140,7 @@ urlpatterns = [
     url(r'^edit_model/$', RedirectView.as_view(pattern_name='edit_model')),
 
     # Admin Pages  -------------------------------------------------------------------------
-    url(r'^subscribers/$', views.newsletter_subscribers, name='subscribers'),
+    url(r'^newsletter_subscribers/$', views.newsletter_subscribers, name='newsletter_subscribers'),
     url(r'^clear_database/$', views.clear_database, name='clear_database'),
     url(r'^populate_database/$', views.populate_database, name='populate_database'),
     url(r'^backup_database/$', views.backup_database, name='backup_database'),
