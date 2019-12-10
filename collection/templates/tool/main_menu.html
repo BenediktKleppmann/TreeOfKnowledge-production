@@ -40,12 +40,21 @@
 		color: rgb(80, 80, 80);
 	}
 	
+	
 	#simulation-button {
 		border-left: 11px solid rgb(232, 247, 249);
 		border-top: 11px solid rgb(235, 250, 252);
 		border-right: 11px solid rgb(220, 235, 237);
 		border-bottom: 11px solid rgb(213, 228, 230);
 		background-color: rgb(230, 245, 247);
+	}
+	
+	#admin-button {
+		border-left: 11px solid rgb(223, 223, 245);
+		border-top: 11px solid rgb(230, 230, 250);
+		border-right: 11px solid rgb(207, 207, 227);
+		border-bottom: 11px solid rgb(202, 202, 222);
+		background-color: rgb(220, 220, 242);
 	}
 	
 	/* Button Icons ---------------------------*/
@@ -144,6 +153,16 @@
 				</button>
 			</a>
 		</div>
+		{% if user.is_superuser %}
+		<div class="menu-item-box">
+			<a href="{% url 'admin_page' %}">
+				<button type="button" class="menu-item-button btn btn-light"  id="admin-button">
+					<div class="icon-box"><i class="fas fa-user-cog"></i></div>
+					Admin Page
+				</button>
+			</a>
+		</div>
+		{% else %}{% endif %}
 	</div>
 	
 	

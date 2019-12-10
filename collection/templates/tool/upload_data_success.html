@@ -16,15 +16,19 @@
 	
 	<br>
 	<br>
+	
 	Alternatively you could:
 	<ul>
 		<li><a href="{% url 'query_data' %}">query data</a></li>
 		<li><a href="{% url 'upload_data1_new' %}">upload data</a></li>
 		<li><a href="{% url 'edit_simulation_new' %}">new simulation</a></li>
+		<!--
 		{% for simulation in all_simulation_models %}
 			<li><a href="{% url 'edit_simulation' simulation_id=simulation.id %}">edit simulation {{ simulation.id }}</a></li>
 		{% endfor %}
+		-->
 	</ul>
+	
 		
 
 {% endblock %}

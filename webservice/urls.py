@@ -140,23 +140,24 @@ urlpatterns = [
     url(r'^edit_model/$', RedirectView.as_view(pattern_name='edit_model')),
 
     # Admin Pages  -------------------------------------------------------------------------
+    url(r'^admin/admin_page/$', views.admin_page, name='admin_page'),
     # inspect
-    url(r'^inspect_object/$', views.inspect_object, {'object_id': ''}, name='inspect_object_empty'),
-    url(r'^inspect_object/(?P<object_id>[-\d]+)/$', views.inspect_object, name='inspect_object'),
-    url(r'^get_object/$', views.get_object, name='get_object'),
-    url(r'^inspect_upload/$', views.inspect_upload, {'upload_id': ''}, name='inspect_upload_empty'),
-    url(r'^inspect_upload/(?P<upload_id>[-\d]+)/$', views.inspect_upload, name='inspect_upload'),
-    url(r'^get_uploaded_dataset/$', views.get_uploaded_dataset, name='get_uploaded_dataset'),
-    url(r'^newsletter_subscribers/$', views.newsletter_subscribers, name='newsletter_subscribers'),
+    url(r'^admin/inspect_object/$', views.inspect_object, {'object_id': ''}, name='inspect_object_empty'),
+    url(r'^admin/inspect_object/(?P<object_id>[-\d]+)/$', views.inspect_object, name='inspect_object'),
+    url(r'^admin/get_object/$', views.get_object, name='get_object'),
+    url(r'^admin/inspect_upload/$', views.inspect_upload, {'upload_id': ''}, name='inspect_upload_empty'),
+    url(r'^admin/inspect_upload/(?P<upload_id>[-\d]+)/$', views.inspect_upload, name='inspect_upload'),
+    url(r'^admin/get_uploaded_dataset/$', views.get_uploaded_dataset, name='get_uploaded_dataset'),
 
+    url(r'^admin/show_newsletter_subscribers/$', views.show_newsletter_subscribers, name='show_newsletter_subscribers'),
+    url(r'^admin/show_users/$', views.show_users, name='show_users'),
     # data cleaning
-    url(r'^remove_duplicate_datapoints/$', views.remove_duplicate_datapoints, name='remove_duplicate_datapoints'),
-    url(r'^find_possibly_duplicate_objects/$', views.find_possibly_duplicate_objects, name='find_possibly_duplicate_objects'),
-
+    url(r'^admin/remove_duplicate_datapoints/$', views.remove_duplicate_datapoints, name='remove_duplicate_datapoints'),
+    url(r'^admin/find_possibly_duplicate_objects/$', views.find_possibly_duplicate_objects, name='find_possibly_duplicate_objects'),
     # database management
-    url(r'^clear_database/$', views.clear_database, name='clear_database'),
-    url(r'^populate_database/$', views.populate_database, name='populate_database'),
-    url(r'^backup_database/$', views.backup_database, name='backup_database'),
+    url(r'^admin/clear_database/$', views.clear_database, name='clear_database'),
+    url(r'^admin/populate_database/$', views.populate_database, name='populate_database'),
+    url(r'^admin/backup_database/$', views.backup_database, name='backup_database'),
 
     url(r'^upload_file/$', views.upload_file, name='upload_file'),
     url(r'^test_page1/$', views.test_page1, name='test_page1'),

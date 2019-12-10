@@ -1,0 +1,36 @@
+{% extends 'layouts/base_admin.html' %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+
+
+{% block title %}
+	ToK Admin - Newslettre subscribers
+{% endblock %}
+
+
+{% block additionalcss %}
+	<link rel="stylesheet" href="{% static 'css/upload_table_frame.css' %}" />
+{% endblock %}
+
+
+{% block content %}
+	<br>
+	<div class="window-title-top">&nbsp;&nbsp;The Users:</div>
+	<br>
+	<br>
+	<table>
+		<tr>
+			<th>Username</th>
+			<th>E-mail</th>
+		</tr>
+		{% for user in users %}
+		<tr>
+			<td>{{  user.username  }}</td>
+			<td>{{  user.email  }}</td>
+		</tr>
+		{% endfor %}
+	</table> 
+	
+	
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+{% endblock %}

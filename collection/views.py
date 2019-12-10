@@ -3,6 +3,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404
 from django.shortcuts import render, redirect
 from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule, Likelihood_fuction
+from django.contrib.auth.models import User
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
@@ -1435,9 +1436,20 @@ def analyse_simulation(request, simulation_id):
  # ==========================================================================
 
 @staff_member_required
-def newsletter_subscribers(request):
+def admin_page(request):
+    number_of_users = User.objects.count()
+    number_of_newsletter_subscribers = Newsletter_subscriber.objects.count()
+    return render(request, 'admin/admin_page.html', {'number_of_users': number_of_users, 'number_of_newsletter_subscribers': number_of_newsletter_subscribers})
+
+@staff_member_required
+def show_newsletter_subscribers(request):
     newsletter_subscribers = Newsletter_subscriber.objects.all().order_by('email')
-    return render(request, 'admin_pages/newsletter_subscribers.html', {'newsletter_subscribers': newsletter_subscribers,})
+    return render(request, 'admin/show_newsletter_subscribers.html', {'newsletter_subscribers': newsletter_subscribers,})
+
+@staff_member_required
+def show_users(request):
+    users = User.objects.all()
+    return render(request, 'admin/show_users.html', {'users': users,})
 
 
 @staff_member_required
@@ -1476,14 +1488,14 @@ def find_possibly_duplicate_objects(request):
     possibly_duplicate_objects = admin_fuctions.find_possibly_duplicate_objects()
     object_types = list(Object_types.objects.all().values())
     object_types_names = {str(object_type['id']):object_type['name'] for object_type in object_types}
-    return render(request, 'admin_pages/find_possibly_duplicate_objects.html', {'possibly_duplicate_objects': possibly_duplicate_objects, 'object_types_names':object_types_names})
+    return render(request, 'admin/find_possibly_duplicate_objects.html', {'possibly_duplicate_objects': possibly_duplicate_objects, 'object_types_names':object_types_names})
 
 
 
 
 @staff_member_required
 def inspect_object(request, object_id):
-    return render(request, 'admin_pages/inspect_object.html', {'object_id': object_id})
+    return render(request, 'admin/inspect_object.html', {'object_id': object_id})
 
 @staff_member_required
 def get_object(request):
@@ -1495,7 +1507,7 @@ def get_object(request):
 
 @staff_member_required
 def inspect_upload(request, upload_id):
-    return render(request, 'admin_pages/inspect_upload.html', {'upload_id': upload_id})
+    return render(request, 'admin/inspect_upload.html', {'upload_id': upload_id})
 
 @staff_member_required
 def get_uploaded_dataset(request):
@@ -1529,7 +1541,7 @@ def upload_file(request):
             request.FILES['file']
             errors.append("The file was successfully uploaded.")
 
-    return render(request, 'admin_pages/upload_file.html', {'errors': errors})
+    return render(request, 'admin/upload_file.html', {'errors': errors})
 
 
 
