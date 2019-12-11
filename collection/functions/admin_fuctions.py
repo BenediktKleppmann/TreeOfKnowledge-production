@@ -244,7 +244,6 @@ def find_possibly_duplicate_objects():
                 ) objects
                 GROUP BY objects.concatenated_values
                 HAVING COUNT(*) > 1
-                LIMIT 10
                 '''
             cursor.execute(sql_string2)
             result = cursor.fetchall()
@@ -273,7 +272,6 @@ def find_possibly_duplicate_objects():
                 ) objects
                 GROUP BY objects.concatenated_values
                 HAVING COUNT(*) > 1
-                LIMIT 10
                 '''
             cursor.execute(sql_string2)
             result = cursor.fetchall()
