@@ -226,7 +226,7 @@ def find_possibly_duplicate_objects():
     if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]=='postgres':
 
         with connection.cursor() as cursor:
-            print('2')
+            print('1')
             sql_string2 = '''
                 SELECT 
                     string_agg(CAST(objects.object_id AS TEXT), ',') as object_ids
@@ -245,16 +245,18 @@ def find_possibly_duplicate_objects():
                 GROUP BY objects.concatenated_values
                 HAVING COUNT(*) > 1
                 '''
+            print('2')
             cursor.execute(sql_string2)
+            print('3')
             result = cursor.fetchall()
+            print('4')
             list_of_lists__duplicate_objects = list(result)
 
-           
 
     else:
 
         with connection.cursor() as cursor:
-            print('2')
+            print('5')
             sql_string2 = '''
                 SELECT 
                     group_concat(objects.object_id) as object_ids
@@ -273,23 +275,30 @@ def find_possibly_duplicate_objects():
                 GROUP BY objects.concatenated_values
                 HAVING COUNT(*) > 1
                 '''
+            print('6')
             cursor.execute(sql_string2)
+            print('7')
             result = cursor.fetchall()
+            print('8')
             list_of_lists__duplicate_objects = list(result)
+            print('9')
 
 
 
     all_duplicate_objects = []
+    print('10')
     for entry_nb, duplicate_objects in enumerate(list_of_lists__duplicate_objects):
         print()
 
 
         # name mappings
+        print('11')
         attributes = list(Attribute.objects.all().values())
         attributes_dict = {str(attribute['id']):attribute['name'] for attribute in attributes}
         
 
         # table_data
+        print('12')
         duplicate_objects_str = [str(object_id) for object_id in duplicate_objects]
         sql_query = 'SELECT object_id, attribute_id, valid_time_start, valid_time_end,  value_as_string FROM collection_data_point WHERE object_id IN (%s)' % (','.join(duplicate_objects_str))
         duplicate_object_values_df = pd.read_sql_query(sql_query, connection)
@@ -307,6 +316,7 @@ def find_possibly_duplicate_objects():
 
 
         # deletable_objects
+        print('13')
         object_ids = json.loads('['+ str(duplicate_objects[0]) + ']')
 
         # object_types
