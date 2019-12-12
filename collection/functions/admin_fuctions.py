@@ -216,6 +216,7 @@ def remove_duplicates():
             .exclude(id=duplicate['max_id'])
             .delete()
     )
+        
 
 
 def find_possibly_duplicate_objects():

@@ -1451,19 +1451,17 @@ def show_users(request):
     users = User.objects.all()
     return render(request, 'admin/show_users.html', {'users': users,})
 
-
 @staff_member_required
-def clear_database(request):
-    admin_fuctions.clear_object_types()
-    admin_fuctions.clear_attributes()
-    return HttpResponse('done')
+def various_scripts(request):
+    return render(request, 'admin/various_scripts.html',)
 
 
 @staff_member_required
-def populate_database(request):
-    admin_fuctions.populate_object_types()
-    admin_fuctions.populate_attributes()
-    return HttpResponse('done')
+def remove_duplicate_datapoints(request):
+    print('removing duplicate datapoints')
+    admin_fuctions.remove_duplicates()
+    print('5')
+    return HttpResponse('success')
 
 
 @staff_member_required
@@ -1478,9 +1476,17 @@ def backup_database(request):
 
 
 @staff_member_required
-def remove_duplicate_datapoints(request):
-    admin_fuctions.remove_duplicates()
-    return HttpResponse('success')
+def clear_database(request):
+    admin_fuctions.clear_object_types()
+    admin_fuctions.clear_attributes()
+    return HttpResponse('done')     
+
+
+@staff_member_required
+def populate_database(request):
+    admin_fuctions.populate_object_types()
+    admin_fuctions.populate_attributes()
+    return HttpResponse('done')
 
 
 @staff_member_required
