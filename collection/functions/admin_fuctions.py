@@ -220,6 +220,9 @@ def remove_duplicates():
 
 def find_possibly_duplicate_objects():
 
+    with open("collection/static/webservice files/runtime_data/duplicate_objects_by_object_type.txt", "w") as text_file:
+        text_file.write('Notice: The finding of possible duplicates is in progress. Please try click on "Refresh" in one or two minutes.')
+
     duplicate_objects_by_object_type = {}
 
 
@@ -329,6 +332,8 @@ def find_possibly_duplicate_objects():
         else:
             duplicate_objects_by_object_type[object_type_id].append(object_dict)
 
+        with open("collection/static/webservice files/runtime_data/duplicate_objects_by_object_type.txt", "w") as text_file:
+            text_file.write(json.dumps(duplicate_objects_by_object_type))
 
     return duplicate_objects_by_object_type
 

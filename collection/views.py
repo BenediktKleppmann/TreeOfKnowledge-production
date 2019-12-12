@@ -1334,7 +1334,7 @@ def edit_simulation(request, simulation_id):
 
 
     
-    available_object_types = get_from_db.get_most_common_object_types()
+    available_object_types = get_from_db.get_most_commonly_used_object_types()
     object_icons = [icon_name[:-4] for icon_name in os.listdir("collection/static/images/object_icons/")]
     available_relations = get_from_db.get_available_relations()
     return render(request, 'tool/edit_simulation.html', {'simulation_model':simulation_model, 'available_object_types': available_object_types, 'object_icons': object_icons, 'available_relations':available_relations})
@@ -1485,11 +1485,16 @@ def remove_duplicate_datapoints(request):
 
 @staff_member_required
 def find_possibly_duplicate_objects(request):
-    possibly_duplicate_objects = admin_fuctions.find_possibly_duplicate_objects()
+    admin_fuctions.find_possibly_duplicate_objects()
     object_types = list(Object_types.objects.all().values())
     object_types_names = {str(object_type['id']):object_type['name'] for object_type in object_types}
-    return render(request, 'admin/find_possibly_duplicate_objects.html', {'possibly_duplicate_objects': possibly_duplicate_objects, 'object_types_names':object_types_names})
+    return render(request, 'admin/find_possibly_duplicate_objects.html', {'object_types_names':object_types_names})
 
+@staff_member_required
+def get_possibly_duplicate_objects(request):
+    with open('collection/static/webservice files/runtime_data/duplicate_objects_by_object_type.txt', 'r') as file:
+        duplicate_objects_by_object_type = file.read().replace('\n', '')
+    return HttpResponse(duplicate_objects_by_object_type)
 
 
 
