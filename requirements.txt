@@ -70,7 +70,6 @@ pycparser==2.19
 Pygments==2.3.1
 pyOpenSSL==18.0.0
 pyparsing==2.4.0
-pypiwin32==223
 pyrsistent==0.14.11
 PySocks==1.6.8
 python-dateutil==2.7.5
