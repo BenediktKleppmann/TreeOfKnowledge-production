@@ -28,7 +28,6 @@ docutils==0.15.2
 elfi==0.7.4
 entrypoints==0.3
 future==0.16.0
-GPy==1.9.8
 graphviz==0.11
 hellowebapp-deploy==1.0.2
 idna==2.7
