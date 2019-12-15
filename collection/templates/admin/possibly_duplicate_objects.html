@@ -32,8 +32,8 @@
 		border-bottom: 1px solid;
 	}
 
-	#select-all-button-box {
-		
+	#finding-update {
+		display: inline-block;
 	}
 	
 	#are-duplicates-text {
@@ -140,7 +140,7 @@
 {% block content %}
 
 	<div class="top-panel">
-		<div class="window-title-top">Possibly Duplicate Objects</div>
+		<div class="window-title-top">Possibly Duplicate Objects</div><div id="finding-update"></div>
 		<div id="are-duplicates-text">Are Duplicates</div>
 		
 	</div>
@@ -171,7 +171,7 @@
 
 
 	// THE DATA
-	var possibly_duplicate_objects_by_object_type = {{ possibly_duplicate_objects|safe }}
+	var possibly_duplicate_objects_by_object_type = {}
 	var object_types_names = {{ object_types_names|safe }}
 	var selected_object_type_id = null;
 	var select_all_clicked = false;
@@ -179,7 +179,7 @@
 
 	// GLOBAL VARIABLES ==========================================
 
-	
+	var start_time__finding_possibly_duplicate_objects = 0
 	
 	
 	//====================================================================================================
@@ -294,7 +294,7 @@
 				}
 			};
 
-			xmlhttp.open("POST", "/tool/delete_objects/");
+			xmlhttp.open("POST", "/admin/delete_objects/");
 			xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 			xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 			xmlhttp.send(JSON.stringify(to_be_deleted_objects));	
@@ -311,17 +311,54 @@
 	
 	window.onload = function() {
 		
-		//draw possible object types to select
-		object_selection_buttons_string = '';
-		
-		object_type_ids = Object.keys(possibly_duplicate_objects_by_object_type);
-		for (var i = 0; i < object_type_ids.length; i++) {
-			object_selection_buttons_string += '<button class="btn btn-light object-selection-button" type="button" onclick="drawTheTable(\'' + object_type_ids[i] + '\')">' + object_types_names[object_type_ids[i]] + '</button>';
-		}
-		$('#object-selection-box').html(object_selection_buttons_string);
-		drawTheTable('j2_1')
-		
+	
+		var xmlhttp = new XMLHttpRequest();  
+		xmlhttp.open("POST", "/admin/find_possibly_duplicate_objects/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send();
+
+		start_time__finding_possibly_duplicate_objects = Date.now();
+		setTimeout('get_possibly_duplicate_objects();', 500);	
 	};
+	
+	
+	
+	async function get_possibly_duplicate_objects() {
+
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {		
+				var responseText = this.responseText;
+				if (responseText.substring(0,7)=='Notice:'){
+					var seconds_passed = Date.now() - start_time__finding_possibly_duplicate_objects
+					$('#finding-update').html('Waiting for the process to finish...  ' + String(seconds_passed) );
+					window.setTimeout(() => { get_possibly_duplicate_objects();}, 2000);
+				} else {
+					$('#finding-update').html('Results Found. Please select a Object Type.')
+					possibly_duplicate_objects_by_object_type = JSON.parse(responseText)
+					
+					//draw possible object types to select
+					object_selection_buttons_string = '';
+					object_type_ids = Object.keys(possibly_duplicate_objects_by_object_type);
+					for (var i = 0; i < object_type_ids.length; i++) {
+						object_selection_buttons_string += '<button class="btn btn-light object-selection-button" type="button" onclick="drawTheTable(\'' + object_type_ids[i] + '\')">' + object_types_names[object_type_ids[i]] + '</button>';
+					}
+					$('#object-selection-box').html(object_selection_buttons_string);
+
+				}
+				
+			}
+		};
+		xhttp.open("GET", "/admin/get_possibly_duplicate_objects", true);
+		xhttp.send();
+				
+
+		
+	}
+	
+	
+	
 </script>
 
 

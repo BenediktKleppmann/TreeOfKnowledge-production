@@ -1441,6 +1441,41 @@ def admin_page(request):
     number_of_newsletter_subscribers = Newsletter_subscriber.objects.count()
     return render(request, 'admin/admin_page.html', {'number_of_users': number_of_users, 'number_of_newsletter_subscribers': number_of_newsletter_subscribers})
 
+
+# ==================
+# INSPECT
+# =================
+
+@staff_member_required
+def inspect_object(request, object_id):
+    return render(request, 'admin/inspect_object.html', {'object_id': object_id})
+
+@staff_member_required
+def get_object(request):
+    object_id = request.GET.get('object_id', '')
+    individual_object = admin_fuctions.inspect_individual_object(object_id)
+    return HttpResponse(json.dumps(individual_object))
+
+@staff_member_required
+def inspect_upload(request, upload_id):
+    return render(request, 'admin/inspect_upload.html', {'upload_id': upload_id})
+
+@staff_member_required
+def get_uploaded_dataset(request):
+    upload_id = request.GET.get('upload_id', None)
+    uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id)
+    uploaded_dataset_dict = {   'data_table_json':json.loads(uploaded_dataset.data_table_json),
+                                'data_source':uploaded_dataset.data_source,
+                                'data_generation_date':uploaded_dataset.data_generation_date.strftime('%Y-%m-%d %H:%M'),
+                                'correctness_of_data':uploaded_dataset.correctness_of_data,
+                                'object_type_name':uploaded_dataset.object_type_name,
+                                'meta_data_facts':uploaded_dataset.meta_data_facts}
+
+    return HttpResponse(json.dumps(uploaded_dataset_dict))
+
+
+
+
 @staff_member_required
 def show_newsletter_subscribers(request):
     newsletter_subscribers = Newsletter_subscriber.objects.all().order_by('email')
@@ -1451,6 +1486,38 @@ def show_users(request):
     users = User.objects.all()
     return render(request, 'admin/show_users.html', {'users': users,})
 
+
+
+# ==================
+# DATA CLEANING
+# ==================
+
+@staff_member_required
+def possibly_duplicate_objects(request):
+    object_types = list(Object_types.objects.all().values())
+    object_types_names = {str(object_type['id']):object_type['name'] for object_type in object_types}
+    return render(request, 'admin/possibly_duplicate_objects.html', {'object_types_names':object_types_names})
+
+
+@staff_member_required
+def find_possibly_duplicate_objects(request):
+    print('find_possibly_duplicate_objects')
+    admin_fuctions.find_possibly_duplicate_objects()
+
+
+@staff_member_required
+def get_possibly_duplicate_objects(request):
+    with open('collection/static/webservice files/runtime_data/duplicate_objects_by_object_type.txt', 'r') as file:
+        duplicate_objects_by_object_type = file.read().replace('\n', '')
+    return HttpResponse(duplicate_objects_by_object_type)
+
+
+
+
+# ==================
+# VARIOUS SCRIPTS
+# ==================
+
 @staff_member_required
 def various_scripts(request):
     return render(request, 'admin/various_scripts.html',)
@@ -1458,9 +1525,7 @@ def various_scripts(request):
 
 @staff_member_required
 def remove_duplicate_datapoints(request):
-    print('removing duplicate datapoints')
     admin_fuctions.remove_duplicates()
-    print('5')
     return HttpResponse('success')
 
 
@@ -1489,50 +1554,6 @@ def populate_database(request):
     return HttpResponse('done')
 
 
-@staff_member_required
-def find_possibly_duplicate_objects(request):
-    admin_fuctions.find_possibly_duplicate_objects()
-    object_types = list(Object_types.objects.all().values())
-    object_types_names = {str(object_type['id']):object_type['name'] for object_type in object_types}
-    return render(request, 'admin/find_possibly_duplicate_objects.html', {'object_types_names':object_types_names})
-
-@staff_member_required
-def get_possibly_duplicate_objects(request):
-    with open('collection/static/webservice files/runtime_data/duplicate_objects_by_object_type.txt', 'r') as file:
-        duplicate_objects_by_object_type = file.read().replace('\n', '')
-    return HttpResponse(duplicate_objects_by_object_type)
-
-
-
-@staff_member_required
-def inspect_object(request, object_id):
-    return render(request, 'admin/inspect_object.html', {'object_id': object_id})
-
-@staff_member_required
-def get_object(request):
-    object_id = request.GET.get('object_id', '')
-    individual_object = admin_fuctions.inspect_individual_object(object_id)
-    return HttpResponse(json.dumps(individual_object))
-
-
-
-@staff_member_required
-def inspect_upload(request, upload_id):
-    return render(request, 'admin/inspect_upload.html', {'upload_id': upload_id})
-
-@staff_member_required
-def get_uploaded_dataset(request):
-    upload_id = request.GET.get('upload_id', None)
-    uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id)
-    uploaded_dataset_dict = {   'data_table_json':json.loads(uploaded_dataset.data_table_json),
-                                'data_source':uploaded_dataset.data_source,
-                                'data_generation_date':uploaded_dataset.data_generation_date.strftime('%Y-%m-%d %H:%M'),
-                                'correctness_of_data':uploaded_dataset.correctness_of_data,
-                                'object_type_name':uploaded_dataset.object_type_name,
-                                'meta_data_facts':uploaded_dataset.meta_data_facts}
-
-    return HttpResponse(json.dumps(uploaded_dataset_dict))
-
 
 
 @staff_member_required
@@ -1556,6 +1577,9 @@ def upload_file(request):
 
 
 
+# ==================
+# TEST PAGES
+# ==================
 def test_page1(request):
 
     message = '''Hi ''' + user.username + ''',

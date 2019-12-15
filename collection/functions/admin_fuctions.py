@@ -222,7 +222,7 @@ def remove_duplicates():
 def find_possibly_duplicate_objects():
 
     with open("collection/static/webservice files/runtime_data/duplicate_objects_by_object_type.txt", "w") as text_file:
-        text_file.write('Notice: The finding of possible duplicates is in progress. Please try click on "Refresh" in one or two minutes.')
+        text_file.write('Notice: The finding of possible duplicates is in progress.')
 
     duplicate_objects_by_object_type = {}
 

@@ -152,15 +152,18 @@ urlpatterns = [
     url(r'^admin/show_newsletter_subscribers/$', views.show_newsletter_subscribers, name='show_newsletter_subscribers'),
     url(r'^admin/show_users/$', views.show_users, name='show_users'),
     # data cleaning
+    url(r'^admin/possibly_duplicate_objects/$', views.possibly_duplicate_objects, name='possibly_duplicate_objects'),
     url(r'^admin/find_possibly_duplicate_objects/$', views.find_possibly_duplicate_objects, name='find_possibly_duplicate_objects'),
+    url(r'^admin/get_possibly_duplicate_objects/$', views.get_possibly_duplicate_objects, name='get_possibly_duplicate_objects'),
     # various scripts
     url(r'^admin/various_scripts/$', views.various_scripts, name='various_scripts'),
     url(r'^admin/remove_duplicate_datapoints/$', views.remove_duplicate_datapoints, name='remove_duplicate_datapoints'),
-    url(r'^admin/populate_database/$', views.populate_database, name='populate_database'),
     url(r'^admin/backup_database/$', views.backup_database, name='backup_database'),
     url(r'^admin/clear_database/$', views.clear_database, name='clear_database'),
+    url(r'^admin/populate_database/$', views.populate_database, name='populate_database'),
 
     url(r'^upload_file/$', views.upload_file, name='upload_file'),
+    # test pages
     url(r'^test_page1/$', views.test_page1, name='test_page1'),
     url(r'^test_page2/$', views.test_page2, name='test_page2'),
     url(r'^test_page3/$', views.test_page3, name='test_page3'),
