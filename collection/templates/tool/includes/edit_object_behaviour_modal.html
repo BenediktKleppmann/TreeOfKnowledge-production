@@ -568,7 +568,7 @@ var new_rule_cursor_textarea = '';
 
 			rule_details_html = '<div class="form-group">' +
 									'<label for="rule_type">Rule Type</label>' +
-									'<select id="rule_type" class="form-control" onchange="changeRuleType(\'' + rules_attribute_name + '\')">' +
+									'<select id="rule_type" class="form-control" onchange="changeRuleType(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\')">' +
 										'<option>Conditional Rule</option>' +
 										'<option selected>Continuous Change</option>' +
 									'</select>' +
@@ -587,7 +587,7 @@ var new_rule_cursor_textarea = '';
 
 			rule_details_html = '<div class="form-group">' +
 									'<label for="rule_type">Rule Type</label>' +
-									'<select id="rule_type" class="form-control" onchange="changeRuleType(\'' + rules_attribute_name + '\')">' +
+									'<select id="rule_type" class="form-control" onchange="changeRuleType(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\')">' +
 										'<option selected>Conditional Rule</option>' +
 										'<option>Continuous Change</option>' +
 									'</select>' +
@@ -743,11 +743,10 @@ var new_rule_cursor_textarea = '';
 	// the '+'-Button
 	function newBehaviourRule(object_number, rules_attribute_id, rules_attribute_name) {
 
-
 		// Populate the Modal
 		rule_details_html = '<div class="form-group">' +
 								'<label for="rule_type">Rule Type</label>' +
-								'<select id="rule_type" class="form-control" onchange="changeRuleType(\'' + rules_attribute_name + '\')">' +
+								'<select id="rule_type" class="form-control" onchange="changeRuleType(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\')">' +
 									'<option selected>Conditional Rule</option>' +
 									'<option>Continuous Change</option>' +
 								'</select>' +
@@ -756,7 +755,7 @@ var new_rule_cursor_textarea = '';
 
 		
 		$('#rule-details').html(rule_details_html);
-		changeRuleType(rules_attribute_name);
+		changeRuleType(object_number, rules_attribute_id, rules_attribute_name);
 		
 
 		available_variables_html = 	'<div class="available-variables-label">Available Variables:</div>' + 
@@ -849,9 +848,10 @@ var new_rule_cursor_textarea = '';
 
 	
 	
-	function changeRuleType(attribute_name) {
+	function changeRuleType(object_number, attribute_id, attribute_name) {
 		var rule_type = $('#rule_type').find(":selected").text();
 		if (rule_type == 'Continuous Change'){
+		
 			rule_details_main_html = 	'<div class="form-group">' + 
 											'<label for="rule-effect-text">' + attribute_name + ' = </label>' +
 											'<textarea id="rule-effect-text" cols="20" rows="5" class="form-control" onclick="rememberCursorPostion(\'rule-effect-text\')"></textarea>' +
@@ -862,9 +862,23 @@ var new_rule_cursor_textarea = '';
 										'</div>';
 				$('#rule-details-main').html(rule_details_main_html);
 		} else if (rule_type == 'Conditional Rule'){
+		
+			var object_filter_facts = objects_dict[object_number]['object_filter_facts'] 
+			var rule_initial_condition = '';
+			for (var i = 0; i < object_filter_facts.length ; i++) {
+				rule_initial_condition += '[' + object_filter_facts[i]['attribute'] + '] ' +  object_filter_facts[i]['operation'] + ' ' + object_filter_facts[i]['value'] + ' and '
+			}
+			var object_relations = objects_dict[object_number]['object_relations'] 
+			for (var i = 0; i < object_relations.length ; i++) {
+				var relation_filter_facts = objects_dict[object_relations[i]['target_object_number']]['object_filter_facts'] 
+				for (var i = 0; i < relation_filter_facts.length ; i++) {
+					rule_initial_condition += '[' + object_relations[i]['relation_name'] + '].[' + relation_filter_facts[i]['attribute'] + '] ' +  relation_filter_facts[i]['operation'] + ' ' + relation_filter_facts[i]['value'] + ' and '
+				}
+			}
+			
 			rule_details_main_html = 	'<div class="form-group">' + 
 											'<label for="rule-condition-text">IF</label>' +
-											'<textarea id="rule-condition-text" cols="20" rows="3" class="form-control" onclick="rememberCursorPostion(\'rule-condition-text\')"></textarea>' +
+											'<textarea id="rule-condition-text" cols="20" rows="3" class="form-control" onclick="rememberCursorPostion(\'rule-condition-text\')">' + rule_initial_condition + '</textarea>' +
 										'</div>' +
 										'<div class="form-group">' + 
 											'<label for="rule-effect-text">THEN ' + attribute_name + ' = </label>' +
