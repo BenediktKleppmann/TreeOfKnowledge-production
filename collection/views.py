@@ -635,6 +635,7 @@ def get_data_from_objects_behind_the_relation(request):
     request_body = json.loads(request.body)
     object_type_id = request_body['object_type_id']
     object_ids = request_body['object_ids']
+    object_ids = list(set([el for el in object_ids if el])) #distinct not-null values
     specified_start_time = request_body['specified_start_time']
     specified_end_time = request_body['specified_end_time']
     print('*******************************************************')
