@@ -553,12 +553,20 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
 
             for fact_index, filter_fact in enumerate(filter_facts):
 
-                sql_string2 = '''
-                        SELECT object_id, '[' || GROUP_CONCAT('[' || valid_time_start || ',' || valid_time_end || ']', ',') || ']' AS new_valid_range
-                        FROM collection_data_point
-                        WHERE object_id IN (SELECT object_id FROM unfiltered_object_ids)
-                          AND 
-                '''   
+                if dict(os.environ)['DATABASE_URL'][:8]=='postgres':
+                    sql_string2 = '''
+                            SELECT object_id, '[' || string_agg('[' || valid_time_start || ',' || valid_time_end || ']', ',') || ']' AS new_valid_range
+                            FROM collection_data_point
+                            WHERE object_id IN (SELECT object_id FROM unfiltered_object_ids)
+                              AND 
+                    '''   
+                else:
+                    sql_string2 = '''
+                            SELECT object_id, '[' || group_concat('[' || valid_time_start || ',' || valid_time_end || ']', ',') || ']' AS new_valid_range
+                            FROM collection_data_point
+                            WHERE object_id IN (SELECT object_id FROM unfiltered_object_ids)
+                              AND 
+                    '''
                 if filter_fact['operation'] == '=':     
                     sql_string2 += 'attribute_id == %s AND string_value == "%s"' % (filter_fact['attribute_id'], filter_fact['value'])
                 elif filter_fact['operation'] == '>':
