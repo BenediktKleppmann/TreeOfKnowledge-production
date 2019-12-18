@@ -192,8 +192,9 @@ STATIC_URL = '/static/'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_ROOT = 'collection/static'
 STATICFILES_DIRS = (
-	os.path.join(BASE_DIR, 'static'),
+	os.path.join(BASE_DIR, 'collection/static'),
 )
+ADMIN_MEDIA_PREFIX = ''
 
 REGISTRATION_OPEN = True
 ACCOUNT_ACTIVATION_DAYS = 7
