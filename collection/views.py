@@ -1585,10 +1585,8 @@ def test_page1(request):
     message = '''Hi ''' + user.username + ''',
 
 Thank you for signing up to the Tree of Knowledge.'''
-    email_message = EmailMultiAlternatives('Tree of Knowledge Newsletter', message, 'noreply@treeofknowledge.ai', ['benedikt@kleppmann.de'])
-    email_message.send()
-
-
+    # email_message = EmailMultiAlternatives('Tree of Knowledge Newsletter', message, 'noreply@treeofknowledge.ai', ['benedikt@kleppmann.de'])
+    # email_message.send()
     # object_type_id = "j1_12"
     # filter_facts = []
     # specified_start_time = 946684800
@@ -1596,8 +1594,10 @@ Thank you for signing up to the Tree of Knowledge.'''
     # response = query_datapoints.get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time)
     # attributes = list(Attribute.objects.all().values())
     # list_of_child_objects = get_from_db.get_list_of_child_objects("j1_5")
-    return HttpResponse("success")
     # return render(request, 'tool/test_page1.html')
+    bla = list(Object.objects.all().values() )
+    # return HttpResponse('success')
+    return HttpResponse(json.dumps(bla))
 
 
 
@@ -1605,8 +1605,7 @@ def test_page2(request):
     # return render(request, 'tool/test_page2.html')
     # bla = list(Object.objects.filter(object_type_id__in=['j1_5']).values_list('id'))
     # bla = Uploaded_dataset.objects.get(id=94).data_table_json
-    bla = list(User.objects.all().values() )
-
+    bla = list(Object.objects.all().values('object_type_id'))
     # return HttpResponse('success')
     return HttpResponse(json.dumps(bla))
 
@@ -1614,7 +1613,7 @@ def test_page2(request):
 
 
 def test_page3(request):
-    current_object_type = list(Data_point.objects.filter(valid_time_start__gte=-1262307600, valid_time_start__lt=1577836800, object_id__in=[10930, 10931, 10932, 10933, 10934, 10935, 10936, 10937, 10938, 10939, 10940, 10941, 10942, 10943, 10944, 10945, 10946, 10947, 10948, 10949, 10950, 10951, 10952, 10953, 10954, 10955, 10956, 10957, 10958, 10959, 10960, 10961, 10962, 10963, 10964, 10965, 10966, 10967, 10968, 10969, 10970, 10971, 10972, 10973, 10974, 10975, 10976, 10977, 10978, 10979, 10980, 10981, 10982, 10983, 10984, 10985, 10986, 10987, 10988, 10989, 10990, 10991, 10992, 10993, 10994, 10995, 10996, 10997, 10998, 10999, 11000, 11001, 11002, 11003, 11004, 11005, 11006, 11007, 11008, 11009, 11010, 11011, 11012, 11013, 11014, 11015, 11016, 11017, 11018, 11019, 11020, 11021, 11022, 11023, 11024, 11025, 11026, 11027, 11028, 11029, 11030, 11031, 11032, 11033, 11034, 11035, 11036, 11037, 11038, 11039, 11040, 11041, 11042, 11043, 11044, 11045, 11046, 11047, 11048, 11049, 11050, 11051, 11052, 11053, 11054, 11055, 11056, 11057, 11058, 11059, 11060, 11061, 11062, 11063, 11064, 11065, 11066, 11067, 11068, 11069, 11070, 11071, 11072, 11073, 11074, 11075, 11076, 11077, 11078, 11079]).values())
+    current_object_type = list(Object.objects.all().values('object_type_id').annotate(total=Count('object_type_id')))
 
     # current_object_type = list(Uploaded_dataset.objects.filter(id=79).values())
     # for i in range(len(current_object_type)):
