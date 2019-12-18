@@ -192,7 +192,7 @@ STATIC_URL = '/static/'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_ROOT = 'collection/static'
 STATICFILES_DIRS = (
-	os.path.join(BASE_DIR, 'collection/static'),
+	os.path.join(BASE_DIR, 'static'),
 )
 
 REGISTRATION_OPEN = True
