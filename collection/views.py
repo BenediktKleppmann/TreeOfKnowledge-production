@@ -1582,9 +1582,9 @@ def upload_file(request):
 # ==================
 def test_page1(request):
 
-    message = '''Hi ''' + user.username + ''',
+    # message = '''Hi ''' + user.username + ''',
 
-Thank you for signing up to the Tree of Knowledge.'''
+# Thank you for signing up to the Tree of Knowledge.'''
     # email_message = EmailMultiAlternatives('Tree of Knowledge Newsletter', message, 'noreply@treeofknowledge.ai', ['benedikt@kleppmann.de'])
     # email_message.send()
     # object_type_id = "j1_12"
