@@ -1598,9 +1598,9 @@ def test_page1(request):
     # list_of_child_objects = get_from_db.get_list_of_child_objects("j1_5")
     # return render(request, 'tool/test_page1.html')
     first_relation_object_type = list(Object.objects.filter(object_type_id__in=['j1_11','j1_3','n1']).values_list('id'))
-    return HttpResponse(first_relation_object_type)
+    # return HttpResponse(first_relation_object_type)
     # return HttpResponse('success')
-    # return HttpResponse(json.dumps(bla))
+    return HttpResponse(json.dumps(first_relation_object_type))
 
 
 
@@ -1608,9 +1608,10 @@ def test_page2(request):
     # return render(request, 'tool/test_page2.html')
     # bla = list(Object.objects.filter(object_type_id__in=['j1_5']).values_list('id'))
     # bla = Uploaded_dataset.objects.get(id=94).data_table_json
-    bla = list(Object.objects.all().values('object_type_id'))
+    # bla = list(Object.objects.all().values('object_type_id'))
+    list_of_object_ids = list(Object.objects.all().values())
     # return HttpResponse('success')
-    return HttpResponse(json.dumps(bla))
+    return HttpResponse(json.dumps(list_of_object_ids))
 
     
 
@@ -1624,7 +1625,10 @@ def test_page3(request):
     #     del current_object_type[i]['updated']
     #     del current_object_type[i]['data_generation_date']
 
-    return HttpResponse(json.dumps(current_object_type))
+    # return HttpResponse(json.dumps(current_object_type))
+    list_of_object_ids = list(Object.objects.all().values_list(['id','object_type_id']))
+    # return HttpResponse('success')
+    return HttpResponse(json.dumps(list_of_object_ids))
     # return render(request, 'tool/test_page3.html')
 
 
