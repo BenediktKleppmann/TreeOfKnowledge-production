@@ -721,7 +721,7 @@ def find_matching_entities(request):
 @login_required
 def find_single_entity(request):
     relation_id = int(request.GET.get('relation_id', ''))
-    print('++++++++ ' + relation_id + ' +++++++++++++++++')
+    print('++++++++ ' + str(relation_id) + ' +++++++++++++++++')
     attribute_id = request.GET.get('attribute_id', '')
     value = request.GET.get('value', '')
 
