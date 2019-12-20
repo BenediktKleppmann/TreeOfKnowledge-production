@@ -210,7 +210,7 @@ def find_single_entity(relation_id, attribute_id, value):
     list_of_parent_objects = get_from_db.get_list_of_parent_objects(first_relation_object_type)
     print(str(list_of_parent_objects))
     list_of_parent_object_ids = [parent_obj['id'] for parent_obj in list_of_parent_objects]
-    print(str())
+    print(str(list_of_parent_object_ids))
     list_of_object_ids = list(Object.objects.filter(object_type_id__in=list_of_parent_object_ids).values_list('id'))
     print(str(list_of_object_ids))
     list_of_object_ids = [el[0] for el in list_of_object_ids]
