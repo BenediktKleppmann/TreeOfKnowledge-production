@@ -720,7 +720,7 @@ def find_matching_entities(request):
 # this function should be extended to also find fuzzy matches and suggest them in the format_violation_text
 @login_required
 def find_single_entity(request):
-    relation_id = request.GET.get('relation_id', '')
+    relation_id = int(request.GET.get('relation_id', ''))
     print('++++++++ ' + relation_id + ' +++++++++++++++++')
     attribute_id = request.GET.get('attribute_id', '')
     value = request.GET.get('value', '')
@@ -1597,9 +1597,10 @@ def test_page1(request):
     # attributes = list(Attribute.objects.all().values())
     # list_of_child_objects = get_from_db.get_list_of_child_objects("j1_5")
     # return render(request, 'tool/test_page1.html')
-    bla = list(Object.objects.all().values() )
+    first_relation_object_type = Attribute.objects.get(id=128).first_relation_object_type
+    return HttpResponse(first_relation_object_type)
     # return HttpResponse('success')
-    return HttpResponse(json.dumps(bla))
+    # return HttpResponse(json.dumps(bla))
 
 
 

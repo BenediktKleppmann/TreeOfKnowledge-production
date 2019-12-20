@@ -204,12 +204,19 @@ def find_matching_entities(match_attributes, match_values):
 # this function should be extended to also find fuzzy matches and suggest them in the format_violation_text
 def find_single_entity(relation_id, attribute_id, value):
     print('==============  find_single_entity  =====================')
+    print(str(relation_id) + ',' + str(attribute_id) + ',' + str(value))
     first_relation_object_type = Attribute.objects.get(id=relation_id).first_relation_object_type
+    print(str(first_relation_object_type))
     list_of_parent_objects = get_from_db.get_list_of_parent_objects(first_relation_object_type)
+    print(str(list_of_parent_objects))
     list_of_parent_object_ids = [parent_obj['id'] for parent_obj in list_of_parent_objects]
+    print(str())
     list_of_object_ids = list(Object.objects.filter(object_type_id__in=list_of_parent_object_ids).values_list('id'))
+    print(str(list_of_object_ids))
     list_of_object_ids = [el[0] for el in list_of_object_ids]
+    print(str(list_of_object_ids))
     matching_objects_list = list(Data_point.objects.filter(object_id__in=list_of_object_ids, attribute_id=attribute_id, value_as_string=value).values())
+    print(str(matching_objects_list))
     if len(matching_objects_list)>0:
         return list(Data_point.objects.filter(object_id__in=list_of_object_ids, attribute_id=attribute_id, value_as_string=value).values())[0]['object_id']
     else:
