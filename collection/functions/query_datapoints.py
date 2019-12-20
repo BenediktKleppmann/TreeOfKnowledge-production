@@ -203,6 +203,7 @@ def find_matching_entities(match_attributes, match_values):
 
 # this function should be extended to also find fuzzy matches and suggest them in the format_violation_text
 def find_single_entity(relation_id, attribute_id, value):
+    print('==============  find_single_entity  =====================')
     first_relation_object_type = Attribute.objects.get(id=relation_id).first_relation_object_type
     list_of_parent_objects = get_from_db.get_list_of_parent_objects(first_relation_object_type)
     list_of_parent_object_ids = [parent_obj['id'] for parent_obj in list_of_parent_objects]

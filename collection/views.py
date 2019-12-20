@@ -726,6 +726,7 @@ def find_single_entity(request):
     value = request.GET.get('value', '')
 
     matching_object_id = query_datapoints.find_single_entity(relation_id, attribute_id, value)
+    print(str(matching_object_id))
     response = {'fact_number': int(request.GET.get('fact_number', '')),
                 'matching_object_id':matching_object_id}
     return HttpResponse(json.dumps(response))
