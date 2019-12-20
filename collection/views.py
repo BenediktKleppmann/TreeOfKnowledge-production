@@ -830,8 +830,9 @@ def save_changed_attribute(request):
             attribute_record.data_type = request_body['data_type']
             attribute_record.expected_valid_period = request_body['expected_valid_period']
             attribute_record.description = request_body['description']
-            attribute_record.first_applicable_object_type = request_body['first_applicable_object_type']
             attribute_record.format_specification = json.dumps(request_body['format_specification'])
+            attribute_record.first_applicable_object_type = request_body['first_applicable_object_type']
+            attribute_record.first_relation_object_type=request_body['first_relation_object_type']
             attribute_record.save()
             return HttpResponse("success")
         except Exception as error:

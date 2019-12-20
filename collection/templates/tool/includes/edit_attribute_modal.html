@@ -131,11 +131,11 @@
 						<div class="col-sm-5">
 							<select class="form-control form-control-lg" id="type_edit" name="type" onchange="loadDataTypeSpecificAttributeOptions_edit()">
 								<option value="" selected></option>
-								<option value="string">string</option>
-								<option value="int">int</option>
-								<option value="real">real</option>
-								<option value="bool">bool</option>
-								<option value="date">date</option>
+								<option value="string">String</option>
+								<option value="int">Int</option>
+								<option value="real">Float</option>
+								<option value="bool">Bool</option>
+								<option value="relation">Relation</option>
 							</select>
 						</div>
 					</div>
@@ -157,8 +157,9 @@
 	
 <script>
 
-//GLOBAL VARIABLES
-var selected_attribute_id = "1";
+	//GLOBAL VARIABLES
+	var selected_attribute_id = "1";
+	var object_hierachy_tree_for_relation = {};
 
 	
 	
@@ -194,7 +195,7 @@ var selected_attribute_id = "1";
 				
 				
 				var dataTypeSpecificOptions = ""
-				if (["int", "real", "date"].includes(response_dict["data_type"])) {
+				if (["int", "real"].includes(response_dict["data_type"])) {
 					dataTypeSpecificOptions += 	'<br>' +
 												'<div class="form-group row">' +
 													'<label for="min" class="col-sm-7">Minimum allowed value</label>' +
@@ -209,6 +210,7 @@ var selected_attribute_id = "1";
 														'<input type="text" class="form-control" id="edit-max" name="max" value="' + response_dict["format_specification"]["fields"]["column"]["max"] + '">' +
 													'</div>' +
 												'</div>';
+					$("#edited-attribute-further-fields").html(dataTypeSpecificOptions);
 				}
 				
 				if (response_dict["data_type"] == "string") {
@@ -242,10 +244,70 @@ var selected_attribute_id = "1";
 														'<input type="text" class="form-control" id="edit-allowed_values" name="allowed_values" value="' + allowed_values + '">' +
 													'</div>' +
 												'</div>';
-
+					$("#edited-attribute-further-fields").html(dataTypeSpecificOptions);
 				}
 				
-				$("#edited-attribute-further-fields").html(dataTypeSpecificOptions);
+
+				
+				if (response_dict["data_type"] == "relation") {
+					relation_object_type_name = '';
+					for (var i = 0; i < object_hierachy_tree_for_relation.length; i++) {
+						if (object_hierachy_tree_for_relation[i]['id']==response_dict["first_relation_object_type"]) {
+							relation_object_type_name = object_hierachy_tree_for_relation[i]['text'];
+						}
+					}
+					dataTypeSpecificOptions += 	'<br>' +
+												'<div class="form-group row">' +
+													'<label for="min" class="col-sm-7">Object Type of Related Object</label>' +
+													'<div class="col-sm-5">' +
+														'<input type="text" id="edit-object_type_of_related_object" class="form-control input-field" placeholder="Object Type" value="' + relation_object_type_name + '">' +
+														'<input type="hidden" id="edit-first_relation_object_type" value="' + response_dict["first_relation_object_type"] + '">' +
+													'</div>' +
+												'</div>';
+					$("#edited-attribute-further-fields").html(dataTypeSpecificOptions);
+													
+					// initialize popover
+					$('#edit-object_type_of_related_object').popover({
+						container: 'body',
+						placement: 'bottom',
+						html: true,
+						content:"<div id='edit-object_hierachy_popover_content' class='choose-object-type-content form'> " +
+									"<div class='object-type-spec-box'>" + 
+										"<div id='edit-container-for-object-tree'></div>" + 
+									"</div>" + 
+								"</div>"
+					});
+					
+					// When the popover is opened, load the object hierachy tree
+					$('#edit-object_type_of_related_object').on('shown.bs.popover', function () {
+						loadObjectHierachyTree();
+					});
+					
+					
+					// when you click outside the popover, close it
+					$('body').on('mousedown', function (e) {
+						var popover_content_element = document.getElementById('edit-object_hierachy_popover_content');
+						if (!$('#edit-object_type_of_related_object').is(e.target) &&  !popover_content_element.contains(e.target)) {  
+							$('#edit-object_type_of_related_object').popover('hide');
+						}
+					}); 
+					
+					var xhttp = new XMLHttpRequest();       
+					xhttp.onreadystatechange = function() {
+						if (this.readyState == 4 && this.status == 200) {
+
+							object_hierachy_tree_for_relation = JSON.parse(this.responseText);
+							
+						}
+					};
+					xhttp.open("GET", "/tool/get_object_hierachy_tree" , true);
+					xhttp.send();
+				
+				}
+		
+
+	
+	
 		
 				
 				
@@ -322,7 +384,7 @@ var selected_attribute_id = "1";
 		var data_type = sel_element.options[sel_element.selectedIndex].value;
 		
 		var dataTypeSpecificOptions = ""
-		if (["int", "real", "date"].includes(data_type)) {
+		if (["int", "real"].includes(data_type)) {
 			dataTypeSpecificOptions += 	'<br>' +
 										'<div class="form-group row">' +
 											'<label for="min" class="col-sm-7">Minimum allowed value</label>' +
@@ -337,6 +399,7 @@ var selected_attribute_id = "1";
 												'<input type="text" class="form-control" id="edit-max" name="max">' +
 											'</div>' +
 										'</div>';
+			$("#edited-attribute-further-fields").html(dataTypeSpecificOptions);
 		}
 		
 		if (data_type == "string") {
@@ -367,10 +430,59 @@ var selected_attribute_id = "1";
 												'<input type="text" class="form-control" id="edit-allowed_values" name="allowed_values" placeholder=' + "'" + '["value1","value2"]' + "'" + '>' +
 											'</div>' +
 										'</div>';
-
+										
+			$("#edited-attribute-further-fields").html(dataTypeSpecificOptions);
 		}
 		
-		$("#edited-attribute-further-fields").html(dataTypeSpecificOptions);
+		if (data_type == "relation") {
+			dataTypeSpecificOptions += 	'<br>' +
+										'<div class="form-group row">' +
+											'<label for="min" class="col-sm-7">Object Type of Related Object</label>' +
+											'<div class="col-sm-5">' +
+												'<input type="text" id="edit-object_type_of_related_object" class="form-control input-field" placeholder="Object Type">' +
+												'<input type="hidden" id="edit-first_relation_object_type">' +
+											'</div>' +
+										'</div>';
+			$("#edited-attribute-further-fields").html(dataTypeSpecificOptions);
+											
+			// initialize popover
+			$('#edit-object_type_of_related_object').popover({
+				container: 'body',
+				placement: 'bottom',
+				html: true,
+				content:"<div id='edit-object_hierachy_popover_content' class='choose-object-type-content form'> " +
+							"<div class='object-type-spec-box'>" + 
+								"<div id='edit-container-for-object-tree'></div>" + 
+							"</div>" + 
+						"</div>"
+			});
+			
+			// When the popover is opened, load the object hierachy tree
+			$('#edit-object_type_of_related_object').on('shown.bs.popover', function () {
+				loadObjectHierachyTree();
+			});
+			
+			
+			// when you click outside the popover, close it
+			$('body').on('mousedown', function (e) {
+				var popover_content_element = document.getElementById('edit-object_hierachy_popover_content');
+				if (!$('#edit-object_type_of_related_object').is(e.target) &&  !popover_content_element.contains(e.target)) {  
+					$('#edit-object_type_of_related_object').popover('hide');
+				}
+			}); 
+			
+			var xhttp = new XMLHttpRequest();       
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+
+					object_hierachy_tree_for_relation = JSON.parse(this.responseText);
+					
+				}
+			};
+			xhttp.open("GET", "/tool/get_object_hierachy_tree" , true);
+			xhttp.send();
+		
+		}
 		
 	}
 	
@@ -388,6 +500,7 @@ var selected_attribute_id = "1";
 		var min_length = $("#editAttributeModal #edit-min_length").val();
 		var max_length = $("#editAttributeModal #edit-max_length").val();
 		var allowed_values = $("#editAttributeModal #editallowed_values").val();
+		var first_relation_object_type = $("#editAttributeModal #edit-first_relation_object_type").val();
 		
 		message_body = {} 
 		message_body['attribute_id'] = parseInt(attribute_id);
@@ -400,6 +513,7 @@ var selected_attribute_id = "1";
 		message_body['format_specification']['fields'] = {}
 		message_body['format_specification']['fields']['column'] = {}
 		message_body['format_specification']['fields']['column']['type'] = type;
+		message_body['first_relation_object_type'] = null;
 		
 		if (name.length < 2) {
 			alert("Attribute Name too short");
@@ -456,7 +570,7 @@ var selected_attribute_id = "1";
 			}
 		}
 		
-		if (["int", "real", "date"].includes(type)) {
+		if (["int", "real"].includes(type)) {
 			if (type == "int"){
 				if(isNaN(min) || min[0] == " " || min == ""){
 					alert("Min - this must be populated with an integer number");
@@ -500,8 +614,19 @@ var selected_attribute_id = "1";
 				message_body['format_specification']['fields']['column']['min'] = min;
 				message_body['format_specification']['fields']['column']['max'] = max;
 				
+			}		
+		}
+		
+		if (type == "relation") {
+			if (first_relation_object_type == "") {
+				alert("Required Field: Object Type of Related Object");
+				return;
 			}
-			
+		
+			message_body['first_relation_object_type'] = first_relation_object_type;
+			message_body['format_specification']['fields']['column']['min'] = 0;
+			message_body['format_specification']['fields']['column']['max'] = 10000000000;
+			message_body['format_specification']['fields']['column']['type'] = 'int';
 		}
 
 		var xmlhttp = new XMLHttpRequest();  
@@ -565,6 +690,66 @@ var selected_attribute_id = "1";
 	
 	}
 	
+	
+	
+	/*========================================================================*/
+	/*=================    OBJECT TYPE      ==================================*/
+	/*========================================================================*/
+
+	// Set up the Object Hierachy Tree =============================================================	
+	function loadObjectHierachyTree() {
+			
+		// search 
+		var to = false;
+		$('#edit-object_type_of_related_object').keyup(function () {
+			if(to) { clearTimeout(to); }
+			to = setTimeout(function () {
+				var v = $('#edit-object_type_of_related_object').val();
+				$('#edit-container-for-object-tree').jstree(true).search(v);
+			}, 250);
+		});
+		
+		// display object hierachy tree
+		$('#edit-container-for-object-tree').jstree({
+			'core' : {
+				"animation" : 0,
+				"check_callback" : true,
+				'force_text' : true,
+				"themes" : { "stripes" : false,
+							 "icons": false},	
+				'data' : object_hierachy_tree_for_relation
+			},
+			"types" : {
+				"root" : { "icon" : "/static/3.3.7/assets/images/tree_icon.png", "valid_children" : ["default"] },
+				"default" : { "valid_children" : ["default","file"] },
+				"file" : { "icon" : "glyphicon glyphicon-file", "valid_children" : [] }
+			},
+			"themes":{"icons":false},
+			"plugins" : [ "contextmenu", "dnd", "search", "state", "types" ]
+		});	
+
+		// Select node in object hierachy tree =======================================
+		$('#edit-container-for-object-tree')
+			.on('select_node.jstree', function (e, data) {
+			  
+			var node_id = data.selected[0];
+			var object_type_name = data.instance.get_node(node_id).text;
+			$("#edit-object_type_of_related_object").val(object_type_name);
+			$("#edit-first_relation_object_type").val(node_id);
+			
+			//for the "+"-button change it so that the new attribute-drop-downs will list the object-types attributes
+			$("#make-new-additional-fact-button").attr("onclick", "newAdditionalFactInput('" + node_id + "');")
+			
+			//For all Attribute-dropdowns: remove the old selection and load a list of possible_attributes 
+			for (var i = 1; i <= number_of_additional_object_facts; i++) {
+				resetAttribute(i);
+				makeObjectsAdditionalAttributesDropdown(node_id , i);
+			}
+			
+		});
+		
+		  
+	}
 	
 	
 	/*========================================================================*/
