@@ -263,7 +263,7 @@
 				container: 'body',
 				placement: 'bottom',
 				html: true,
-				content:"<div class='choose-object-type-content form'> " +
+				content:"<div id='object_hierachy_popover_content' class='choose-object-type-content form'> " +
 							"<div class='object-type-spec-box'>" + 
 								"<div id='container-for-object-tree'></div>" + 
 							"</div>" + 
@@ -278,7 +278,8 @@
 			
 			// when you click outside the popover, close it
 			$('body').on('mousedown', function (e) {
-				if (!$('#object_type_of_related_object').is(e.target)) {  
+				var popover_content_element = document.getElementById('object_hierachy_popover_content');
+				if (!$('#object_type_of_related_object').is(e.target) &&  !popover_content_element.contains(e.target)) {  
 					$('#object_type_of_related_object').popover('hide');
 				}
 			}); 
