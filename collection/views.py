@@ -1597,7 +1597,7 @@ def test_page1(request):
     # attributes = list(Attribute.objects.all().values())
     # list_of_child_objects = get_from_db.get_list_of_child_objects("j1_5")
     # return render(request, 'tool/test_page1.html')
-    list(Object.objects.filter(object_type_id__in=['j1_11','j1_3','n1']).values_list('id'))
+    first_relation_object_type = list(Object.objects.filter(object_type_id__in=['j1_11','j1_3','n1']).values_list('id'))
     return HttpResponse(first_relation_object_type)
     # return HttpResponse('success')
     # return HttpResponse(json.dumps(bla))
