@@ -29,7 +29,6 @@
 	
 	.top-panel {
 		width: 100%;
-		border-bottom: 1px solid;
 	}
 
 	.form-group {
@@ -42,21 +41,22 @@
 		display: inline-block;
 	}
 	
-	#object-id {
+	#object-ids-list {
 		margin-left: 5px;
 		display: inline-block;
+		width: 350px;
 	}
 	
 	#get-object-button {
-		margin-left: 10px;
+		margin-left: 22px;
 		display: inline-block;
 		margin-bottom: 9px;
 	}
 	
-
-	#object-table {
-		padding:20px
+	#server-response {
+		display: inline-block;
 	}
+
 
 				
 
@@ -71,19 +71,17 @@
 {% block content %}
 
 	<div class="top-panel">
-		<div class="window-title-top">Inspect Object</div>
+		<div class="window-title-top">Delete Objects</div>
+		<br>
 		<br>
 		<div class="form">
 			<div class="form-group">
-				<div id="object-id-label">Object Id:</div><input id="object-id" type="text" name="object_id" val="{{ object_id }}">
-				<button id="get-object-button" type="button" class="btn btn-primary" onclick="display_object()">Show Object</button>
+				<div id="object-id-label">List of Object Ids:</div><input id="object-ids-list" type="text" name="object_ids-list">
+				<button id="get-object-button" type="button" class="btn btn-danger" onclick="delete_objects()">Delete Objects</button><div id="server-response"></div>
 			</div>
 		</div>		
 	</div>
 	
-	<div id="object-table"></div>
-	
-
 	
 
 
@@ -101,53 +99,30 @@
 	
 	
 	//===  Draw the table  =============================================================================	
-    function display_object() {
+	
+    function delete_objects() {
 
-		object_id = $('#object-id').val()
+		object_ids_list = $('#object-ids-list').val();
+		object_ids = object_ids_list.split(",");
 		
-		var xhttp = new XMLHttpRequest();       
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {	
+
+		var ok_given = confirm("Are you sure you want to permanently delete these " + String(object_ids.length) + " objects?");
+		if (ok_given == false){return;}
 			
-				var object = JSON.parse(this.responseText);
-				table_data = object["table_data"];
-				table_headers = object["table_headers"];
-				upload_ids = object["upload_ids"];
 			
-				table_html_string ='<div class="table-section">' +	
-										'<table class="table table-sm table-condensed data-table" style="width:' + (150*table_headers.length + 20) + 'px;">' +
-											'<thead>' +
-												'<tr>';
+		var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance 
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
 
-				for (var j = 0; j < table_headers.length; j++) {
-					table_html_string +=  			'<th scope="col">' + table_headers[j] + '</th>';
-				}
-				
-				table_html_string +=  				'<th scope="col">Upload Id</th>' +
-												'</tr>' +
-											'</thead>' +
-											'<tbody>';
-
-				for (var j = 0; j < table_data.length; j++) {
-					table_html_string +=  		'<tr>';
-					for (var k = 0; k < table_data[j].length; k++) {
-						table_html_string +=  		'<td>' + table_data[j][k] + '</td>';
-					}
-					table_html_string +=  			'<td><a href="//www.treeofknowledge.ai/admin/inspect_upload/' + upload_ids[j] + '">' + upload_ids[j] + '</a></td>'
-												'</tr>';
-				}
-
-				table_html_string += 		'</tbody>' +
-										'</table>';
-				$("#object-table").html(table_html_string);
-				
-
-
+				$('#server-response').html(this.responseText);
 			}
 		};
-		xhttp.open("GET", "//www.treeofknowledge.ai/admin/get_object?object_id=" + object_id , true);
-		xhttp.send();	
-		
+		xmlhttp.open("POST", "/tool/delete_objects/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send('[' + object_ids + ']');
+
+
 		
 	}
 	

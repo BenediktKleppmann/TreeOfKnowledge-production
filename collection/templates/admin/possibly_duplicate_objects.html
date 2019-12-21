@@ -332,7 +332,7 @@
 				var responseText = this.responseText;
 				if (responseText.substring(0,7)=='Notice:'){
 					var seconds_passed = Date.now() - start_time__finding_possibly_duplicate_objects
-					$('#finding-update').html('Waiting for the process to finish...  ' + String(seconds_passed) );
+					$('#finding-update').html('Retrieving data...  ' + String(seconds_passed) );
 					window.setTimeout(() => { get_possibly_duplicate_objects();}, 2000);
 				} else {
 					$('#finding-update').html('Results Found. Please select a Object Type.')

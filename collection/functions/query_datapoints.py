@@ -265,14 +265,18 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
 
         # for response: list of the tables' attributes sorted with best populated first
         table_attributes = []
-        sorted_attribute_ids = broad_table_df.isnull().sum(0).sort_values(ascending=False).index
+        print('===================  SORTING  =============================')
+        sorted_attribute_ids = broad_table_df.notnull().sum().sort_values(ascending=False).index
         sorted_attribute_ids = [int(attribute_id) for attribute_id in list(sorted_attribute_ids) if attribute_id.isdigit()]
+
         for attribute_id in sorted_attribute_ids:
             attribute_record = Attribute.objects.get(id=attribute_id)
             table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name, 'attribute_data_type':attribute_record.data_type})
+            
 
-        # sort broad_table_df (the best-populated entities to the top)
+        # sort broad_table_df -  the best-populated entities to the top
         broad_table_df = broad_table_df.loc[broad_table_df.isnull().sum(1).sort_values().index]
+
 
         response = {}
         response['table_body'] = broad_table_df.to_dict('list')

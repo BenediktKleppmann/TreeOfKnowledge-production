@@ -1515,6 +1515,18 @@ def get_possibly_duplicate_objects(request):
     return HttpResponse(duplicate_objects_by_object_type)
 
 
+@staff_member_required
+def delete_objects_page(request):
+    return render(request, 'admin/delete_objects.html')
+
+
+@staff_member_required
+def delete_objects(request):
+    if request.method == 'POST':
+        object_ids = json.loads(request.body)
+        Object.objects.filter(id__in=object_ids).delete()
+        Data_point.objects.filter(object_id__in=object_ids).delete()
+    return HttpResponse('Objects deleted!')
 
 
 # ==================

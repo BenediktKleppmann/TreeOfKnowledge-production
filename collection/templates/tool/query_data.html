@@ -328,7 +328,7 @@
 		
 			<div class="form-group">
 				<label for="object_type">Object Type</label>
-				<input type="text" id="object_type" class="form-control input-field" placeholder="Object Type">
+				<input type="text" id="object_type" class="form-control input-field" placeholder="Object Type" autocomplete="false">
 				<input type="hidden" id="object_type_id">
 			</div>
 			<br>
@@ -841,6 +841,7 @@
 		for (var i = 0; i < table_attributes.length; i++) {
 			dropdown_html_string +=			'<option value="' + table_attributes[i]['attribute_id'] + '">' + table_attributes[i]['attribute_name'] + '</option>';
 		}
+			dropdown_html_string +=			'<option value="object_id">&lt;Object Id&gt;</option>';					
 		dropdown_html_string +=			'</select>' +
 									'</div>' +
 									'<div id="related-attribute-0"></div>' +
