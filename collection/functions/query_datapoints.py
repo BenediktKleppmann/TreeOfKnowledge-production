@@ -243,21 +243,7 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
         object_ids = [entry[0] for entry in cursor.fetchall()]
 
     # object_ids = list(Object.objects.filter(object_type_id__in=child_object_ids).values_list('id', flat=True))
-
     broad_table_df = filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time)   
-    # print("===================================================")
-    # print("===================================================")
-    # print("object_ids: " + str(object_ids))
-    # print("----------------")
-    # print("filter_facts: " + str(filter_facts))
-    # print("----------------")
-    # print("specified_start_time: " + str(specified_start_time))
-    # print("----------------")
-    # print("specified_end_time: " + str(specified_end_time))
-    # print("----------------")
-    # print(str(broad_table_df))
-    # print("===================================================")
-    # print("===================================================")
 
 
     # prepare response
@@ -271,7 +257,7 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
 
         for attribute_id in sorted_attribute_ids:
             attribute_record = Attribute.objects.get(id=attribute_id)
-            table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name, 'attribute_data_type':attribute_record.data_type})
+            table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name, 'attribute_data_type':attribute_record.data_type, 'attribute_population': broad_table_df[str(attribute_id)].count()})
             
 
         # sort broad_table_df -  the best-populated entities to the top
