@@ -257,7 +257,7 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
 
         for attribute_id in sorted_attribute_ids:
             attribute_record = Attribute.objects.get(id=attribute_id)
-            table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name, 'attribute_data_type':attribute_record.data_type, 'attribute_population': broad_table_df[str(attribute_id)].count()})
+            table_attributes.append({'attribute_id':attribute_id, 'attribute_name':attribute_record.name, 'attribute_data_type':attribute_record.data_type, 'attribute_population': int(broad_table_df[str(attribute_id)].count())})
             
 
         # sort broad_table_df -  the best-populated entities to the top

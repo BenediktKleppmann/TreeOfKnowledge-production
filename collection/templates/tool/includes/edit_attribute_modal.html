@@ -287,7 +287,7 @@
 					// when you click outside the popover, close it
 					$('body').on('mousedown', function (e) {
 						var popover_content_element = document.getElementById('edit-object_hierachy_popover_content');
-						if (!$('#edit-object_type_of_related_object').is(e.target) &&  !popover_content_element.contains(e.target)) {  
+						if (!$('#edit-object_type_of_related_object').is(e.target) && popover_content_element && !popover_content_element.contains(e.target)) {  
 							$('#edit-object_type_of_related_object').popover('hide');
 						}
 					}); 
@@ -466,7 +466,7 @@
 			// when you click outside the popover, close it
 			$('body').on('mousedown', function (e) {
 				var popover_content_element = document.getElementById('edit-object_hierachy_popover_content');
-				if (!$('#edit-object_type_of_related_object').is(e.target) &&  !popover_content_element.contains(e.target)) {  
+				if (!$('#edit-object_type_of_related_object').is(e.target) && popover_content_element && !popover_content_element.contains(e.target)) {  
 					$('#edit-object_type_of_related_object').popover('hide');
 				}
 			}); 
