@@ -566,17 +566,16 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
                               AND 
                     '''
                 if filter_fact['operation'] == '=':     
-                    sql_string2 += 'attribute_id == "%s" AND string_value == "%s"' % (filter_fact['attribute_id'], filter_fact['value'])
+                    sql_string2 += "attribute_id == '%s' AND string_value == '%s'" % (filter_fact['attribute_id'], filter_fact['value'])
                 elif filter_fact['operation'] == '>':
-                    sql_string2 += 'attribute_id == "%s" AND numeric_value > %s' % (filter_fact['attribute_id'], filter_fact['value'])
+                    sql_string2 += "attribute_id == '%s' AND numeric_value > %s" % (filter_fact['attribute_id'], filter_fact['value'])
                 elif filter_fact['operation'] == '<':
-                    sql_string2 += 'attribute_id == "%s" AND numeric_value < %s' % (filter_fact['attribute_id'], filter_fact['value'])
+                    sql_string2 += "attribute_id == '%s' AND numeric_value < %s" % (filter_fact['attribute_id'], filter_fact['value'])
                 elif filter_fact['operation'] == 'in':
                     values = ['"%s"' % value for value in filter_fact['value']]
-                    sql_string2 += 'attribute_id == "%s" AND string_value IN (%s)' % (filter_fact['attribute_id'], ', '.join(values))
+                    sql_string2 += "attribute_id == '%s' AND string_value IN (%s)" % (filter_fact['attribute_id'], ', '.join(values))
 
-                sql_string2 += '''
-                        GROUP BY object_id '''
+                sql_string2 += "GROUP BY object_id "
                 new_valid_ranges_df = pd.read_sql_query(sql_string2, connection)
                 new_valid_ranges_df['new_valid_range'] = new_valid_ranges_df['new_valid_range'].apply(json.loads)
                 new_valid_ranges_df['object_id'] = new_valid_ranges_df['object_id'].astype(int)
