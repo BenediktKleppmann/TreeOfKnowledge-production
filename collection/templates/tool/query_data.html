@@ -719,6 +719,8 @@
 			if (this.readyState == 4 && this.status == 200) {
 
 				$("#run-query-button-icon").html('<span class="glyphicon glyphicon-chevron-right"></span>');
+				$("#run-query-button-icon").removeClass('btn-warning');
+				$("#run-query-button-icon").addClass('btn-success');
 				var response = JSON.parse(this.responseText);
 				table_body = response['table_body']
 				table_attributes = response['table_attributes']
@@ -738,11 +740,12 @@
 				} else {
 					drawTheTable();
 				}
-				
-				
-
-
-
+			}
+			
+			if (this.readyState == 4 && this.status == 500) {
+				$("#run-query-button-icon").html('<span class="glyphicon glyphicon-chevron-right"></span>');
+				$("#run-query-button-icon").removeClass('btn-success');
+				$("#run-query-button-icon").addClass('btn-warning');
 			}
 		};
 
