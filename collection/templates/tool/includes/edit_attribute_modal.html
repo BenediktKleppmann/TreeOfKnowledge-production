@@ -280,7 +280,7 @@
 					
 					// When the popover is opened, load the object hierachy tree
 					$('#edit-object_type_of_related_object').on('shown.bs.popover', function () {
-						loadObjectHierachyTree();
+						loadObjectHierachyTree_edit();
 					});
 					
 					
@@ -459,7 +459,7 @@
 			
 			// When the popover is opened, load the object hierachy tree
 			$('#edit-object_type_of_related_object').on('shown.bs.popover', function () {
-				loadObjectHierachyTree();
+				loadObjectHierachyTree_edit();
 			});
 			
 			
@@ -697,7 +697,7 @@
 	/*========================================================================*/
 
 	// Set up the Object Hierachy Tree =============================================================	
-	function loadObjectHierachyTree() {
+	function loadObjectHierachyTree_edit() {
 			
 		// search 
 		var to = false;
