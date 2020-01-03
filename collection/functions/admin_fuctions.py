@@ -227,38 +227,8 @@ def find_possibly_duplicate_objects():
     duplicate_objects_by_object_type = {}
 
 
-    if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]=='postgres':
-
-        with connection.cursor() as cursor:
-            print('1')
-            sql_string2 = '''
-                SELECT 
-                    string_agg(CAST(objects.object_id AS TEXT), ',') as object_ids
-                FROM 
-                (
-                    SELECT ordered_data_points.object_id,
-                            string_agg(ordered_data_points.value_as_string, ',') as concatenated_values
-                    FROM
-                    (
-                        SELECT *
-                        FROM collection_data_point 
-                        ORDER BY object_id, attribute_id, valid_time_start, valid_time_end, value_as_string
-                    ) ordered_data_points
-                    GROUP BY ordered_data_points.object_id
-                ) objects
-                GROUP BY objects.concatenated_values
-                HAVING COUNT(*) > 1
-                '''
-            print('2')
-            cursor.execute(sql_string2)
-            print('3')
-            result = cursor.fetchall()
-            print('4')
-            list_of_lists__duplicate_objects = list(result)
-
-
-    else:
-
+    if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]!='postgres':
+        # SQLITE...
         with connection.cursor() as cursor:
             print('5')
             sql_string2 = '''
@@ -286,6 +256,37 @@ def find_possibly_duplicate_objects():
             print('8')
             list_of_lists__duplicate_objects = list(result)
             print('9')
+
+    else:
+        # POSTGES... 
+        with connection.cursor() as cursor:
+            print('1')
+            sql_string2 = '''
+                SELECT 
+                    string_agg(CAST(objects.object_id AS TEXT), ',') as object_ids
+                FROM 
+                (
+                    SELECT ordered_data_points.object_id,
+                            string_agg(ordered_data_points.value_as_string, ',') as concatenated_values
+                    FROM
+                    (
+                        SELECT *
+                        FROM collection_data_point 
+                        ORDER BY object_id, attribute_id, valid_time_start, valid_time_end, value_as_string
+                    ) ordered_data_points
+                    GROUP BY ordered_data_points.object_id
+                ) objects
+                GROUP BY objects.concatenated_values
+                HAVING COUNT(*) > 1
+                '''
+            print('2')
+            cursor.execute(sql_string2)
+            print('3')
+            result = cursor.fetchall()
+            print('4')
+            list_of_lists__duplicate_objects = list(result)
+
+       
 
 
 

@@ -87,9 +87,64 @@ def find_matching_entities(match_attributes, match_values):
 
         # ----------  POSTGRES VS. SQLITE  ----------
         # group_concat (sqlite) vs. string_agg (postgres)
-        if dict(os.environ)['DATABASE_URL'][:8]=='postgres':
-              
 
+        if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]!='postgres':
+            # SQLITE...
+            matched_objects_string = """
+                CREATE TEMPORARY TABLE matched_objects AS
+                    SELECT  row_number, 
+                            object_id, 
+                            '{"object_id":' || object_id || ', ' || group_concat(dictionary_element) || '}' AS object_dict, 
+                            COUNT(*) AS number_of_attributes_found,
+                            SUM(data_quality) AS data_quality,
+                            RANK () OVER (PARTITION BY row_number ORDER BY data_quality DESC) AS match_number
+                    FROM matched_data_points
+                    GROUP BY row_number, object_id;
+            """
+            cursor.execute(matched_objects_string)
+
+
+            matched_rows_string = """
+                CREATE TEMPORARY TABLE matched_rows AS
+                    SELECT 
+                        row_number, 
+                        '[' || group_concat(object_dict) || ']'  AS matching_objects_json
+                    FROM matched_objects
+                    WHERE number_of_attributes_found > 0
+                      AND match_number <=3
+                    GROUP BY row_number;
+            """
+            cursor.execute(matched_rows_string)
+
+
+            row_number_string = """
+                CREATE TEMPORARY TABLE row_number AS
+                    SELECT DISTINCT row_number
+                    FROM table_to_match  
+                    ORDER BY row_number;
+            """
+            cursor.execute(row_number_string)
+
+
+            get_matching_objects_json = """
+                SELECT '[' || group_concat(matching_objects_json) || ']' AS matching_objects_json
+                FROM (
+                    SELECT  COALESCE(mr.matching_objects_json, '[]') AS matching_objects_json
+                    FROM row_number AS rn
+                    LEFT JOIN matched_rows  AS mr
+                    ON rn.row_number = mr.row_number
+                    ORDER BY rn.row_number
+                );
+            """
+
+            result = cursor.execute(get_matching_objects_json)
+            matching_objects_entire_list_string = list(result)[0][0]
+            return matching_objects_entire_list_string
+
+
+
+        else:    
+            # POSTGES...  
             matched_objects_string = """
                 CREATE TEMPORARY TABLE matched_objects AS
                     SELECT  row_number, 
@@ -144,57 +199,7 @@ def find_matching_entities(match_attributes, match_values):
 
 
 
-        else:
-            matched_objects_string = """
-                CREATE TEMPORARY TABLE matched_objects AS
-                    SELECT  row_number, 
-                            object_id, 
-                            '{"object_id":' || object_id || ', ' || group_concat(dictionary_element) || '}' AS object_dict, 
-                            COUNT(*) AS number_of_attributes_found,
-                            SUM(data_quality) AS data_quality,
-                            RANK () OVER (PARTITION BY row_number ORDER BY data_quality DESC) AS match_number
-                    FROM matched_data_points
-                    GROUP BY row_number, object_id;
-            """
-            cursor.execute(matched_objects_string)
 
-
-            matched_rows_string = """
-                CREATE TEMPORARY TABLE matched_rows AS
-                    SELECT 
-                        row_number, 
-                        '[' || group_concat(object_dict) || ']'  AS matching_objects_json
-                    FROM matched_objects
-                    WHERE number_of_attributes_found > 0
-                      AND match_number <=3
-                    GROUP BY row_number;
-            """
-            cursor.execute(matched_rows_string)
-
-
-            row_number_string = """
-                CREATE TEMPORARY TABLE row_number AS
-                    SELECT DISTINCT row_number
-                    FROM table_to_match  
-                    ORDER BY row_number;
-            """
-            cursor.execute(row_number_string)
-
-
-            get_matching_objects_json = """
-                SELECT '[' || group_concat(matching_objects_json) || ']' AS matching_objects_json
-                FROM (
-                    SELECT  COALESCE(mr.matching_objects_json, '[]') AS matching_objects_json
-                    FROM row_number AS rn
-                    LEFT JOIN matched_rows  AS mr
-                    ON rn.row_number = mr.row_number
-                    ORDER BY rn.row_number
-                );
-            """
-
-            result = cursor.execute(get_matching_objects_json)
-            matching_objects_entire_list_string = list(result)[0][0]
-            return matching_objects_entire_list_string
 
 
 
@@ -552,19 +557,24 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             for fact_index, filter_fact in enumerate(filter_facts):
 
                 if dict(os.environ)['DATABASE_URL'][:8]=='postgres':
-                    sql_string2 = '''
-                            SELECT object_id, '[' || string_agg('[' || valid_time_start || ',' || valid_time_end || ']', ',') || ']' AS new_valid_range
-                            FROM collection_data_point
-                            WHERE object_id IN (SELECT object_id FROM unfiltered_object_ids)
-                              AND 
-                    '''   
-                else:
+                if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]!='postgres':
+                    # SQLITE...
                     sql_string2 = '''
                             SELECT object_id, '[' || group_concat('[' || valid_time_start || ',' || valid_time_end || ']', ',') || ']' AS new_valid_range
                             FROM collection_data_point
                             WHERE object_id IN (SELECT object_id FROM unfiltered_object_ids)
                               AND 
                     '''
+                else:
+                    # POSTGES... 
+                    sql_string2 = '''
+                            SELECT object_id, '[' || string_agg('[' || valid_time_start || ',' || valid_time_end || ']', ',') || ']' AS new_valid_range
+                            FROM collection_data_point
+                            WHERE object_id IN (SELECT object_id FROM unfiltered_object_ids)
+                              AND 
+                    '''   
+                
+
                 if filter_fact['operation'] == '=':     
                     sql_string2 += "attribute_id = '%s' AND string_value = '%s'" % (filter_fact['attribute_id'], filter_fact['value'])
                 elif filter_fact['operation'] == '>':
