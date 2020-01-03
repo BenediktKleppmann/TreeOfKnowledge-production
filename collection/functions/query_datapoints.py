@@ -555,8 +555,6 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
 
 
             for fact_index, filter_fact in enumerate(filter_facts):
-
-                if dict(os.environ)['DATABASE_URL'][:8]=='postgres':
                 if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]!='postgres':
                     # SQLITE...
                     sql_string2 = '''
