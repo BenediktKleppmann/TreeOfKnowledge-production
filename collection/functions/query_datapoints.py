@@ -326,15 +326,32 @@ def get_data_from_random_object(object_type_id, filter_facts, specified_start_ti
 
 
 def get_data_from_random_related_object(objects_dict, specified_start_time, specified_end_time):
+    objects_data = {}
 
     print('~~~~~~~~~~~~~~~  get_data_from_random_related_object  ~~~~~~~~~~~~~~~~~~~~~~')
     object_numbers = list(objects_dict.keys())
     merged_object_data_tables = get_data_from_related_objects(objects_dict, specified_start_time, specified_end_time)
 
     if len(merged_object_data_tables) > 0:
-        # chose random row
-        merged_object_data_tables.index = range(len(merged_object_data_tables))
-        chosen_row = random.choice(merged_object_data_tables.index)
+
+        # Sort Columns - top = biggest_number_of_non_nulls - attribute_id
+        non_object_id_columns = [column for column in list(merged_object_data_tables.columns) if column != 'cross_join_column' and (column.split('attr')[1] not in ['object_id','time'])]
+        columns_df = merged_object_data_tables[non_object_id_columns].notnull().sum()
+        attribute_ids = [int(column.split('attr')[1]) for column in non_object_id_columns]
+        columns_df = columns_df - pd.Series(attribute_ids, index=non_object_id_columns)
+
+        sorted_column_names = columns_df.sort_values(ascending=False).index
+        sorted_attribute_ids = [column.split('attr')[1] for column in sorted_column_names]
+        sorted_attribute_ids = list(dict.fromkeys(sorted_attribute_ids))  # remove duplicate attribute_ids
+        objects_data['sorted_attribute_ids'] = sorted_attribute_ids
+
+        
+
+        # Sort Rows -  the best-populated entities to the top
+        merged_object_data_tables = merged_object_data_tables.loc[merged_object_data_tables.isnull().sum(1).sort_values().index]
+        merged_object_data_tables.index = range(len(merged_object_data_tables))    
+        chosen_row = 0 # chose top row
+        # chosen_row = random.choice(merged_object_data_tables.index)  # chose random row
     
 
         # prepare return values (all_attribute_values)
@@ -356,11 +373,14 @@ def get_data_from_random_related_object(objects_dict, specified_start_time, spec
                                                                                             'attribute_name':attribute_record.name, 
                                                                                             'attribute_data_type':attribute_record.data_type, 
                                                                                             'attribute_rule': None}
+        objects_data['all_attribute_values'] = all_attribute_values
 
     else: 
-        all_attribute_values = {object_number:{'object_attributes':{}} for object_number in object_numbers}
+        objects_data['sorted_attribute_ids'] = []
+        objects_data['all_attribute_values'] = {object_number:{'object_attributes':{}} for object_number in object_numbers}
+        
 
-    return all_attribute_values
+    return objects_data
 
 
 

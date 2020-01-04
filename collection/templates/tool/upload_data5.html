@@ -1414,7 +1414,11 @@
 					var selection_options_html_string = "";
 					
 					for (var i = 0; i < attribute_options.length; i++) {
-						selection_options_html_string += 	'<li class="list-group-item narrow"><button class="btn btn-outline-secondary" type="button" onclick="inspectAttribute(' + i + ')" scope="col" data-attribute-id=' + attribute_options[i]["attribute_id"] + '>' + attribute_options[i]["attribute_name"] + '</button></li>';
+						var formatted_attribute_name = attribute_options[i]["attribute_name"];
+						if (formatted_attribute_name.length > 31){
+							formatted_attribute_name = formatted_attribute_name.slice(0,26) + '...';
+						}
+						selection_options_html_string += 	'<li class="list-group-item narrow"><button class="btn btn-outline-secondary" type="button" onclick="inspectAttribute(' + i + ')" scope="col" data-attribute-id=' + attribute_options[i]["attribute_id"] + '>' + formatted_attribute_name + '</button></li>';
 					}
 
 					$("#selection-options").html(selection_options_html_string);

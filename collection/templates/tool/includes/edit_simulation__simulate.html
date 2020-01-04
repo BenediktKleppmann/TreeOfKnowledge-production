@@ -580,6 +580,7 @@
 	// GLOBAL VARIABLES:
 	var object_attribute_changes = {};
 	var rules_list = {};
+	var sorted_attribute_ids = [];
 	//var new_rule_cursor_position = {};
 	var new_rule_used_attribute_names = [];
 	var new_rule_used_attribute_ids = [];
@@ -602,10 +603,12 @@
 		var xmlhttp = new XMLHttpRequest();       
 		xmlhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				var all_attribute_values = JSON.parse(this.responseText);
-				console.log('----------------------------')
-				console.log(objects_dict)
-				console.log('----------------------------')
+				var objects_data = JSON.parse(this.responseText);
+				var all_attribute_values = objects_data['all_attribute_values'];
+				sorted_attribute_ids = objects_data['sorted_attribute_ids'];
+				console.log('----------------------------');
+				console.log(objects_dict);
+				console.log('----------------------------');
 				object_numbers = Object.keys(all_attribute_values);
 				for (var i = 0; i < object_numbers.length ; i++) {
 					object_number = parseInt(object_numbers[i]);
@@ -963,7 +966,11 @@
 	// Draw Right Sidebar ==============================================================		
 	function drawObjectAttributeTable(object_number) {
 		var object_attributes = objects_dict[object_number]['object_attributes'];
-		var attribute_ids = Object.keys(object_attributes);
+		var object_attribute_ids = Object.keys(object_attributes);
+		var object_sorted_attribute_ids = sorted_attribute_ids.filter(function(item) {
+		  return object_attribute_ids.includes(item); 
+		})
+
 		
 		if (!got_object_data){
 			var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Retrieving data...<div class="lds-dual-ring"></div></div>';
@@ -971,7 +978,7 @@
 			
 		} else {
 		
-			if (attribute_ids.length ==0){
+			if (object_sorted_attribute_ids.length ==0){
 				var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">No combination of objects found that satisfy the restrictions.</div>';
 				$("#right-sidebar-body").html(no_results_string);
 				//var object_type_name = objects_dict[object_number]['object_type_name'];
@@ -979,8 +986,8 @@
 				
 			} else {		
 				object_attributes_string = '<table id="object-attributes-table">';
-				for (var i = 0; i < attribute_ids.length ; i++) {
-					var attribute_id = attribute_ids[i];
+				for (var i = 0; i < object_sorted_attribute_ids.length ; i++) {
+					var attribute_id = object_sorted_attribute_ids[i];
 
 					object_attributes_string += '<tr>' +
 													'<td id="optimisation-attribute-button-' + object_number + '-' + attribute_id + '" class="attribute-name" onclick="selectOptimisationAttribute(' + object_number + ', ' + attribute_id + ')">' + object_attributes[attribute_id]['attribute_name'] + '</td>' +
