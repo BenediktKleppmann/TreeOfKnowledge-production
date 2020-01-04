@@ -335,7 +335,7 @@ def get_data_from_random_related_object(objects_dict, specified_start_time, spec
     if len(merged_object_data_tables) > 0:
 
         # Sort Columns - top = biggest_number_of_non_nulls - attribute_id
-        non_object_id_columns = [column for column in list(merged_object_data_tables.columns) if column != 'cross_join_column' and (column.split('attr')[1] not in ['object_id','time'])]
+        non_object_id_columns = [column for column in list(merged_object_data_tables.columns) if (len(column.split('attr'))>1) and (column.split('attr')[1] not in ['object_id','time'])]
         columns_df = merged_object_data_tables[non_object_id_columns].notnull().sum()
         attribute_ids = [int(column.split('attr')[1]) for column in non_object_id_columns]
         columns_df = columns_df - pd.Series(attribute_ids, index=non_object_id_columns)
