@@ -416,9 +416,6 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
             cursor.execute(query_string)
             print(query_string)
             object_ids = [entry[0] for entry in cursor.fetchall()]
-            print(object_ids)
-            print(specified_start_time)
-            print(specified_end_time)
 
          # get broad_table_df
         print('2')
@@ -546,7 +543,7 @@ def get_training_data(object_type_id, filter_facts, valid_times):
 
 def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time, max_nb_of_objects=500):
 
-
+    print('2.0')
 
     with connection.cursor() as cursor:
 
@@ -564,6 +561,7 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
 
 
         # apply filter-facts
+        print('2.1')
         query = cursor.execute('SELECT object_id FROM unfiltered_object_ids')
         unfiltered_object_ids = cursor.fetchall()
         if unfiltered_object_ids is None:
@@ -604,11 +602,14 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
                     sql_string2 += "attribute_id = '%s' AND string_value IN (%s)" % (filter_fact['attribute_id'], ', '.join(values))
 
                 sql_string2 += " GROUP BY object_id "
+                print('2.2')
                 new_valid_ranges_df = pd.read_sql_query(sql_string2, connection)
+                print('2.3')
                 new_valid_ranges_df['new_valid_range'] = new_valid_ranges_df['new_valid_range'].apply(json.loads)
                 new_valid_ranges_df['object_id'] = new_valid_ranges_df['object_id'].astype(int)
                 
                 # find the intersecting time ranges (= the overlap between the known valid_ranges and the valid_ranges from the new filter fact)
+                print('2.4')
                 valid_ranges_df = pd.merge(valid_ranges_df, new_valid_ranges_df, on='object_id', how='left')
                 valid_ranges_df = valid_ranges_df[valid_ranges_df['new_valid_range'].notnull()]
                 if len(valid_ranges_df) == 0:
@@ -696,8 +697,22 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             broad_table_df.reindex()
             broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
 
-            # insert missing columns
+            # insert the object_type's additional facts
+            additional_attribute_values = []
             list_of_parent_object_types = [el['id'] for el in get_from_db.get_list_of_parent_objects(object_type_id)]
+            li_attr_strings = list(Object_types.objects.filter(id__in=list_of_parent_object_types).values_list('li_attr'))
+            for li_attr_string in li_attr_strings:
+                li_attr = json.loads(li_attr_string[0])
+                if 'attribute_values' in li_attr:
+                    additional_attribute_values += li_attr['attribute_values']
+            additional_attribute_values = [attribute_value for attribute_value in additional_attribute_values if attribute_value['operation']=='=']
+            for attribute_value in additional_attribute_values:
+                if isinstance(attribute_value['value'], int):
+                    attribute_value['value'] = float(attribute_value['value'])
+                broad_table_df[str(attribute_value['attribute_id'])] = attribute_value['value']
+
+
+            # insert missing columns
             all_attribute_ids = Attribute.objects.filter(first_applicable_object_type__in = list_of_parent_object_types).values_list('id', flat=True)
             all_attribute_ids = [str(attribute_id) for attribute_id in all_attribute_ids]
             existing_columns = list(broad_table_df.columns)

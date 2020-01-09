@@ -91,16 +91,25 @@ class Uploaded_dataset(models.Model):
 
 
 class Data_point(models.Model):
-    object_id = models.IntegerField(db_index=True)
-    attribute_id = models.TextField(db_index=True)
-    value_as_string = models.TextField(db_index=True)
-    numeric_value = models.FloatField(null=True, db_index=True)
-    string_value = models.TextField(null=True, db_index=True)
+    object_id = models.IntegerField()
+    attribute_id = models.TextField()
+    value_as_string = models.TextField()
+    numeric_value = models.FloatField(null=True)
+    string_value = models.TextField(null=True)
     boolean_value = models.NullBooleanField() 
-    valid_time_start = models.BigIntegerField(db_index=True)
-    valid_time_end = models.BigIntegerField(db_index=True)
+    valid_time_start = models.BigIntegerField()
+    valid_time_end = models.BigIntegerField()
     data_quality = models.IntegerField()
     upload_id = models.IntegerField()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['object_id']),
+            models.Index(fields=['object_id', 'valid_time_start']),
+            models.Index(fields=['object_id', 'attribute_id', 'string_value']),
+            models.Index(fields=['object_id', 'attribute_id', 'numeric_value']),
+            models.Index(fields=['attribute_id', 'value_as_string']),
+        ]
 
 
 
@@ -128,7 +137,7 @@ class Object_types(models.Model):
 
 
 class Object(models.Model):
-    object_type_id = models.TextField()
+    object_type_id = models.TextField(db_index=True)
 
 
 

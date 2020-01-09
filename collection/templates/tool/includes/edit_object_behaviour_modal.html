@@ -172,7 +172,7 @@
 	/* ----------------------------------------------------------*/
 	
 	#editObjectBehaviourModal #rule-info-top {
-		height: 344px;
+		height: 435px;
 	}
 	
 	#editObjectBehaviourModal #rule-info {
@@ -397,6 +397,8 @@ var new_rule_cursor_textarea = '';
 	
 	
 	function openEditObjectBehaviourModal(object_number, rules_attribute_id, rules_attribute_name, rule_id){
+		$("#rule-details").html();
+		$("#available-variables-block").html();
 		$("#editObjectBehaviourModal").modal('show');
 
 		var object_name = objects_dict[object_number]['object_name'];
@@ -625,15 +627,15 @@ var new_rule_cursor_textarea = '';
 		for (var i = 0; i < attribute_ids.length ; i++) {
 			var attribute_id = attribute_ids[i];
 			var attribute_name = object_attributes[attribute_id]['attribute_name']
-			available_variables_html += 		'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+			available_variables_html += 			'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
 		}
 		for (var i = 0; i < delta_t_list.length ; i++) {
 			var delta_t_name = delta_t_list[i];
-			available_variables_html += 		'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + delta_t_name + '\')" scope="col">' + delta_t_name + '</button></li>';
+			available_variables_html += 			'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + delta_t_name + '\')" scope="col">' + delta_t_name + '</button></li>';
 		}
 		
 		
-		available_variables_html += 		'</ul>' + 
+		available_variables_html += 			'</ul>' + 
 											'</div>';
 
 		$('#available-variables-block').html(available_variables_html);
@@ -961,27 +963,51 @@ var new_rule_cursor_textarea = '';
 		}
 		
 		//2 - REMOVING/REPLACING VARIABLES
-		var available_attribute_ids = Object.keys(objects_dict[object_number]['object_attributes']);
+		var available_attribute_ids = [];
 		var available_attribute_names = [];
-		for (var i = 0; i < available_attribute_ids.length; i++) {
-			available_attribute_names.push(objects_dict[object_number]['object_attributes'][available_attribute_ids[i]]['attribute_name'])
+		var available_attribute_datatypes = [];
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			var objects_attribute_ids = Object.keys(objects_dict[object_numbers[i]]['object_attributes']);
+			for (var j = 0; j < objects_attribute_ids.length; j++) {
+				available_attribute_ids.push(objects_attribute_ids[j]);
+				available_attribute_names.push(objects_dict[object_numbers[i]]['object_attributes'][objects_attribute_ids[j]]['attribute_name']);
+				available_attribute_datatypes.push(objects_dict[object_numbers[i]]['object_attributes'][objects_attribute_ids[j]]['attribute_data_type'])
+			}
 		}
+		
 		for (var i = 0; i < available_attribute_ids.length; i++) {
 			var search_value = '[' + available_attribute_names[i] + ']';
 			if (executable.indexOf(search_value)>=0){
-				var data_type = objects_dict[object_number]['object_attributes'][available_attribute_ids[i]]['attribute_data_type'];
-				if (['string', 'date'].includes(data_type)){
-					var replacement = '"df.attr' + String(available_attribute_ids[i]) + '"';
+				var data_type = available_attribute_datatypes[i];
+				if (data_type == 'relation'){
+					// first replace the ones with dot before, then set the replacement for the replacing without dot (necessary for multiple relations)
+					executable = executable.split('.' + search_value).join('.rel' + String(available_attribute_ids[i]));
+					executable = executable.split(search_value).join('df.rel' + String(available_attribute_ids[i]));
+				} else if (['string', 'date'].includes(data_type)){
+					executable = executable.split('.' + search_value).join('.attr' + String(available_attribute_ids[i]) + '"');
+					executable = executable.split(search_value).join('df.attr' + String(available_attribute_ids[i]) + '"');
 				} else {
-					var replacement = 'df.attr' + String(available_attribute_ids[i]);
+					executable = executable.split('.' + search_value).join('.attr' + String(available_attribute_ids[i]));
+					executable = executable.split(search_value).join('df.attr' + String(available_attribute_ids[i]));
 				}
-				executable = executable.split(search_value).join(replacement);
+
 				stripped_rule_text = stripped_rule_text.split(search_value).join(' ');
 				
 				used_attribute_ids.push(available_attribute_ids[i])
 			}	
 		}
 		
+		//match unmatched " 
+		var regex = /["a-zA-Z0-9\.]*"/g;
+		var words_ending_on_quote = executable.match(regex);
+		if (words_ending_on_quote){
+			for (var i = 0; i < words_ending_on_quote.length; i++) {
+			  if (words_ending_on_quote[i].substring(0,1) != '"') { //if they don't start with a quotationmark: add it
+				 paragraph = paragraph.split(words_ending_on_quote[i]).join('"' + words_ending_on_quote[i]);
+			  }
+			}
+		}
 		
 		//3 - REMOVING THE REST
 		//function-characters

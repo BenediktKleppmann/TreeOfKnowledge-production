@@ -511,12 +511,16 @@ def get_available_variables(request):
 # used in edit_model.html
 @login_required
 def get_object_rules(request):
+    print('----------- get_object_rules -------------')
     object_type_id = request.GET.get('object_type_id', '')
 
     response = {}
     list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
     parent_object_type_ids = [obj['id'] for obj in list_of_parent_objects]
+    print('parent_object_type_ids: ' + str(parent_object_type_ids))
     attributes = Attribute.objects.filter(first_applicable_object_type__in=parent_object_type_ids).values()
+    
+    print('attributes: ' + str(attributes))
     for attribute in attributes:
         response[attribute['id']] = {'used_rules': {},
                                     'not_used_rules':{},
@@ -1622,9 +1626,16 @@ def test_page2(request):
     # bla = list(Object.objects.filter(object_type_id__in=['j1_5']).values_list('id'))
     # bla = Uploaded_dataset.objects.get(id=94).data_table_json
     # bla = list(Object.objects.all().values('object_type_id'))
-    list_of_object_ids = list(Object.objects.all().values())
+    # list_of_object_ids = list(Object_types.objects.all().values())
+    # american = Object_types.objects.all().get(id="j2_1")
+    # american.li_attr = "{\"attribute_values\": [{\"attribute\": \"Nationality\", \"attribute_id\": \"69\", \"operation\": \"=\", \"value\": 11080}]}"
+    # american.save()     
     # return HttpResponse('success')
-    return HttpResponse(json.dumps(list_of_object_ids))
+    kingdom = Attribute.objects.all().get(id=11)
+    kingdom.first_applicable_object_type = "n3"
+    kingdom.save()     
+    return HttpResponse('success')
+    # return HttpResponse(json.dumps(list_of_object_ids))
 
     
 

@@ -13,6 +13,7 @@ import seaborn as sns
 import math
 from copy import deepcopy
 from colour import Color
+import re
 
 # called from edit_model.html
 class Simulator:
@@ -90,6 +91,9 @@ class Simulator:
         y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
         for y_value_attribute in y_value_attributes:
             column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
+            print('-------------   y0_columns   ---------------')
+            print(y_value_attribute)
+            print(column_name)
             self.y0_columns.append(column_name)
             self.y0_column_dt[column_name] = Attribute.objects.get(id=y_value_attribute['attribute_id']).data_type
 
@@ -115,6 +119,12 @@ class Simulator:
             self.y0_values = [row for index, row in sorted(merged_periods_df.to_dict('index').items())]
 
         else:
+            print('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
+            print('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
+            print(self.df.columns)
+            print(self.y0_columns)
+            print('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
+            print('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
             df_copy = pd.DataFrame(self.df[self.y0_columns].copy())
             df_copy.columns = [col + 'period0' for col in df_copy.columns]
             df_copy = df_copy[[col for col in df_copy.columns if col.split('period')[0] in self.y0_columns]]
@@ -126,51 +136,107 @@ class Simulator:
 
 
         #  --- Rules ---
-        number_of_priors = 0
+
+        # preparation: put relations into a dictionary for easier access
+        relation_dict = {}
         object_numbers = self.objects_dict.keys()
+        for object_number in object_numbers:
+            relation_dict[object_number] = {}
+            for relation in self.objects_dict[str(object_number)]['object_relations']:
+                if relation['attribute_id'] not in relation_dict[object_number]:
+                    relation_dict[object_number][relation['attribute_id']] = [relation['target_object_number']]
+                else:
+                    relation_dict[object_number][relation['attribute_id']] += [relation['target_object_number']]
+        print('------------ relation_dict ------------')
+        print(relation_dict)
+
+        # adapt condition_exec and effect_exec to current df
+        number_of_priors = 0  
         for object_number in object_numbers:
 
             attribute_ids = self.objects_dict[str(object_number)]['object_attributes'].keys()
+            print('attribute_ids: ' + str(attribute_ids))
             for attribute_id in attribute_ids:
 
                 rule_ids = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)]['execution_order']
+                print('rule_ids: ' + str(rule_ids))
                 for rule_id in set(rule_ids):
+                    print('object_number: ' + str(object_number) + '; attribute_id: ' + str(attribute_id) + '; rule_id: ' + str(rule_id) + '; ')
                     rule = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)]['used_rules'][str(rule_id)]
 
-                    if rule['effect_is_calculation']:
-                        rule['effect_exec'] = rule['effect_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
-                    elif rule['changed_var_data_type'] in ['relation','int']:
-                        rule['effect_exec'] = int(rule['effect_exec'])
-                    elif rule['changed_var_data_type'] == 'real':
-                        rule['effect_exec'] = float(rule['effect_exec'])
-                    elif rule['changed_var_data_type'] == 'boolean':
-                        rule['effect_exec'] = (rule['effect_exec'] in ['True','true','T','t'])
-                    
+                    if self.is_timeseries_analysis or 'df.delta_t' not in rule['effect_exec']:  # don't include rules containing delta_t for cross-sectional analyses 
 
-                    if not rule['is_conditionless']:
+                        if rule['effect_is_calculation']:
+                            rule['effect_exec'] = rule['effect_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
+                        elif rule['changed_var_data_type'] in ['relation','int']:
+                            rule['effect_exec'] = int(rule['effect_exec'])
+                        elif rule['changed_var_data_type'] == 'real':
+                            rule['effect_exec'] = float(rule['effect_exec'])
+                        elif rule['changed_var_data_type'] == 'boolean':
+                            rule['effect_exec'] = (rule['effect_exec'] in ['True','true','T','t'])
+                        
+                        # --- convert condition_exec ---
+                        if not rule['is_conditionless']:
+
+                            # exists_expressions
+                            exists_expressions = re.findall(r'\([∀∃]rel\d+\)\[[^\]]*\]', rule['condition_exec'])
+                            for exists_expression in exists_expressions:
+                                relation_id = int(re.findall(r'\d+', exists_expression)[0])
+                                target_object_numbers = relation_dict[object_number][relation_id]
+
+                                exists_expression_inner = re.findall(r'\[.*\]',exists_expression)[0]
+                                list_of_different_inner_expressions = [exists_expression_inner.replace('df.rel' + str(relation_id), 'df.obj'+ str(target_object_number)) for target_object_number in target_object_numbers]
+                                if exists_expression[1]=='∃':
+                                    replacement = '(' + ' or '.join(list_of_different_inner_expressions) + ')'
+                                else:
+                                    replacement = '(' + ' and '.join(list_of_different_inner_expressions) + ')'
+                                
+                                rule['condition_exec'] = rule['condition_exec'].replace(exists_expression, replacement)
+
+
+                            # relations
+                            # first level
+                            relation_occurences = re.findall(r'df.rel\d+\.', rule['condition_exec'])
+                            for relation_occurence in relation_occurences:
+                               relation_id = int(re.findall(r'\d+', relation_occurence)[0]) 
+                               print('relation_dict[' + str(object_number) + '][' + str(relation_id) + '][0]')
+                               target_object_number = relation_dict[object_number][relation_id][0]
+                               rule['condition_exec'] = rule['condition_exec'].replace(relation_occurence, 'df.obj' + str(target_object_number))
+
+                            # further levels
+                            for level in range(2): # you can maximally have a relation of a relation of a relation (=3)
+                                relation_occurences = re.findall(r'df.obj\d+rel\d+\.', rule['condition_exec'])
+                                for relation_occurence in relation_occurences:
+                                   given_object_number = int(re.findall(r'\d+', relation_occurence)[0]) 
+                                   relation_id = int(re.findall(r'\d+', relation_occurence)[1]) 
+                                   target_object_number = relation_dict[given_object_number][relation_id][0]
+                                   rule['condition_exec'] = rule['condition_exec'].replace(relation_occurence, 'df.obj' + str(target_object_number))
+
+
+
                         rule['condition_exec'] = rule['condition_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
-                    rule['column_to_change'] = 'obj' + str(object_number) + 'attr' + str(rule['changed_var_attribute_id'])
-                    rule['object_number'] = object_number
+                        rule['column_to_change'] = 'obj' + str(object_number) + 'attr' + str(rule['changed_var_attribute_id'])
+                        rule['object_number'] = object_number
 
 
-                    if rule['learn_posterior']:
-                        new_prior = elfi.Prior('uniform', 0, 1, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
-                        # new_prior = elfi.Prior('uniform', 0, 1, model=self.elfi_model, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
-                        self.rule_priors.append(new_prior)
-        
-                        rule['prior_index'] = number_of_priors
-                        number_of_priors += 1
+                        if rule['learn_posterior']:
+                            new_prior = elfi.Prior('uniform', 0, 1, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
+                            # new_prior = elfi.Prior('uniform', 0, 1, model=self.elfi_model, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
+                            self.rule_priors.append(new_prior)
+            
+                            rule['prior_index'] = number_of_priors
+                            number_of_priors += 1
 
-                        self.just_learned_rules.append({'object_number': object_number, 'attribute_id': attribute_id, 'rule':rule })
-                    
-                    if (not rule['is_conditionless']) and (not rule['learn_posterior']):
-                        # if a specific posterior for this simulation has been learned, take this, else take the combined posterior of all other simulations
-                        histogram, mean, standard_dev, message= get_from_db.get_single_pdf(simulation_id, object_number, rule_id)
-                        if histogram is None:
-                            histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule_id)
-                        rule['histogram'] = histogram
+                            self.just_learned_rules.append({'object_number': object_number, 'attribute_id': attribute_id, 'rule':rule })
+                        
+                        if (not rule['is_conditionless']) and (not rule['learn_posterior']):
+                            # if a specific posterior for this simulation has been learned, take this, else take the combined posterior of all other simulations
+                            histogram, mean, standard_dev, message= get_from_db.get_single_pdf(simulation_id, object_number, rule_id)
+                            if histogram is None:
+                                histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule_id)
+                            rule['histogram'] = histogram
 
-                    self.rules.append(rule)
+                        self.rules.append(rule)
 
 
         #  --- Posterior Values to Delete ---
@@ -432,6 +498,11 @@ class Simulator:
                     else:
                         triggered_rules = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
 
+                    print('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
+                    print('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
+                    print('condition_exec: "' + rule['condition_exec'] + '"')
+                    print('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
+                    print('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
                     condition_fulfilled_rules = pd.eval(rule['condition_exec'])
                     satisfying_rows = triggered_rules  & condition_fulfilled_rules   
 
