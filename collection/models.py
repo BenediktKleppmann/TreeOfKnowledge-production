@@ -77,6 +77,7 @@ class Uploaded_dataset(models.Model):
     # upload_data6
     list_of_matches = models.TextField()
     upload_only_matched_entities = models.TextField()
+    object_id_column = models.TextField()
     # upload_data7
     # valid_times = models.TextField()
     created = models.DateTimeField(editable=False)

@@ -80,7 +80,7 @@
 			</div>
 		</div>		
 	</div>
-	
+	<div id="object-type" style="margin: 13px 20px;"></div>
 	<div id="object-table"></div>
 	
 
@@ -112,7 +112,11 @@
 				var object = JSON.parse(this.responseText);
 				table_data = object["table_data"];
 				table_headers = object["table_headers"];
+				object_type_id = object["object_type_id"];
+				object_type = object["object_type"];
 				upload_ids = object["upload_ids"];
+				
+				$("#object-type").html('Object Type:  ' + object_type);
 			
 				table_html_string ='<div class="table-section">' +	
 										'<table class="table table-sm table-condensed data-table" style="width:' + (150*table_headers.length + 20) + 'px;">' +
@@ -133,7 +137,7 @@
 					for (var k = 0; k < table_data[j].length; k++) {
 						table_html_string +=  		'<td>' + table_data[j][k] + '</td>';
 					}
-					table_html_string +=  			'<td><a href="//www.treeofknowledge.ai/admin/inspect_upload/' + upload_ids[j] + '">' + upload_ids[j] + '</a></td>'
+					table_html_string +=  			'<td><a href="{% url "inspect_upload_empty" %}' + upload_ids[j] + '">' + upload_ids[j] + '</a></td>' +
 												'</tr>';
 				}
 

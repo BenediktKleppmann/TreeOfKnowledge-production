@@ -1131,6 +1131,8 @@ def check_single_fact_format(request):
     attribute_id = request.GET.get('attribute_id', '')
     operator = request.GET.get('operator', '')
     value = request.GET.get('value', '')
+    print('-----------------------------------------------------------')
+    print(value)
 
     response = {}
     response['fact_number'] = int(request.GET.get('fact_number', ''))
@@ -1183,15 +1185,30 @@ def check_single_fact_format(request):
             response['format_violation_text'] = attribute_name +'-values must be "true" or "false", not ' + value + '.'
             return HttpResponse(json.dumps(response))
 
-    violating_columns = tdda_functions.get_columns_format_violations(attribute_id, [value])
-    if len(violating_columns) > 0:
-        format_violation_text = 'The value "' + str(value) + '" does not satisfy the required format for ' + attribute_name + '-values. <br />'
-        format_violation_text += 'It must satisfy: <ul>'
-        for key in format_specification['fields']['column'].keys():
-            format_violation_text += '<li>' + str(key) + ' = ' + str(format_specification['fields']['column'][key]) + '</li>'
-        format_violation_text += '</ul>'
-        response['format_violation_text'] = format_violation_text
-        return HttpResponse(json.dumps(response))
+    if operator == '=':
+        violating_columns = tdda_functions.get_columns_format_violations(attribute_id, [value])
+        if len(violating_columns) > 0:
+            format_violation_text = 'The value "' + str(value) + '" does not satisfy the required format for ' + attribute_name + '-values. <br />'
+            format_violation_text += 'It must satisfy: <ul>'
+            for key in format_specification['fields']['column'].keys():
+                format_violation_text += '<li>' + str(key) + ' = ' + str(format_specification['fields']['column'][key]) + '</li>'
+            format_violation_text += '</ul>'
+            response['format_violation_text'] = format_violation_text
+            return HttpResponse(json.dumps(response))
+
+    if operator == 'in':
+        list_of_values = json.loads(value)
+        for individual_value in list_of_values:
+            violating_columns = tdda_functions.get_columns_format_violations(attribute_id, [individual_value])
+            if len(violating_columns) > 0:
+                format_violation_text = 'The value "' + str(individual_value) + '" does not satisfy the required format for ' + attribute_name + '-values. <br />'
+                format_violation_text += 'It must satisfy: <ul>'
+                for key in format_specification['fields']['column'].keys():
+                    format_violation_text += '<li>' + str(key) + ' = ' + str(format_specification['fields']['column'][key]) + '</li>'
+                format_violation_text += '</ul>'
+                response['format_violation_text'] = format_violation_text
+                return HttpResponse(json.dumps(response))
+
 
     response['format_violation_text'] = ''
     return HttpResponse(json.dumps(response))
@@ -1451,7 +1468,7 @@ def admin_page(request):
 
 # ==================
 # INSPECT
-# =================
+# ==================
 
 @staff_member_required
 def inspect_object(request, object_id):
@@ -1472,6 +1489,7 @@ def get_uploaded_dataset(request):
     upload_id = request.GET.get('upload_id', None)
     uploaded_dataset = Uploaded_dataset.objects.get(id=upload_id)
     uploaded_dataset_dict = {   'data_table_json':json.loads(uploaded_dataset.data_table_json),
+                                'object_id_column':json.loads(uploaded_dataset.object_id_column),
                                 'data_source':uploaded_dataset.data_source,
                                 'data_generation_date':uploaded_dataset.data_generation_date.strftime('%Y-%m-%d %H:%M'),
                                 'correctness_of_data':uploaded_dataset.correctness_of_data,
@@ -1480,6 +1498,19 @@ def get_uploaded_dataset(request):
 
     return HttpResponse(json.dumps(uploaded_dataset_dict))
 
+# ==================
+# SHOW
+# ==================
+
+@staff_member_required
+def show_attributes(request):
+    attributes = Attribute.objects.all()
+    return render(request, 'admin/show_attributes.html', {'attributes': attributes,})
+
+@staff_member_required
+def show_object_types(request):
+    object_types = Object_types.objects.all()
+    return render(request, 'admin/show_object_types.html', {'object_types': object_types,})
 
 
 
@@ -1631,28 +1662,37 @@ def test_page2(request):
     # american.li_attr = "{\"attribute_values\": [{\"attribute\": \"Nationality\", \"attribute_id\": \"69\", \"operation\": \"=\", \"value\": 11080}]}"
     # american.save()     
     # return HttpResponse('success')
-    kingdom = Attribute.objects.all().get(id=11)
-    kingdom.first_applicable_object_type = "n3"
-    kingdom.save()     
-    return HttpResponse('success')
+    # kingdom = Attribute.objects.all().get(id=11)
+    # kingdom.first_applicable_object_type = "n3"
+    # kingdom.save()     
+    # return HttpResponse('success')
     # return HttpResponse(json.dumps(list_of_object_ids))
+    from django.db import connection
+    sql_query = 'SELECT object_id, attribute_id, valid_time_start, valid_time_end,  value_as_string, upload_id FROM collection_data_point WHERE object_id = 11464'
+    object_values_df = pd.read_sql_query(sql_query, connection)
+    object_values_df['valid_time_start_0'] = pd.to_datetime(object_values_df['valid_time_start']).dt.strftime('%Y-%m-%d')
+    object_values_df['valid_time_end_0'] = pd.to_datetime(object_values_df['valid_time_end']).dt.strftime('%Y-%m-%d')
+    object_values_df['valid_time_start_1'] = pd.to_datetime(object_values_df['valid_time_start']*1000).dt.strftime('%Y-%m-%d')
+    object_values_df['valid_time_end_1'] = pd.to_datetime(object_values_df['valid_time_end']*1000).dt.strftime('%Y-%m-%d')
+    print(object_values_df)
+    return HttpResponse(json.dumps(object_values_df.to_dict()))
 
     
 
 
 def test_page3(request):
-    current_object_type = list(Object.objects.all().values('object_type_id').annotate(total=Count('object_type_id')))
+    # current_object_type = list(Data_point.objects.all().values('object_type_id').annotate(total=Count('object_type_id')))
 
-    # current_object_type = list(Uploaded_dataset.objects.filter(id=79).values())
+    current_object_type = list(Data_point.objects.filter(attribute_id=105).values())
     # for i in range(len(current_object_type)):
     #     del current_object_type[i]['created']
     #     del current_object_type[i]['updated']
     #     del current_object_type[i]['data_generation_date']
 
     # return HttpResponse(json.dumps(current_object_type))
-    list_of_object_ids = list(Object.objects.all().values_list(['id','object_type_id']))
+    # list_of_object_ids = list(Object.objects.all().values_list(['id','object_type_id']))
     # return HttpResponse('success')
-    return HttpResponse(json.dumps(list_of_object_ids))
+    return HttpResponse(json.dumps(current_object_type))
     # return render(request, 'tool/test_page3.html')
 
 

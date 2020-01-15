@@ -146,8 +146,8 @@ def inspect_individual_object(object_id):
     attributes_dict = {str(attribute['id']):attribute['name'] for attribute in attributes}
 
     object_values_df['attribute_name'] = object_values_df['attribute_id'].replace(attributes_dict)
-    object_values_df['valid_time_start'] = pd.to_datetime(object_values_df['valid_time_start']).dt.strftime('%Y-%m-%d')
-    object_values_df['valid_time_end'] = pd.to_datetime(object_values_df['valid_time_end']).dt.strftime('%Y-%m-%d')
+    object_values_df['valid_time_start'] = pd.to_datetime(object_values_df['valid_time_start'], unit='s').dt.strftime('%Y-%m-%d')
+    object_values_df['valid_time_end'] = pd.to_datetime(object_values_df['valid_time_end'], unit='s').dt.strftime('%Y-%m-%d')
     object_values_df['Attribute and Time'] = object_values_df['attribute_name'] + ' (' + object_values_df['valid_time_start'] + ' - ' + object_values_df['valid_time_end'] + ')'
     object_values_df = object_values_df.rename(columns={"value_as_string": "Value"})
 
@@ -227,7 +227,8 @@ def find_possibly_duplicate_objects():
     duplicate_objects_by_object_type = {}
 
 
-    if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]!='postgres':
+    # if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]!='postgres':
+    if 'IS_USING_SQLITE_DB' in dict(os.environ).keys():
         # SQLITE...
         with connection.cursor() as cursor:
             print('5')

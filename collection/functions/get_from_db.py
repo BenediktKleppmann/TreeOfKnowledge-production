@@ -238,7 +238,7 @@ def get_single_pdf(simulation_id, object_number, rule_id):
 
         nb_of_sim_in_which_rule_was_used = likelihood_functions[0]['nb_of_sim_in_which_rule_was_used'] 
         if (nb_of_sim_in_which_rule_was_used < 200):
-            message = 'When running ' + str(likelihood_functions[0]['nb_of_simulations']) + ' simulations, this rule was triggered in only ' + str(nb_of_sim_in_which_rule_was_used) + ' of them.'
+            message = 'This rule was triggered in only ' + str(nb_of_sim_in_which_rule_was_used) + ' of the ' + str(likelihood_functions[0]['nb_of_simulations']) + ' simulations.'
         else:
             message = ''
 

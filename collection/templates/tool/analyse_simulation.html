@@ -141,10 +141,11 @@
 	#bottom-object-items {
 		list-style-type: none;
 		padding-inline-start: 0px;
-		margin: 23px;
+		margin: 17px;
 	}
  
 	#bottom-object-items li {
+		margin: 7px;
 		float: left;
 	}
 	
@@ -645,9 +646,10 @@
 		var selected_simulations_list = Array.from(selected_simulations);
 		if (selected_simulations_list.length > 0) {
 			var object_numbers = Object.keys(objects_dict);
+			object_items_html = '';
 			for (var i = 0; i < object_numbers.length; i++) {
 				var object_number = object_numbers[i];
-				object_items_html = '<li class="bottom-object-item">' +
+				object_items_html += '<li class="bottom-object-item">' +
 										'<div class="bottom-object-outer-box">' + 
 											'<img class="bottom-object-icon" src="{% static "images/object_icons/" %}' + objects_dict[object_number]['object_icon'] + '.svg">' +
 											'<div class="bottom-object-name">' + objects_dict[object_number]['object_name'] + '</div>' + 

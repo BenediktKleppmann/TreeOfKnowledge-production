@@ -1156,7 +1156,11 @@
 				new_fact['attribute'] = $("#attribute-name" + fact_number).html();
 				new_fact['attribute_id'] = $("#attribute" + fact_number).val();
 				new_fact['operation'] = $("#operator" + fact_number).val();
-				new_fact['value'] = $("#value" + fact_number).val();
+				if (new_fact['operation'] == 'in'){
+					new_fact['value'] = JSON.parse($("#value" + fact_number).val());
+				} else {
+					new_fact['value'] = $("#value" + fact_number).val();
+				}
 				var has_no_format_error = ($("#format_violation" + fact_number).attr("style") == "display:none;")
 				
 				if (new_fact['attribute'] != "" && new_fact['value'] != "" && has_no_format_error) {

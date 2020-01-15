@@ -61,8 +61,10 @@
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-eye"></i>&nbsp;Inspect&nbsp;<span class="caret" style="border-top-color:rgb(226,221,204);"></span></a>
                 <ul class="dropdown-menu">
 				  <li><a href="//www.treeofknowledge.ai/admin">All Database Records</a></li>
-				  <li><a href="{% url 'inspect_object_empty' %}">Objects</a></li>
-				  <li><a href="{% url 'inspect_upload_empty' %}">Uploads</a></li>
+				  <li><a href="{% url 'show_attributes' %}">All Attributes</a></li>
+				  <li><a href="{% url 'show_object_types' %}">All Object Types</a></li>
+				  <li><a href="{% url 'inspect_object_empty' %}">Object</a></li>
+				  <li><a href="{% url 'inspect_upload_empty' %}">Upload</a></li>
                 </ul>
             </li>
 			

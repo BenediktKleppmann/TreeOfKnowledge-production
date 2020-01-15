@@ -88,7 +88,8 @@ def find_matching_entities(match_attributes, match_values):
         # ----------  POSTGRES VS. SQLITE  ----------
         # group_concat (sqlite) vs. string_agg (postgres)
 
-        if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]!='postgres':
+        # if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]!='postgres':
+        if 'IS_USING_SQLITE_DB' in dict(os.environ).keys():
             # SQLITE...
             matched_objects_string = """
                 CREATE TEMPORARY TABLE matched_objects AS
@@ -247,6 +248,8 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
         cursor.execute(query_string)
         object_ids = [entry[0] for entry in cursor.fetchall()]
 
+    
+
     # object_ids = list(Object.objects.filter(object_type_id__in=child_object_ids).values_list('id', flat=True))
     broad_table_df = filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time)   
 
@@ -256,7 +259,6 @@ def get_data_points(object_type_id, filter_facts, specified_start_time, specifie
 
         # for response: list of the tables' attributes sorted with best populated first
         table_attributes = []
-        print('===================  SORTING  =============================')
         sorted_attribute_ids = broad_table_df.notnull().sum().sort_values(ascending=False).index
         sorted_attribute_ids = [int(attribute_id) for attribute_id in list(sorted_attribute_ids) if attribute_id.isdigit()]
 
@@ -385,7 +387,7 @@ def get_data_from_random_related_object(objects_dict, specified_start_time, spec
 
 
 # used by simulation.py
-def get_data_from_related_objects(objects_dict, specified_start_time, specified_end_time):
+def get_data_from_related_objects(objects_dict, specified_start_time, specified_end_time, max_nb_of_rows=500):
     print('~~~~~~~~~~~~~~~  get_data_from_related_objects  ~~~~~~~~~~~~~~~~~~~~~~')
     object_numbers = list(objects_dict.keys())
 
@@ -399,17 +401,6 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
         child_object_types = get_from_db.get_list_of_child_objects(object_type_id)
         child_object_ids = [el['id'] for el in child_object_types]
         print('1')
-
-        print('========================================= TESTING =========================================')
-        with connection.cursor() as cursor:
-            query_string = '''SELECT id 
-                              FROM collection_object
-                              WHERE object_type_id IN ('j1_14')
-                              LIMIT 10 '''
-            cursor.execute(query_string)
-            print(str([str(entry) for entry in cursor.fetchall()]))
-        print('===========================================================================================')
-
 
         with connection.cursor() as cursor:
             query_string = "SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);" % (", ".join("'{0}'".format(object_type_id) for object_type_id in child_object_ids))
@@ -449,19 +440,6 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
         for relation in object_relations:
             target_object_number = str(relation['target_object_number'])
             attribute_id_column = 'obj' + str(object_number) + 'attr' + str(relation['attribute_id'])           
-            print('===== Merging object ' + str(object_number) + ' relation ' + str(relation) + '======================================================================================')
-            print(merged_object_data_tables)
-            print('************************************************')
-            print(object_data_tables[str(target_object_number)])
-            print('[--1----------------------------------]')
-            print(merged_object_data_tables.columns)
-            print(object_data_tables[str(target_object_number)].columns)
-            print('[--2----------------------------------]')
-            print(merged_object_data_tables[attribute_id_column])
-            print(object_data_tables[str(target_object_number)]['obj' +str(target_object_number) + 'attrobject_id'])
-            # print('[--3----------------------------------]')
-            # print(type(merged_object_data_tables.loc[0,attribute_id_column]))
-            # print(type(object_data_tables[str(target_object_number)].loc[0,'obj' +str(target_object_number) + 'attrobject_id']))
             merged_object_data_tables[attribute_id_column] = pd.to_numeric(merged_object_data_tables[attribute_id_column])
             merged_object_data_tables = pd.merge(merged_object_data_tables, object_data_tables[str(target_object_number)], left_on=attribute_id_column, right_on='obj' +str(target_object_number) + 'attrobject_id', how='inner', suffixes=('-old', ''))
             if target_object_number not in list_of_added_tables:
@@ -472,6 +450,28 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
                 merged_object_data_tables = merged_object_data_tables[columns_without_old]
 
              # merged_object_data_tables = merged_object_data_tables[[column for column in merged_object_data_tables.columns if len(column.split('attr')) <3]]
+
+
+
+    # PART3: reduce to max_nb_of_rows
+    if len(merged_object_data_tables)> max_nb_of_rows:
+        number_of_nulls_df = merged_object_data_tables.isnull().sum(1)
+        max_number_of_nulls = (len(merged_object_data_tables.columns) - np.min(number_of_nulls_df))/2
+        reduced_number_of_nulls_df = number_of_nulls_df[number_of_nulls_df < max_number_of_nulls]
+        if len(reduced_number_of_nulls_df) > max_nb_of_rows: 
+            # select random rows from amongst the minimally half-populated rows
+            merged_object_data_tables = merged_object_data_tables.loc[reduced_number_of_nulls_df.index]
+            merged_object_data_tables = merged_object_data_tables.sample(n=max_nb_of_rows)
+        elif len(number_of_nulls_df[number_of_nulls_df < (max_number_of_nulls/2)]) > max_nb_of_rows: 
+            # select random rows from amongst the minimally quarter-populated rows
+            less_reduced_number_of_nulls_df = number_of_nulls_df[number_of_nulls_df < (max_number_of_nulls/2)]
+            merged_object_data_tables = merged_object_data_tables.loc[less_reduced_number_of_nulls_df.index]
+            merged_object_data_tables = merged_object_data_tables.sample(n=max_nb_of_rows)
+        else:
+            # select random rows
+            merged_object_data_tables = merged_object_data_tables.sample(n=max_nb_of_rows)
+
+
 
     return merged_object_data_tables
 
@@ -541,11 +541,16 @@ def get_training_data(object_type_id, filter_facts, valid_times):
 
 
 
-def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time, max_nb_of_objects=500):
+def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time):
 
     print('2.0')
 
     with connection.cursor() as cursor:
+
+        # # ===================  Testing  =============================
+        # with open("C:/Users/l412/Documents/2 temporary stuff/2020-01-08/object_ids1.txt", "w") as text_file:
+        #     text_file.write(str(object_ids))
+        # # ===================  End of Testing  =============================
 
         cursor.execute('DROP TABLE IF EXISTS unfiltered_object_ids')
         sql_string1 = '''
@@ -559,6 +564,11 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
         object_ids = [str(object_id) for object_id in object_ids]
         cursor.execute(sql_string1 % (specified_start_time, specified_end_time, ','.join(object_ids)))
 
+        # # ===================  Testing  =============================
+        # with open("C:/Users/l412/Documents/2 temporary stuff/2020-01-08/object_ids2.txt", "w") as text_file:
+        #     text_file.write(str(object_ids))
+        # # ===================  End of Testing  =============================
+
 
         # apply filter-facts
         print('2.1')
@@ -568,12 +578,19 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             return None
 
         else:
+
+            # # ===================  Testing  =============================
+            # with open("C:/Users/l412/Documents/2 temporary stuff/2020-01-08/object_ids3.txt", "w") as text_file:
+            #     text_file.write(str(unfiltered_object_ids))
+            # # ===================  End of Testing  =============================
+
             valid_ranges_df = pd.DataFrame({'object_id':[result[0] for result in unfiltered_object_ids]})
             valid_ranges_df['valid_range'] = [[[specified_start_time,specified_end_time]] for i in valid_ranges_df.index]
 
 
             for fact_index, filter_fact in enumerate(filter_facts):
-                if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]!='postgres':
+                # if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]!='postgres':
+                if 'IS_USING_SQLITE_DB' in dict(os.environ).keys():
                     # SQLITE...
                     sql_string2 = '''
                             SELECT object_id, '[' || group_concat('[' || valid_time_start || ',' || valid_time_end || ']', ',') || ']' AS new_valid_range
@@ -618,6 +635,10 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
                 valid_ranges_df = valid_ranges_df[['object_id', 'valid_range']]
 
 
+            # # ===================  Testing  =============================
+            # with open("C:/Users/l412/Documents/2 temporary stuff/2020-01-08/object_ids4.txt", "w") as text_file:
+            #     text_file.write(str(list(valid_ranges_df['object_id'])))
+            # # ===================  End of Testing  =============================
 
             # choose the first time interval that satisfies all filter-fact conditions
             print('2.5')
@@ -630,11 +651,9 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             unfiltered_object_ids = [str(result[0]) for result in unfiltered_object_ids]
             if len(unfiltered_object_ids) == 0:
                 return None
-            else:
-                number_of_objects = min(max_nb_of_objects, len(unfiltered_object_ids)-1)
-                unfiltered_object_ids = unfiltered_object_ids[:number_of_objects]
             sql_string3 = 'SELECT object_id, attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end, data_quality FROM collection_data_point WHERE object_id IN (%s)' % (','.join(unfiltered_object_ids))
             long_table_df = pd.read_sql_query(sql_string3, connection)
+
 
 
             # found_objects = list(set(data_point_records.values_list('object_id', flat=True)))
@@ -643,7 +662,6 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
 
 
             # filter out the observations from not-satisfying times
-            print('2.7')
             long_table_df = pd.merge(long_table_df, valid_ranges_df, how='inner', on='object_id')
             long_table_df = long_table_df[(long_table_df['valid_time_end'] > long_table_df['satisfying_time_start']) & (long_table_df['valid_time_start'] < long_table_df['satisfying_time_end'])]
 
@@ -660,13 +678,13 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             long_table_df = pd.merge(long_table_df, total_data_quality_df, how='inner', on=['object_id','satisfying_time_start'])
 
             # remove the duplicates (=duplicate values within the satisfying time)
-            print('2.10')
+            print('2.10 - ' + str(len(long_table_df)))
             long_table_df['time_difference_of_start'] = abs(long_table_df['satisfying_time_start'] - long_table_df['valid_time_start'])
             long_table_df = long_table_df.sort_values(['data_quality','time_difference_of_start'], ascending=[False, True])
             long_table_df = long_table_df.drop_duplicates(subset=['object_id','attribute_id'], keep='first')
 
             # pivot the long table
-            print('2.11')
+            print('2.11 - ' + str(len(long_table_df)))
             long_table_df = long_table_df.reindex()
             long_table_df = long_table_df[['object_id','satisfying_time_start','attribute_id', 'string_value', 'numeric_value','boolean_value' ]]
             long_table_df.set_index(['object_id','satisfying_time_start','attribute_id'],inplace=True)
@@ -674,7 +692,7 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
 
             # there are columns for the different datatypes, determine which to keep
             columns_to_keep = []
-            print('2.12')
+            print('2.12 - ' + str(len(broad_table_df)))
             for column in broad_table_df.columns:
                 attribute_data_type = Attribute.objects.get(id=column[1]).data_type
                 if attribute_data_type=='string' and column[0]=='string_value':
@@ -690,6 +708,7 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             broad_table_df.columns = new_column_names
 
             # clean up the broad table
+            print('2.13 - ' + str(len(broad_table_df)))
             broad_table_df['object_id'] = [val[0] for val in broad_table_df.index]
             list_of_datetimes = [datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=(val[1])) for val in broad_table_df.index]
             broad_table_df['time'] = [val.strftime('%Y-%m-%d') for val in list_of_datetimes]
@@ -698,6 +717,7 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
 
             # insert the object_type's additional facts
+            print('2.14 - ' + str(len(broad_table_df)))
             additional_attribute_values = []
             list_of_parent_object_types = [el['id'] for el in get_from_db.get_list_of_parent_objects(object_type_id)]
             li_attr_strings = list(Object_types.objects.filter(id__in=list_of_parent_object_types).values_list('li_attr'))
@@ -720,7 +740,12 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
                 if attribute_id not in existing_columns:
                     broad_table_df[attribute_id] = None
 
-            
+
+            # # ===================  Testing  =============================
+            # print('2.15 - ' + str(len(broad_table_df)))
+            # broad_table_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-01-08/broad_table_df_' + str(object_type_id) + '.csv')
+            # # ===================  End of Testing  ============================
+
 
             return broad_table_df
 

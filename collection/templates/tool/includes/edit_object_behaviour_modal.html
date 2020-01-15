@@ -1004,7 +1004,7 @@ var new_rule_cursor_textarea = '';
 		if (words_ending_on_quote){
 			for (var i = 0; i < words_ending_on_quote.length; i++) {
 			  if (words_ending_on_quote[i].substring(0,1) != '"') { //if they don't start with a quotationmark: add it
-				 paragraph = paragraph.split(words_ending_on_quote[i]).join('"' + words_ending_on_quote[i]);
+				 executable = executable.split(words_ending_on_quote[i]).join('"' + words_ending_on_quote[i]);
 			  }
 			}
 		}
@@ -1125,6 +1125,7 @@ var new_rule_cursor_textarea = '';
 					objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].push(new_rule_id);
 				}
 				
+				rule_dict['id'] = new_rule_id;
 				objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][new_rule_id] = rule_dict;
 				populateTheRulePanels(object_number, attribute_id, attribute_name);	
 			}

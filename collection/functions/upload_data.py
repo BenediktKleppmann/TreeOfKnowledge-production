@@ -238,8 +238,12 @@ def perform_uploading(uploaded_dataset, request):
         print('6')
 
 
+        # PART 2: save object_id_column
+        uploaded_dataset.object_id_column = json.dumps(object_id_column)
+        uploaded_dataset.save()
 
-        # PART 2: Insert into DataPoints
+
+        # PART 3: Insert into DataPoints
         # for every column: create and save new_datapoint_records
         number_of_entities = len(table_body[list(table_body.keys())[0]])
         for column_number, attribute_id in enumerate(attribute_selection):
@@ -320,7 +324,7 @@ def perform_uploading(uploaded_dataset, request):
 
         
 
-        # PART 3: Make new Simulation model with same initialisation
+        # PART 4: Make new Simulation model with same initialisation
         # create new simulation_model
         object_type_record = Object_types.objects.get(id=object_type_id)
         objects_dict = {}
@@ -449,6 +453,9 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
         submitted_data_table_df['measurement_number'] = 1
 
 
+    # save the object_id_column
+    uploaded_dataset.object_id_column = list(submitted_data_table_df['object_id'])
+    uploaded_dataset.save()
 
 
     # loop through rows and values 

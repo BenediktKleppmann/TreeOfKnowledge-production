@@ -86,7 +86,7 @@
 		</div>		
 	</div>
 	<div id="bottom-panel">
-		<div id="uploaded_table"></div>
+		
 		
 		<div id="upload-specifications" style="display:none;">
 			<form role="form" action="" method="post" class="form" enctype="multipart/form-data">
@@ -139,11 +139,16 @@
 					<div class="col-sm-8">
 						<textarea id="meta_data_facts" class="form-control"  name="meta_data_facts" rows="10" cols="30"></textarea>
 					</div>
-				</div> 
-				
-				
+				</div> 	
 			</form>	
 		</div>
+		<br>
+		<br>
+		
+		
+		<!-- uploaded_table -->
+		<div id="uploaded_table"></div>
+		
 	</div>
 
 	
@@ -171,15 +176,16 @@
 			if (this.readyState == 4 && this.status == 200) {	
 			
 				var upload = JSON.parse(this.responseText);
-				console.log(upload);
-				drawUploadedTable(upload['data_table_json']);
 				showUploadSpecifications(upload);
+				drawTheTable(200, upload['data_table_json'], upload['object_id_column'])
+				
 				
 
 
 			}
 		};
-		xhttp.open("GET", "//www.treeofknowledge.ai/admin/get_uploaded_dataset?upload_id=" + upload_id , true);
+		//xhttp.open("GET", "//www.treeofknowledge.ai/admin/get_uploaded_dataset?upload_id=" + upload_id , true);
+		xhttp.open("GET", "{% url "get_uploaded_dataset" %}?upload_id=" + upload_id , true);
 		xhttp.send();	
 		
 		
@@ -187,49 +193,50 @@
 	
 	
 	//===  Draw the table  =============================================================================	
-	function drawUploadedTable(data_table_json) {
+    function drawTheTable(max_number_of_rows, data_table_json, object_id_column) {
 	
-		// GET HEADER VALUES
 		var table_headers = data_table_json["table_header"]
-		var table_body = data_table_json["table_body"]
+		var table_body = data_table_json["table_body"] 
 
-		if (table_body.length > 0 ){
-			// MAKE TABLE.
-			var table = document.createElement("table");
-			table.setAttribute("class", "table table-sm table-condensed");
-			table.setAttribute("style", "width: " + (151*table_headers.length + 20) + "px;");
-			
-			// MAKE TABLE HEADER
-			var theader = table.createTHead();
-			var tr = theader.insertRow(-1);                   // TABLE ROW.
+		var table_html_string = '<table id="data-table" class="table table-sm table-condensed" style="width:' + (150*table_headers.length + 20) + 'px;">' +
+									'<thead>' +
+										'<tr>' + 
+											'<th scope="col">Object Id</th>';
 
-			for (var i = 0; i < table_headers.length; i++) {
-				var th = document.createElement("th");      // TABLE HEADER.
-				th.setAttribute("scope", "col");
-				//th.setAttribute("contenteditable", "true");	
-				th.innerHTML = table_headers[i];
-				tr.appendChild(th);
-			}
-			
-			// MAKE TABLE ROWS
-			var tbody = document.createElement('tbody')
-			var number_of_rows = Math.min(table_body[0].length, 200);
-			for (var i = 0; i < number_of_rows; i++) {
-				tr = tbody.insertRow(-1);
-
-				for (var j = 0; j < table_headers.length; j++) {
-					var tabCell = tr.insertCell(-1);
-					tabCell.innerHTML = table_body[j][i];
-					//tabCell.setAttribute("contenteditable", "true"); //ATTRIBUTE: contenteditable="true"
-				}
-			}
-			table.appendChild(tbody)
-
-			// ADD THE NEWLY CREATED TABLE WITH JSON DATA TO A CONTAINER.
-			var divContainer = document.getElementById("uploaded_table");
-			divContainer.innerHTML = "";
-			divContainer.appendChild(table);
+		for (var i = 0; i < table_headers.length; i++) {
+			table_html_string +=  			'<th scope="col">' + table_headers[i] + '</th>';
 		}
+		
+		table_html_string +=  			'</tr>' +
+									'</thead>' +
+									'<tbody>';
+		var number_of_rows = Math.min(table_body[0].length, max_number_of_rows);
+		for (var i = 0; i < number_of_rows; i++) {
+			table_html_string +=  		'<tr>';
+			if (i < object_id_column.length){
+				table_html_string +=  		'<td>' + object_id_column[i] + '</td>';
+			} else {
+				table_html_string +=  		'<td></td>';
+			}	
+			for (var j = 0; j < table_headers.length; j++) {
+				table_html_string +=  		'<td>' + table_body[j][i] + '</td>';
+			}
+			table_html_string +=  		'</tr>';
+		}
+		
+		if (table_body[0].length > max_number_of_rows) {
+			table_html_string +=  		'<tr>' +
+											'<td id="last-table-row" colspan="' + table_headers.length + '">' + 
+												'<button id="more-rows-button" class="btn btn-outline-secondary" type="button" onclick="drawTheTable(' + (max_number_of_rows + 300) + ')">Display more Rows</button>' +
+											'</td>' +
+										'</tr>';
+		}
+		
+		
+		table_html_string += 		'</tbody>' +
+								'</table>';
+									
+		$("#uploaded_table").html(table_html_string);
 	}
 	
 	
