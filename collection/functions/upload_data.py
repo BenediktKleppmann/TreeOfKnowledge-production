@@ -175,6 +175,7 @@ def perform_uploading(uploaded_dataset, request):
         object_type_id = uploaded_dataset.object_type_id
         data_quality = uploaded_dataset.correctness_of_data
         attribute_selection = json.loads(uploaded_dataset.attribute_selection)
+        meta_data_facts = json.loads(uploaded_dataset.meta_data_facts)
         list_of_matches = json.loads(uploaded_dataset.list_of_matches)
         upload_only_matched_entities = uploaded_dataset.upload_only_matched_entities
         valid_time_start = (uploaded_dataset.data_generation_date - datetime.date(1970, 1, 1)).days * 86400
@@ -184,9 +185,15 @@ def perform_uploading(uploaded_dataset, request):
         print('3')
 
 
+        # PART 1: Add Meta Data Facts
+        for meta_data_fact in meta_data_facts:
+            attribute_selection += [int(meta_data_fact['attribute_id'])]
+            next_table_body_column_number = str(len(table_body.keys()))
+            table_body[next_table_body_column_number] = [meta_data_fact['value']] * len(table_body['0'])
 
 
-        # PART 1: Create missing objects/ Remove not-matched rows
+
+        # PART 2: Create missing objects/ Remove not-matched rows
         print('4')
         if upload_only_matched_entities == 'True':
             print('4.1')
@@ -238,15 +245,19 @@ def perform_uploading(uploaded_dataset, request):
         print('6')
 
 
-        # PART 2: save object_id_column
+        # PART 3: save object_id_column
         uploaded_dataset.object_id_column = json.dumps(object_id_column)
         uploaded_dataset.save()
 
 
-        # PART 3: Insert into DataPoints
+        # PART 4: Insert into DataPoints
         # for every column: create and save new_datapoint_records
-        number_of_entities = len(table_body[list(table_body.keys())[0]])
+        number_of_entities = len(table_body['0'])
         for column_number, attribute_id in enumerate(attribute_selection):
+            print('=================================================================')
+            print(str(column_number))
+            print(str(attribute_id))
+            print(table_body.keys())
             
             attribute_record = Attribute.objects.get(id=attribute_id)
             data_type = attribute_record.data_type
@@ -323,7 +334,7 @@ def perform_uploading(uploaded_dataset, request):
 
         
 
-        # PART 4: Make new Simulation model with same initialisation
+        # PART 5: Make new Simulation model with same initialisation
         # create new simulation_model
         object_type_record = Object_types.objects.get(id=object_type_id)
         objects_dict = {}
