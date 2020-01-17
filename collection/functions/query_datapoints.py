@@ -547,11 +547,6 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
 
     with connection.cursor() as cursor:
 
-        # # ===================  Testing  =============================
-        # with open("C:/Users/l412/Documents/2 temporary stuff/2020-01-08/object_ids1.txt", "w") as text_file:
-        #     text_file.write(str(object_ids))
-        # # ===================  End of Testing  =============================
-
         cursor.execute('DROP TABLE IF EXISTS unfiltered_object_ids')
         sql_string1 = '''
             CREATE TEMPORARY TABLE unfiltered_object_ids AS
@@ -564,11 +559,6 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
         object_ids = [str(object_id) for object_id in object_ids]
         cursor.execute(sql_string1 % (specified_start_time, specified_end_time, ','.join(object_ids)))
 
-        # # ===================  Testing  =============================
-        # with open("C:/Users/l412/Documents/2 temporary stuff/2020-01-08/object_ids2.txt", "w") as text_file:
-        #     text_file.write(str(object_ids))
-        # # ===================  End of Testing  =============================
-
 
         # apply filter-facts
         print('2.1')
@@ -578,11 +568,6 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             return None
 
         else:
-
-            # # ===================  Testing  =============================
-            # with open("C:/Users/l412/Documents/2 temporary stuff/2020-01-08/object_ids3.txt", "w") as text_file:
-            #     text_file.write(str(unfiltered_object_ids))
-            # # ===================  End of Testing  =============================
 
             valid_ranges_df = pd.DataFrame({'object_id':[result[0] for result in unfiltered_object_ids]})
             valid_ranges_df['valid_range'] = [[[specified_start_time,specified_end_time]] for i in valid_ranges_df.index]
@@ -635,10 +620,6 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
                 valid_ranges_df = valid_ranges_df[['object_id', 'valid_range']]
 
 
-            # # ===================  Testing  =============================
-            # with open("C:/Users/l412/Documents/2 temporary stuff/2020-01-08/object_ids4.txt", "w") as text_file:
-            #     text_file.write(str(list(valid_ranges_df['object_id'])))
-            # # ===================  End of Testing  =============================
 
             # choose the first time interval that satisfies all filter-fact conditions
             print('2.5')
@@ -654,7 +635,6 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             sql_string3 = 'SELECT object_id, attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end, data_quality FROM collection_data_point WHERE object_id IN (%s)' % (','.join(unfiltered_object_ids))
             print('2.6.1')
             long_table_df = pd.read_sql_query(sql_string3, connection)
-
 
 
             # found_objects = list(set(data_point_records.values_list('object_id', flat=True)))
@@ -680,11 +660,13 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             total_data_quality_df = total_data_quality_df.drop_duplicates(subset=['object_id'], keep='first')
             long_table_df = pd.merge(long_table_df, total_data_quality_df, how='inner', on=['object_id','satisfying_time_start'])
 
+
             # remove the duplicates (=duplicate values within the satisfying time)
             print('2.10 - ' + str(len(long_table_df)))
             long_table_df['time_difference_of_start'] = abs(long_table_df['satisfying_time_start'] - long_table_df['valid_time_start'])
             long_table_df = long_table_df.sort_values(['data_quality','time_difference_of_start'], ascending=[False, True])
             long_table_df = long_table_df.drop_duplicates(subset=['object_id','attribute_id'], keep='first')
+
 
             # pivot the long table
             print('2.11 - ' + str(len(long_table_df)))
@@ -702,7 +684,7 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
                     columns_to_keep.append(column)
                 elif attribute_data_type in ['real', 'int', 'relation'] and column[0]=='numeric_value':
                     columns_to_keep.append(column)
-                elif attribute_data_type == 'boolean' and column[0]=='boolean_value':
+                elif attribute_data_type == 'bool' and column[0]=='boolean_value':
                     columns_to_keep.append(column)
 
 
@@ -742,12 +724,6 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             for attribute_id in all_attribute_ids:
                 if attribute_id not in existing_columns:
                     broad_table_df[attribute_id] = None
-
-
-            # # ===================  Testing  =============================
-            # print('2.15 - ' + str(len(broad_table_df)))
-            # broad_table_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-01-08/broad_table_df_' + str(object_type_id) + '.csv')
-            # # ===================  End of Testing  ============================
 
 
             return broad_table_df

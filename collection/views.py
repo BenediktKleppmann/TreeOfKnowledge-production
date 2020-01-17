@@ -1684,7 +1684,7 @@ def test_page2(request):
 def test_page3(request):
     # current_object_type = list(Data_point.objects.all().values('object_type_id').annotate(total=Count('object_type_id')))
 
-    current_object_type = list(Data_point.objects.filter(attribute_id=105).values())
+    current_object_type = list(Data_point.objects.filter(object_id=862638).values())
     # for i in range(len(current_object_type)):
     #     del current_object_type[i]['created']
     #     del current_object_type[i]['updated']

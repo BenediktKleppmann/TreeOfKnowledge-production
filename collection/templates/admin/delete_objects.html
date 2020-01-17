@@ -117,7 +117,7 @@
 				$('#server-response').html(this.responseText);
 			}
 		};
-		xmlhttp.open("POST", "/tool/delete_objects/");
+		xmlhttp.open("POST", "/admin/delete_objects/");
 		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send('[' + object_ids + ']');

@@ -247,12 +247,11 @@ def perform_uploading(uploaded_dataset, request):
         # for every column: create and save new_datapoint_records
         number_of_entities = len(table_body[list(table_body.keys())[0]])
         for column_number, attribute_id in enumerate(attribute_selection):
-            print('======================================================================')
-            print('1 - ' + str(time.time()))
+            
             attribute_record = Attribute.objects.get(id=attribute_id)
             data_type = attribute_record.data_type
             valid_time_end = valid_time_start + attribute_record.expected_valid_period
-
+            
 
             if data_type == "string":             
                 numeric_value_column = [None]*number_of_entities
@@ -263,6 +262,8 @@ def perform_uploading(uploaded_dataset, request):
                 string_value_column = [None]*number_of_entities
                 boolean_value_column = [None]*number_of_entities
             elif data_type == "bool": 
+                print('is boolean Value')
+                print(table_body[str(column_number)])
                 numeric_value_column = [None]*number_of_entities
                 string_value_column = [None]*number_of_entities
                 boolean_value_column = table_body[str(column_number)]
@@ -296,22 +297,20 @@ def perform_uploading(uploaded_dataset, request):
             # print(new_datapoints_dict)
             new_datapoint_records = pd.DataFrame(new_datapoints_dict)
 
+
             print('3 - ' + str(time.time()))
+            new_datapoint_records
             table_rows = new_datapoint_records.values.tolist()
             # print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
             # print(table_rows)
-            number_of_chunks =  math.ceil(number_of_entities / 100)
+            number_of_chunks =  math.ceil(number_of_entities / 50)
 
             for chunk_index in range(number_of_chunks):
-                rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
+                rows_to_insert = table_rows[chunk_index*50: chunk_index*50 + 50]
                 insert_statement = '''
                     INSERT INTO collection_data_point (object_id, attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end, data_quality, upload_id) 
                     VALUES ''' 
                 insert_statement += ','.join(['(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)']*len(rows_to_insert))
-                print('=================================================')
-                # print(insert_statement)
-                print('#############')
-                print(rows_to_insert)
                 cursor.fast_executemany = True 
                 cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
             print('4 - ' + str(time.time()))
