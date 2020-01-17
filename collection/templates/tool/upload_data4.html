@@ -313,7 +313,7 @@
 									<div class="col-sm-1 list-group-left-column" id="additional_facts" ><span style="margin-left:-42px;margin-top:44px;width:136px;height:50px">additional&nbsp;facts on the objects</span></div>
 									<div class="col-sm-11 list-group-right-column">  
 										<ul class="list-group object-info" id="additional_facts_list"> 
-											<li class="list-group-item broad" > <!-- Additional Attribute 1 -->
+											<li class="list-group-item broad new-fact-list-item" > <!-- Additional Attribute 1 -->
 												<div>
 													<button type="button" id="format_violation1" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
 													<div class="dropdown inline">
@@ -345,7 +345,7 @@
 													<div class="picker-label2">to:</div><input name="end_date1" id="datetimepicker1-end" class="datetimepicker form-control" value="{{ data_generation_year | add:1 }}-01-01">
 												</div>
 											</li>
-											<li class="list-group-item broad" > <!-- Additional Attribute 2 -->
+											<li class="list-group-item broad new-fact-list-item" > <!-- Additional Attribute 2 -->
 												<div>
 													<button type="button" id="format_violation2" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
 													<div class="dropdown inline" >
@@ -429,7 +429,7 @@
 		number_of_additional_facts += 1;
 		fact_number = number_of_additional_facts;
 		
-		var additionalFactHTMLString = 	'<li class="list-group-item broad" >' +
+		var additionalFactHTMLString = 	'<li class="list-group-item broad new-fact-list-item" >' +
 											'<div>' + 
 												'<button type="button" id="format_violation' + fact_number + '" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>' +
 												'<div class="dropdown inline" >' + 

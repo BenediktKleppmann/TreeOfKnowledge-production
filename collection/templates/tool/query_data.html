@@ -49,6 +49,13 @@
 	}
 	
 		/* --- Additional Fact Row -------------------------------------------- */
+		
+	.new-fact-list-item {
+		min-height: 43px;
+		display: table;
+		min-width: 100%;
+	}
+		
 		.dropdown-menu {
 			padding:0;
 		}
@@ -87,10 +94,7 @@
 			margin-right:3px;
 		}
 		
-		.dropdown {
-			position: absolute;
-			margin-left:2px;
-		}
+
 		
 		.dropdown-item {
 			padding: 6px 10px;
@@ -341,7 +345,7 @@
 			<div class="form-group">
 				<label for="object_type">Filters</label>
 				<ul class="list-group" id="new_object_facts_list"> 
-					<li class="list-group-item broad" > <!-- Object Attribute 1 -->
+					<li class="list-group-item broad new-fact-list-item" > <!-- Object Attribute 1 -->
 						<div>
 							<div class="dropdown inline">
 								<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name1">Attribute<span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
@@ -354,7 +358,7 @@
 								</div>
 							</div>
 							<input type="hidden" id="attribute1" name="attribute1" value="">
-							<div class="form-group inline operator" style="position: absolute; margin-left: 102px;">
+							<div class="form-group inline operator">
 								<select class="form-control form-control-lg" id="operator1" name="operator1">
 									<option value="=" selected>=</option>
 									<option value=">">></option>
@@ -362,13 +366,13 @@
 									<option value="in">in</option>
 								</select>
 							</div> 
-							<div class="form-group inline value" style="position: absolute;margin-left: 165px;">
+							<div class="form-group inline value">
 								<input type="text" class="form-control" id="value1" name="value1" value="" size="15">
 							</div>
 							<button type="button" id="format_violation1" class="btn btn-danger pull-right" data-container="body" data-toggle="popover" data-placement="right" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
 						</div>
 					</li>
-					<li class="list-group-item broad" > <!-- Object Attribute 2 -->
+					<li class="list-group-item broad new-fact-list-item" > <!-- Object Attribute 2 -->
 						<div>
 							<div class="dropdown inline" >
 								<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name2">Attribute<span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
@@ -381,7 +385,7 @@
 								</div>
 							</div>
 							<input type="hidden" id="attribute2" name="attribute2" value="">
-							<div class="form-group inline operator" style="position: absolute; margin-left: 102px;">
+							<div class="form-group inline operator">
 								<select class="form-control form-control-lg" id="operator2" name="operator2">
 									<option value="=" selected>=</option>
 									<option value=">">></option>
@@ -389,7 +393,7 @@
 									<option value="in">in</option>
 								</select>
 							</div> 
-							<div class="form-group inline value" style="position: absolute;margin-left: 165px;">
+							<div class="form-group inline value">
 								<input type="text" class="form-control" id="value2" name="value2" value="" size="15">
 							</div>
 							<button type="button" id="format_violation2" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="right" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
@@ -532,7 +536,7 @@
 		var insert_before = '#create-new-object-fact-button';
 
 		
-		var additionalFactHTMLString = 	'<li class="list-group-item broad" >' +
+		var additionalFactHTMLString = 	'<li class="list-group-item broad new-fact-list-item" >' +
 											'<div">' + 
 												'<div class="dropdown inline" >' + 
 													'<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu' + fact_number + '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name' + fact_number + '">Attribute<span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>' + 
@@ -545,7 +549,7 @@
 													'</div>' + 
 												'</div>' + 
 												'<input type="hidden" id="attribute' + fact_number + '" name="attribute' + fact_number + '" value="">' + 
-												'<div class="form-group inline operator" style="position: absolute; margin-left: 102px;">' + 
+												'<div class="form-group inline operator">' + 
 													'<select class="form-control form-control-lg" id="operator' + fact_number + '" name="operator' + fact_number + '">' + 
 														'<option value="=" selected>=</option>' + 
 														'<option value=">">></option>' + 
@@ -553,7 +557,7 @@
 														'<option value="in">in</option>' +
 													'</select>' + 
 												'</div> ' + 
-												'<div class="form-group inline value" style="position: absolute;margin-left: 165px;">' + 
+												'<div class="form-group inline value">' + 
 													'<input type="text" class="form-control" id="value' + fact_number + '" name="value' + fact_number + '" size="15">' + 
 												'</div>' + 
 											'</div>' +
@@ -586,7 +590,7 @@
 				var possible_attributes = JSON.parse(this.responseText);
 				
 				for (var i = 0; i < possible_attributes.length; i++) {
-					list_group_html_string += '<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(' + attribute_number + ', this.innerHTML, ' + possible_attributes[i]['attribute_id'] + ')" data-attribute-id=' + possible_attributes[i]['attribute_id'] + '>' + possible_attributes[i]['attribute_name'] + '</button></li>'
+					list_group_html_string += '<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(' + attribute_number + ', this.innerHTML, ' + possible_attributes[i]['attribute_id'] + ', \'' + possible_attributes[i]['attribute_data_type'] + '\', \'' + possible_attributes[i]['attribute_first_relation_object_type'] + '\')" data-attribute-id=' + possible_attributes[i]['attribute_id'] + '>' + possible_attributes[i]['attribute_name'] + '</button></li>'
 					
 				}
 				
@@ -617,13 +621,135 @@
 
 
 	/*=============  SELECT DROPDOWN OPTION  ================================================================ */
-	function selectAdditionalAttribute(attribute_number , attribute_name, attribute_id) {
+	//function selectAdditionalAttribute(attribute_number , attribute_name, attribute_id) {
+	//	$('#attribute-name' + attribute_number).html(attribute_name);
+	//	$('#attribute' + attribute_number).attr('value', attribute_id);									
+	//}
+	
+	function selectAdditionalAttribute(attribute_number , attribute_name, attribute_id, attribute_data_type, attribute_first_relation_object_type) {
 		$('#attribute-name' + attribute_number).html(attribute_name);
-		$('#attribute' + attribute_number).attr('value', attribute_id);									
+		$('#attribute' + attribute_number).attr('value', attribute_id);	
+
+		// IF A RELATION WAS CHOSEN...
+		if (attribute_data_type == 'relation') {
+			
+			// draw relation button
+			var relation_number = 'Relation' + attribute_number;
+			attribute_selection_dropdown =		'<div id="relation-dropdown' + attribute_number + '" class="dropdown inline" style="float:left;">' + 
+													'<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu' + relation_number + '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name' + relation_number + '">Attribute</span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>' + 
+													'<div class="dropdown-menu" aria-labelledby="attributeMenu' + relation_number + '">' + 
+														'<div id="attributeList' + relation_number + '">' + 
+															'<input type="text" class="search" id="dropDonwSearch' + relation_number + '" onkeyup="filterAttributeDropDown(\'' + relation_number + '\')" placeholder=" Search">' + 
+															'<ul id="drop-down-display' + relation_number + '" class="list-group drop-down-display"></ul>' + 
+															'<button class="btn btn-warning dropdown-item-button" type="button" onclick="resetAttribute(' + relation_number + ');">Reset</button>' +
+														'</div>' + 
+													'</div>' + 
+													'<input type="hidden" id="attribute' + relation_number + '" name="attribute' + relation_number + '" value>' +
+												'</div>';
+			$(attribute_selection_dropdown).insertAfter($('#attribute' + attribute_number)); 
+			
+			//populate the relation-dropdown
+			var xhttp = new XMLHttpRequest();       
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					list_group_html_string = ""
+					var possible_attributes = JSON.parse(this.responseText);
+					for (var i = 0; i < possible_attributes.length; i++) {
+						list_group_html_string += '<li class="list-group-item narrow"><button class="name dropdown-item btn btn-secondary" type="button" onclick="selectAdditionalAttribute(\'' + relation_number + '\', this.innerHTML, ' + possible_attributes[i]['attribute_id'] + ', \'' + possible_attributes[i]['attribute_data_type'] + '\', \'' + possible_attributes[i]['attribute_first_relation_object_type'] + '\')" data-attribute-id=' + possible_attributes[i]['attribute_id'] + '>' + possible_attributes[i]['attribute_name'] + '</button></li>'
+					}
+					$("#drop-down-display" + relation_number).html(list_group_html_string);
+					
+				}
+			};
+			xhttp.open("GET", "/tool/get_possible_attributes?object_type_id=" + attribute_first_relation_object_type , true);
+			xhttp.send();
+		} else {
+			$('#relation-dropdown' + attribute_number).remove();
+		}
 	}
 
 
 	/*=============  CHECK ADDITIONAL FACTS FORMATS  ================================================================ */
+		function checkAdditionalFactFormats() {
+		for (var fact_number = 1; fact_number <= number_of_additional_object_facts; fact_number++) {
+			var attribute_id = $('#attribute' + fact_number).val();
+			var operator = $('#operator' + fact_number).val();
+			var value = $('#value' + fact_number).val();
+			
+			if (attribute_id != '' && value != ''){
+			
+				// non-relation
+				if ($('#attributeRelation' + fact_number).length == 0) {
+					var xhttp = new XMLHttpRequest();       
+					xhttp.onreadystatechange = function() {
+						if (this.readyState == 4 && this.status == 200) {
+
+							var response_dict = JSON.parse(this.responseText);
+							var format_violation_text = response_dict['format_violation_text']
+							var returned_fact_number = response_dict['fact_number']
+							
+							if (format_violation_text == "") {
+								$("#format_violation" + returned_fact_number).attr("style", "display:none;");
+								$("#format_violation"  + returned_fact_number).popover('hide');
+								document.getElementById("attribute" + returned_fact_number).disabled = false; // this attribute won't be sent in the POST when pressing 'Next' - the backend thus knows that the fact is invalid
+							} else {
+								$("#format_violation" + returned_fact_number).attr("style", "display:block;");
+								document.getElementById("attribute" + returned_fact_number).disabled = true;
+								
+							}
+							
+							$("#format_violation" + returned_fact_number).attr("data-content", format_violation_text);
+						}
+					};
+					
+					xhttp.open("GET", "/tool/check_single_fact_format?fact_number=" + String(fact_number) + "&attribute_id=" + attribute_id + '&operator=' + operator + '&value=' + value, true);
+					xhttp.send();
+					
+					
+				} else { //relation
+					
+					if (operator != '=') {
+						$("#format_violation" + fact_number).attr("data-content", "In order to find the correct entity the operator must be set to '='");
+					} else {
+
+						relation_id = $('#attribute' + fact_number).val();
+						attribute_id = $('#attributeRelation' + fact_number).val();
+						
+						var xhttp = new XMLHttpRequest();       
+						xhttp.onreadystatechange = function() {
+							if (this.readyState == 4 && this.status == 200) {
+
+								var response_dict = JSON.parse(this.responseText);
+								var matching_object_id = response_dict['matching_object_id']
+								var returned_fact_number = response_dict['fact_number']
+								
+								if (matching_object_id === parseInt(matching_object_id, 10)) {  //if matching_object_id is Integer...
+									$('#value' + returned_fact_number).val(matching_object_id);
+									$("#format_violation" + returned_fact_number).attr("style", "display:none;");
+									$("#format_violation"  + returned_fact_number).popover('hide');
+									document.getElementById("attribute" + returned_fact_number).disabled = false; // this attribute won't be sent in the POST when pressing 'Next' - the backend thus knows that the fact is invalid
+								} else {
+									$("#format_violation" + returned_fact_number).attr("style", "display:block;");
+									document.getElementById("attribute" + returned_fact_number).disabled = true;
+									$("#format_violation" + returned_fact_number).attr("data-content", 'No exact match could be found. Please <a href="{% url 'query_data' %}" target="_blank">look in the data</a> for the correct matching-value to use');
+									
+								}
+								
+								
+							}
+						};
+						
+						// this function should be extended to also find fuzzy matches and suggest them in the format_violation_text
+						xhttp.open("GET", "/tool/find_single_entity?fact_number=" + String(fact_number) + "&relation_id=" + String(relation_id) + "&attribute_id=" + attribute_id + '&value=' + value, true);
+						xhttp.send();
+					
+					}		
+				}
+			}
+		}									
+	}
+	
+	/*
 	function checkAdditionalFactFormats() {
 		for (var fact_number = 1; fact_number <= number_of_additional_object_facts; fact_number++) {
 			var attribute_id = $('#attribute' + fact_number).val();
@@ -657,7 +783,7 @@
 			xhttp.open("GET", "/tool/check_single_fact_format?fact_number=" + String(fact_number) + "&attribute_id=" + attribute_id + '&operator=' + operator + '&value=' + value, true);
 			xhttp.send();
 		}									
-	}
+	}*/
 
 
 	/*=============  RESET DROPDOWN SELECTION  ================================================================ */

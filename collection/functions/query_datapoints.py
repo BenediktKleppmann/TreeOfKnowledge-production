@@ -544,6 +544,8 @@ def get_training_data(object_type_id, filter_facts, valid_times):
 def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time):
 
     print('2.0')
+    if len(object_ids) == 0:
+        return None
 
     with connection.cursor() as cursor:
 

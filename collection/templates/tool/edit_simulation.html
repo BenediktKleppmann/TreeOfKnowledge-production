@@ -327,14 +327,10 @@
 	}	
 	
 	.operator {
-		position: absolute;
-		margin-left: 176px;
 		width: 58px;
 	}
 	
 	.value {
-		position: absolute;
-		margin-left: 239px;
 		width: 125px ;
 		text-align: left;
 	}
@@ -1180,7 +1176,7 @@
 	function drawObjectFilters(object_number) {
 	
 		object_filters_string = '<ul class="list-group" id="object_facts_list"> ' +
-									'<li class="list-group-item broad" >' +
+									'<li class="list-group-item broad new-fact-list-item" >' +
 										'<div>' +
 											'<div class="dropdown inline">' +
 												'<button class="btn btn-secondary dropdown-toggle attribute-button" type="button" id="attributeMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name1">Attribute<span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>' +
@@ -1207,7 +1203,7 @@
 											'<button type="button" id="format_violation1" class="btn btn-danger format-violation" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>' +
 										'</div>' +
 									'</li>' +
-									'<li class="list-group-item broad" >' +
+									'<li class="list-group-item broad new-fact-list-item" >' +
 										'<div>' +
 											'<div class="dropdown inline" >' +
 												'<button class="btn btn-secondary dropdown-toggle attribute-button" type="button" id="attributeMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name2">Attribute<span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>' +
@@ -1283,7 +1279,7 @@
 		var insert_before = '#create-new-object-fact-button';
 
 		
-		var additionalFactHTMLString = 	'<li class="list-group-item broad" >' +
+		var additionalFactHTMLString = 	'<li class="list-group-item broad new-fact-list-item" >' +
 											'<div">' + 
 												'<div class="dropdown inline" >' + 
 													'<button class="btn btn-secondary dropdown-toggle attribute-button" type="button" id="attributeMenu' + fact_number + '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name' + fact_number + '">Attribute<span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>' + 

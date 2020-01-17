@@ -310,7 +310,7 @@
 									<div class="col-sm-1 list-group-left-column"><span id="new_object_name" style="margin-left:-47px;width:130px;height:77px;margin-top:24px;text-align:center">facts about the<br>new object type</span></div>
 									<div class="col-sm-11 list-group-right-column">  
 										<ul class="list-group" id="new_object_facts_list"> 
-											<li class="list-group-item broad" > <!-- Object Attribute 1 -->
+											<li class="list-group-item broad new-fact-list-item" > <!-- Object Attribute 1 -->
 												<div>
 													<div class="dropdown inline">
 														<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name1">Attribute<span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
@@ -338,7 +338,7 @@
 													<button type="button" id="format_violation1" class="btn btn-danger" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid fact" style="display:none;" data-content="">!</button>
 												</div>
 											</li>
-											<li class="list-group-item broad" > <!-- Object Attribute 2 -->
+											<li class="list-group-item broad new-fact-list-item" > <!-- Object Attribute 2 -->
 												<div>
 													<div class="dropdown inline" >
 														<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name2">Attribute<span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>
@@ -455,7 +455,7 @@
 		var insert_before = '#create-new-object-fact-button';
 
 		
-		var additionalFactHTMLString = 	'<li class="list-group-item broad" >' +
+		var additionalFactHTMLString = 	'<li class="list-group-item broad new-fact-list-item" >' +
 											'<div">' + 
 												'<div class="dropdown inline" >' + 
 													'<button class="btn btn-secondary dropdown-toggle" type="button" id="attributeMenu' + fact_number + '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="attribute-name' + fact_number + '">Attribute<span> &nbsp;<i class="fas fa-caret-down fa-sm"></i></button>' + 
