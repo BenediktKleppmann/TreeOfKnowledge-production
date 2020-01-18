@@ -857,8 +857,7 @@
 			}
 		}
 		
-		
-
+		get_new_object_data = true;
 	});
 
 	
@@ -1012,6 +1011,7 @@
 				link.remove();
 				drawLink(sourceId, targetId, available_relations[active_relation_button]['id']);
 				objects_dict[sourceId]['object_relations'].push(new_relation);
+				get_new_object_data = true;
 				
 			} else {
 				link.remove();
@@ -1082,6 +1082,7 @@
 				if (index_to_remove != null) {
 					object_relations.splice(index_to_remove,1);
 					objects_dict[sourceId]['object_relations'] = object_relations;
+					get_new_object_data = true;
 				}
 			}
 		} 
