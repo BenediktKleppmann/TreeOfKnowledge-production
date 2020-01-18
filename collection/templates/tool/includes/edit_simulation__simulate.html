@@ -1212,6 +1212,21 @@
 	}
 	
 	
+	function filterRelatedVariables() {
+		var current_query = $('#selectRelatedAvailableVariable').val().toLowerCase();
+		if (current_query !== "") {
+			$("#related-available-variables li").hide();
+			$("#related-available-variables li").each(function(){
+				var current_keyword = $(this).text().toLowerCase();
+				if (current_keyword.indexOf(current_query) >=0) {
+					$(this).show();    	 	
+				};
+			});    	
+		} else {
+			$("#related-available-variables li").show();
+		};
+	}
+	
 	
 	//== Button - used attribute  =========================================================================================	
 	function usedAttributeButtonClick(used_attribute_name, used_attribute_number) {

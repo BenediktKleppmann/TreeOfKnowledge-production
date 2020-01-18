@@ -217,14 +217,38 @@
 	/* AVAILABLE VARIABLES --------------------------------------*/
 	/* ----------------------------------------------------------*/
 	
-	#editObjectBehaviourModal #available-variable-frame {
+
+	
+	
+	#editObjectBehaviourModal #available-variables-outer-block {
+		display: inline-block;
+	}
+	
+	#editObjectBehaviourModal #available-variables-error-message {
+		color: rgb(145, 20, 13);
+		width: 219px;
+	}
+	
+	#editObjectBehaviourModal #available-variables-main-block {
+	
+	}
+	
+	#editObjectBehaviourModal #available-variables-block {
+		display: inline-block;
+		overflow: hidden;
+		float: left;
+		width: 219px;
+	}
+	
+	#editObjectBehaviourModal .available-variable-frame {
 		width: 219px;
 		height: 307px;
 	}
 	
-	
-	#editObjectBehaviourModal #available-variables-block {
+	#editObjectBehaviourModal #available-relation-variables-block {
 		display: inline-block;
+		overflow: hidden;
+		width:0px;
 	}
 
 	.available-variables-label {
@@ -234,13 +258,31 @@
 		color: rgb(110, 110, 110);
 	} 
 	
+	.relations-variables-label {
+		display: inline-block;
+		margin-top: 19px;
+		font-weight: 700;
+		font-size: 15px;
+		color: rgb(50, 50, 50);
+	} 
+	
+	#remove-related-attributes-button {
+		display: inline-block;
+	}
+	
 	#selectAvailableVariable {
 		width: 179px;
 		margin-top: 2px;
 		margin-bottom: 5px;
 	}
 	
-	#available-variable-frame {
+	#selectRelatedAvailableVariable {
+		width: 179px;
+		margin-top: 2px;
+		margin-bottom: 5px;
+	}
+	
+	.available-variable-frame {
 		border: 1px solid rgb(202, 202, 202);
 		border-radius: 4px;
 		width: 195px;
@@ -249,6 +291,12 @@
 	}
 	
 	.list-group-item.avail-var-item{
+		border-bottom: 1px solid rgb(202, 202, 202);
+		margin-bottom: 0px;
+		padding:0px;
+	}
+	
+	.list-group-item.related-var-item{
 		border-bottom: 1px solid rgb(202, 202, 202);
 		margin-bottom: 0px;
 		padding:0px;
@@ -361,7 +409,13 @@
 					<div id="rule-info">
 						<div id="rule-info-top">
 							<div id="rule-details"></div>
-							<div id="available-variables-block"></div>
+							<div id="available-variables-outer-block">
+								<div id="available-variables-error-message"></div>
+								<div id="available-variables-main-block">
+									<div id="available-variables-block"></div>
+									<div id="available-relation-variables-block"></div>
+								</div>
+							</div>
 						</div>
 						<div id="save-cancel-rule-buttons"></div>
 						<div class="rule-pdf-panel-title"></div>
@@ -387,7 +441,6 @@
 
 //GLOBAL VARIABLES
 var new_rule_cursor_position = {};
-var new_rule_cursor_textarea = '';
 	
 	
 	/*========================================================================*/
@@ -571,7 +624,7 @@ var new_rule_cursor_textarea = '';
 
 			rule_details_html = '<div id="has-if-condition-field">' +
 									'<input type="checkbox" class="form-check-input" id="has_if_condition" onchange="changeRuleType(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\')">' +
-									'<label class="form-check-label" for="has_if_condition">Has IF Condition</label>' +
+									'<label class="form-check-label" for="has_if_condition">&nbsp;Has IF Condition</label>' +
 								'</div>' +
 								'<div id="rule-details-main">' + 
 									'<div class="form-group">' + 
@@ -587,7 +640,7 @@ var new_rule_cursor_textarea = '';
 
 			rule_details_html = '<div id="has-if-condition-field">' +
 									'<input type="checkbox" class="form-check-input" id="has_if_condition" onchange="changeRuleType(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\') checked>' +
-									'<label class="form-check-label" for="has_if_condition">Has IF Condition</label>' +
+									'<label class="form-check-label" for="has_if_condition">&nbsp;Has IF Condition</label>' +
 								'</div>' +
 								'<div id="rule-details-main">' + 
 									'<div class="form-group">' + 
@@ -612,26 +665,33 @@ var new_rule_cursor_textarea = '';
 		
 		
 		// Available Variables ------------------------------------------------------------
+		var object_name = objects_dict[object_number]['object_name']
+		
 		available_variables_html = 	'<div class="available-variables-label">Available Variables:</div>' + 
-											'<input type="text" class="form-control" id="selectAvailableVariable" onkeyup="filterAvailableVariables();" placeholder=" Search">' + 
-											'<div id="available-variable-frame">' + 
-												'<ul id="available-variables" class="input-group list-group">';
+									'<input type="text" class="form-control" id="selectAvailableVariable" onkeyup="filterAvailableVariables();" placeholder=" Search">' + 
+									'<div class="available-variable-frame">' + 
+										'<ul id="available-variables" class="input-group list-group">';
 			
 		var object_attributes = objects_dict[object_number]['object_attributes'];
 		var attribute_ids = Object.keys(object_attributes);
 		for (var i = 0; i < attribute_ids.length ; i++) {
 			var attribute_id = attribute_ids[i];
 			var attribute_name = object_attributes[attribute_id]['attribute_name']
-			available_variables_html += 			'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+			var attribute_data_type = object_attributes[attribute_id]['attribute_data_type']
+			if (attribute_data_type == 'relation') {
+				available_variables_html += 	'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableRelation(' + object_number + ', ' + attribute_id + ', \'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+			} else {
+				available_variables_html += 	'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+			}
 		}
 		for (var i = 0; i < delta_t_list.length ; i++) {
 			var delta_t_name = delta_t_list[i];
-			available_variables_html += 			'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + delta_t_name + '\')" scope="col">' + delta_t_name + '</button></li>';
+			available_variables_html += 		'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + delta_t_name + '\')" scope="col">' + delta_t_name + '</button></li>';
 		}
 		
 		
-		available_variables_html += 			'</ul>' + 
-											'</div>';
+		available_variables_html += 	'</ul>' + 
+									'</div>';
 
 		$('#available-variables-block').html(available_variables_html);
 		
@@ -743,7 +803,7 @@ var new_rule_cursor_textarea = '';
 		// Populate the Modal
 		rule_details_html = '<div id="has-if-condition-field">' +
 								'<input type="checkbox" class="form-check-input" id="has_if_condition" onchange="changeRuleType(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\')">' +
-								'<label class="form-check-label" for="has_if_condition">Has IF Condition</label>' +
+								'<label class="form-check-label" for="has_if_condition">&nbsp;Has IF Condition</label>' +
 							'</div>' +
 							'<div id="rule-details-main">' + 
 								'<div class="form-group">' + 
@@ -756,14 +816,6 @@ var new_rule_cursor_textarea = '';
 								'</div>' +
 							'</div>';
 								
-		//rule_details_html = '<div class="form-group">' +
-		//						'<label for="rule_type">Rule Type</label>' +
-		//						'<select id="rule_type" class="form-control" onchange="changeRuleType(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\')">' +
-		//							'<option selected>Conditional Rule</option>' +
-		//							'<option>Continuous Change</option>' +
-		//						'</select>' +
-		//					'</div>' + 
-		//					'<div id="rule-details-main"></div>';
 
 		
 		$('#rule-details').html(rule_details_html);
@@ -771,16 +823,21 @@ var new_rule_cursor_textarea = '';
 		
 
 		available_variables_html = 	'<div class="available-variables-label">Available Variables:</div>' + 
-											'<input type="text" class="form-control" id="selectAvailableVariable" onkeyup="filterAvailableVariables();" placeholder=" Search">' + 
-											'<div id="available-variable-frame">' + 
-												'<ul id="available-variables" class="input-group list-group">';
+									'<input type="text" class="form-control" id="selectAvailableVariable" onkeyup="filterAvailableVariables();" placeholder=" Search">' + 
+									'<div class="available-variable-frame">' + 
+										'<ul id="available-variables" class="input-group list-group">';
 			
 		var object_attributes = objects_dict[object_number]['object_attributes'];
 		var attribute_ids = Object.keys(object_attributes);
 		for (var i = 0; i < attribute_ids.length ; i++) {
 			var attribute_id = attribute_ids[i];
 			var attribute_name = object_attributes[attribute_id]['attribute_name']
-			available_variables_html += 		'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+			var attribute_data_type = object_attributes[attribute_id]['attribute_data_type']
+			if (attribute_data_type == 'relation') {
+				available_variables_html += 	'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableRelation(' + object_number + ', ' + attribute_id + ', \'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+			} else {
+				available_variables_html += 	'<li class="list-group-item avail-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+			}
 		}
 		for (var i = 0; i < delta_t_list.length ; i++) {
 			var delta_t_name = delta_t_list[i];
@@ -788,9 +845,9 @@ var new_rule_cursor_textarea = '';
 		}
 		
 		
-		available_variables_html += 		'</ul>' + 
-											'</div>';
-
+		available_variables_html += 	'</ul>' + 
+									'</div>';
+									
 		$('#available-variables-block').html(available_variables_html);
 		
 		
@@ -927,18 +984,91 @@ var new_rule_cursor_textarea = '';
 		var startPosition = myElement.selectionStart;
 		var endPosition = myElement.selectionEnd;
 		
-		new_rule_cursor_position = {'startPosition':startPosition, 'endPosition':endPosition};	
-		new_rule_cursor_textarea = text_area_id;
+		new_rule_cursor_position = {'text_area_id':text_area_id, 'startPosition':startPosition, 'endPosition':endPosition};	
 	}
+	
+	
 	
 	function selectAvailableVariable(object_number, attribute_name) {
-		var rule_text = document.getElementById(new_rule_cursor_textarea).value;
+		$('#available-variables-error-message').html('');
+		var rule_text = document.getElementById(new_rule_cursor_position['text_area_id']).value;
 		var new_rule_text = rule_text.substring(0, new_rule_cursor_position['startPosition']) + '[' + attribute_name + ']' + rule_text.substring(new_rule_cursor_position['endPosition'], rule_text.length);
-		document.getElementById(new_rule_cursor_textarea).value = new_rule_text;
+		document.getElementById(new_rule_cursor_position['text_area_id']).value = new_rule_text;
+		document.getElementById(new_rule_cursor_position['text_area_id']).selectionStart = new_rule_cursor_position['endPosition'] + attribute_name.length + 2;
+		document.getElementById(new_rule_cursor_position['text_area_id']).selectionEnd = new_rule_cursor_position['endPosition'] + attribute_name.length + 2;
+		new_rule_cursor_position['startPosition'] = new_rule_cursor_position['endPosition'] + attribute_name.length + 2;
+		new_rule_cursor_position['endPosition'] =  new_rule_cursor_position['endPosition'] + attribute_name.length + 2;
+		
+		if 	($('#available-relation-variables-block').css('width') == '219px') {
+			$('#available-relation-variables-block').animate({width: '0px'}, 300, 'linear');
+			$('#available-variables-block').animate({width: '219px'}, 300, 'linear');
+		}
 	}
 	
 	
 	
+	function selectAvailableRelation(object_number, relation_id, relation_name) {
+		objects_relations = objects_dict[object_number]['object_relations']
+		var target_object_number = null;
+		for (var i = 0; i < objects_relations.length ; i++) {
+			if (objects_relations[i]['attribute_id'] == relation_id){
+				target_object_number = objects_relations[i]['target_object_number'];
+			}
+		}
+		
+		if (target_object_number == null) {
+			$('#available-variables-error-message').html('In the Scenario-view, please first link ' + objects_dict[object_number]['object_name'] + ' to another object using the --' + relation_name + '--&gt; relation');
+		} else {
+		
+			var object_name = objects_dict[target_object_number]['object_name']
+			var available_relation_variables_html = 	'<button type="button" class="btn btn-secondary" id="remove-related-attributes-button" onclick="removeRelatedAttributes()"><i class="fas fa-angle-left"></i></button>' + 
+														'<div class="relations-variables-label">' + object_name + '\'s Variables:</div>' + 
+														'<input type="text" class="form-control" id="selectRelatedAvailableVariable" onkeyup="filterRelatedVariables();" placeholder=" Search">' + 
+														'<div class="available-variable-frame">' + 
+															'<ul id="related-available-variables" class="input-group list-group">';
+			
+			var object_attributes = objects_dict[target_object_number]['object_attributes'];
+			var attribute_ids = Object.keys(object_attributes);
+			for (var i = 0; i < attribute_ids.length ; i++) {
+				var attribute_id = attribute_ids[i];
+				var attribute_name = object_attributes[attribute_id]['attribute_name']
+				var attribute_data_type = object_attributes[attribute_id]['attribute_data_type']
+				if (attribute_data_type == 'relation') {
+					available_relation_variables_html += 		'<li class="list-group-item related-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableRelation(' + object_number + ', ' + attribute_id + ', \'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+				} else {
+					available_relation_variables_html += 		'<li class="list-group-item related-var-item"><button class="btn btn-outline-secondary avail-var-button" type="button" onclick="selectAvailableVariable(' + object_number + ',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
+				}
+			}
+			available_relation_variables_html += 			'</ul>' + 
+														'</div>';
+													
+			$('#available-relation-variables-block').html(available_relation_variables_html);
+			
+			// slide it into view
+			$('#available-variables-block').animate({width: '0px'}, 300, 'linear');
+			$('#available-relation-variables-block').animate({width: '219px'}, 300, 'linear');
+			
+			
+			// add to the Rule Text
+			var rule_text = document.getElementById(new_rule_cursor_position['text_area_id']).value;
+			var new_rule_text = rule_text.substring(0, new_rule_cursor_position['startPosition']) + '[' + relation_name + '].' + rule_text.substring(new_rule_cursor_position['endPosition'], rule_text.length);
+			document.getElementById(new_rule_cursor_position['text_area_id']).value = new_rule_text;
+			document.getElementById(new_rule_cursor_position['text_area_id']).selectionStart = new_rule_cursor_position['endPosition'] + relation_name.length + 3;
+			document.getElementById(new_rule_cursor_position['text_area_id']).selectionEnd = new_rule_cursor_position['endPosition'] + relation_name.length + 3;
+			new_rule_cursor_position['startPosition'] = new_rule_cursor_position['endPosition'] + relation_name.length + 3;
+			new_rule_cursor_position['endPosition'] =  new_rule_cursor_position['endPosition'] + relation_name.length + 3;
+		}
+	}
+	
+	
+	
+	function removeRelatedAttributes(){
+		$('#available-relation-variables-block').html('');
+		
+		$('#available-relation-variables-block').animate({width: '0px'}, 300, 'linear');
+		$('#available-variables-block').animate({width: '219px'}, 300, 'linear');
+		
+	}
 	
 	
 	
