@@ -159,6 +159,7 @@ class Simulation_model(models.Model):
     is_timeseries_analysis = models.BooleanField()
     objects_dict = models.TextField()
     y_value_attributes = models.TextField()
+    sorted_attribute_ids = models.TextField()
     object_type_counts = models.TextField()
     total_object_count= models.IntegerField()
     number_of_additional_object_facts = models.IntegerField()

@@ -906,6 +906,7 @@ def save_changed_simulation(request):
             model_record.is_timeseries_analysis = request_body['is_timeseries_analysis']
             model_record.objects_dict = json.dumps(request_body['objects_dict'])
             model_record.y_value_attributes = json.dumps(request_body['y_value_attributes'])
+            model_record.sorted_attribute_ids = json.dumps(request_body['sorted_attribute_ids'])
             model_record.object_type_counts = json.dumps(request_body['object_type_counts'])
             model_record.total_object_count = request_body['total_object_count']
             model_record.number_of_additional_object_facts = request_body['number_of_additional_object_facts']
@@ -1331,6 +1332,7 @@ def edit_simulation_new(request):
                                         is_timeseries_analysis=True,
                                         objects_dict=json.dumps({}), 
                                         y_value_attributes=json.dumps([]), 
+                                        sorted_attribute_ids=json.dumps([]), 
                                         object_type_counts=json.dumps({}),
                                         total_object_count=0,
                                         number_of_additional_object_facts=2,

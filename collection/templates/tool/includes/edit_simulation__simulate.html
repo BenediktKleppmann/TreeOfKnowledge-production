@@ -580,7 +580,6 @@
 	// GLOBAL VARIABLES:
 	var object_attribute_changes = {};
 	var rules_list = {};
-	var sorted_attribute_ids = [];
 	//var new_rule_cursor_position = {};
 	var new_rule_used_attribute_names = [];
 	var new_rule_used_attribute_ids = [];
@@ -594,40 +593,46 @@
 	
 
 	function getObjectData() {
-		var request_body = {};
-		request_body['objects_dict']  = objects_dict;
-		request_body['specified_start_time'] = simulation_start_time;
-		request_body['specified_end_time'] = simulation_end_time;
-		got_object_data = false;
-		
-		var xmlhttp = new XMLHttpRequest();       
-		xmlhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var objects_data = JSON.parse(this.responseText);
-				var all_attribute_values = objects_data['all_attribute_values'];
-				sorted_attribute_ids = objects_data['sorted_attribute_ids'];
-				console.log('----------------------------');
-				console.log(objects_dict);
-				console.log('----------------------------');
-				object_numbers = Object.keys(all_attribute_values);
-				for (var i = 0; i < object_numbers.length ; i++) {
-					object_number = parseInt(object_numbers[i]);
-					objects_dict[object_number]['object_id'] = all_attribute_values[object_number]['object_id'];	
-					objects_dict[object_number]['object_attributes'] = all_attribute_values[object_number]['object_attributes'];
-				}	
-				got_object_data = true;	
-				var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Got the data.<br>Please click on the object again.</div>';
-				$("#right-sidebar-body").html(no_results_string);
-			}
-		};
+	
+		if (get_new_object_data) {
+			var request_body = {};
+			request_body['objects_dict']  = objects_dict;
+			request_body['specified_start_time'] = simulation_start_time;
+			request_body['specified_end_time'] = simulation_end_time;
+			got_object_data = false;
+			
+			var xmlhttp = new XMLHttpRequest();       
+			xmlhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					var objects_data = JSON.parse(this.responseText);
+					var all_attribute_values = objects_data['all_attribute_values'];
+					sorted_attribute_ids = objects_data['sorted_attribute_ids'];
 
-		xmlhttp.open("POST", "/tool/get_data_from_random_related_object/");
-		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
-		xmlhttp.send(JSON.stringify(request_body));	
-		
-		var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Retrieving data...<div class="lds-dual-ring"></div></div>';
-		$("#right-sidebar-body").html(no_results_string);
+					object_numbers = Object.keys(all_attribute_values);
+					for (var i = 0; i < object_numbers.length ; i++) {
+						object_number = parseInt(object_numbers[i]);
+						objects_dict[object_number]['object_id'] = all_attribute_values[object_number]['object_id'];	
+						objects_dict[object_number]['object_attributes'] = all_attribute_values[object_number]['object_attributes'];
+					}	
+					got_object_data = true;	
+					var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Got the data.<br>Please click on the object again.</div>';
+					$("#right-sidebar-body").html(no_results_string);
+					get_new_object_data = false;
+					
+					saveSimulation();
+				}
+			};
+
+			xmlhttp.open("POST", "/tool/get_data_from_random_related_object/");
+			xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+			xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+			xmlhttp.send(JSON.stringify(request_body));	
+			
+			var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Retrieving data...<div class="lds-dual-ring"></div></div>';
+			$("#right-sidebar-body").html(no_results_string);
+		} else {
+			got_object_data = true;
+		}
 	}
 
 	
@@ -883,6 +888,8 @@
 		run_simulation_post_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		run_simulation_post_request.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		run_simulation_post_request.send();
+		
+		run_simulation_post_request.abort();
 			
 		/*	
 		var url_components = window.location.href.split("/");
@@ -901,6 +908,7 @@
 	}
 	
 	function abort_simulation() {
+	
 		if (run_simulation_post_request) {
 			run_simulation_post_request.abort();
 		}
@@ -944,6 +952,7 @@
 			'is_timeseries_analysis': is_timeseries_analysis,
 			'objects_dict': objects_dict,
 			'y_value_attributes': y_value_attributes,
+			'sorted_attribute_ids': sorted_attribute_ids,
 			'object_type_counts': object_type_counts,
 			'total_object_count': total_object_count,
 			'number_of_additional_object_facts': number_of_additional_object_facts,
