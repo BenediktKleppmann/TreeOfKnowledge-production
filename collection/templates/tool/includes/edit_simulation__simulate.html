@@ -54,6 +54,10 @@
 		margin-top: 22px;
 	}
 	
+	#analysis_type {
+		padding-left: 1px;
+	}
+	
 	#run-button {
 		margin-top: 12px;
 		border-radius: 6px;
@@ -656,17 +660,29 @@
 			cross_section_option = 'selected';		
 		}
 								
-		left_panel__simulate = 	'<div class="left-panel-title">Simulation</div>' +
+		/*left_panel__simulate = 	'<div class="left-panel-title">Simulation</div>' +
 								'<div class="form left-panel-body">' +
 									'<div class="form-group row">' +
-										'<label for="analysis_type" class="col-sm-5">Analysis Type</label>' +
+										'<label for="analysis_type" class="col-sm-5">Analysis Type</label><br>' +
 										'<div class="col-sm-7">' +
 											'<select id="analysis_type" class="form-control col-sm-7" onchange="changeAnalysisType()">' +
-												'<option ' + timeseries_option + '>Timeseries Analysis</option>' +
-												'<option ' + cross_section_option + '>Cross-sectional Analysis</option>' +
+												'<option ' + timeseries_option + '>Simulate changes over time</option>' +
+												'<option ' + cross_section_option + '>Analyse Dependencies at a Single Moment in Time</option>' +
 											'</select>' +
 										'</div>' + 
 									'</div>' + 
+									'<div id="analysis-details-box"></div>' + 
+									'<button id="run-button" class="btn btn-success pull-right" type="button" onclick="run()">Run</button>' +
+								'</div>';
+		*/
+								
+		left_panel__simulate = 	'<div class="left-panel-title">Simulation</div>' +
+								'<div class="form left-panel-body">' +
+									'<label for="analysis_type" style="margin-left:5px;">Analysis Type:</label><br>' +
+									'<select id="analysis_type" class="form-control" onchange="changeAnalysisType()">' +
+										'<option ' + timeseries_option + '>Simulate changes over time</option>' +
+										'<option ' + cross_section_option + '>Analyse Dependencies at a Moment in Time</option>' +
+									'</select>' +
 									'<div id="analysis-details-box"></div>' + 
 									'<button id="run-button" class="btn btn-success pull-right" type="button" onclick="run()">Run</button>' +
 								'</div>';
@@ -682,7 +698,7 @@
 	
 		var analysis_type = $('#analysis_type').find(":selected").text();
 		
-		if (analysis_type == 'Timeseries Analysis'){
+		if (analysis_type == 'Simulate changes over time'){
 			is_timeseries_analysis = true;
 			analysis_details_html_string = 	'<div class="form-group row">' +
 												'<label for="max" class="col-sm-5">Start Time</label>' +
@@ -758,7 +774,7 @@
 				}
 			}
 			
-		} else if (analysis_type == 'Cross-sectional Analysis'){
+		} else if (analysis_type == 'Analyse Dependencies at a Single Moment in Time'){
 			is_timeseries_analysis = false;
 			$('#analysis-details-box').html('');
 		}
@@ -924,7 +940,7 @@
 		// get simulation_id
 		var url_components = window.location.href.split("/");
 		var simulation_id = url_components[url_components.length - 2];
-		var is_timeseries_analysis = ($('#analysis_type').find(":selected").text() == 'Timeseries Analysis');
+		var is_timeseries_analysis = ($('#analysis_type').find(":selected").text() == 'Simulate changes over time');
 			
 		
 		//update the object positions in objects_dict

@@ -1075,8 +1075,9 @@
 						
 						related_table_body = response['related_table_body'];
 						related_table_attributes = response['related_table_attributes'];
+						related_attribute_class = (dropdown_number==0) ? '' : 'related-attribute-dropdown';
 						
-						related_attr_dropdown_string = 	'<select class="form-control related-attribute-dropdown" id="related_attribute' + dropdown_number + '" name="related_attribute' + dropdown_number + '" onchange="relatedAttributeChange(' + dropdown_number + ')">' +
+						related_attr_dropdown_string = 	'<select class="form-control ' + related_attribute_class + '" id="related_attribute' + dropdown_number + '" name="related_attribute' + dropdown_number + '" onchange="relatedAttributeChange(' + dropdown_number + ')">' +
 															'<option value="" selected></option>';
 						for (var i = 0; i < related_table_attributes.length; i++) {
 							related_attr_dropdown_string +=	'<option value="' + related_table_attributes[i]['attribute_id'] + '">' + related_table_attributes[i]['attribute_name'] + '</option>';
