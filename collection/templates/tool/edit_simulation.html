@@ -413,7 +413,7 @@
 	
 	{% include "tool/includes/edit_simulation__simulate.html" %} 
 	
-	<!--<script type="text/javascript" src="{% static 'js/bootstrap-3.4.0.min.js' %}"></script>-->
+	<script type="text/javascript" src="{% static 'js/bootstrap-3.4.0.min.js' %}"></script>
 	{% include "tool/includes/additional_facts_functions.html" %} 
 
 	
@@ -728,7 +728,9 @@
 	});
 
 	paper.on('link:mouseenter', function(linkView) {
-		linkView.showTools();
+		if (window_state == 'design'){
+			linkView.showTools();
+		}
 	});
 
 	paper.on('link:mouseleave', function(linkView) {
@@ -737,8 +739,10 @@
 	
 	
 	paper.on('element:mouseenter', function(elementView) {
-		var object_number = elementView.model.get('object_number');
-		$('[model-id="' + object_number + '"] .element-tool-remove').css('display','inline-block');  //show the objects x-button
+		if (window_state == 'design'){
+			var object_number = elementView.model.get('object_number');
+			$('[model-id="' + object_number + '"] .element-tool-remove').css('display','inline-block');  //show the objects x-button
+		}
 	});
 
 	paper.on('element:mouseleave', function(elementView) {
@@ -1255,7 +1259,7 @@
 		
 		//populate the attribute drop downs
 		for (var i = 1; i <= number_of_additional_object_facts; i++) {
-			makeObjectsAdditionalAttributesDropdown( object_type_id , i);
+			makeObjectsAdditionalAttributesDropdownEditSimulation( object_type_id , i);
 		}
 		
 		//activate the popovers
@@ -1311,7 +1315,7 @@
 										'</li>';
 		$(additionalFactHTMLString).insertBefore(insert_before);
 		
-		makeObjectsAdditionalAttributesDropdown(object_type_id, fact_number);
+		makeObjectsAdditionalAttributesDropdownEditSimulation(object_type_id, fact_number);
 	}
 		
 	
