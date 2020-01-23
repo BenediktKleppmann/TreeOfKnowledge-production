@@ -554,11 +554,13 @@
 			//link the start- and end- datetimepickers
 			$("#simulation-end-time").datetimepicker("setStartDate", '"' + ev.date.toISOString().substring(0,10) + '"');
 			simulation_start_time = Math.round(ev.date.getTime() / 1000);
+			get_new_object_data = true;
 		});
 		
 		$("#simulation-end-time").datetimepicker().on('changeDate', function(ev){
 			$("#simulation-start-time").datetimepicker("setEndDate", '"' + ev.date.toISOString().substring(0,10) + '"');
 			simulation_end_time = Math.round(ev.date.getTime() / 1000);
+			get_new_object_data = true;
 		});
 		
 		

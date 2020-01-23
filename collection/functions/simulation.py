@@ -99,15 +99,12 @@ class Simulator:
         #  --- df and y0_values ---
         self.y0_values = []
         if self.is_timeseries_analysis:
+            
+            times = np.arange(self.simulation_start_time, self.simulation_end_time, self.timestep_size)
+            merged_object_data_tables = query_datapoints.get_data_from_related_objects__multiple_timesteps(self.objects_dict, times, self.timestep_size)
             merging_columns =  ['obj' + obj_num + 'attrobject_id' for obj_num in self.objects_dict.keys()]
-            merged_periods_df = self.df
+            merged_periods_df = pd.merge(self.df, merged_object_data_tables, on=merging_columns, how='outer', suffixes=['','__from_periods'])
             original_df_columns = self.df.columns
-            times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
-            for period in range(len(times)-1):
-                period_df = query_datapoints.get_data_from_related_objects(self.objects_dict, times[period], times[period + 1])
-                period_columns  = [col for col in period_df if col in self.y0_columns + merging_columns]
-                merged_periods_df = pd.merge(merged_periods_df, period_df, on=merging_columns, how='outer', suffixes=['','period' + str(period)])
-
 
             for col in self.y0_columns:
                 desired_column_names = [col + 'period'+ str(period) for period in range(len(times)-1)]
@@ -116,8 +113,19 @@ class Simulator:
                         merged_periods_df[desired_column_name] = np.nan
 
             merged_periods_df = self.reduce_number_of_rows(merged_periods_df, 500)
+            merged_periods_df.index = range(len(merged_periods_df))
+            print('-----------------------------------------------------------')
+            print(str(merged_periods_df.columns))
+            print('---')
+            print(str(original_df_columns))
+            print('---')
+            print(str(self.df.columns))
+            print('-----------------------------------------------------------')
             self.df = merged_periods_df[original_df_columns]
             merged_periods_df = merged_periods_df[[col for col in merged_periods_df.columns if col.split('period')[0] in self.y0_columns]]
+            # print('=== Testing  ==================================================')
+            # merged_periods_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-01-20/merged_periods_df__timeseries_analysis.csv', index=False)
+            # print('===============================================================')
             self.y0_values = [row for index, row in sorted(merged_periods_df.to_dict('index').items())]
 
         else:
@@ -125,9 +133,15 @@ class Simulator:
             df_copy = pd.DataFrame(self.df[self.y0_columns].copy())
             df_copy.columns = [col + 'period0' for col in df_copy.columns]
             df_copy = df_copy[[col for col in df_copy.columns if col.split('period')[0] in self.y0_columns]]
+            print('=== Testing  ==================================================')
+            df_copy.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-01-20/df_copy_crosssectional_analysis.csv', index=False)
+            print('===============================================================')
             self.y0_values = [row for index, row in sorted(df_copy.to_dict('index').items())]
 
         self.y0_values_df = pd.DataFrame(self.y0_values)
+        print('=== Testing  ==================================================')
+        self.y0_values_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-01-20/y0_values_df.csv', index=False)
+        print('===============================================================')
 
 
 
@@ -160,6 +174,9 @@ class Simulator:
                 for rule_id in set(rule_ids):
                     print('object_number: ' + str(object_number) + '; attribute_id: ' + str(attribute_id) + '; rule_id: ' + str(rule_id) + '; ')
                     rule = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)]['used_rules'][str(rule_id)]
+                    print('1')
+                    # if set(rule['used_attribute_ids']) <= set(self.df.columns): # the attributes used in this rule must appear in df
+                    
 
                     if self.is_timeseries_analysis or 'df.delta_t' not in rule['effect_exec']:  # don't include rules containing delta_t for cross-sectional analyses 
 
@@ -233,7 +250,11 @@ class Simulator:
                                 histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule_id)
                             rule['histogram'] = histogram
 
-                        self.rules.append(rule)
+                        # check if all the mentioned columns appear in df
+                        mentioned_columns = re.findall(r'df\.[a-zA-Z0-9_]+', rule['condition_exec'] + ' ' + rule['effect_exec'] )
+                        df_columns = ['df.'+col for col in self.df.columns]
+                        if (set(mentioned_columns) <= set(df_columns + ['df.delta_t'])):
+                            self.rules.append(rule)
 
 
         #  --- Posterior Values to Delete ---
@@ -363,31 +384,19 @@ class Simulator:
 
 
         # triggered_rules
-        # Testing =============================================================================
-        print('process_data_2')
-        print('process_data_2.0')
-        triggered_rules_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-01-08/f.csv', index=False)
-        #  ====================================================================================
         triggered_rules_per_period = triggered_rules_df.groupby(['batch_number','initial_state_id','attribute_id','period']).aggregate({'initial_state_id':'first',
                                                                                                         'batch_number':'first',
                                                                                                         'attribute_id':'first',
                                                                                                         'period':'first',
                                                                                                         'triggered_rule':list,
                                                                                                         'correct_value':'first',})  
-        print('process_data_2.1')
         attribute_dict = {attribute_id: {} for attribute_id in triggered_rules_df['attribute_id'].unique().tolist()}
-        print('process_data_2.2')
         triggered_rules = {}
-        print('process_data_2.3')
         for batch_number in triggered_rules_df['batch_number'].unique().tolist():
-            print('process_data_2.4')
             for initial_state_id in triggered_rules_df['initial_state_id'].unique().tolist():
-                print('process_data_2.5')
                 triggered_rules[str(initial_state_id) + '-' + str(batch_number)] = deepcopy(attribute_dict)
 
-        print('process_data_2.6')
         for index, row in triggered_rules_per_period.iterrows():
-            print('process_data_2.7')
             triggered_rules[str(row['initial_state_id']) + '-' + str(row['batch_number'])][row['attribute_id']][int(row['period'])] = {'rules': row['triggered_rule'], 'correct_value': row['correct_value']}
 
 
@@ -514,6 +523,10 @@ class Simulator:
 
                 # --------  THEN  --------
                 if rule['effect_is_calculation']:
+
+
+                    
+
                     new_values = pd.eval(rule['effect_exec'])
                     if rule['changed_var_data_type'] in ['relation','int']:
                         nan_rows = new_values.isnull()
@@ -543,7 +556,6 @@ class Simulator:
                     rule['rule_was_used_in_simulation'] = rule['rule_was_used_in_simulation'] | condition_fulfilled_rules
 
 
-
             y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
             y0_values_in_this_period.columns = [col + 'period' + str(period) for col in y0_values_in_this_period.columns] #faster version
             y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
@@ -554,6 +566,7 @@ class Simulator:
         for rule in rules:  
             if rule['learn_posterior']:
                 y0_values_in_simulation['triggerThresholdForRule' + str(rule['id'])] = rule_priors[rule['prior_index']]
+                rule['rule_was_used_in_simulation'].index = range(len(rule['rule_was_used_in_simulation']))
                 y0_values_in_simulation['rule_used_in_simulation_' + str(rule['id'])] = rule['rule_was_used_in_simulation']
                 del rule['rule_was_used_in_simulation']
 
@@ -567,7 +580,7 @@ class Simulator:
 
     #  Monte-Carlo  ---------------------------------------------------------------------------------
     def __run_monte_carlo_simulation(self, nb_of_simulations=300):
-
+        print('¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬  __run_monte_carlo_simulation   ¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬')
         y0 = np.asarray(self.df[self.y0_columns].copy())
         batch_size = len(y0)
 
@@ -582,7 +595,7 @@ class Simulator:
                 progress_dict_string = json.dumps({"learning_likelihoods": (len(self.rule_priors) > 0), "nb_of_accepted_simulations_total": self.nb_of_accepted_simulations, "nb_of_accepted_simulations_current": self.nb_of_accepted_simulations, "learning__post_processing": "" , "running_monte_carlo": "true", "monte_carlo__simulation_number": (batch_number*batch_size), "monte_carlo__number_of_simulations":  nb_of_simulations, "monte_carlo__post_processing":""})
                 progress_tracking_file.write(progress_dict_string)
 
-
+            print('run_monte_carlo_simulation_1')
             df = self.df.copy()
             if not self.is_timeseries_analysis: 
                 df[self.y0_columns] = None
@@ -591,7 +604,7 @@ class Simulator:
                 if not rule['is_conditionless']:
                     df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
 
-
+            print('run_monte_carlo_simulation_2')
             if self.is_timeseries_analysis: 
                 times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
                 df['delta_t'] = self.timestep_size
@@ -599,6 +612,7 @@ class Simulator:
                 times = [self.simulation_start_time, self.simulation_end_time]
 
 
+            print('run_monte_carlo_simulation_3')
             y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
             for period in range(len(times)-1):
                 for rule in self.rules:
@@ -614,7 +628,7 @@ class Simulator:
                         condition_satisfying_rows = pd.eval(str(rule['condition_exec']))
                         trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
                         
-
+                    print('run_monte_carlo_simulation_4')
                     if rule['effect_is_calculation']:
                         all_new_values = pd.eval(rule['effect_exec'])
                         if rule['changed_var_data_type'] in ['relation','int']:
@@ -636,7 +650,7 @@ class Simulator:
                     else:
                         all_new_values = [json.loads(rule['effect_exec'])] * batch_size
 
-
+                    print('run_monte_carlo_simulation_5')
                     new_values = [value for value, satisfying in zip(all_new_values,satisfying_rows) if satisfying]
                     df.loc[satisfying_rows,rule['column_to_change']] = new_values
 
@@ -665,7 +679,7 @@ class Simulator:
                                                             'v': calculated_values,         # v = new_value
                                                             'error':errors})
 
-
+                    print('run_monte_carlo_simulation_6')
                     triggered_rule_infos = triggered_rule_infos_df.to_dict('records')
                     triggered_rule_infos = [rule_info if rule_info['condition_satisfied'] else None for rule_info in triggered_rule_infos]
                     for i in range(len(triggered_rule_infos)):
@@ -682,11 +696,13 @@ class Simulator:
                                                                 'triggered_rule': triggered_rule_infos, 
                                                                 'correct_value': correct_value
                                                                 })
+                    print('run_monte_carlo_simulation_7')
 
                     triggered_rules_df = triggered_rules_df.append(currently_triggered_rules)
 
                 
                 # simulated values
+                print('run_monte_carlo_simulation_8')
                 df['initial_state_id'] = df.index
                 df['batch_number'] = batch_number
                 df['period'] = period
@@ -697,7 +713,7 @@ class Simulator:
                 y0_values_in_this_period.columns = [col + 'period' + str(period) for col in y0_values_in_this_period.columns] #faster version
                 y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
 
-
+            print('run_monte_carlo_simulation_9')
             errors = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), self.y0_values)
             error_df = pd.DataFrame({  'simulation_number': [str(index) + '-' + str(batch_number) for index in df.index],
                                         'error': errors})
@@ -744,6 +760,7 @@ class Simulator:
 
 
     def n_dimensional_distance(self, u, v):
+        # u = simulated values;  v = correct_values
         u = np.asarray(u, dtype=object, order='c').squeeze()
         u = np.atleast_1d(u)
         v = np.asarray(v, dtype=object, order='c').squeeze()
@@ -760,14 +777,8 @@ class Simulator:
             if self.y0_column_dt[y0_column] in ['string','bool','relation']:
                 for period_column in period_columns:
                     error = 1. - np.equal(np.array(u_df[period_column]), np.array(v_df[period_column])).astype(int)
-                    # print('1-v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^')
-                    # print(v_df[period_column])
-                    # print(list(v_df[period_column]))
-                    # print(pd.isnull(list(v_df[period_column])))
-                    # print(error[pd.isnull(list(v_df[period_column]))])
                     error[pd.isnull(v_df[period_column])] = 0 # set the error to zero where the correct value was not given
                     total_error += error
-                    # dimensionality += 1 - np.array(u_df[period_column].isnull().astype(int))
                     dimensionality += 1 - np.array(np.logical_or(v_df[period_column].isnull(),u_df[period_column].isnull()).astype(int))
             if self.y0_column_dt[y0_column] in ['int','real']:
                 for period_column in period_columns:
@@ -782,11 +793,6 @@ class Simulator:
                     # error = np.minimum(error_in_value_range + error_in_error_range, 1)
                     dimensionality += 1 -np.isnan(error).astype('int')
                     error[np.isnan(error)] = 0
-                    # print('2-v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^')
-                    # print(v_df[period_column])
-                    # print(list(v_df[period_column]))
-                    # print(pd.isnull(list(v_df[period_column])))
-                    # print(error[pd.isnull(list(v_df[period_column]))])
                     error[pd.isnull(v_df[period_column])] = 0# set the error to zero where the correct value was not given
                     total_error += error 
 
@@ -854,9 +860,9 @@ class Simulator:
     def reduce_number_of_rows(self, df, max_nb_of_rows):
 
         if len(df)> max_nb_of_rows:
-            number_of_nulls_df = merged_object_data_tables.isnull().sum(1)
+            number_of_nulls_df = df.isnull().sum(1)
             actual_y0_columns = [col for col in df.columns if col.split('period')[0] in self.y0_columns]
-            number_of_y0_nulls_df = merged_object_data_tables[actual_y0_columns].isnull().sum(1)
+            number_of_y0_nulls_df = df[actual_y0_columns].isnull().sum(1)
             score_df = 0.35 * (1 - number_of_nulls_df/max(number_of_nulls_df)) + 0.65 * (1 - number_of_y0_nulls_df/max(number_of_y0_nulls_df))
 
             reduced_df = score_df[score_df < 0.5]

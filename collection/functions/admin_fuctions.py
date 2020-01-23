@@ -5,6 +5,7 @@ import datetime
 import os
 from django.db.models import Count, Max
 from django.db import connection
+from collection.functions import get_from_db
  
 
 
@@ -219,7 +220,7 @@ def remove_duplicates():
         
 
 
-def find_possibly_duplicate_objects():
+def find_possibly_duplicate_objects_without_keys():
 
     with open("collection/static/webservice files/runtime_data/duplicate_objects_by_object_type.txt", "w") as text_file:
         text_file.write('Notice: The finding of possible duplicates is in progress.')
@@ -340,6 +341,100 @@ def find_possibly_duplicate_objects():
 
     return duplicate_objects_by_object_type
 
+
+
+
+
+
+
+def get_possibly_duplicate_objects_with_keys(object_type_id, key_attribute_id):
+
+    # basic filtering: object_type and specified time range
+    child_object_types = get_from_db.get_list_of_child_objects(object_type_id)
+    child_object_ids = [el['id'] for el in child_object_types]
+
+    with connection.cursor() as cursor:
+        sql_string1 = 'SELECT DISTINCT id FROM collection_object WHERE object_type_id IN (%s);' % (', '.join("'{0}'".format(object_type_id) for object_type_id in child_object_ids))
+        cursor.execute(sql_string1)
+        object_ids = [str(entry[0]) for entry in cursor.fetchall()]
+
+
+
+
+     # if 'DATABASE_URL' in dict(os.environ).keys() and dict(os.environ)['DATABASE_URL'][:8]!='postgres':
+    if 'IS_USING_SQLITE_DB' in dict(os.environ).keys():
+        # SQLITE...
+        with connection.cursor() as cursor:
+            sql_string2 = '''
+                SELECT  group_concat(object_id) as object_ids
+                FROM collection_data_point 
+                WHERE attribute_id = %s
+                AND object_id IN (%s)
+                GROUP BY value_as_string
+                HAVING COUNT(DISTINCT object_id) > 1
+                '''
+
+            cursor.execute(sql_string2 % (str(key_attribute_id), ','.join(object_ids)))
+            result = cursor.fetchall()
+            list_of_lists__duplicate_objects = list(result)
+
+
+    else:
+        # POSTGES... 
+        with connection.cursor() as cursor:
+            print('1')
+            sql_string2 = '''
+                SELECT  string_agg(CAST(object_id AS TEXT), ',') as object_ids
+                FROM collection_data_point 
+                WHERE attribute_id = %s
+                AND object_id IN (%s)
+                GROUP BY value_as_string
+                HAVING COUNT(DISTINCT object_id) > 1
+                '''
+
+            cursor.execute(sql_string2 % (str(key_attribute_id), ','.join(object_ids)))
+            result = cursor.fetchall()
+            list_of_lists__duplicate_objects = list(result)
+
+
+    possibly_duplicate_objects = []
+    for entry_nb, duplicate_objects in enumerate(list_of_lists__duplicate_objects):
+
+        # name mappings
+        print('11')
+        attributes = list(Attribute.objects.all().values())
+        attributes_dict = {str(attribute['id']):attribute['name'] for attribute in attributes}
+        
+
+        # table_data
+        print('12')
+        duplicate_objects_str = [str(object_id) for object_id in duplicate_objects]
+        sql_query = 'SELECT object_id, attribute_id, valid_time_start, valid_time_end,  value_as_string FROM collection_data_point WHERE object_id IN (%s)' % (','.join(duplicate_objects_str))
+        duplicate_object_values_df = pd.read_sql_query(sql_query, connection)
+
+        duplicate_object_values_df['attribute_name'] = duplicate_object_values_df['attribute_id'].replace(attributes_dict)
+        duplicate_object_values_df['valid_time_start'] = pd.to_datetime(duplicate_object_values_df['valid_time_start']).dt.strftime('%Y-%m-%d')
+        duplicate_object_values_df['valid_time_end'] = pd.to_datetime(duplicate_object_values_df['valid_time_end']).dt.strftime('%Y-%m-%d')
+        duplicate_object_values_df['attribute_and_time'] = duplicate_object_values_df['attribute_name'] + ' (' + duplicate_object_values_df['valid_time_start'] + ' - ' + duplicate_object_values_df['valid_time_end'] + ')'
+        duplicate_object_values_df = duplicate_object_values_df[['object_id', 'attribute_and_time', 'value_as_string']]
+        duplicate_object_values_df = duplicate_object_values_df.drop_duplicates(['object_id','attribute_and_time'])
+        duplicate_objects_df = duplicate_object_values_df.pivot(index='object_id', columns='attribute_and_time', values='value_as_string') 
+        duplicate_objects_df = duplicate_objects_df.where((pd.notnull(duplicate_objects_df)), None) # replace 'np.nan' with 'None', because json.dumps can only handle 'None'
+
+
+        table_headers = list(duplicate_objects_df.columns)
+        table_data = duplicate_objects_df.values.tolist()
+
+
+        # deletable_objects
+        print('13')
+        object_ids = json.loads('['+ str(duplicate_objects[0]) + ']')
+
+
+        object_dict = {'table_headers':table_headers, 'table_data':table_data, 'object_ids':object_ids}
+        possibly_duplicate_objects.append(object_dict)
+
+    return possibly_duplicate_objects
 
 
 
