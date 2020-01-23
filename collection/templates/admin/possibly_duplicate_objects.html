@@ -267,11 +267,11 @@
 			to_be_deleted_objects = []
 			to_be_deleted_tables = []
 			for (var i = 0; i < possibly_duplicate_objects.length; i++) {
-				var this_tables_checkbox = document.getElementById("duplicate-checkbox_" + i);
+				var this_tables_checkbox = document.getElementById("duplicate-checkbox" + i);
 				if (this_tables_checkbox) {
 					if (this_tables_checkbox.checked == true) {
 						// add object_ids to to_be_deleted_objects
-						to_be_deleted_objects.push(...possibly_duplicate_objects[i]["object_ids"].slice(1));
+						to_be_deleted_objects.push(possibly_duplicate_objects[i]["object_ids"].slice(1));
 						to_be_deleted_tables.push(i);
 						
 					}
@@ -313,7 +313,7 @@
 		
 	
 		var xmlhttp = new XMLHttpRequest();  
-		xmlhttp.open("POST", "/admin/find_possibly_duplicate_objects_without_keys/");
+		xmlhttp.open("POST", "/admin/find_possibly_duplicate_objects/");
 		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send();
@@ -350,7 +350,7 @@
 				
 			}
 		};
-		xhttp.open("GET", "/admin/get_possibly_duplicate_objects_without_keys", true);
+		xhttp.open("GET", "/admin/get_possibly_duplicate_objects", true);
 		xhttp.send();
 				
 

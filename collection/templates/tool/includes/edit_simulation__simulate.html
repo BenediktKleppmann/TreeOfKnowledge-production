@@ -789,11 +789,6 @@
 			return;
 		}
 		
-		
-		$('#bayesian-learning-progress').attr('style','width:0%');
-		$('#monte-carlo-simulation-progress').attr('style','width:0%');
-		$('#bayesian-learning-progress-description').html('');
-		$('#monte-carlo-progress-description').html('');
 		$('#simulationProgressModal').modal('show');
 		saveSimulation();
 		
@@ -878,7 +873,7 @@
 						
 						
 				
-				if (run_simulation_post_request.readyState < 4 && run_simulation_post_request.readyState != 0) {
+				if (run_simulation_post_request.readyState < 4) {
 					window.setTimeout(() => { update_the_progress_bar();}, 2000);
 				}
 			}
@@ -893,7 +888,6 @@
 		var url_components = window.location.href.split("/");
 		var simulation_id = url_components[url_components.length - 2];
 		
-		
 		run_simulation_post_request = new XMLHttpRequest();   // new HttpRequest instance 
 		run_simulation_post_request.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -906,14 +900,13 @@
 				
 			}
 		};
-		run_simulation_post_request.open("POST", "/tool/edit_simulation/" + simulation_id + "/", false);
+		run_simulation_post_request.open("POST", "/tool/edit_simulation/" + simulation_id + "/");
 		run_simulation_post_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		run_simulation_post_request.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		run_simulation_post_request.send();
 		
 		run_simulation_post_request.abort();
-		
-		
+			
 		/*	
 		var url_components = window.location.href.split("/");
 		var simulation_id = url_components[url_components.length - 2];
@@ -922,36 +915,12 @@
 			w.document.open();
 			w.document.write(result);
 			w.document.close();
-		}); 
-		/*
-		form_html_string =	"<form role='form' action='' method='post' class='form' enctype='multipart/form-data'>" + 
+		}); */
+
+		/*form_html_string =	"<form role='form' action='' method='post' class='form' enctype='multipart/form-data'>" + 
 								"{% csrf_token %}" +
 							"</form>";
 		$(form_html_string).appendTo("body").submit();*/
-		
-		/*
-		$.ajax({
-			 url: "/tool/edit_simulation/" + simulation_id + "/",
-			 type: "POST",
-
-			 success: function (json) {
-				console.log('!!!!!!!!!!!!  completed simulation  !!!!!!!!!!!!!!!!!');
-				var w = window.open("/tool/edit_simulation/" + simulation_id + "/");
-				w.document.open();
-				w.document.write(json);
-				w.document.close();
-				$('#simulationProgressModal').modal('hide');
-				
-			 },
-
-			 error: function (xhr, errmsg, err) {
-				 $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg +
-					 " <a href='#' class='close'>&times;</a></div>");
-				 console.log(xhr.status + ": " + xhr.responseText);
-			 }
-		});
-		 */
-	 
 	}
 	
 	function abort_simulation() {

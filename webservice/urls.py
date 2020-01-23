@@ -154,11 +154,9 @@ urlpatterns = [
     url(r'^admin/show_newsletter_subscribers/$', views.show_newsletter_subscribers, name='show_newsletter_subscribers'),
     url(r'^admin/show_users/$', views.show_users, name='show_users'),
     # data cleaning
-    url(r'^admin/possibly_duplicate_objects_without_keys/$', views.possibly_duplicate_objects_without_keys, name='possibly_duplicate_objects_without_keys'),
-    url(r'^admin/find_possibly_duplicate_objects_without_keys/$', views.find_possibly_duplicate_objects_without_keys, name='find_possibly_duplicate_objects_without_keys'),
-    url(r'^admin/get_possibly_duplicate_objects_without_keys/$', views.get_possibly_duplicate_objects_without_keys, name='get_possibly_duplicate_objects_without_keys'),
-    url(r'^admin/possibly_duplicate_objects_with_keys/$', views.possibly_duplicate_objects_with_keys, name='possibly_duplicate_objects_with_keys'),
-    url(r'^admin/get_possibly_duplicate_objects_with_keys/$', views.get_possibly_duplicate_objects_with_keys, name='get_possibly_duplicate_objects_with_keys'),
+    url(r'^admin/possibly_duplicate_objects/$', views.possibly_duplicate_objects, name='possibly_duplicate_objects'),
+    url(r'^admin/find_possibly_duplicate_objects/$', views.find_possibly_duplicate_objects, name='find_possibly_duplicate_objects'),
+    url(r'^admin/get_possibly_duplicate_objects/$', views.get_possibly_duplicate_objects, name='get_possibly_duplicate_objects'),
     url(r'^admin/delete_objects_page/$', views.delete_objects_page, name='delete_objects_page'),
     url(r'^admin/delete_objects/$', views.delete_objects, name='delete_objects'),
     # various scripts
