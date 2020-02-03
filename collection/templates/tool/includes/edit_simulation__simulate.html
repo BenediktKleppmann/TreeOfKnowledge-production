@@ -1160,7 +1160,8 @@
 	// Middle  
 	//==========
 	
-	//== Inspect Rule =========================================================================================		  
+	//== Inspect Rule =========================================================================================		 
+	/*	
 	function inspectCalculationRule(object_number, i, rules_attribute_id, rules_attribute_name) {
 		
 		$("#rule-modal-right").html('');
@@ -1194,10 +1195,11 @@
 										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="chooseRule(' + object_number + ',' + rules_attribute_id + ',' + rules_list[i]['id'] + ')">Choose Rule</button>';
 		$('#rule-modal-footer').html(save_button_html_string);
 	}
-	
+	*/
 	
 	
 	//== Constant Value =========================================================================================	
+	/*
 	function constantValue_buttonClick(object_number, rules_attribute_id, rules_attribute_name){
 		$("#rule-modal-right").html('');
 		$('.modal-dialog').animate({width: '700px'}, 200, 'linear');
@@ -1212,9 +1214,10 @@
 		$('#rule-modal-footer').html(save_button_html_string);
 	
 	}
-	
+	*/
 	
 	//== No Rule =========================================================================================	
+	/*
 	function noRule_buttonClick(object_number, rules_attribute_id, rules_attribute_name){
 		
 		$("#rule-modal-right").html('');
@@ -1229,6 +1232,7 @@
 		$('#rule-modal-footer').html(save_button_html_string);
 		
 	}
+	*/
 	
 	//== Choose Rule =========================================================================================	
 	function chooseRule(object_number, rules_attribute_id, rule_id) {
@@ -1285,6 +1289,7 @@
 	
 	
 	//== Button - used attribute  =========================================================================================	
+	/*
 	function usedAttributeButtonClick(used_attribute_name, used_attribute_number) {
 	
 		if (used_attribute_name in highlighted_words_dict){
@@ -1304,7 +1309,7 @@
 		$("#rule-text").highlightWithinTextarea({highlight:highlighted_words_list});
 		
 	}
-	
+	*/
 	
 	//==========
 	// New Rule  
@@ -1312,6 +1317,7 @@
 	
 	
 	//== New Rule =========================================================================================	
+	/*
 	function openNewRuleForm(rules_attribute_id, rules_attribute_name, object_number) {
 	
 		var rule_details_html_string = 	'<input type="text" class="form-control" id="rule-name-input" placeholder="Rule Name" value="">' +
@@ -1354,9 +1360,9 @@
 										'<button type="button" class="btn btn-primary" id="chooseRuleSaveButton" onclick="saveRule(null, ' + rules_attribute_id + ',\'' + rules_attribute_name + '\',' + object_number + ')">Save Rule</button>';
 		
 		$('#rule-modal-footer').html(save_button_html_string);
-
 	}	
-		
+	*/
+	
 	//== New Rule - Textarea stuff  =========================================================================================	
 	/*
 	function rememberCursorPostion() {
@@ -1377,6 +1383,7 @@
 	}
 	*/
 	
+	/*
 	function checkTextareaForVariables(object_number) {
 		var rule_text = document.getElementById('rule-text').value;
 		new_rule_used_attribute_names = [];
@@ -1406,11 +1413,11 @@
 		}
 		$('#used-attributes').html(used_attributes_html_string);
 	}
-
+*/
 	
 
 	//== Save New Rule  ================================================================================================================	
-	
+	/*
 	function saveRule(rule_id, rules_attribute_id, rules_attribute_name, object_number) {
 		var rule_name = document.getElementById('rule-name-input').value;
 		var rule_text = document.getElementById('rule-text').value;
@@ -1448,20 +1455,31 @@
 			stripped_rule_text = stripped_rule_text.split(search_value).join(' ');
 			//stripped_rule_text = stripped_rule_text.replace(new RegExp(search_value, 'g'), '');
 		}
+		
+		//3 - removing/replacing parameters
+		if (rule_id) {
+			var used_parameter_ids = objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules'][rule_id]['used_parameter_ids'];
+			for (var i = 0; i < used_parameter_ids.length; i++) {
+				parameter_id = used_parameter_ids[i];
+				parameter_name = parameter_info[parameter_id]['parameter_name'];
+				executable = executable.split('['+parameter_name+']').join('df.param'+parameter_id);
+				stripped_rule_text = stripped_rule_text.split('['+parameter_name+']').join(' ');
+			}
+		}
 				
-		//3 - removing function-characters
+		//4 - removing function-characters
 		var permitted_characters = ['\\(','\\)','\\[','\\]','\\{','\\}','\\+','\\*','\\.','-','/','%','.',',',':'] 
 		for (var i = 0; i < permitted_characters.length; i++) {
 			stripped_rule_text = stripped_rule_text.replace(new RegExp(permitted_characters[i], 'g'), ' ');
 		}
 		
-		//4 - removing permitted commands
+		//5 - removing permitted commands
 		var permitted_substrings = ['if','and','or']
 		for (var i = 0; i < permitted_substrings.length; i++) {
 			stripped_rule_text = stripped_rule_text.replace(new RegExp(permitted_substrings[i], 'g'), '');
 		}
 		
-		//5 - if there's still something remaining: ERROR
+		//6 - if there's still something remaining: ERROR
 		stripped_rule__remaining_words = stripped_rule_text.split(" ");
 		for (var i =0; i < stripped_rule__remaining_words.length; i++){
 			if (stripped_rule__remaining_words[i] == ''){
@@ -1511,11 +1529,12 @@
 		
 	
 	}
+	*/
 	
 	//==========
 	// Edit Rule  
 	//==========
-	
+	/*
 	function editRule(object_number, rules_attribute_id, rules_attribute_name, rule_number) {
 		
 		rule_id = rules_list[rule_number]['id'];
@@ -1567,11 +1586,12 @@
 		checkTextareaForVariables(object_number);
 		
 	}
-	
+	*/
 	
 	//==========
 	// Delete Rule  
 	//==========
+	/*
 	function deleteRule(object_number, rules_attribute_id, rules_attribute_name, rule_id) {
 		
 		var xmlhttp = new XMLHttpRequest();       	
@@ -1582,6 +1602,7 @@
 		
 		populateRuleModal(object_number, rules_attribute_id, rules_attribute_name);
 	}
+	*/
 
 	
 </script>

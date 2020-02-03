@@ -85,6 +85,7 @@ urlpatterns = [
     url(r'^tool/get_object_rules/$', views.get_object_rules, name='get_object_rules'),
     url(r'^tool/get_rules_pdf/$', views.get_rules_pdf, name='get_rules_pdf'),
     url(r'^tool/get_single_pdf/$', views.get_single_pdf, name='get_single_pdf'),
+    url(r'^tool/get_parameter_info/$', views.get_parameter_info, name='get_parameter_info'),
 
     # complex get
     url(r'^tool/get_data_points/$', views.get_data_points, name='get_data_points'),
@@ -107,10 +108,13 @@ urlpatterns = [
     url(r'^tool/save_changed_simulation/$', views.save_changed_simulation, name='save_changed_simulation'),
     # url(r'^tool/save_learned_rule/$', views.save_learned_rule, name='save_learned_rule'),
     url(r'^tool/save_changed_object_type_icon/$', views.save_changed_object_type_icon, name='save_changed_object_type_icon'),
+    url(r'^tool/save_rule_parmeter/$', views.save_rule_parmeter, name='save_rule_parmeter'),
+    url(r'^tool/save_likelihood_function/$', views.save_likelihood_function, name='save_likelihood_function'),
     # delete
     url(r'^tool/delete_object_type/$', views.delete_object_type, name='delete_object_type'),
     url(r'^tool/delete_attribute/$', views.delete_attribute, name='delete_attribute'),
     url(r'^tool/delete_rule/$', views.delete_rule, name='delete_rule'),
+    url(r'^tool/delete_parameter/$', views.delete_parameter, name='delete_parameter'),
     # process
     url(r'^tool/edit_column/$', views.edit_column, name='edit_column'),
     # url(r'^tool/learn_rule_from_factors/$', views.learn_rule_from_factors, name='learn_rule_from_factors'),

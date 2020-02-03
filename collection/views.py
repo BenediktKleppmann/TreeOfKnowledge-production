@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule, Likelihood_fuction
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule, Likelihood_fuction, Rule_parameter
 from django.contrib.auth.models import User
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
@@ -24,6 +24,7 @@ from scipy.stats import beta
 import scipy
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+
 
 
  # ===============================================================================
@@ -527,11 +528,18 @@ def get_object_rules(request):
                                     'execution_order':[]}
         rules_list = list(Rule.objects.filter(changed_var_attribute_id=attribute['id']).values())
         for rule in rules_list:
+            print('=========================================')
+            print(rule)
+            print(rule['used_attribute_ids'])
+            print(type(rule['used_attribute_ids']))
+            rule['used_attribute_ids'] = json.loads(rule['used_attribute_ids'])
+            rule['used_parameter_ids'] = json.loads(rule['used_parameter_ids'])
 
             # calculate 'probability' and 'standard_dev'
-            histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule['id'])
-            rule['probability'] = mean
-            rule['standard_dev'] = standard_dev
+            histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule['id'], True)
+            rule['probability'] = None if np.isnan(mean) else mean 
+            rule['standard_dev'] = None if np.isnan(standard_dev) else standard_dev 
+
 
             # specify a default for 'learn_posterior'
             rule['learn_posterior'] = False
@@ -546,8 +554,16 @@ def get_object_rules(request):
 # used in edit_object_behaviour_modal.html (which in turn is used in edit_simulation.html and analyse_simulation.html)
 @login_required
 def get_rules_pdf(request):
-    rule_id = request.GET.get('rule_id', '')
-    histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule_id)
+    print('====================   get_rules_pdf   ==================================')
+    rule_or_parameter_id = request.GET.get('rule_or_parameter_id', '')
+    is_rule = (request.GET.get('is_rule', '').lower() == 'true')
+    histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule_or_parameter_id, is_rule)
+    
+    print(str(rule_or_parameter_id))
+    print(str(is_rule))
+    print(str(histogram is None))
+    if histogram is None:
+        return HttpResponse('null')
     
     smooth_pdf = True
     if smooth_pdf:
@@ -556,9 +572,9 @@ def get_rules_pdf(request):
         a, b, min_value, value_range = beta.fit(hist_sample) 
         x_values = list(histogram[1])[:-1]
         pdf_values = [beta.pdf(x,a,b) for x in x_values]
-        response = [[x, prob] for x, prob in zip(x_values, pdf_values)]
+        response = [[x, min(prob,100)] for x, prob in zip(x_values, pdf_values)]
     else:
-        response = [[bucket_value, count] for bucket_value, count in zip(histogram[1], histogram[0])]
+        response = [[bucket_value, min(count,10000)] for bucket_value, count in zip(histogram[1], histogram[0])]
     return HttpResponse(json.dumps(response))
 
 
@@ -568,11 +584,22 @@ def get_single_pdf(request):
     response = {}
     simulation_id = request.GET.get('simulation_id', '')
     object_number = request.GET.get('object_number', '')
-    rule_id = request.GET.get('rule_id', '')
-    histogram, mean, standard_dev, message = get_from_db.get_single_pdf(simulation_id, object_number, rule_id)
-
+    rule_or_parameter_id = request.GET.get('rule_or_parameter_id', '')
+    is_rule = bool(request.GET.get('is_rule', ''))
+    histogram, mean, standard_dev, message = get_from_db.get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule)
+    print('====================   get_single_pdf   ==================================')
+    print(str(rule_or_parameter_id))
+    print(str(simulation_id))
+    print(str(object_number))
+    print(str(rule_or_parameter_id))
+    print(str(is_rule))
+    print(str(histogram is None))
+    print('=========================================================================')
     if message != '':
         response['message'] = message
+
+    if histogram is None:
+        return HttpResponse('null')
 
     smooth_pdf = True
     if smooth_pdf:
@@ -588,6 +615,24 @@ def get_single_pdf(request):
         response['pdf'] = [[bucket_value, count] for bucket_value, count in zip(histogram[1], histogram[0])]
     return HttpResponse(json.dumps(response))
     
+
+
+# used in edit_object_type_behaviour.html
+@login_required
+def get_parameter_info(request):
+    parameter_id = request.GET.get('parameter_id', '')
+    parameter_id = int(parameter_id)
+    parameter_record = Rule_parameter.objects.get(id=parameter_id)
+    parameter_info = {  'id': parameter_id,
+                        'rule_id':parameter_record.rule_id, 
+                        'parameter_name':parameter_record.parameter_name,
+                        'min_value':parameter_record.min_value,
+                        'max_value':parameter_record.max_value}
+
+
+    return HttpResponse(json.dumps(parameter_info))   
+
+
 
 # ==================
 # complex GET
@@ -767,6 +812,9 @@ def save_new_object_type(request):
         return HttpResponse("This must be a POST request.")
 
 
+
+
+
 # used in: upload_data3 (the create-object-type modal)
 @login_required
 def save_edited_object_type(request):
@@ -865,7 +913,7 @@ def save_rule(request):
                 rule_record.effect_text = request_body['effect_text']
                 rule_record.effect_exec = request_body['effect_exec']
                 rule_record.effect_is_calculation = request_body['effect_is_calculation']
-                rule_record.used_attribute_ids = request_body['used_attribute_ids']
+                rule_record.used_attribute_ids = json.dumps(request_body['used_attribute_ids'])
                 rule_record.is_conditionless = request_body['is_conditionless']
                 rule_record.has_probability_1 = request_body['has_probability_1']
                 rule_record.save()
@@ -878,7 +926,7 @@ def save_rule(request):
                                 effect_text= request_body['effect_text'],
                                 effect_exec= request_body['effect_exec'],
                                 effect_is_calculation= request_body['effect_is_calculation'],
-                                used_attribute_ids= request_body['used_attribute_ids'],
+                                used_attribute_ids= json.dumps(request_body['used_attribute_ids']),
                                 is_conditionless= request_body['is_conditionless'],
                                 has_probability_1= request_body['has_probability_1'])
 
@@ -968,6 +1016,73 @@ def save_changed_object_type_icon(request):
 
 
 
+# used in: edit_simulation__simulate (the edit_object_type_modal)
+@login_required
+def save_rule_parmeter(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+            new_parameter_dict = request_body['new_parameter_dict']
+            if ('id' in request_body):
+                parameter = Rule_parameter.objects.get(id=request_body['id'])
+                parameter.rule_id = new_parameter_dict['rule_id']
+                parameter.parameter_name = new_parameter_dict['parameter_name']
+                parameter.min_value = new_parameter_dict['min_value']
+                parameter.max_value = new_parameter_dict['max_value']
+                parameter.save()
+
+                # if the range was changed delete the parameter's likelihood_fuctions
+                if request_body['parameter_range_change']:
+                    Likelihood_fuction.objects.filter(parameter_id=request_body['id']).delete()
+
+                return_dict = {'parameter_id': parameter.id, 'is_new': False, 'request_body':request_body}
+                return HttpResponse(json.dumps(return_dict))
+            else:
+                new_parameter = Rule_parameter(rule_id=new_parameter_dict['rule_id'], parameter_name=new_parameter_dict['parameter_name'], min_value=new_parameter_dict['min_value'], max_value=new_parameter_dict['max_value'])
+                new_parameter.save()
+
+                # add to used_parameter_ids of parent rule
+                parent_rule = Rule.objects.get(id=new_parameter_dict['rule_id'])
+                used_parameter_ids = json.loads(parent_rule.used_parameter_ids)
+                parent_rule.used_parameter_ids = used_parameter_ids + [new_parameter.id]
+                parent_rule.save()
+                return_dict = {'parameter_id': new_parameter.id, 'is_new': True, 'request_body':request_body}
+                return HttpResponse(json.dumps(return_dict))
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
+
+# used in: edit_simulation__simulate (the edit_object_type_modal)
+@login_required
+def save_likelihood_function(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+            if ('id' in request_body):
+                likelihood_function = Likelihood_fuction.objects.get(id=request_body['id'])
+                likelihood_function.simulation_id = request_body['simulation_id']
+                likelihood_function.object_number = request_body['object_number']
+                likelihood_function.parameter_id = request_body['parameter_id']
+                likelihood_function.list_of_probabilities = json.dumps(request_body['list_of_probabilities'])
+                likelihood_function.nb_of_simulations = request_body['nb_of_simulations']
+                likelihood_function.nb_of_sim_in_which_rule_was_used = request_body['nb_of_sim_in_which_rule_was_used']
+                likelihood_function.nb_of_values_in_posterior = request_body['nb_of_values_in_posterior']
+                likelihood_function.save()
+                return HttpResponse(str(likelihood_function.id))
+            else:
+                new_likelihood_function = Likelihood_fuction(simulation_id=request_body['simulation_id'], object_number=request_body['object_number'], parameter_id=request_body['parameter_id'], list_of_probabilities=json.dumps(request_body['list_of_probabilities']), nb_of_simulations=request_body['nb_of_simulations'], nb_of_sim_in_which_rule_was_used=request_body['nb_of_sim_in_which_rule_was_used'], nb_of_values_in_posterior=request_body['nb_of_values_in_posterior'])
+                new_likelihood_function.save()
+                return HttpResponse(str(new_likelihood_function.id))
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
 # ==================
 # DELETE
 # ==================
@@ -1023,13 +1138,35 @@ def delete_rule(request):
         try:
             request_body = json.loads(request.body)
             rule_id = request_body['rule_id']
-            print('[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
-            print(rule_id)
-            print('[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
-
             rule = Rule.objects.get(id=rule_id)
             rule.delete()
+
+            likelihood_fuctions = Likelihood_fuction.objects.filter(rule_id=rule_id)
+            likelihood_fuctions.delete()
             return HttpResponse("success")
+
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
+
+# used in: edit_simulation__simulate.html
+@login_required
+def delete_parameter(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+            parameter_id = request_body['parameter_id']
+            parameter = Rule_parameter.objects.get(id=parameter_id)
+            parameter.delete()
+
+            likelihood_fuctions = Likelihood_fuction.objects.filter(parameter_id=parameter_id)
+            likelihood_fuctions.delete()
+            return HttpResponse("success")
+            
         except Exception as error:
             traceback.print_exc()
             return HttpResponse(str(error))
@@ -1652,25 +1789,16 @@ def upload_file(request):
 # ==================
 def test_page1(request):
 
-    # message = '''Hi ''' + user.username + ''',
+    with connection.cursor() as cursor:
+        query_string = "SELECT DISTINCT id FROM collection_rule"
+        cursor.execute(query_string)
+        rule_ids = [entry[0] for entry in cursor.fetchall()]
 
-# Thank you for signing up to the Tree of Knowledge.'''
-    # email_message = EmailMultiAlternatives('Tree of Knowledge Newsletter', message, 'noreply@treeofknowledge.ai', ['benedikt@kleppmann.de'])
-    # email_message.send()
-    # object_type_id = "j1_12"
-    # filter_facts = []
-    # specified_start_time = 946684800
-    # specified_end_time = 1577836800
-    # response = query_datapoints.get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time)
-    # attributes = list(Attribute.objects.all().values())
-    # list_of_child_objects = get_from_db.get_list_of_child_objects("j1_5")
-    # return render(request, 'tool/test_page1.html')
-    # first_relation_object_type = list(Object.objects.filter(object_type_id__in=['j1_11','j1_3','n1']).values_list('id'))
-    # return HttpResponse(first_relation_object_type)
-    # return HttpResponse('success')
-    # return HttpResponse(json.dumps(first_relation_object_type))
-    correct_values = Simulation_model.objects.get(id=327).correct_values
-    return HttpResponse(correct_values)
+    for rule_id in rule_ids:
+        rule_record = Rule.objects.get(id=rule_id)
+        rule_record.used_attribute_ids = rule_record.used_attribute_ids.replace("'",'"')
+        rule_record.used_parameter_ids = rule_record.used_parameter_ids.replace("'",'"')
+        rule_record.save()
     # return render(request, 'tool/test_page1.html')
 
 
@@ -1707,11 +1835,11 @@ def test_page3(request):
     # current_object_type = list(Data_point.objects.all().values('object_type_id').annotate(total=Count('object_type_id')))
 
     # current_object_type = list(Data_point.objects.filter(object_id=862638).values())
-    starttime = 1167436800
-    endtime = 1198972800
-    objects_dict = json.loads('{"1": {"object_name": "Household 1", "object_type_id": "j2_8", "object_type_name": "Household", "object_icon": "si-glyph-house", "object_id": 869390, "object_attributes": {"22": {"attribute_value": null, "attribute_name": "Name", "attribute_data_type": "string", "attribute_rule": null}, "148": {"attribute_value": 862351, "attribute_name": "Location (City)", "attribute_data_type": "relation", "attribute_rule": null}, "149": {"attribute_value": 862704, "attribute_name": "Location (City District/Quarter)", "attribute_data_type": "relation", "attribute_rule": null}, "150": {"attribute_value": 864250, "attribute_name": "Company owned by household member", "attribute_data_type": "relation", "attribute_rule": null}, "151": {"attribute_value": 5, "attribute_name": "Size/ Number of people", "attribute_data_type": "int", "attribute_rule": null}, "152": {"attribute_value": true, "attribute_name": "Male Head/Boss of the Group", "attribute_data_type": "bool", "attribute_rule": null}, "153": {"attribute_value": 4, "attribute_name": "Number of Adults", "attribute_data_type": "int", "attribute_rule": null}, "154": {"attribute_value": 1, "attribute_name": "Number of Children", "attribute_data_type": "int", "attribute_rule": null}, "155": {"attribute_value": 4682, "attribute_name": "Household ID used by the Centre for Microfinance (IFMR)", "attribute_data_type": "int", "attribute_rule": null}, "156": {"attribute_value": null, "attribute_name": "Monthly expenditure on education (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "157": {"attribute_value": null, "attribute_name": "Number of Women aged 18 to 45", "attribute_data_type": "int", "attribute_rule": null}, "158": {"attribute_value": true, "attribute_name": "Has children members", "attribute_data_type": "bool", "attribute_rule": null}, "159": {"attribute_value": false, "attribute_name": "Owns land in the city", "attribute_data_type": "bool", "attribute_rule": null}, "160": {"attribute_value": false, "attribute_name": "Owns land on the countryside", "attribute_data_type": "bool", "attribute_rule": null}, "161": {"attribute_value": 1800, "attribute_name": "Total wages (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "162": {"attribute_value": 168, "attribute_name": "Total hours worked a week", "attribute_data_type": "real", "attribute_rule": null}, "163": {"attribute_value": 168, "attribute_name": "Total hours per week working for own business", "attribute_data_type": "real", "attribute_rule": null}, "164": {"attribute_value": 0, "attribute_name": "Total hours per week working outside", "attribute_data_type": "real", "attribute_rule": null}, "166": {"attribute_value": 0, "attribute_name": "Total hours worked per week by children aged 16-20", "attribute_data_type": "real", "attribute_rule": null}, "167": {"attribute_value": 7666.3335, "attribute_name": "Monthly expenditure (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "168": {"attribute_value": 6999.6665, "attribute_name": "Monthly expenditure on non-durable goods (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "169": {"attribute_value": 666.6667, "attribute_name": "Monthly expenditure on durable goods (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "170": {"attribute_value": 466.66666, "attribute_name": "Monthly expenditure on health (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "171": {"attribute_value": 746.6667, "attribute_name": "Monthly expenditure on education (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "172": {"attribute_value": 9500, "attribute_name": "Monthly expenditure on celebrations (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "173": {"attribute_value": 300, "attribute_name": "Monthly expenditure on temptation goods (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "174": {"attribute_value": 3279, "attribute_name": "Monthly expenditure on food (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "175": {"attribute_value": true, "attribute_name": "Has Microfinance Loan", "attribute_data_type": "bool", "attribute_rule": null}, "176": {"attribute_value": false, "attribute_name": "Has Bank Loan", "attribute_data_type": "bool", "attribute_rule": null}, "177": {"attribute_value": true, "attribute_name": "Has Informal Loan", "attribute_data_type": "bool", "attribute_rule": null}, "178": {"attribute_value": true, "attribute_name": "Has Loan", "attribute_data_type": "bool", "attribute_rule": null}, "179": {"attribute_value": 8000, "attribute_name": "Amount loaned from Microfinance Institution (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "180": {"attribute_value": 0, "attribute_name": "Amount loaned from banks (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "181": {"attribute_value": 301800, "attribute_name": "Amount loaned from friends & relatives (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "182": {"attribute_value": 344800, "attribute_name": "Dept (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}}, "object_rules": {"22": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "148": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "149": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "150": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "151": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "152": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "153": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "154": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "155": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "156": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "157": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "158": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "159": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "160": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "161": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "162": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "163": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "164": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "166": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "167": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "168": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "169": {"used_rules": {"21": {"id": 21, "changed_var_attribute_id": 169, "changed_var_data_type": "real", "condition_text": "[Location (City District/Quarter)].[Has Microfinance Institution]", "condition_exec": "df.rel149.attr131", "effect_text": "[Monthly expenditure on durable goods (ppp adjusted $)]* 1.1/[delta_t (years)]", "effect_exec": "df.attr169* 1.1/(df.delta_t/31622400)", "effect_is_calculation": true, "used_attribute_ids": "[''149'', ''131'', ''169'']", "is_conditionless": false, "has_probability_1": false, "probability": null, "standard_dev": null, "learn_posterior": true}}, "not_used_rules": {}, "execution_order": [21]}, "170": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "171": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "172": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "173": {"used_rules": {"22": {"id": 22, "changed_var_attribute_id": 173, "changed_var_data_type": "real", "condition_text": "[Location (City District/Quarter)].[Has Microfinance Institution]", "condition_exec": "df.rel149.attr131", "effect_text": "[Monthly expenditure on temptation goods (ppp adjusted $)] * 0.9 / [delta_t (years)]", "effect_exec": "df.attr173 * 0.9 / (df.delta_t/31622400)", "effect_is_calculation": true, "used_attribute_ids": "[''149'', ''131'', ''173'']", "is_conditionless": false, "has_probability_1": false, "probability": null, "standard_dev": null, "learn_posterior": true}}, "not_used_rules": {}, "execution_order": [22]}, "174": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "175": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "176": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "177": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "178": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "179": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "180": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "181": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "182": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}}, "object_filter_facts": [], "object_relations": [{"relation_name": "Location (City District/Quarter)", "attribute_id": 149, "target_object_number": 2}], "position": {"x": 221, "y": 342}}, "2": {"object_name": "City District/Quarter/Borough 1", "object_type_id": "j2_4", "object_type_name": "City District/Quarter/Borough", "object_icon": "si-glyph-city", "object_id": 862704, "object_attributes": {"22": {"attribute_value": null, "attribute_name": "Name", "attribute_data_type": "string", "attribute_rule": null}, "23": {"attribute_value": null, "attribute_name": "Surface area (km2)", "attribute_data_type": "real", "attribute_rule": null}, "24": {"attribute_value": 537, "attribute_name": "Population", "attribute_data_type": "int", "attribute_rule": null}, "25": {"attribute_value": null, "attribute_name": "Infant mortality (%)", "attribute_data_type": "real", "attribute_rule": null}, "26": {"attribute_value": null, "attribute_name": "Life expectancy (years)", "attribute_data_type": "real", "attribute_rule": null}, "27": {"attribute_value": null, "attribute_name": "Maternal mortality ratio (%)", "attribute_data_type": "real", "attribute_rule": null}, "28": {"attribute_value": null, "attribute_name": "Population growth (%/year)", "attribute_data_type": "real", "attribute_rule": null}, "29": {"attribute_value": null, "attribute_name": "Life expectancy for women (years)", "attribute_data_type": "real", "attribute_rule": null}, "33": {"attribute_value": null, "attribute_name": "CO2 Emissions (tons/year)", "attribute_data_type": "real", "attribute_rule": null}, "35": {"attribute_value": null, "attribute_name": "Rural population with safe water (%)", "attribute_data_type": "real", "attribute_rule": null}, "36": {"attribute_value": null, "attribute_name": "People with safe water (%)", "attribute_data_type": "real", "attribute_rule": null}, "37": {"attribute_value": null, "attribute_name": "Urban population with safe water (%)", "attribute_data_type": "real", "attribute_rule": null}, "38": {"attribute_value": null, "attribute_name": "Rural population with safe sanitation (%)", "attribute_data_type": "real", "attribute_rule": null}, "39": {"attribute_value": null, "attribute_name": "People with safe sanitation (%)", "attribute_data_type": "real", "attribute_rule": null}, "40": {"attribute_value": null, "attribute_name": "Urban population with safe sanitation (%)", "attribute_data_type": "real", "attribute_rule": null}, "42": {"attribute_value": null, "attribute_name": "Male Population", "attribute_data_type": "int", "attribute_rule": null}, "57": {"attribute_value": null, "attribute_name": "Number of Companies in this area", "attribute_data_type": "int", "attribute_rule": null}, "58": {"attribute_value": null, "attribute_name": "Percentage of companies with an afro american owner", "attribute_data_type": "real", "attribute_rule": null}, "59": {"attribute_value": null, "attribute_name": "Percentage of companies with an american indian owner", "attribute_data_type": "real", "attribute_rule": null}, "60": {"attribute_value": null, "attribute_name": "Percentage of companies with an asian owner", "attribute_data_type": "real", "attribute_rule": null}, "61": {"attribute_value": null, "attribute_name": "Percentage of companies with an owner who is native hawaiian or other pacific islander", "attribute_data_type": "real", "attribute_rule": null}, "62": {"attribute_value": null, "attribute_name": "Percentage of companies with an hispanic owner", "attribute_data_type": "real", "attribute_rule": null}, "63": {"attribute_value": null, "attribute_name": "Percentage of companies owned by a woman", "attribute_data_type": "real", "attribute_rule": null}, "129": {"attribute_value": null, "attribute_name": "Location (city)", "attribute_data_type": "relation", "attribute_rule": null}, "130": {"attribute_value": 69, "attribute_name": "Area Id used by the Centre for Microfinance (IFMR)", "attribute_data_type": "int", "attribute_rule": null}, "131": {"attribute_value": true, "attribute_name": "Has Microfinance Institution", "attribute_data_type": "bool", "attribute_rule": null}}, "object_rules": {"22": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "23": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "24": {"used_rules": {"1": {"id": 1, "changed_var_attribute_id": 24, "changed_var_data_type": "int", "condition_text": "", "condition_exec": "", "effect_text": "[Population] + [Population]*([Population growth (%/year)] /100)* [delta_t (years)]", "effect_exec": "df.attr24 + df.attr24*(df.attr28 /100)* (df.delta_t/31622400)", "effect_is_calculation": true, "used_attribute_ids": "[''24'', ''28'']", "is_conditionless": true, "has_probability_1": true, "probability": null, "standard_dev": null, "learn_posterior": false}, "2": {"id": 2, "changed_var_attribute_id": 24, "changed_var_data_type": "int", "condition_text": "", "condition_exec": "", "effect_text": "[Population] + ([Female Population]*[Fertility rate]/[Life expectancy for women (years)] ) - ([Population]/[Life expectancy (years)])", "effect_exec": "df.attr24 + (df.attr41*df.attr31/df.attr29 ) - (df.attr24/df.attr26)", "effect_is_calculation": true, "used_attribute_ids": "[''24'', ''26'', ''29'', ''31'', ''41'']", "is_conditionless": true, "has_probability_1": true, "probability": 0.5152553763440862, "standard_dev": 0.28451725640376385, "learn_posterior": false}}, "not_used_rules": {}, "execution_order": [1, 2]}, "25": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "26": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "27": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "28": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "29": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "33": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "35": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "36": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "37": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "38": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "39": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "40": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "42": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "57": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "58": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "59": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "60": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "61": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "62": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "63": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "129": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "130": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "131": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}}, "object_filter_facts": [], "object_relations": [], "position": {"x": 409, "y": 163}}}')
-    period_df = query_datapoints.get_data_from_related_objects(objects_dict, starttime, endtime)
-    print(period_df)
+    # starttime = 1167436800
+    # endtime = 1198972800
+    # objects_dict = json.loads('{"1": {"object_name": "Household 1", "object_type_id": "j2_8", "object_type_name": "Household", "object_icon": "si-glyph-house", "object_id": 869390, "object_attributes": {"22": {"attribute_value": null, "attribute_name": "Name", "attribute_data_type": "string", "attribute_rule": null}, "148": {"attribute_value": 862351, "attribute_name": "Location (City)", "attribute_data_type": "relation", "attribute_rule": null}, "149": {"attribute_value": 862704, "attribute_name": "Location (City District/Quarter)", "attribute_data_type": "relation", "attribute_rule": null}, "150": {"attribute_value": 864250, "attribute_name": "Company owned by household member", "attribute_data_type": "relation", "attribute_rule": null}, "151": {"attribute_value": 5, "attribute_name": "Size/ Number of people", "attribute_data_type": "int", "attribute_rule": null}, "152": {"attribute_value": true, "attribute_name": "Male Head/Boss of the Group", "attribute_data_type": "bool", "attribute_rule": null}, "153": {"attribute_value": 4, "attribute_name": "Number of Adults", "attribute_data_type": "int", "attribute_rule": null}, "154": {"attribute_value": 1, "attribute_name": "Number of Children", "attribute_data_type": "int", "attribute_rule": null}, "155": {"attribute_value": 4682, "attribute_name": "Household ID used by the Centre for Microfinance (IFMR)", "attribute_data_type": "int", "attribute_rule": null}, "156": {"attribute_value": null, "attribute_name": "Monthly expenditure on education (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "157": {"attribute_value": null, "attribute_name": "Number of Women aged 18 to 45", "attribute_data_type": "int", "attribute_rule": null}, "158": {"attribute_value": true, "attribute_name": "Has children members", "attribute_data_type": "bool", "attribute_rule": null}, "159": {"attribute_value": false, "attribute_name": "Owns land in the city", "attribute_data_type": "bool", "attribute_rule": null}, "160": {"attribute_value": false, "attribute_name": "Owns land on the countryside", "attribute_data_type": "bool", "attribute_rule": null}, "161": {"attribute_value": 1800, "attribute_name": "Total wages (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "162": {"attribute_value": 168, "attribute_name": "Total hours worked a week", "attribute_data_type": "real", "attribute_rule": null}, "163": {"attribute_value": 168, "attribute_name": "Total hours per week working for own business", "attribute_data_type": "real", "attribute_rule": null}, "164": {"attribute_value": 0, "attribute_name": "Total hours per week working outside", "attribute_data_type": "real", "attribute_rule": null}, "166": {"attribute_value": 0, "attribute_name": "Total hours worked per week by children aged 16-20", "attribute_data_type": "real", "attribute_rule": null}, "167": {"attribute_value": 7666.3335, "attribute_name": "Monthly expenditure (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "168": {"attribute_value": 6999.6665, "attribute_name": "Monthly expenditure on non-durable goods (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "169": {"attribute_value": 666.6667, "attribute_name": "Monthly expenditure on durable goods (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "170": {"attribute_value": 466.66666, "attribute_name": "Monthly expenditure on health (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "171": {"attribute_value": 746.6667, "attribute_name": "Monthly expenditure on education (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "172": {"attribute_value": 9500, "attribute_name": "Monthly expenditure on celebrations (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "173": {"attribute_value": 300, "attribute_name": "Monthly expenditure on temptation goods (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "174": {"attribute_value": 3279, "attribute_name": "Monthly expenditure on food (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "175": {"attribute_value": true, "attribute_name": "Has Microfinance Loan", "attribute_data_type": "bool", "attribute_rule": null}, "176": {"attribute_value": false, "attribute_name": "Has Bank Loan", "attribute_data_type": "bool", "attribute_rule": null}, "177": {"attribute_value": true, "attribute_name": "Has Informal Loan", "attribute_data_type": "bool", "attribute_rule": null}, "178": {"attribute_value": true, "attribute_name": "Has Loan", "attribute_data_type": "bool", "attribute_rule": null}, "179": {"attribute_value": 8000, "attribute_name": "Amount loaned from Microfinance Institution (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "180": {"attribute_value": 0, "attribute_name": "Amount loaned from banks (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "181": {"attribute_value": 301800, "attribute_name": "Amount loaned from friends & relatives (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}, "182": {"attribute_value": 344800, "attribute_name": "Dept (ppp adjusted $)", "attribute_data_type": "real", "attribute_rule": null}}, "object_rules": {"22": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "148": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "149": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "150": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "151": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "152": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "153": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "154": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "155": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "156": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "157": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "158": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "159": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "160": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "161": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "162": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "163": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "164": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "166": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "167": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "168": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "169": {"used_rules": {"21": {"id": 21, "changed_var_attribute_id": 169, "changed_var_data_type": "real", "condition_text": "[Location (City District/Quarter)].[Has Microfinance Institution]", "condition_exec": "df.rel149.attr131", "effect_text": "[Monthly expenditure on durable goods (ppp adjusted $)]* 1.1/[delta_t (years)]", "effect_exec": "df.attr169* 1.1/(df.delta_t/31622400)", "effect_is_calculation": true, "used_attribute_ids": "[''149'', ''131'', ''169'']", "is_conditionless": false, "has_probability_1": false, "probability": null, "standard_dev": null, "learn_posterior": true}}, "not_used_rules": {}, "execution_order": [21]}, "170": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "171": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "172": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "173": {"used_rules": {"22": {"id": 22, "changed_var_attribute_id": 173, "changed_var_data_type": "real", "condition_text": "[Location (City District/Quarter)].[Has Microfinance Institution]", "condition_exec": "df.rel149.attr131", "effect_text": "[Monthly expenditure on temptation goods (ppp adjusted $)] * 0.9 / [delta_t (years)]", "effect_exec": "df.attr173 * 0.9 / (df.delta_t/31622400)", "effect_is_calculation": true, "used_attribute_ids": "[''149'', ''131'', ''173'']", "is_conditionless": false, "has_probability_1": false, "probability": null, "standard_dev": null, "learn_posterior": true}}, "not_used_rules": {}, "execution_order": [22]}, "174": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "175": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "176": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "177": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "178": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "179": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "180": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "181": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "182": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}}, "object_filter_facts": [], "object_relations": [{"relation_name": "Location (City District/Quarter)", "attribute_id": 149, "target_object_number": 2}], "position": {"x": 221, "y": 342}}, "2": {"object_name": "City District/Quarter/Borough 1", "object_type_id": "j2_4", "object_type_name": "City District/Quarter/Borough", "object_icon": "si-glyph-city", "object_id": 862704, "object_attributes": {"22": {"attribute_value": null, "attribute_name": "Name", "attribute_data_type": "string", "attribute_rule": null}, "23": {"attribute_value": null, "attribute_name": "Surface area (km2)", "attribute_data_type": "real", "attribute_rule": null}, "24": {"attribute_value": 537, "attribute_name": "Population", "attribute_data_type": "int", "attribute_rule": null}, "25": {"attribute_value": null, "attribute_name": "Infant mortality (%)", "attribute_data_type": "real", "attribute_rule": null}, "26": {"attribute_value": null, "attribute_name": "Life expectancy (years)", "attribute_data_type": "real", "attribute_rule": null}, "27": {"attribute_value": null, "attribute_name": "Maternal mortality ratio (%)", "attribute_data_type": "real", "attribute_rule": null}, "28": {"attribute_value": null, "attribute_name": "Population growth (%/year)", "attribute_data_type": "real", "attribute_rule": null}, "29": {"attribute_value": null, "attribute_name": "Life expectancy for women (years)", "attribute_data_type": "real", "attribute_rule": null}, "33": {"attribute_value": null, "attribute_name": "CO2 Emissions (tons/year)", "attribute_data_type": "real", "attribute_rule": null}, "35": {"attribute_value": null, "attribute_name": "Rural population with safe water (%)", "attribute_data_type": "real", "attribute_rule": null}, "36": {"attribute_value": null, "attribute_name": "People with safe water (%)", "attribute_data_type": "real", "attribute_rule": null}, "37": {"attribute_value": null, "attribute_name": "Urban population with safe water (%)", "attribute_data_type": "real", "attribute_rule": null}, "38": {"attribute_value": null, "attribute_name": "Rural population with safe sanitation (%)", "attribute_data_type": "real", "attribute_rule": null}, "39": {"attribute_value": null, "attribute_name": "People with safe sanitation (%)", "attribute_data_type": "real", "attribute_rule": null}, "40": {"attribute_value": null, "attribute_name": "Urban population with safe sanitation (%)", "attribute_data_type": "real", "attribute_rule": null}, "42": {"attribute_value": null, "attribute_name": "Male Population", "attribute_data_type": "int", "attribute_rule": null}, "57": {"attribute_value": null, "attribute_name": "Number of Companies in this area", "attribute_data_type": "int", "attribute_rule": null}, "58": {"attribute_value": null, "attribute_name": "Percentage of companies with an afro american owner", "attribute_data_type": "real", "attribute_rule": null}, "59": {"attribute_value": null, "attribute_name": "Percentage of companies with an american indian owner", "attribute_data_type": "real", "attribute_rule": null}, "60": {"attribute_value": null, "attribute_name": "Percentage of companies with an asian owner", "attribute_data_type": "real", "attribute_rule": null}, "61": {"attribute_value": null, "attribute_name": "Percentage of companies with an owner who is native hawaiian or other pacific islander", "attribute_data_type": "real", "attribute_rule": null}, "62": {"attribute_value": null, "attribute_name": "Percentage of companies with an hispanic owner", "attribute_data_type": "real", "attribute_rule": null}, "63": {"attribute_value": null, "attribute_name": "Percentage of companies owned by a woman", "attribute_data_type": "real", "attribute_rule": null}, "129": {"attribute_value": null, "attribute_name": "Location (city)", "attribute_data_type": "relation", "attribute_rule": null}, "130": {"attribute_value": 69, "attribute_name": "Area Id used by the Centre for Microfinance (IFMR)", "attribute_data_type": "int", "attribute_rule": null}, "131": {"attribute_value": true, "attribute_name": "Has Microfinance Institution", "attribute_data_type": "bool", "attribute_rule": null}}, "object_rules": {"22": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "23": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "24": {"used_rules": {"1": {"id": 1, "changed_var_attribute_id": 24, "changed_var_data_type": "int", "condition_text": "", "condition_exec": "", "effect_text": "[Population] + [Population]*([Population growth (%/year)] /100)* [delta_t (years)]", "effect_exec": "df.attr24 + df.attr24*(df.attr28 /100)* (df.delta_t/31622400)", "effect_is_calculation": true, "used_attribute_ids": "[''24'', ''28'']", "is_conditionless": true, "has_probability_1": true, "probability": null, "standard_dev": null, "learn_posterior": false}, "2": {"id": 2, "changed_var_attribute_id": 24, "changed_var_data_type": "int", "condition_text": "", "condition_exec": "", "effect_text": "[Population] + ([Female Population]*[Fertility rate]/[Life expectancy for women (years)] ) - ([Population]/[Life expectancy (years)])", "effect_exec": "df.attr24 + (df.attr41*df.attr31/df.attr29 ) - (df.attr24/df.attr26)", "effect_is_calculation": true, "used_attribute_ids": "[''24'', ''26'', ''29'', ''31'', ''41'']", "is_conditionless": true, "has_probability_1": true, "probability": 0.5152553763440862, "standard_dev": 0.28451725640376385, "learn_posterior": false}}, "not_used_rules": {}, "execution_order": [1, 2]}, "25": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "26": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "27": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "28": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "29": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "33": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "35": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "36": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "37": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "38": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "39": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "40": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "42": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "57": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "58": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "59": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "60": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "61": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "62": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "63": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "129": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "130": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}, "131": {"used_rules": {}, "not_used_rules": {}, "execution_order": []}}, "object_filter_facts": [], "object_relations": [], "position": {"x": 409, "y": 163}}}')
+    # period_df = query_datapoints.get_data_from_related_objects(objects_dict, starttime, endtime)
+    # print(period_df)
     # for i in range(len(current_object_type)):
     #     del current_object_type[i]['created']
     #     del current_object_type[i]['updated']
@@ -1720,7 +1848,7 @@ def test_page3(request):
     # return HttpResponse(json.dumps(current_object_type))
     # list_of_object_ids = list(Object.objects.all().values_list(['id','object_type_id']))
     # return HttpResponse('success')
-    return HttpResponse(str(len(period_df)))
+    return HttpResponse(str(list(Likelihood_fuction.objects.filter(parameter_id=23).values())))
     # return render(request, 'tool/test_page3.html')
 
 

@@ -201,8 +201,11 @@ def get_available_relations():
 
 
 # used in simulation.py
-def get_rules_pdf(rule_id):
-    likelihood_functions = list(Likelihood_fuction.objects.filter(rule_id=rule_id).values())
+def get_rules_pdf(rule_or_parameter_id, is_rule):
+    if is_rule:
+        likelihood_functions = list(Likelihood_fuction.objects.filter(rule_id=rule_or_parameter_id).values())
+    else:
+        likelihood_functions = list(Likelihood_fuction.objects.filter(parameter_id=rule_or_parameter_id).values())
 
     if len(likelihood_functions) > 0:
         # multiply the likelihood functions of all different simulations/evidences to get a combined posterior
@@ -224,8 +227,11 @@ def get_rules_pdf(rule_id):
         return None, None, None
 
 
-def get_single_pdf(simulation_id, object_number, rule_id):
-    likelihood_functions = list(Likelihood_fuction.objects.filter(simulation_id=simulation_id, object_number=object_number, rule_id=rule_id).values())
+def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
+    if is_rule:
+        likelihood_functions = list(Likelihood_fuction.objects.filter(simulation_id=simulation_id, object_number=object_number, rule_id=rule_or_parameter_id).values())
+    else:
+        likelihood_functions = list(Likelihood_fuction.objects.filter(simulation_id=simulation_id, object_number=object_number, parameter_id=rule_or_parameter_id).values())
 
     if len(likelihood_functions) > 0:
 
@@ -237,7 +243,9 @@ def get_single_pdf(simulation_id, object_number, rule_id):
         standard_dev = np.sqrt(np.average((x_values - mean)**2, weights=list_of_probabilities))
 
         nb_of_sim_in_which_rule_was_used = likelihood_functions[0]['nb_of_sim_in_which_rule_was_used'] 
-        if (nb_of_sim_in_which_rule_was_used < 200):
+        if (nb_of_sim_in_which_rule_was_used == 0):
+            message = 'Initial distribution: uniform'
+        elif (nb_of_sim_in_which_rule_was_used < 200):
             message = 'This rule was triggered in only ' + str(nb_of_sim_in_which_rule_was_used) + ' of the ' + str(likelihood_functions[0]['nb_of_simulations']) + ' simulations.'
         else:
             message = ''
