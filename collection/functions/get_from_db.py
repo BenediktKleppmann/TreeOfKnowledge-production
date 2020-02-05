@@ -211,8 +211,8 @@ def get_rules_pdf(rule_or_parameter_id, is_rule):
         # multiply the likelihood functions of all different simulations/evidences to get a combined posterior
         posterior_probabilities = np.array([1] * 30)
         for likelihood_function in likelihood_functions:
-            likelihoods_probabilities = json.loads(likelihood_function['list_of_probabilities'])
-            posterior_probabilities = posterior_probabilities * likelihoods_probabilities           # multiply with likelihood function
+            list_of_probabilities = json.loads(likelihood_function['list_of_probabilities'])
+            posterior_probabilities = posterior_probabilities * list_of_probabilities           # multiply with likelihood function
         
         posterior_probabilities = posterior_probabilities * 30/ np.sum(posterior_probabilities) # re-normalisation
         histogram = (posterior_probabilities.tolist(), np.linspace(0,1,31).tolist())
@@ -220,7 +220,6 @@ def get_rules_pdf(rule_or_parameter_id, is_rule):
         x_values = np.linspace(0,0.966666666666667,30) + 1/60
         mean = np.average(x_values, weights=posterior_probabilities)
         standard_dev = np.sqrt(np.average((x_values - mean)**2, weights=posterior_probabilities))
-
         return histogram, mean, standard_dev
             
     else:

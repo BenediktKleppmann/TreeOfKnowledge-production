@@ -558,14 +558,13 @@ def get_rules_pdf(request):
     rule_or_parameter_id = request.GET.get('rule_or_parameter_id', '')
     is_rule = (request.GET.get('is_rule', '').lower() == 'true')
     histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule_or_parameter_id, is_rule)
+    print('histogram: ' + str(histogram))
     
-    print(str(rule_or_parameter_id))
-    print(str(is_rule))
-    print(str(histogram is None))
     if histogram is None:
         return HttpResponse('null')
     
-    smooth_pdf = True
+    # only smoothen out the function if the y-values vary significantly
+    smooth_pdf = (np.std(histogram[0]) >= 0.15)
     if smooth_pdf:
         hist_dist = scipy.stats.rv_histogram(histogram)
         hist_sample = hist_dist.rvs(size=10000)
@@ -1022,6 +1021,9 @@ def save_rule_parmeter(request):
     if request.method == 'POST':
         try:
             request_body = json.loads(request.body)
+            simulation_id = request_body['simulation_id']
+            object_number = request_body['object_number']
+            rule_id = request_body['rule_id']
             new_parameter_dict = request_body['new_parameter_dict']
             if ('id' in request_body):
                 parameter = Rule_parameter.objects.get(id=request_body['id'])
@@ -1031,9 +1033,13 @@ def save_rule_parmeter(request):
                 parameter.max_value = new_parameter_dict['max_value']
                 parameter.save()
 
-                # if the range was changed delete the parameter's likelihood_fuctions
+                # if the range was changed: reset the parameter's likelihood_fuctions
                 if request_body['parameter_range_change']:
                     Likelihood_fuction.objects.filter(parameter_id=request_body['id']).delete()
+                    list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                    likelihood_fuction = Likelihood_fuction(simulation_id=simulation_id, object_number=object_number, parameter_id=request_body['id'], list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_values_in_posterior=0)
+                    likelihood_fuction.save()
+
 
                 return_dict = {'parameter_id': parameter.id, 'is_new': False, 'request_body':request_body}
                 return HttpResponse(json.dumps(return_dict))
@@ -1046,8 +1052,15 @@ def save_rule_parmeter(request):
                 used_parameter_ids = json.loads(parent_rule.used_parameter_ids)
                 parent_rule.used_parameter_ids = used_parameter_ids + [new_parameter.id]
                 parent_rule.save()
+  
+                # add uniform likelihood_function
+                list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                likelihood_fuction = Likelihood_fuction(simulation_id=simulation_id, object_number=object_number, parameter_id=new_parameter.id, list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_values_in_posterior=0)
+                likelihood_fuction.save()
+
                 return_dict = {'parameter_id': new_parameter.id, 'is_new': True, 'request_body':request_body}
                 return HttpResponse(json.dumps(return_dict))
+
         except Exception as error:
             traceback.print_exc()
             return HttpResponse(str(error))

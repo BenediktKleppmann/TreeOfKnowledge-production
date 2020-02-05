@@ -1161,7 +1161,7 @@
 			if (selected_simulations_list.length == 1 && linegraph_data['data'][0].length == 3) {
 				var series_1 = chart.jumpLine(dataSet.mapAs({'x': 0, 'value': 2}));
 				series_1.name('True values')
-						.stroke("3.5 blue");
+						.stroke("4.5 #3ec400");
 				series_1.hovered().markers()
 						.enabled(true)
 						.type('circle')
@@ -1184,7 +1184,7 @@
 					series_2 = chart.line(dataSet.mapAs({'x': 0, 'value': i+1}));
 				}
 				series_2.name('Simulation' + linegraph_data['simulation_numbers'][i])
-						.stroke("2 #14AA09");
+						.stroke("1.5 #4c82d9");
 				series_2.hovered().markers()
 						.enabled(true)
 						.type('circle')
