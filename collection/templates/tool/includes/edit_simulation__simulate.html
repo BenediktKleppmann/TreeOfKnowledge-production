@@ -50,6 +50,10 @@
 		padding-right: 5px;
 	}
 	
+	#query-info-button1, #query-info-button2 {
+		margin-bottom: 12px;
+	}
+	
 	#analysis-details-box {
 		margin-top: 22px;
 	}
@@ -599,16 +603,41 @@
 	function getObjectData() {
 	
 		if (get_new_object_data) {
+			var url_components = window.location.href.split("/");
+			var simulation_id = url_components[url_components.length - 2];
+			
 			var request_body = {};
+			request_body['simulation_id']  = simulation_id;
 			request_body['objects_dict']  = objects_dict;
-			request_body['specified_start_time'] = simulation_start_time;
-			request_body['specified_end_time'] = simulation_end_time;
+			request_body['environment_start_time'] = environment_start_time;
+			request_body['environment_end_time'] = environment_end_time;
 			got_object_data = false;
 			
 			var xmlhttp = new XMLHttpRequest();       
 			xmlhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
-					var objects_data = JSON.parse(this.responseText);
+					var response = JSON.parse(this.responseText);
+					//data_querying_info
+					data_querying_info = JSON.parse(response['data_querying_info']);
+					object_numbers = Object.keys(data_querying_info['timestamps']);
+					var all_timestamps = [];
+					for (var i = 0; i < object_numbers.length ; i++) {
+						timestamps = Object.keys(data_querying_info['timestamps'][object_numbers[i]]);
+						for (var j = 0; j < object_numbers.length ; j++) {
+							var total_number_of_entities = data_querying_info['table_sizes'][object_numbers[i]]['number_of_objects'];
+							if (data_querying_info['timestamps'][object_numbers[i]][timestamps[j]] > 0.1*total_number_of_entities ) {
+								all_timestamps.push(timestamps[j]);
+							}
+						}
+					}
+					new_simulation_start_time = all_timestamps.sort()[0];
+					var new_simulation_start_date = new Date(new_simulation_start_time*1000);
+					var new_simulation_start_date_string = new_simulation_start_date.toISOString().replace('T', ' ').substring(0,16);
+					$("#simulation-start-time").val(new_simulation_start_date_string);
+					
+					
+					//objects_data
+					var objects_data = response['objects_data'];
 					var all_attribute_values = objects_data['all_attribute_values'];
 					sorted_attribute_ids = objects_data['sorted_attribute_ids'];
 
@@ -675,7 +704,41 @@
 									'<button id="run-button" class="btn btn-success pull-right" type="button" onclick="run()">Run</button>' +
 								'</div>';
 		*/
-								
+			
+		left_panel__simulate = '<div class="accordion md-accordion" id="accordion-left" role="tablist" aria-multiselectable="true">' +	
+									'<div class="card">' +
+										'<div class="card-header" role="tab" id="accordion-left-header-1">' +
+											'<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-1" aria-expanded="false" aria-controls="accordion-left-content-1">Data</button>' +
+										'</div>' +
+										'<div id="accordion-left-content-1" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-1" data-parent="#accordion-left">' +
+											'<div class="card-body">' +
+												'<div class="form left-panel-body">' +
+													'<button id="query-info-button1" class="btn btn-success" type="button" onclick="displayNumberOfFoundEntities()">Display Number of Found Entities</button>' +
+													'<button id="query-info-button2" class="btn btn-success" type="button" onclick="displayFirstObservationDates()">Display First Observation Dates</button>' +
+												'</div>' +
+											'</div>' +
+										'</div>' +
+									'</div>' +
+									'<div class="card">' +
+										'<div class="card-header" role="tab" id="accordion-left-header-2">' +
+											'<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-2" aria-expanded="false" aria-controls="accordion-left-content-2">Simulation</button>' +
+										'</div>' +
+										'<div id="accordion-left-content-2" class="collapse in" role="tabpanel" aria-labelledby="accordion-left-header-2" data-parent="#accordion-left" style="display: block;">' +
+											'<div id="relations-card" class="card-body">' +
+												'<div class="form left-panel-body">' +
+													'<label for="analysis_type" style="margin-left:5px;">Analysis Type:</label><br>' +
+													'<select id="analysis_type" class="form-control" onchange="changeAnalysisType()">' +
+														'<option ' + timeseries_option + '>Simulate changes over time</option>' +
+														'<option ' + cross_section_option + '>Analyse Dependencies at a Moment in Time</option>' +
+													'</select>' +
+													'<div id="analysis-details-box"></div>' + 
+													'<button id="run-button" class="btn btn-success" type="button" onclick="run()">Run</button>' +
+												'</div>' +
+											'</div>' +
+										'</div>' +
+									'</div>' +
+								'</div>';
+		/*						
 		left_panel__simulate = 	'<div class="left-panel-title">Simulation</div>' +
 								'<div class="form left-panel-body">' +
 									'<label for="analysis_type" style="margin-left:5px;">Analysis Type:</label><br>' +
@@ -686,14 +749,127 @@
 									'<div id="analysis-details-box"></div>' + 
 									'<button id="run-button" class="btn btn-success pull-right" type="button" onclick="run()">Run</button>' +
 								'</div>';
-	
+		*/
 		$("#left-panel").html(left_panel__simulate);	
 		
 		changeAnalysisType();
+		
+		$('.accordion-toggle').click(function() {
+			content_element = $($(this).attr('href'));
+			if (content_element.hasClass('in')) {
+				content_element.hide();
+				content_element.removeClass('in')
+			} else {
+				content_element.show();
+				content_element.addClass('in')
+			}
+		});
 	}		
 	
 	
-	// Fill-in the Left Panel (For the Design-State)    =============================================================================	
+	
+	// 'Display Number of Found Entities' Button     =============================================================================	
+	function displayNumberOfFoundEntities() {
+	
+		
+		if ($('#query-info-button1').hasClass('active')) {
+			// objects
+			object_numbers = Object.keys(objects_dict);
+			for (var i = 0; i < object_numbers.length ; i++) {
+				var object_number = object_numbers[i];
+				var object_name = objects_dict[object_number]['object_name'];
+				cell = graph.getCell(object_number); 
+				cell.attr('text/text', object_name);
+			}
+			
+			// relations
+			link_ids = Object.keys(data_querying_info['relation_sizes']);
+			for (var i = 0; i < link_ids.length ; i++) {
+				var object_number = parseInt(link_ids[i].split(',')[0]);
+				var attribute_id = parseInt(link_ids[i].split(',')[1]);
+				var target_object_number = parseInt(link_ids[i].split(',')[2]);
+				var relation_name = available_relations[attribute_id]['name'];
+				
+				link = graph.getCell(link_ids[i]);  
+				new_label = { position:.5, attrs: { text:{ text: relation_name || '', 'font-weight': 'normal' } } }
+				link.label(0, new_label);
+			}
+			
+			$('#query-info-button1').removeClass('active');
+			
+		} else {
+		
+			// objects
+			object_numbers = Object.keys(data_querying_info['table_sizes']);
+			for (var i = 0; i < object_numbers.length ; i++) {
+				var object_number = object_numbers[i];
+				var object_name = objects_dict[parseInt(object_number)]['object_name'];
+				var number_of_objects = data_querying_info['table_sizes'][object_number]['number_of_objects'];
+
+				cell = graph.getCell(object_number); 
+				cell.attr('text/text', object_name + '\n' + number_of_objects + ' entities found');
+			}
+			
+			// relations
+			link_ids = Object.keys(data_querying_info['relation_sizes']);
+			for (var i = 0; i < link_ids.length ; i++) {
+				var object_number = parseInt(link_ids[i].split(',')[0]);
+				var attribute_id = parseInt(link_ids[i].split(',')[1]);
+				var target_object_number = parseInt(link_ids[i].split(',')[2]);
+				var relation_name = available_relations[attribute_id]['name'];
+				var matched_from_source = data_querying_info['relation_sizes'][link_ids[i]]['matched_from_source'];
+				var matched_from_target = data_querying_info['relation_sizes'][link_ids[i]]['matched_from_target'];
+				
+				link = graph.getCell(link_ids[i]);  
+				new_label = { position:.5, attrs: { text:{ text: relation_name + '\n' + matched_from_source + ' matched source entities\n' + matched_from_target + ' matched target entities' || '', 'font-weight': 'normal' } } }
+				link.label(0, new_label);
+			}
+			
+			$('#query-info-button1').addClass('active');
+		}
+	}
+	
+	
+	// 'Display First Observation Date' Button     =============================================================================	
+	function displayFirstObservationDates() {
+	
+		
+		if ($('#query-info-button2').hasClass('active')) {
+		
+			object_numbers = Object.keys(objects_dict);
+			for (var i = 0; i < object_numbers.length ; i++) {
+				var object_number = object_numbers[i];
+				var object_name = objects_dict[object_number]['object_name'];
+				cell = graph.getCell(object_number); 
+				cell.attr('text/text', object_name);
+			}
+			$('#query-info-button2').removeClass('active');
+			
+		} else {
+		
+			object_numbers = Object.keys(data_querying_info['timestamps']);
+			for (var i = 0; i < object_numbers.length ; i++) {
+				var object_number = object_numbers[i];
+				var new_cell_text = objects_dict[parseInt(object_number)]['object_name'];
+
+				var timestamps = Object.keys(data_querying_info['timestamps'][object_number]);
+				for (var j = 0; j < timestamps.length ; j++) {
+					var number_of_entities = data_querying_info['timestamps'][object_number][timestamps[j]];
+					var first_observed_date = new Date(parseInt(timestamps[j])*1000);
+					var first_observed_date_string = first_observed_date.toISOString().replace('T', ' ').substring(0,16);
+					new_cell_text += '\n' + first_observed_date_string + ' (' + number_of_entities + ' entities)';
+					
+					cell = graph.getCell(parseInt(object_number)); 
+					cell.attr('text/text', new_cell_text);
+				}
+			}	
+			$('#query-info-button2').addClass('active');
+		}
+	}
+	
+	
+	
+	// Fill-in the Simulation-Section of the Left Panel     =============================================================================	
 	function changeAnalysisType() {
 	
 		var analysis_type = $('#analysis_type').find(":selected").text();
@@ -782,6 +958,7 @@
 	
 
 
+	// Run Simulation     =============================================================================	
 	function run() {
 	
 		if (y_value_attributes.length == 0) {
@@ -1003,6 +1180,8 @@
 			'object_type_counts': object_type_counts,
 			'total_object_count': total_object_count,
 			'number_of_additional_object_facts': number_of_additional_object_facts,
+			'environment_start_time': environment_start_time,
+			'environment_end_time': environment_end_time,
 			'simulation_start_time': simulation_start_time,
 			'simulation_end_time': simulation_end_time,
 			'timestep_size': timestep_size

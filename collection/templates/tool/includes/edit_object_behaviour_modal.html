@@ -644,11 +644,6 @@ var parameter_info = {};
 	
 		populateTheRulePanels(object_number, rules_attribute_id, rules_attribute_name);
 		
-		if (rule_id) {
-			inspectRule(object_number, rules_attribute_id, rules_attribute_name, rule_id);
-		}
-		
-		
 		// load parameter_info
 		var rule_ids = objects_dict[object_number]['object_rules'][rules_attribute_id]['execution_order']
 		for (var i = 0; i < rule_ids.length ; i++) {
@@ -662,9 +657,13 @@ var parameter_info = {};
 						if (this.readyState == 4 && this.status == 200) {
 							response_dict = JSON.parse(this.responseText);
 							parameter_info[response_dict['id']] = response_dict;
+							
+							if (response_dict['is_last_parameter'] && rule_id) {
+								inspectRule(object_number, rules_attribute_id, rules_attribute_name, rule_id);
+							}
 						}
 					};
-					xhttp.open('GET', '/tool/get_parameter_info?parameter_id=' + parameter_id , true);
+					xhttp.open('GET', '/tool/get_parameter_info?parameter_id=' + parameter_id + '&is_last_parameter=' + String(j == (parameter_ids.length-1)), true);
 					xhttp.send();
 				}			
 			}	

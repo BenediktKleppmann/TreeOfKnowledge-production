@@ -437,9 +437,12 @@
 	var paper = null;
 	var graph = null;
 	
+	var environment_start_time = {{ simulation_model.environment_start_time|safe }};
+	var environment_end_time =  {{ simulation_model.environment_end_time|safe }};
 	var simulation_start_time = {{ simulation_model.simulation_start_time|safe }};
 	var simulation_end_time =  {{ simulation_model.simulation_end_time|safe }};
 	var timestep_size = {{ simulation_model.timestep_size|safe }};
+	var data_querying_info = {{ simulation_model.data_querying_info|safe }};
 	var is_timeseries_analysis = {{ simulation_model.is_timeseries_analysis|yesno:"true,false"  }};
 	var active_relation_button = null;
 	var get_new_object_data = false;
@@ -454,7 +457,7 @@
 	
 
 	 
-	 // Draw the Left Panel (For the Design-State)    =============================================================================
+	 // Draw the Left Panel (For the Design/Scenario-State)    =============================================================================
 	function drawLeftPanel__design() {
 	
 		left_panel__design = '<div class="accordion md-accordion" id="accordion-left" role="tablist" aria-multiselectable="true">' +	
@@ -468,13 +471,13 @@
 												'<div class="form-group row">' +
 													'<label for="max" class="col-sm-5">Start Time</label>' +
 													'<div class="col-sm-7">' +
-														'<input id="simulation-start-time" class="datetimepicker form-control" value="">' +
+														'<input id="environment-start-time" class="datetimepicker form-control" value="">' +
 													'</div>' +
 												'</div>' +
 												'<div class="form-group row">' +
 													'<label for="max" class="col-sm-5">End Time</label>' +
 													'<div class="col-sm-7">' +
-														'<input id="simulation-end-time" class="datetimepicker form-control" value="">' +
+														'<input id="environment-end-time" class="datetimepicker form-control" value="">' +
 													'</div>' +
 												'</div>' +
 											'</div>' +
@@ -541,25 +544,25 @@
 		$('.datetimepicker').datetimepicker('hide');
 		
 		// initialize the datetimepickers
-		var start_date = new Date(simulation_start_time*1000);
-		var end_date = new Date(simulation_end_time*1000);
+		var start_date = new Date(environment_start_time*1000);
+		var end_date = new Date(environment_end_time*1000);
 		var start_date_string = start_date.toISOString().replace('T', ' ').substring(0,16);
 		var end_date_string = end_date.toISOString().replace('T', ' ').substring(0,16);
-		$("#simulation-start-time").val(start_date_string);
-		$("#simulation-end-time").val(end_date_string);
+		$("#environment-start-time").val(start_date_string);
+		$("#environment-end-time").val(end_date_string);
 	
 		
 		// DATE CHANGE for DataTimePicker ---------------------------
-		$("#simulation-start-time").datetimepicker().on('changeDate', function(ev){
+		$("#environment-start-time").datetimepicker().on('changeDate', function(ev){
 			//link the start- and end- datetimepickers
-			$("#simulation-end-time").datetimepicker("setStartDate", '"' + ev.date.toISOString().substring(0,10) + '"');
-			simulation_start_time = Math.round(ev.date.getTime() / 1000);
+			$("#environment-end-time").datetimepicker("setStartDate", '"' + ev.date.toISOString().substring(0,10) + '"');
+			environment_start_time = Math.round(ev.date.getTime() / 1000);
 			get_new_object_data = true;
 		});
 		
-		$("#simulation-end-time").datetimepicker().on('changeDate', function(ev){
-			$("#simulation-start-time").datetimepicker("setEndDate", '"' + ev.date.toISOString().substring(0,10) + '"');
-			simulation_end_time = Math.round(ev.date.getTime() / 1000);
+		$("#environment-end-time").datetimepicker().on('changeDate', function(ev){
+			$("#environment-start-time").datetimepicker("setEndDate", '"' + ev.date.toISOString().substring(0,10) + '"');
+			environment_end_time = Math.round(ev.date.getTime() / 1000);
 			get_new_object_data = true;
 		});
 		
@@ -823,12 +826,12 @@
 			object_relations = objects_dict[source_object_number]['object_relations']
 			if (typeof object_relations != 'undefined') {
 				for (var j = 0; j < object_relations.length; j++) { 
-					target_object_number = object_relations[j]['target_object_number'];
+					var target_object_number = object_relations[j]['target_object_number'];
+					var attribute_id = object_relations[j]['attribute_id'];
 					if (target_object_number == object_number) {
-						
-						relation_id = source_object_number + ',' + target_object_number;
+						var link_id = source_object_number + ',' + attribute_id + ',' + target_object_number;
 						// remove link from paper
-						graph.getCell(relation_id).remove();       
+						graph.getCell(link_id).remove();       
 
 						// remove link from objects_dict					
 						objects_dict[source_object_number]['object_relations'].splice(j,1); 
@@ -842,10 +845,11 @@
 		object_relations = objects_dict[object_number]['object_relations']
 		if (typeof object_relations != 'undefined') {
 			for (var j = 0; j < object_relations.length; j++) { 
-				target_object_number = object_relations[j]['target_object_number'];
-				relation_id = object_number + ',' + target_object_number;
+				var target_object_number = object_relations[j]['target_object_number'];
+				var attribute_id = object_relations[j]['attribute_id'];
+				var link_id = object_number + ',' + attribute_id + ',' + target_object_number;
 				// remove link from paper
-				graph.getCell(relation_id).remove();       
+				graph.getCell(link_id).remove();       
 			}
 			objects_dict[object_number]['object_relations'] = [];
 		}
@@ -1032,7 +1036,7 @@
 	function drawLink(source, target, attribute_id) {
 	
 		new_link = (new joint.shapes.standard.Link({
-			id: [source,target].join(),
+			id: [source,attribute_id,target].join(),
 			source: { id: source },
 			target: { id: target },
 			labels: [{ position: .5, attrs: { text: {	text: available_relations[active_relation_button]['name'] || '', 

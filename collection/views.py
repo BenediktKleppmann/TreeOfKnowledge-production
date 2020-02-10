@@ -554,11 +554,11 @@ def get_object_rules(request):
 # used in edit_object_behaviour_modal.html (which in turn is used in edit_simulation.html and analyse_simulation.html)
 @login_required
 def get_rules_pdf(request):
-    print('====================   get_rules_pdf   ==================================')
+    # print('====================   get_rules_pdf   ==================================')
     rule_or_parameter_id = request.GET.get('rule_or_parameter_id', '')
     is_rule = (request.GET.get('is_rule', '').lower() == 'true')
     histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule_or_parameter_id, is_rule)
-    print('histogram: ' + str(histogram))
+    # print('histogram: ' + str(histogram))
     
     if histogram is None:
         return HttpResponse('null')
@@ -567,10 +567,16 @@ def get_rules_pdf(request):
     smooth_pdf = (np.std(histogram[0]) >= 0.15)
     if smooth_pdf:
         hist_dist = scipy.stats.rv_histogram(histogram)
-        hist_sample = hist_dist.rvs(size=10000)
+        hist_sample = hist_dist.rvs(size=50000)
         a, b, min_value, value_range = beta.fit(hist_sample) 
         x_values = list(histogram[1])[:-1]
         pdf_values = [beta.pdf(x,a,b) for x in x_values]
+        # the beta distributions sometimes goes to infinity for x=0 or x-1, the following things are to stop that...
+        if pdf_values[0] > 100:
+            pdf_values[0] = pdf_values[1]
+        if pdf_values[29] > 100:
+            pdf_values[29] = pdf_values[28]
+        pdf_values = np.minimum(pdf_values, 100)
         response = [[x, min(prob,100)] for x, prob in zip(x_values, pdf_values)]
     else:
         response = [[bucket_value, min(count,10000)] for bucket_value, count in zip(histogram[1], histogram[0])]
@@ -584,7 +590,7 @@ def get_single_pdf(request):
     simulation_id = request.GET.get('simulation_id', '')
     object_number = request.GET.get('object_number', '')
     rule_or_parameter_id = request.GET.get('rule_or_parameter_id', '')
-    is_rule = bool(request.GET.get('is_rule', ''))
+    is_rule = (request.GET.get('is_rule', '').lower() == 'true')
     histogram, mean, standard_dev, message = get_from_db.get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule)
     print('====================   get_single_pdf   ==================================')
     print(str(rule_or_parameter_id))
@@ -593,6 +599,7 @@ def get_single_pdf(request):
     print(str(rule_or_parameter_id))
     print(str(is_rule))
     print(str(histogram is None))
+    print(str(histogram))
     print('=========================================================================')
     if message != '':
         response['message'] = message
@@ -600,14 +607,20 @@ def get_single_pdf(request):
     if histogram is None:
         return HttpResponse('null')
 
-    smooth_pdf = True
+    # only smoothen out the function if the y-values vary significantly
+    smooth_pdf = (np.std(histogram[0]) >= 0.15)
     if smooth_pdf:
         print(histogram)
         hist_dist = scipy.stats.rv_histogram(histogram)
-        hist_sample = hist_dist.rvs(size=10000)
+        hist_sample = hist_dist.rvs(size=50000)
         a, b, min_value, value_range = beta.fit(hist_sample) 
         x_values = list(histogram[1])[:-1]
         pdf_values = [beta.pdf(x,a,b) for x in x_values]
+        # the beta distributions sometimes goes to infinity for x=0 or x-1, the following things are to stop that...
+        if pdf_values[0] > 100:
+            pdf_values[0] = pdf_values[1]
+        if pdf_values[29] > 100:
+            pdf_values[29] = pdf_values[28]
         pdf_values = np.minimum(pdf_values, 100)
         response['pdf'] = [[x, prob] for x, prob in zip(x_values, pdf_values)]
     else:
@@ -620,13 +633,15 @@ def get_single_pdf(request):
 @login_required
 def get_parameter_info(request):
     parameter_id = request.GET.get('parameter_id', '')
+    is_last_parameter = (request.GET.get('is_last_parameter', '').lower() == 'true')
     parameter_id = int(parameter_id)
     parameter_record = Rule_parameter.objects.get(id=parameter_id)
     parameter_info = {  'id': parameter_id,
                         'rule_id':parameter_record.rule_id, 
                         'parameter_name':parameter_record.parameter_name,
                         'min_value':parameter_record.min_value,
-                        'max_value':parameter_record.max_value}
+                        'max_value':parameter_record.max_value,
+                        'is_last_parameter':is_last_parameter}
 
 
     return HttpResponse(json.dumps(parameter_info))   
@@ -669,12 +684,18 @@ def get_data_from_random_object(request):
 @login_required
 def get_data_from_random_related_object(request):
     request_body = json.loads(request.body)
+    simulation_id = request_body['simulation_id']
     objects_dict = request_body['objects_dict']
-    specified_start_time = request_body['specified_start_time']
-    specified_end_time = request_body['specified_end_time']
+    environment_start_time = request_body['environment_start_time']
+    environment_end_time = request_body['environment_end_time']
 
-    all_attribute_values = query_datapoints.get_data_from_random_related_object(objects_dict, specified_start_time, specified_end_time)
-    return HttpResponse(json.dumps(all_attribute_values))
+
+    objects_data = query_datapoints.get_data_from_random_related_object(simulation_id, objects_dict, environment_start_time, environment_end_time)
+    data_querying_info = Simulation_model.objects.get(id=simulation_id).data_querying_info
+
+    response = {'objects_data': objects_data, 
+                'data_querying_info': data_querying_info}
+    return HttpResponse(json.dumps(response))
 
 
 # used in query_data.html
@@ -957,6 +978,8 @@ def save_changed_simulation(request):
             model_record.object_type_counts = json.dumps(request_body['object_type_counts'])
             model_record.total_object_count = request_body['total_object_count']
             model_record.number_of_additional_object_facts = request_body['number_of_additional_object_facts']
+            model_record.environment_start_time = request_body['environment_start_time']
+            model_record.environment_end_time = request_body['environment_end_time']
             model_record.simulation_start_time = request_body['simulation_start_time']
             model_record.simulation_end_time = request_body['simulation_end_time']
             model_record.timestep_size = request_body['timestep_size']
@@ -1486,9 +1509,12 @@ def edit_simulation_new(request):
                                         object_type_counts=json.dumps({}),
                                         total_object_count=0,
                                         number_of_additional_object_facts=2,
+                                        environment_start_time=946684800, 
+                                        environment_end_time=1577836800, 
                                         simulation_start_time=946684800, 
                                         simulation_end_time=1577836800, 
-                                        timestep_size=31536000)
+                                        timestep_size=31536000,
+										data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
     simulation_model.save()
     new_simulation_id = simulation_model.id
     return redirect('edit_simulation', simulation_id=new_simulation_id)

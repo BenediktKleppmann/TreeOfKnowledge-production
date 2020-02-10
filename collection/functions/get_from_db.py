@@ -227,15 +227,18 @@ def get_rules_pdf(rule_or_parameter_id, is_rule):
 
 
 def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
+    print('----  get_single_pdf  ----')
     if is_rule:
         likelihood_functions = list(Likelihood_fuction.objects.filter(simulation_id=simulation_id, object_number=object_number, rule_id=rule_or_parameter_id).values())
     else:
         likelihood_functions = list(Likelihood_fuction.objects.filter(simulation_id=simulation_id, object_number=object_number, parameter_id=rule_or_parameter_id).values())
 
+    print('len(likelihood_functions)@: ' + str(len(likelihood_functions)))
     if len(likelihood_functions) > 0:
 
         list_of_probabilities = json.loads(likelihood_functions[0]['list_of_probabilities'])
         histogram = (list(list_of_probabilities), list(np.linspace(0,1,31)))
+        print('histogram: ' + str(histogram))
 
         x_values = np.linspace(0,0.966666666666667,30) + 1/60
         mean = np.average(x_values, weights=list_of_probabilities)
@@ -249,6 +252,7 @@ def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
         else:
             message = ''
 
+        print('histogram: ' + str(histogram))
         return histogram, mean, standard_dev, message
 
     else:

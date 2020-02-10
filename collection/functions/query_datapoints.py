@@ -1,4 +1,4 @@
-from collection.models import Object_types, Attribute, Object, Data_point
+from collection.models import Object_types, Attribute, Object, Data_point, Simulation_model
 import numpy as np
 import pandas as pd
 import datetime
@@ -327,12 +327,13 @@ def get_data_from_random_object(object_type_id, filter_facts, specified_start_ti
 
 
 
-def get_data_from_random_related_object(objects_dict, specified_start_time, specified_end_time):
+def get_data_from_random_related_object(simulation_id, objects_dict, environment_start_time, environment_end_time):
     objects_data = {}
 
     print('~~~~~~~~~~~~~~~  get_data_from_random_related_object  ~~~~~~~~~~~~~~~~~~~~~~')
     object_numbers = list(objects_dict.keys())
-    merged_object_data_tables = get_data_from_related_objects(objects_dict, specified_start_time, specified_end_time)
+    merged_object_data_tables = get_data_from_related_objects(objects_dict, environment_start_time, environment_end_time, simulation_id)
+
 
     if len(merged_object_data_tables) > 0:
 
@@ -386,9 +387,12 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, times, times
     print('~~~~~~~~~~~~~~~  get_data_from_related_objects__multiple_timesteps  ~~~~~~~~~~~~~~~~~~~~~~')
     object_numbers = list(objects_dict.keys())
 
-    # PART1: create object_data_tables - i.e. get broad_table_df for every object_number and period
+    
     object_and_period_tables = {}
+    object_data_tables = {}
     for object_number in object_numbers:
+
+        # PART1: create object_data_tables - i.e. get broad_table_df for every object_number and period
         object_and_period_tables[object_number] = {}
 
         # get object_ids
@@ -411,11 +415,21 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, times, times
             period_start_time = times[period]
             period_end_time = times[period + 1]
             broad_table_df = filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, period_start_time, period_end_time)  
+
+            print('++++++++++++++++++++++++++++')
+            print('object_number:' + str(object_number))
+            print('period_start_time:' + str(period_start_time))
+            print('period_end_time:' + str(period_end_time))
+            print('broad_table_df is None:' + str(broad_table_df is None))
+
             # if broad_table_df is None or len(broad_table_df) == 0:
             #     return pd.DataFrame({'obj' + str(object_number) + 'attrobject_id':[] for object_number in object_numbers})
 
             print('3')
             if broad_table_df is not None:
+                # TESTING ==========================================
+                broad_table_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-02-06/broad_table_df__object_number' + str(object_number) + '__period' + str(period) + '.csv')
+                # ==================================================
                 # broad_table_df = broad_table_df[[column for column in broad_table_df.columns if column in y0_columns + ['object_id'] ]]
                 broad_table_df.columns = ['obj' + str(object_number) + 'attrobject_id' if column == 'object_id' else 'obj' + str(object_number) + 'attr' + str(column) + 'period' + str(period)  for column in broad_table_df.columns]
                 broad_table_df['cross_join_column'] = 1
@@ -424,18 +438,20 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, times, times
                 object_and_period_tables[object_number][period] = pd.DataFrame(columns=['cross_join_column','obj' + str(object_number) + 'attrobject_id'])
 
 
-    # PART2: for each object merge the periods
-    object_data_tables = {}
-    for object_number in object_numbers:
+    
+        # PART2: for each object merge the periods
         object_data_tables[object_number] = pd.DataFrame(columns=['cross_join_column','obj' + str(object_number) + 'attrobject_id'])
         for period in range(len(times)-1):
             object_data_tables[object_number] = pd.merge(object_data_tables[object_number], object_and_period_tables[object_number][period], on=['cross_join_column','obj' + str(object_number) + 'attrobject_id'],  how='outer')
-        
 
+        if len(object_data_tables[object_number]) == 0:
+            object_data_tables[object_number] = pd.DataFrame({'cross_join_column': [1]*len(object_ids), 'obj' + str(object_number) + 'attrobject_id': object_ids})
+      
 
 
 
     # PART3: merge the object_data_tables according to the relations
+    print('PART3: merge the object_data_tables according to the relations')
     merged_object_data_tables = pd.DataFrame({'cross_join_column':[1]})
     list_of_added_tables = []
 
@@ -444,7 +460,10 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, times, times
         print('object_number: ' + str(object_number))
         if object_number not in list_of_added_tables:
             merged_object_data_tables = pd.merge(merged_object_data_tables , object_data_tables[object_number] , on='cross_join_column', how='inner')
+            print('creating merged_object_data_tables || adding object ' + str(object_number) + '|| nb_of_columns=' + str(len(object_data_tables[object_number].columns)) + ', len=' + str(len(object_data_tables[object_number])))
+            print(merged_object_data_tables.columns)
             merged_object_data_tables = make_the_columns_for_joining_relations_on(merged_object_data_tables, object_number, objects_dict, times)
+            print(merged_object_data_tables.columns)
             list_of_added_tables.append(object_number)
     
 
@@ -455,13 +474,16 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, times, times
             target_object_number = str(relation['target_object_number'])
             attribute_id_column = 'obj' + str(object_number) + 'attr' + str(relation['attribute_id']) 
             print('6.2')
+
+            merged_object_data_tables[attribute_id_column] = pd.to_numeric(merged_object_data_tables[attribute_id_column])
+            print('Merging object ' +str(target_object_number) + ' onto ' + str(object_number) + ' ---------------')
             print(attribute_id_column)
             print(merged_object_data_tables.columns)
-            print(object_data_tables[str(target_object_number)].columns)
-
-
+            print(str(len(merged_object_data_tables)))
+            print('------')
             print('obj' +str(target_object_number) + 'attrobject_id')
-            merged_object_data_tables[attribute_id_column] = pd.to_numeric(merged_object_data_tables[attribute_id_column])
+            print(object_data_tables[str(target_object_number)].columns)
+            print(str(len(object_data_tables[str(target_object_number)])))
             merged_object_data_tables = pd.merge(merged_object_data_tables, object_data_tables[str(target_object_number)], left_on=attribute_id_column, right_on='obj' +str(target_object_number) + 'attrobject_id', how='inner', suffixes=('-old', ''))
             print('6.3')
             if target_object_number not in list_of_added_tables:
@@ -475,7 +497,8 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, times, times
                 print('6.5')
 
              # merged_object_data_tables = merged_object_data_tables[[column for column in merged_object_data_tables.columns if len(column.split('attr')) <3]]
-
+    print('-------merged_object_data_tables1--------')
+    print(merged_object_data_tables.head())
     return merged_object_data_tables
 
 
@@ -494,12 +517,14 @@ def make_the_columns_for_joining_relations_on(merged_object_data_tables, object_
 
 
 # used by simulation.py
-def get_data_from_related_objects(objects_dict, specified_start_time, specified_end_time):
+def get_data_from_related_objects(objects_dict, specified_start_time, specified_end_time, simulation_id=None):
     print('~~~~~~~~~~~~~~~  get_data_from_related_objects  ~~~~~~~~~~~~~~~~~~~~~~')
     object_numbers = list(objects_dict.keys())
 
     # PART1: create object_data_tables - i.e. get broad_table_df for every object_number
     object_data_tables = {}
+    data_querying_info__table_sizes = {}
+    data_querying_info__relation_sizes = {}
     for object_number in object_numbers:
         print('object_number: ' + str(object_number))
         # get object_ids
@@ -515,9 +540,13 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
             print(query_string)
             object_ids = [entry[0] for entry in cursor.fetchall()]
 
-         # get broad_table_df
+         # broad_table_df and data_querying_info
         print('2')
-        broad_table_df = filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time)  
+        if simulation_id is not None:
+            saving_details_for_data_querying_info = {'simulation_id':simulation_id, 'object_number':object_number}
+
+        broad_table_df = filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time, saving_details_for_data_querying_info)  
+
         if broad_table_df is None or len(broad_table_df) == 0:
             return pd.DataFrame({'obj' + str(object_number) + 'attrobject_id':[] for object_number in object_numbers})
 
@@ -537,41 +566,47 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
     list_of_added_tables = []
 
     for object_number in object_numbers:
-        print('4')
         print('object_number: ' + str(object_number))
+        data_querying_info__table_sizes[object_number] = {'number_of_objects':len(object_data_tables[object_number]),'number_of_matches':{}}
         if object_number not in list_of_added_tables:
             merged_object_data_tables = pd.merge(merged_object_data_tables , object_data_tables[object_number] , on='cross_join_column', how='inner')
             list_of_added_tables.append(object_number)
-
             
 
-        print('5')
+
         object_relations = objects_dict[object_number]['object_relations']
         for relation in object_relations:
-            print('6.1 - ' + str(relation['attribute_id'])  )
             target_object_number = str(relation['target_object_number'])
             attribute_id_column = 'obj' + str(object_number) + 'attr' + str(relation['attribute_id']) 
-            print('6.2')    
-            print(len(merged_object_data_tables))
-            print(merged_object_data_tables)
-            print(str(merged_object_data_tables.columns)   )
-            print(attribute_id_column)   
-            print('--------')
-            print(str(object_data_tables[str(target_object_number)].columns))
-            print('obj' + str(target_object_number) + 'attrobject_id')
+
+            # data_querying_info
+            source = list(object_data_tables[str(object_number)]['obj' + str(object_number) + 'attr' + str(relation['attribute_id'])].astype('int'))
+            target = list(object_data_tables[str(target_object_number)]['obj' +str(target_object_number) + 'attrobject_id'])
+            matched_from_source = len([el for el in source if el in set(target)])
+            matched_from_target = len([el for el in target if el in set(source)])
+            link_id = str(object_number) + ',' + str(relation['attribute_id']) + ',' + str(target_object_number)
+            data_querying_info__relation_sizes[link_id] = { 'matched_from_source':matched_from_source,
+                                                            'matched_from_target':matched_from_target}
+            # merge
             merged_object_data_tables[attribute_id_column] = pd.to_numeric(merged_object_data_tables[attribute_id_column])
             merged_object_data_tables = pd.merge(merged_object_data_tables, object_data_tables[str(target_object_number)], left_on=attribute_id_column, right_on='obj' +str(target_object_number) + 'attrobject_id', how='inner', suffixes=('-old', ''))
-            print('6.3')
             if target_object_number not in list_of_added_tables:
                 list_of_added_tables.append(target_object_number)
-                print('6.4')
+
             else:
                 merged_object_data_tables[merged_object_data_tables['obj' + target_object_number + 'attrobject_id']==merged_object_data_tables['obj' + str(target_object_number) + 'attrobject_id-old']]
                 columns_without_old = [col for col in merged_object_data_tables.columns if col[-4:]!='-old']
                 merged_object_data_tables = merged_object_data_tables[columns_without_old]
-                print('6.5')
 
-             # merged_object_data_tables = merged_object_data_tables[[column for column in merged_object_data_tables.columns if len(column.split('attr')) <3]]
+
+    # data_querying_info
+    if (simulation_id is not None):
+        simulation_model = Simulation_model.objects.get(id=saving_details_for_data_querying_info['simulation_id'])
+        data_querying_info = json.loads(simulation_model.data_querying_info)
+        data_querying_info['table_sizes'] = data_querying_info__table_sizes
+        data_querying_info['relation_sizes'] = data_querying_info__relation_sizes
+        simulation_model.data_querying_info = json.dumps(data_querying_info)
+        simulation_model.save()
 
     return merged_object_data_tables
 
@@ -641,7 +676,7 @@ def get_training_data(object_type_id, filter_facts, valid_times):
 
 
 
-def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time):
+def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts, specified_start_time, specified_end_time, saving_details_for_data_querying_info=None):
 
     print('2.0')
     if len(object_ids) == 0:
@@ -769,6 +804,19 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             long_table_df['time_difference_of_start'] = abs(long_table_df['satisfying_time_start'] - long_table_df['valid_time_start'])
             long_table_df = long_table_df.sort_values(['data_quality','time_difference_of_start'], ascending=[False, True])
             long_table_df = long_table_df.drop_duplicates(subset=['object_id','attribute_id'], keep='first')
+
+            # data_querying_info
+            if (saving_details_for_data_querying_info is not None):
+                data_timestamps_df = long_table_df.groupby('valid_time_start').aggregate({'valid_time_start':'first','object_id':pd.Series.nunique})
+                data_timestamps_df.reset_index(inplace=True, drop=True)
+                data_timestamps_df = data_timestamps_df.sort_values('valid_time_start')
+                data_timestamps_df.index = data_timestamps_df['valid_time_start']
+                data_timestamps_dict = data_timestamps_df['object_id'].to_dict()
+                simulation_model = Simulation_model.objects.get(id=saving_details_for_data_querying_info['simulation_id'])
+                data_querying_info = json.loads(simulation_model.data_querying_info)
+                data_querying_info['timestamps'][saving_details_for_data_querying_info['object_number']] = data_timestamps_dict
+                simulation_model.data_querying_info = json.dumps(data_querying_info)
+                simulation_model.save()
 
 
             # pivot the long table

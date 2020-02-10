@@ -30,12 +30,14 @@ class Simulator:
 
     y0_columns = []
     y0_column_dt = {}
+    parameter_columns = []
     rules = []
     rule_priors = []
-    just_learned_rules = []
     posterior_values_to_delete = {}
-    posterior_values_all__test = {}
+    posterior_values = {}
     number_of_batches = 0
+    currently_running_learn_likelihoods = False
+
 
 
 # =================================================================================================================
@@ -103,7 +105,19 @@ class Simulator:
             
             times = np.arange(self.simulation_start_time, self.simulation_end_time, self.timestep_size)
             merged_object_data_tables = query_datapoints.get_data_from_related_objects__multiple_timesteps(self.objects_dict, times, self.timestep_size)
+            print('-------merged_object_data_tables1--------')
+            print(merged_object_data_tables.head())
+            print(merged_object_data_tables.columns)
             merging_columns =  ['obj' + obj_num + 'attrobject_id' for obj_num in self.objects_dict.keys()]
+            print('===============================================')
+            print(merging_columns)
+            print('<><><><><><>')
+            print(self.df.head())
+            print('<><><><><><>')
+            print(self.df[merging_columns].head())
+            print('<><><><><><>')
+            print(merged_object_data_tables[merging_columns].head())
+            print('===============================================')
             merged_periods_df = pd.merge(self.df, merged_object_data_tables, on=merging_columns, how='outer', suffixes=['','__from_periods'])
             original_df_columns = self.df.columns
 
@@ -134,9 +148,9 @@ class Simulator:
             self.y0_values = [row for index, row in sorted(df_copy.to_dict('index').items())]
 
         self.y0_values_df = pd.DataFrame(self.y0_values)
-        # print('=== Testing  ==================================================')
-        # self.y0_values_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-01-20/y0_values_df.csv', index=False)
-        # print('===============================================================')
+        print('=== Testing  ==================================================')
+        self.y0_values_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-02-06/y0_values_df.csv', index=False)
+        print('===============================================================')
 
 
 
@@ -249,12 +263,12 @@ class Simulator:
                                 self.rule_priors.append(new_prior)
                                 rule['parameters'][used_parameter_id]['prior_index'] = number_of_priors
                                 number_of_priors += 1
+                                self.parameter_columns.append('param' + str(used_parameter_id))
 
                                 self.posterior_values_to_delete['param' + str(used_parameter_id)] = []
-                                self.posterior_values_all__test['param' + str(used_parameter_id)] = []
+                                self.posterior_values['param' + str(used_parameter_id)] = []
 
-                            self.just_learned_rules.append({'object_number': object_number, 'attribute_id': attribute_id, 'rule':rule })
-                        
+
                         # ---  histograms  ---
                         # rule probability
                         if (not rule['has_probability_1']) and (not rule['learn_posterior']):
@@ -276,6 +290,7 @@ class Simulator:
                                 max_value = rule['parameters'][used_parameter_id]['max_value']
                                 histogram[1] = np.linspace(min_value,max_value,31)
                                 rule['parameters'][used_parameter_id]['histogram'] = histogram
+                                self.parameter_columns.append('param' + str(used_parameter_id))
 
 
                         # check if all the mentioned columns appear in df
@@ -292,7 +307,7 @@ class Simulator:
             print('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
             print('rule_id: ' + str(rule['id']))
             self.posterior_values_to_delete[rule['id']] = []
-            self.posterior_values_all__test[rule['id']] = []
+            self.posterior_values[rule['id']] = []
 
 
 
@@ -326,6 +341,7 @@ class Simulator:
     def __learn_likelihoods(self):
 
         # PART 1 - Run the Simulation
+        self.currently_running_learn_likelihoods = True
         batch_size = len(self.df)
 
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
@@ -343,6 +359,7 @@ class Simulator:
         # rej = elfi.Rejection(self.elfi_model, d, batch_size=batch_size, seed=30052017)
         self.elfi_sampler = rej
         result = rej.sample(self.nb_of_accepted_simulations, threshold=.5)
+        self.currently_running_learn_likelihoods = False
 
 
         # PART 2 - Post Processing
@@ -357,19 +374,15 @@ class Simulator:
                 if not rule['has_probability_1']:
                     print('==== post-processing rule ' + str(rule['id']) + '  ===================================================')
                     samples = result.samples['prior__object' + str(rule['object_number']) + '_rule' + str(rule['id']) ]
-                    # print(str(len(samples)))
-                    # print('min: ' + str(min(samples)))
-                    # print('max: ' + str(max(samples)))
+
+                    # version 1
                     histogram = np.histogram(samples, bins=30, range=(0.0,1.0))
                     histogram_of_to_be_removed = np.histogram(self.posterior_values_to_delete[rule['id']], bins=30, range=(0.0,1.0))
-                    # print('---------')
-                    histogram_all__test = np.histogram(self.posterior_values_all__test[rule['id']], bins=30, range=(0.0,1.0))
-                    # print('histogram_all__test: ' + str(histogram_all__test))
-                    # print('histogram: ' + str(histogram))
-                    # print('histogram_of_to_be_removed: ' + str(histogram_of_to_be_removed))
                     histogram = ((histogram[0] - histogram_of_to_be_removed[0]).tolist(),histogram[1].tolist())
-                    # print('histogram updated: ' + str(histogram))
-                    # print('---------')
+
+                    # version 2
+                    histogram  = np.histogram(self.posterior_values[rule['id']], bins=30, range=(0.0,1.0))
+                    print('histogram: ' + str(histogram))
 
                     # nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_values_in_posterior
                     nb_of_simulations = self.number_of_batches * batch_size
@@ -407,24 +420,21 @@ class Simulator:
                 for used_parameter_id in rule['used_parameter_ids']:
                     print('==== post-processing parameter ' + str(used_parameter_id) + '  ===================================================')
                     samples = result.samples['prior__object' + str(rule['object_number']) + '_rule' + str(rule['id']) + '_param' + str(used_parameter_id)]
-                    print(str(samples))
-                    print('min: ' + str(min(samples)))
-                    print('max: ' + str(max(samples)))
+
                     min_value = rule['parameters'][used_parameter_id]['min_value']
                     max_value = rule['parameters'][used_parameter_id]['max_value']
+
+                    # version 1
                     histogram = np.histogram(samples, bins=30, range=(min_value,max_value))
                     histogram_of_to_be_removed = np.histogram(self.posterior_values_to_delete['param' + str(used_parameter_id)], bins=30, range=(min_value,max_value))
-                    print('---------')
-                    print(self.posterior_values_to_delete.keys())
-                    print('param' + str(used_parameter_id))
-                    print(self.posterior_values_to_delete['param' + str(used_parameter_id)])
-                    histogram_all__test = np.histogram(self.posterior_values_all__test['param' + str(used_parameter_id)], bins=30, range=(min_value,max_value))
-                    print('histogram_all__test: ' + str(histogram_all__test))
-                    print('histogram: ' + str(histogram))
-                    print('histogram_of_to_be_removed: ' + str(histogram_of_to_be_removed))
                     histogram = ((histogram[0] - histogram_of_to_be_removed[0]).tolist(),histogram[1].tolist())
-                    print('histogram updated: ' + str(histogram))
-                    print('---------')
+
+                    # version 2
+                    histogram = np.histogram(self.posterior_values['param' + str(used_parameter_id)], bins=30, range=(min_value,max_value))
+                    print('histogram: ' + str(histogram))
+
+
+
 
                     
 
@@ -555,7 +565,6 @@ class Simulator:
 
 
         simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
-        simulation_model_record.just_learned_rules = json.dumps(self.just_learned_rules)
         simulation_model_record.rule_infos = json.dumps(rule_infos)
         simulation_model_record.triggered_rules = json.dumps(triggered_rules)
         simulation_model_record.simulation_data = json.dumps(simulation_data)
@@ -601,8 +610,6 @@ class Simulator:
                     df['triggerThresholdForRule' + str(rule['id'])] = rule_priors[rule['prior_index']]
                 for used_parameter_id in rule['used_parameter_ids']:
                    df['param' + str(used_parameter_id)] = rule_priors[rule['parameters'][used_parameter_id]['prior_index']]
-                   print('++++++++++  param' + str(used_parameter_id) +  '  ++++++++++++')
-                   print(str(list(df['param' + str(used_parameter_id)])))
             else:
                 if not rule['has_probability_1']:
                     df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
@@ -639,14 +646,13 @@ class Simulator:
                         triggered_rules = pd.eval(rule['condition_exec'])
                         satisfying_rows = condition_satisfying_rows & triggered_rules 
 
-                    # --------  used rules  --------
-                    if rule['learn_posterior']:
-                        rule['rule_was_used_in_simulation'] = rule['rule_was_used_in_simulation'] | condition_satisfying_rows
+                # --------  used rules  --------
+                if rule['learn_posterior']:
+                    rule['rule_was_used_in_simulation'] = rule['rule_was_used_in_simulation'] | condition_satisfying_rows
 
 
                 # --------  THEN  --------
                 if rule['effect_is_calculation']: 
-
                     new_values = pd.eval(rule['effect_exec'])
                     if rule['changed_var_data_type'] in ['relation','int']:
                         nan_rows = new_values.isnull()
@@ -667,22 +673,22 @@ class Simulator:
                 else:
                     new_values = json.loads(rule['effect_exec'])
 
-                print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-                print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-                if rule['id'] ==21:
-                    print(df['param23'])
-                    if 'condition_satisfying_rows' in locals():
-                        print('---condition_satisfying_rows------------------------------------')
-                        print(condition_satisfying_rows)
-                    print('---satisfying_rows---------------------------------------------------')
-                    print(satisfying_rows)
-                    print('===========================================')
-                    print('---df.obj1attr169---------------------------------------------------')
-                    print(df['obj1attr169'])
-                    print('---new_values---------------------------------------------------')
-                    print(new_values)
-                print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-                print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                # print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                # print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                # if rule['id'] ==21:
+                #     print(df['param23'])
+                #     if 'condition_satisfying_rows' in locals():
+                #         print('---condition_satisfying_rows------------------------------------')
+                #         print(condition_satisfying_rows)
+                #     print('---satisfying_rows---------------------------------------------------')
+                #     print(satisfying_rows)
+                #     print('===========================================')
+                #     print('---df.obj1attr169---------------------------------------------------')
+                #     print(df['obj1attr169'])
+                #     print('---new_values---------------------------------------------------')
+                #     print(new_values)
+                # print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+                # print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
 
                 # =========================  THE MOST IMPORTANT LINE  ===============================
@@ -690,7 +696,10 @@ class Simulator:
                 # ===================================================================================
 
 
-
+            print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+            print(len(df))
+            print(df.columns)
+            print(self.y0_columns)
             y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
             y0_values_in_this_period.columns = [col + 'period' + str(period) for col in y0_values_in_this_period.columns] #faster version
             y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
@@ -702,9 +711,11 @@ class Simulator:
             if rule['learn_posterior']:
                 # y0_values_in_simulation['triggerThresholdForRule' + str(rule['id'])] = rule_priors[rule['prior_index']]
                 # rule['rule_was_used_in_simulation'].index = range(len(rule['rule_was_used_in_simulation']))
+
                 y0_values_in_simulation['rule_used_in_simulation_' + str(rule['id'])] = rule['rule_was_used_in_simulation']
                 del rule['rule_was_used_in_simulation']
 
+        y0_values_in_simulation = pd.concat([y0_values_in_simulation,df[self.parameter_columns]], axis=1)
         y0_values_in_simulation.index = range(len(y0_values_in_simulation))
         return y0_values_in_simulation.to_dict('records')
 
@@ -925,7 +936,6 @@ class Simulator:
 
     def n_dimensional_distance(self, u, v):
         # u = simulated values;  v = correct_values
-        print('---------- n_dimensional_distance --------------------')
         u = np.asarray(u, dtype=object, order='c').squeeze()
         u = np.atleast_1d(u)
         v = np.asarray(v, dtype=object, order='c').squeeze()
@@ -935,7 +945,6 @@ class Simulator:
         u_df = u_df.fillna(np.nan)
         v_df = v_df.fillna(np.nan)
         
-        print('24')
         total_error = np.zeros(shape=len(u))
         dimensionality = np.zeros(shape=len(u))
         for y0_column in self.y0_columns:
@@ -966,41 +975,36 @@ class Simulator:
                     error[pd.isnull(v_df[period_column])] = 0# set the error to zero where the correct value was not given
                     total_error += error 
 
-        print('25')
         dimensionality = np.maximum(dimensionality, [1]*len(u))
         error = total_error/dimensionality
 
 
         # posterior_values_to_delete   (delete value from posterior if it's rule was not used in the simulation)
-        for rule in self.rules:
-            print('26 = ' + str(rule['id']))
-            if rule['learn_posterior']:
-                if not rule['has_probability_1']:
+        if self.currently_running_learn_likelihoods:
+            for rule in self.rules:
+                if rule['learn_posterior']:
                     to_be_deleted_rows = np.array(error < 0.5)  &  np.invert(u_df['rule_used_in_simulation_' + str(rule['id'])])
-                    self.posterior_values_to_delete[rule['id']].extend(list(u_df.loc[to_be_deleted_rows, 'triggerThresholdForRule' + str(rule['id'])]))
-                    # ================ TESTING =======================================
-                    kept_rows = np.array(error < 0.5)  
-                    self.posterior_values_all__test[rule['id']].extend(list(u_df.loc[kept_rows, 'triggerThresholdForRule' + str(rule['id'])]))
-                    # ================================================================
+                    posterior_value_rows = np.array(error < 0.5)  &  u_df['rule_used_in_simulation_' + str(rule['id'])]
+                    if not rule['has_probability_1']:
+                        self.posterior_values_to_delete[rule['id']].extend(list(u_df.loc[to_be_deleted_rows, 'triggerThresholdForRule' + str(rule['id'])]))
+                        # ================ TESTING =======================================
+                        self.posterior_values[rule['id']].extend(list(u_df.loc[posterior_value_rows, 'triggerThresholdForRule' + str(rule['id'])]))
+                        # ================================================================
 
-                print('27')
-                parameter_columns = [col for col in u_df.columns if len(col.split('param'))>1]
-                print(u_df.columns)
-                print('28 - ' + str(len(parameter_columns)))
-                for parameter_column in parameter_columns:
-                    print('29 - ' + parameter_column)
-                    self.posterior_values_to_delete[parameter_column].extend(list(u_df.loc[to_be_deleted_rows, parameter_column]))
-                    print('========================================================================')
-                    print('===============  posterior_values_to_delete  ===========================')
-                    print('========================================================================')
-                    print(sum(to_be_deleted_rows))
-                    print(u_df[to_be_deleted_rows])
-                    print(len(u_df.loc[to_be_deleted_rows, parameter_column]))
-                    print('---')
-                    # ================ TESTING =======================================
-                    kept_rows = np.array(error < 0.5)  
-                    self.posterior_values_all__test[parameter_column].extend(list(u_df.loc[kept_rows, parameter_column]))
-                    # ================================================================
+                    parameter_columns = [col for col in u_df.columns if len(col.split('param'))>1]
+                    for parameter_column in parameter_columns:
+
+                        self.posterior_values_to_delete[parameter_column].extend(list(u_df.loc[to_be_deleted_rows, parameter_column]))
+                        # print('========================================================================')
+                        # print('===============  posterior_values_to_delete  ===========================')
+                        # print('========================================================================')
+                        # print(sum(to_be_deleted_rows))
+                        # print(u_df[to_be_deleted_rows])
+                        # print(len(u_df.loc[to_be_deleted_rows, parameter_column]))
+                        # print('---')
+                        # ================ TESTING =======================================
+                        self.posterior_values[parameter_column].extend(list(u_df.loc[posterior_value_rows, parameter_column]))
+                        # ================================================================
         return error
             
 
