@@ -1264,11 +1264,36 @@
 				if ((y_value_attributes[i]['object_number'] = object_number) && (y_value_attributes[i]['attribute_id'] = attribute_id)) {
 					y_value_attributes.splice(i, 1);
 				}
-			}
+			}			
 		
 		} else {
 			$('#optimisation-attribute-button-' + object_number + '-' + attribute_id ).addClass('active');
 			y_value_attributes.push({'object_number': object_number, 'attribute_id':attribute_id})
+			
+			if ($('#analysis_type').val()=='Simulate changes over time') {
+				// IF simulation_start_time != the selected object's first observed time, suggest using that instead
+				// suggested_simulation_start_time
+				var all_objects_timestamps = [];
+				var timestamps = Object.keys(data_querying_info['timestamps'][object_number]);
+				for (var i = 0; i < timestamps.length ; i++) {
+					var total_number_of_entities = data_querying_info['table_sizes'][object_number]['number_of_objects'];
+					if (data_querying_info['timestamps'][object_number][timestamps[i]] > 0.1*total_number_of_entities ) {
+						all_objects_timestamps.push(timestamps[i]);
+					}
+				}
+				suggested_simulation_start_time = all_objects_timestamps.sort()[0];
+				
+				// current simulation_start_time
+				simulation_start_time_string = $("#simulation-start-time").val();
+				simulation_start_time_date = new Date(simulation_start_time_string);
+				simulation_start_time = simulation_start_time_date.getTime()/1000;
+			
+				if (suggested_simulation_start_time != String(simulation_start_time)){
+					var new_simulation_start_date = new Date(suggested_simulation_start_time*1000);
+					var new_simulation_start_date_string = new_simulation_start_date.toISOString().replace('T', ' ').substring(0,16);
+					$("#simulation-start-time").val(new_simulation_start_date_string);
+				}
+			}
 		}
 	}
 	

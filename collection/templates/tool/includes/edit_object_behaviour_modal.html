@@ -763,22 +763,29 @@ var parameter_info = {};
 				rule_text = rule_text.substring(0, 72) + '...';
 			}
 			
-			if (rule['has_probability_1']) {
+			
+			if (rule['has_probability_1'] && rule['used_parameter_ids'].length ==0) {
 				rule_info =	'<div class="rule-probability"> known fact</div>';
 				
+			} else if (rule['has_probability_1'] && rule['used_parameter_ids'].length >0) {
+				rule_info =	'<div class="rule-probability"> known fact</div>' +	
+							'<div class="learn-probabililty-checkbox">' +
+								'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" checked>' +
+							'</div>';	
+			
 			} else if (!rule['has_probability_1'] && rule['probability'] == null) {
 			
 				rule_info =	'<div class="rule-probability"> unknown</div>' + 
 							'<div class="learn-probabililty-checkbox">' +
 								'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" checked>' +
-							'</div>';
-
+							'</div>';		
 			} else {
 				rule_info =	'<div class="rule-probability"> ' + Math.round(rule['probability'] * 100) + ' ±' + Math.round(rule['standard_dev'] * 100) + ' %</div>' + 
 							'<div class="learn-probabililty-checkbox">' +
 								'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" checked>' +
 							'</div>';
 			}
+			
 			
 
 			
@@ -1062,9 +1069,21 @@ var parameter_info = {};
 			xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 			xmlhttp.send(JSON.stringify({'rule_id':rule_id}));
 			
+			// delete the rule's parameters
+			var used_parameter_ids = objects_dict[object_number]['object_rules'][attribute_id]['not_used_rules'][rule_id]['used_parameter_ids'];
+			for (var i = 0; i < used_parameter_ids.length ; i++) {
+				var xmlhttp = new XMLHttpRequest();  
+				xmlhttp.open("POST", "/tool/delete_parameter/");
+				xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+				xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+				xmlhttp.send(JSON.stringify({'parameter_id':used_parameter_ids[i]}));
+			}
+
 			// delete it from the frontend
 			delete objects_dict[object_number]['object_rules'][attribute_id]['not_used_rules'][rule_id];
 			the_deleted_item = document.getElementById('rule' + rule_id).remove();
+			
+
 			
 			// save the changes to objects_dict
 			saveSimulation()
@@ -1334,7 +1353,7 @@ var parameter_info = {};
 						xmlhttp.send(JSON.stringify(new_likelihood_function_dict));
 						
 						// Save to Frontend 
-						objects_dict[response_request_body['object_number']]['object_rules'][ response_request_body['rules_attribute_id']]['used_rules'][ response_request_body['rule_id']]['used_parameter_ids'].push(response_parameter_id);
+						objects_dict[response_request_body['object_number']]['object_rules'][ response_request_body['rules_attribute_id']]['used_rules'][ response_request_body['rule_id']]['used_parameter_ids'].push(response_dict['parameter_id']);
 					} 
 					
 					// re-draw
@@ -1806,17 +1825,20 @@ var parameter_info = {};
 	
 	
 	function saveBehaviourRule(rule_id, attribute_id, attribute_name, object_number) {
-		rule_dict = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
+		if (rule_id) {
+			rule_dict = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
+		} else {
+			rule_dict = {};
+		}
 		
-		// setting: id, changed_var_attribute_id, has_probability_1, probability, standard_dev
-		rule_dict['id'] = parseInt(rule_id);
+		// setting: changed_var_attribute_id, has_probability_1, probability, standard_dev
 		rule_dict['changed_var_attribute_id'] = attribute_id;
+		rule_dict['changed_var_data_type'] = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
+		rule_dict['used_parameter_ids'] = [];
 		rule_dict['has_probability_1'] = !$('#is_probabilitic_rule').is(':checked');
 		rule_dict['probability'] = null;
 		rule_dict['standard_dev'] = null;
 		rule_dict['learn_posterior'] = !rule_dict['has_probability_1'];
-		rule_dict['changed_var_data_type'] = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
-		
 		
 		// setting: condition_text, condition_exec, is_conditionless
 		var used_attribute_ids = []

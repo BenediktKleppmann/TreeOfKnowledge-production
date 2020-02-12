@@ -537,8 +537,11 @@ def get_object_rules(request):
 
             # calculate 'probability' and 'standard_dev'
             histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule['id'], True)
-            rule['probability'] = None if np.isnan(mean) else mean 
-            rule['standard_dev'] = None if np.isnan(standard_dev) else standard_dev 
+            print('rule_id: ' +  str(rule['id']))
+            print('mean: ' + str(mean))
+            print('standard_dev: ' + str(standard_dev))
+            rule['probability'] = None if mean is None or np.isnan(mean) else mean 
+            rule['standard_dev'] = None if standard_dev is None or np.isnan(standard_dev) else standard_dev 
 
 
             # specify a default for 'learn_posterior'
@@ -564,7 +567,8 @@ def get_rules_pdf(request):
         return HttpResponse('null')
     
     # only smoothen out the function if the y-values vary significantly
-    smooth_pdf = (np.std(histogram[0]) >= 0.15)
+    smooth_pdf = False
+    # smooth_pdf = (np.std(histogram[0]) >= 0.15)
     if smooth_pdf:
         hist_dist = scipy.stats.rv_histogram(histogram)
         hist_sample = hist_dist.rvs(size=50000)
@@ -608,7 +612,8 @@ def get_single_pdf(request):
         return HttpResponse('null')
 
     # only smoothen out the function if the y-values vary significantly
-    smooth_pdf = (np.std(histogram[0]) >= 0.15)
+    smooth_pdf = False
+    # smooth_pdf = (np.std(histogram[0]) >= 0.15)
     if smooth_pdf:
         print(histogram)
         hist_dist = scipy.stats.rv_histogram(histogram)
@@ -921,10 +926,10 @@ def save_rule(request):
     if request.method == 'POST':
         try:
             request_body = json.loads(request.body)
-            rule_id = request_body['id']
+            
 
-
-            if (rule_id is not None):
+            if ('id' in request_body.keys()):
+                rule_id = request_body['id']
                 rule_record = Rule.objects.get(id=rule_id)
                 rule_record.changed_var_attribute_id = request_body['changed_var_attribute_id']
                 rule_record.changed_var_data_type = request_body['changed_var_data_type']
@@ -934,6 +939,7 @@ def save_rule(request):
                 rule_record.effect_exec = request_body['effect_exec']
                 rule_record.effect_is_calculation = request_body['effect_is_calculation']
                 rule_record.used_attribute_ids = json.dumps(request_body['used_attribute_ids'])
+                rule_record.used_parameter_ids = json.dumps(request_body['used_parameter_ids'])
                 rule_record.is_conditionless = request_body['is_conditionless']
                 rule_record.has_probability_1 = request_body['has_probability_1']
                 rule_record.save()
@@ -947,6 +953,7 @@ def save_rule(request):
                                 effect_exec= request_body['effect_exec'],
                                 effect_is_calculation= request_body['effect_is_calculation'],
                                 used_attribute_ids= json.dumps(request_body['used_attribute_ids']),
+                                used_parameter_ids= json.dumps(request_body['used_parameter_ids']),
                                 is_conditionless= request_body['is_conditionless'],
                                 has_probability_1= request_body['has_probability_1'])
 

@@ -105,19 +105,19 @@ class Simulator:
             
             times = np.arange(self.simulation_start_time, self.simulation_end_time, self.timestep_size)
             merged_object_data_tables = query_datapoints.get_data_from_related_objects__multiple_timesteps(self.objects_dict, times, self.timestep_size)
-            print('-------merged_object_data_tables1--------')
-            print(merged_object_data_tables.head())
-            print(merged_object_data_tables.columns)
+            # print('-------merged_object_data_tables1--------')
+            # print(merged_object_data_tables.head())
+            # print(merged_object_data_tables.columns)
             merging_columns =  ['obj' + obj_num + 'attrobject_id' for obj_num in self.objects_dict.keys()]
-            print('===============================================')
-            print(merging_columns)
-            print('<><><><><><>')
-            print(self.df.head())
-            print('<><><><><><>')
-            print(self.df[merging_columns].head())
-            print('<><><><><><>')
-            print(merged_object_data_tables[merging_columns].head())
-            print('===============================================')
+            # print('===============================================')
+            # print(merging_columns)
+            # print('<><><><><><>')
+            # print(self.df.head())
+            # print('<><><><><><>')
+            # print(self.df[merging_columns].head())
+            # print('<><><><><><>')
+            # print(merged_object_data_tables[merging_columns].head())
+            # print('===============================================')
             merged_periods_df = pd.merge(self.df, merged_object_data_tables, on=merging_columns, how='outer', suffixes=['','__from_periods'])
             original_df_columns = self.df.columns
 
@@ -148,9 +148,9 @@ class Simulator:
             self.y0_values = [row for index, row in sorted(df_copy.to_dict('index').items())]
 
         self.y0_values_df = pd.DataFrame(self.y0_values)
-        print('=== Testing  ==================================================')
-        self.y0_values_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-02-06/y0_values_df.csv', index=False)
-        print('===============================================================')
+        # print('=== Testing  ==================================================')
+        # self.y0_values_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-02-06/y0_values_df.csv', index=False)
+        # print('===============================================================')
 
 
 
@@ -179,7 +179,7 @@ class Simulator:
             for attribute_id in attribute_ids:
 
                 rule_ids = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)]['execution_order']
-                print('rule_ids: ' + str(rule_ids))
+                # print('rule_ids: ' + str(rule_ids))
                 for rule_id in set(rule_ids):
                     print('object_number: ' + str(object_number) + '; attribute_id: ' + str(attribute_id) + '; rule_id: ' + str(rule_id) + '; ')
                     rule = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)]['used_rules'][str(rule_id)]
@@ -251,6 +251,7 @@ class Simulator:
                             # rule probability
                             if not rule['has_probability_1']:
                                 new_prior = elfi.Prior('uniform', 0, 1, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
+                                print('adding prior ' + str(number_of_priors) + ': prior__object' + str(object_number) + '_rule' + str(rule_id))
                                 self.rule_priors.append(new_prior)
                                 rule['prior_index'] = number_of_priors
                                 number_of_priors += 1
@@ -260,6 +261,7 @@ class Simulator:
                                 min_value = rule['parameters'][used_parameter_id]['min_value']
                                 max_value = rule['parameters'][used_parameter_id]['max_value']
                                 new_prior = elfi.Prior('uniform', min_value, max_value, name='prior__object' + str(object_number) + '_rule' + str(rule_id) + '_param' + str(used_parameter_id))  
+                                print('adding prior ' + str(number_of_priors) + ': prior__object' + str(object_number) + '_rule' + str(rule_id) + '_param')
                                 self.rule_priors.append(new_prior)
                                 rule['parameters'][used_parameter_id]['prior_index'] = number_of_priors
                                 number_of_priors += 1
@@ -288,7 +290,7 @@ class Simulator:
                                 # change to the parameter's range
                                 min_value = rule['parameters'][used_parameter_id]['min_value']
                                 max_value = rule['parameters'][used_parameter_id]['max_value']
-                                histogram[1] = np.linspace(min_value,max_value,31)
+                                histogram = (histogram[0], np.linspace(min_value,max_value,31))
                                 rule['parameters'][used_parameter_id]['histogram'] = histogram
                                 self.parameter_columns.append('param' + str(used_parameter_id))
 
@@ -339,7 +341,7 @@ class Simulator:
 
 
     def __learn_likelihoods(self):
-
+        print('=======  learn_likelihoods  =======')
         # PART 1 - Run the Simulation
         self.currently_running_learn_likelihoods = True
         batch_size = len(self.df)
@@ -348,7 +350,7 @@ class Simulator:
             progress_dict_string = json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_accepted_simulations, "nb_of_accepted_simulations_current": 0,  "learning__post_processing": "" , "running_monte_carlo": False })
             progress_tracking_file.write(progress_dict_string)
 
-
+        print('learn_likelihoods1')
         Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values)
         # Y = elfi.Simulator(self.likelihood_learning_simulator, self.df, self.rules, *self.rule_priors, observed=self.y0_values, model=self.elfi_model)
         S1 = elfi.Summary(self.unchanged, Y)
@@ -357,7 +359,9 @@ class Simulator:
         # d = elfi.Distance(self.n_dimensional_distance, S1, model=self.elfi_model)
         rej = elfi.Rejection(d, batch_size=batch_size, seed=30052017)
         # rej = elfi.Rejection(self.elfi_model, d, batch_size=batch_size, seed=30052017)
+        print('learn_likelihoods2')
         self.elfi_sampler = rej
+        print('learn_likelihoods3: ' + str(self.nb_of_accepted_simulations))
         result = rej.sample(self.nb_of_accepted_simulations, threshold=.5)
         self.currently_running_learn_likelihoods = False
 
@@ -592,6 +596,7 @@ class Simulator:
 
     #  Rule Learning  ---------------------------------------------------------------------------------
     def likelihood_learning_simulator(self, df, rules, *rule_priors, batch_size, random_state=None):
+        print('---- likelihood_learning_simulator ----')
         self.number_of_batches += 1
 
         print('1')
