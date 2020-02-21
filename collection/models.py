@@ -163,10 +163,12 @@ class Simulation_model(models.Model):
     object_type_counts = models.TextField()
     total_object_count= models.IntegerField()
     number_of_additional_object_facts = models.IntegerField()
+    environment_start_time = models.BigIntegerField()
+    environment_end_time = models.BigIntegerField()
     simulation_start_time = models.BigIntegerField()
     simulation_end_time = models.BigIntegerField()
     timestep_size = models.IntegerField(null=True)
-    just_learned_rules = models.TextField(null=True)
+    data_querying_info = models.TextField()
     rule_infos = models.TextField(null=True)
     triggered_rules = models.TextField(null=True)
     simulation_data = models.TextField(null=True)
@@ -193,6 +195,7 @@ class Rule(models.Model):
     effect_exec = models.TextField()
     effect_is_calculation = models.NullBooleanField() # if False, then the effect is just a value and if the rule is triggered, then the column_to_change will be set to this value
     used_attribute_ids = models.TextField()
+    used_parameter_ids = models.TextField()
     is_conditionless = models.NullBooleanField()   #if true then this is a calculation rule i.e. the condition is 'True' and the effect is automatically triggered at every timestep
     has_probability_1 = models.NullBooleanField()  #if true, then the rule is a certain fact and there will be no beta-distribution coefficients in Posterior_distributions
     probability = models.FloatField(null=True)
@@ -204,13 +207,20 @@ class Rule(models.Model):
 class Likelihood_fuction(models.Model):
     simulation_id = models.IntegerField()
     object_number = models.IntegerField()
-    rule_id = models.IntegerField()
+    rule_id = models.IntegerField(null=True)
+    parameter_id = models.IntegerField(null=True)
     list_of_probabilities = models.TextField()
     nb_of_simulations = models.IntegerField()
     nb_of_sim_in_which_rule_was_used = models.IntegerField()
     nb_of_values_in_posterior = models.IntegerField()
 
 
+class Rule_parameter(models.Model):
+    rule_id = models.IntegerField()
+    parameter_name = models.TextField()
+    min_value = models.FloatField()
+    max_value = models.FloatField()
+    
 
 
 

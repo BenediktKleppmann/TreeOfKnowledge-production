@@ -1,5 +1,7 @@
+from calendar import isleap
 from datetime import datetime
-
+from datetime import timezone
+import numpy as np
 
 def intersections(row):
     """
@@ -52,3 +54,68 @@ def unix_timestamp_to_string(unix_timestamp, timestep_size):
 
 
 
+
+
+
+def get_list_of_times(simulation_start_time, simulation_end_time, timestep_size):
+    if timestep_size % 31622400 == 0:
+        # increment by number_of_years
+        number_of_years_per_timestep = int(timestep_size/31622400)
+        number_of_timesteps = int(np.ceil((simulation_end_time - simulation_start_time)/timestep_size))
+        times = [simulation_start_time]
+        
+        for period in range(number_of_timesteps):
+            new_datetime = datetime.utcfromtimestamp(times[period])
+#             print('before: ' + str(new_datetime))
+            new_datetime = add_years(new_datetime, number_of_years_per_timestep)
+#             print('after: ' + str(new_datetime))
+            new_timestamp = int(new_datetime.replace(tzinfo=timezone.utc).timestamp())
+            times.append(new_timestamp)
+            
+    elif timestep_size % 2635200 == 0:
+        # increment by number_of_months
+        number_of_months_per_timestep = int(timestep_size/2635200)
+        number_of_timesteps = int(np.ceil((simulation_end_time - simulation_start_time)/timestep_size))
+        times = [simulation_start_time]
+        
+        for period in range(number_of_timesteps):
+            new_datetime = datetime.utcfromtimestamp(times[period])
+            new_datetime = add_months(new_datetime, number_of_months_per_timestep)
+            new_timestamp = int(new_datetime.replace(tzinfo=timezone.utc).timestamp())
+            times.append(new_timestamp)
+
+    else:        
+        times = np.arange(simulation_start_time, simulation_end_time, timestep_size)
+        
+    return times
+
+
+
+
+
+def add_years(d, years):
+    new_year = d.year + years
+    try:
+        return d.replace(year=new_year)
+    except ValueError:
+        if (d.month == 2 and d.day == 29 and # leap day
+            isleap(d.year) and not isleap(new_year)):
+            return d.replace(year=new_year, day=28)
+        raise
+
+   
+
+        
+def add_months(d, months):
+    new_month = d.month + months
+    new_year = d.year
+    if new_month > 12:
+        new_month = new_month%12
+        new_year = new_year + int(new_month/12)
+    try:
+        return d.replace(year=new_year, month=new_month)
+    except ValueError:
+        if (d.month == 2 and d.day == 29 and # leap day
+            isleap(d.year) and not isleap(new_year)):
+            return d.replace(year=new_year, month=new_month, day=28)
+        raise

@@ -355,9 +355,12 @@ def perform_uploading(uploaded_dataset, request):
                                             object_type_counts=json.dumps({object_type_id:1}),
                                             total_object_count=0,
                                             number_of_additional_object_facts=2,
+											environment_start_time=946684800, 
+                                            environment_end_time=1577836800, 
                                             simulation_start_time=946684800, 
                                             simulation_end_time=1577836800, 
-                                            timestep_size=31536000)
+                                            timestep_size=31536000,
+											data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
         simulation_model.save()
         new_model_id = simulation_model.id
@@ -630,9 +633,12 @@ def perform_uploading_OLD(uploaded_dataset, request):
                                         object_type_counts=json.dumps({object_type_id:1}),
                                         total_object_count=0,
                                         number_of_additional_object_facts=2,
+										environment_start_time=946684800, 
+                                        environment_end_time=1577836800, 
                                         simulation_start_time=946684800, 
                                         simulation_end_time=1577836800, 
-                                        timestep_size=31536000)
+                                        timestep_size=31536000,
+										data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
     simulation_model.save()
     new_model_id = simulation_model.id
