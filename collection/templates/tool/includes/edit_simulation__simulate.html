@@ -634,6 +634,7 @@
 					var new_simulation_start_date = new Date(new_simulation_start_time*1000);
 					var new_simulation_start_date_string = new_simulation_start_date.toISOString().replace('T', ' ').substring(0,16);
 					$("#simulation-start-time").val(new_simulation_start_date_string);
+					simulation_start_time = parseInt(new_simulation_start_time);
 					
 					
 					//objects_data
@@ -932,12 +933,12 @@
 			// Save the changed Date and Link the Start- and End- Time
 			$("#simulation-start-time").datetimepicker().on('changeDate', function(ev){
 				$("#simulation-end-time").datetimepicker("setStartDate", '"' + ev.date.toISOString().substring(0,10) + '"');
-				simulation_start_time = Math.round(ev.date.getTime() / 1000);
+				simulation_start_time = Math.round((ev.date.getTime()/1000) - ev.date.getTimezoneOffset()*60);
 			});
 			
 			$("#simulation-end-time").datetimepicker().on('changeDate', function(ev){
 				$("#simulation-start-time").datetimepicker("setEndDate", '"' + ev.date.toISOString().substring(0,10) + '"');
-				simulation_end_time = Math.round(ev.date.getTime() / 1000);
+				simulation_end_time = Math.round((ev.date.getTime()/1000) - ev.date.getTimezoneOffset()*60);
 			});
 			
 			// initialize TIMESTEP (Δt)
@@ -1285,13 +1286,13 @@
 				
 				// current simulation_start_time
 				simulation_start_time_string = $("#simulation-start-time").val();
-				simulation_start_time_date = new Date(simulation_start_time_string);
-				simulation_start_time = simulation_start_time_date.getTime()/1000;
+				simulation_start_time = Date.parse(simulation_start_time_string + ' GMT');
 			
 				if (suggested_simulation_start_time != String(simulation_start_time)){
 					var new_simulation_start_date = new Date(suggested_simulation_start_time*1000);
 					var new_simulation_start_date_string = new_simulation_start_date.toISOString().replace('T', ' ').substring(0,16);
 					$("#simulation-start-time").val(new_simulation_start_date_string);
+					simulation_start_time = parseInt(suggested_simulation_start_time);
 				}
 			}
 		}

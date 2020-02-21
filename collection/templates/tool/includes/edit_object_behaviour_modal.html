@@ -53,8 +53,8 @@
 	/* -----------------------------------------------------*/
 	
 	#editObjectBehaviourModal .learn-rule-title {
-		margin-left: 494px;
-		margin-bottom: 3px;
+		margin-left: 503px;
+		margin-bottom: 2px;
 		font-weight: 700;
 		text-align: center;
 	}
@@ -137,12 +137,12 @@
 	#editObjectBehaviourModal .rule-probability {
 		display: inline-block;
 		margin-top: 7px;
-		margin-left: 18px;
+		margin-left: 24px;
 	}
 	
 	#editObjectBehaviourModal .learn-probabililty-checkbox {
 		display: inline-block;
-		margin-left: 26px;
+		margin-left: 17px;
 	}
 	
 	#editObjectBehaviourModal #is_probabilitic_rule {
@@ -694,8 +694,8 @@ var parameter_info = {};
 				rule_text = "IF " +  rule['condition_text'] + " THEN [" + rules_attribute_name + "] = " + rule['effect_text'];
 			}
 			
-			if (rule_text.length > 68) {
-				rule_text = rule_text.substring(0, 65) + '...';
+			if (rule_text.length > 65) {
+				rule_text = rule_text.substring(0, 62) + '...';
 			}
 			
 			checked_string = '';
@@ -1358,6 +1358,7 @@ var parameter_info = {};
 					
 					// re-draw
 					parameter_info[response_dict['parameter_id']] = response_request_body['new_parameter_dict'];
+					populateTheRulePanels(response_request_body['object_number'], response_request_body['rules_attribute_id'], response_request_body['rules_attribute_name']);
 					inspectRule(response_request_body['object_number'], response_request_body['rules_attribute_id'], response_request_body['rules_attribute_name'], response_request_body['rule_id']); 
 					
 					// Empty the parameter-info-box
@@ -1829,12 +1830,12 @@ var parameter_info = {};
 			rule_dict = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
 		} else {
 			rule_dict = {};
+			rule_dict['used_parameter_ids'] = [];
 		}
 		
 		// setting: changed_var_attribute_id, has_probability_1, probability, standard_dev
 		rule_dict['changed_var_attribute_id'] = attribute_id;
 		rule_dict['changed_var_data_type'] = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
-		rule_dict['used_parameter_ids'] = [];
 		rule_dict['has_probability_1'] = !$('#is_probabilitic_rule').is(':checked');
 		rule_dict['probability'] = null;
 		rule_dict['standard_dev'] = null;

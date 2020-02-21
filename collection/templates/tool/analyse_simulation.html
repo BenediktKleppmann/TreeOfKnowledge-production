@@ -433,7 +433,7 @@
 	
 	var number_of_periods;
 	if (is_timeseries_analysis) {
-		number_of_periods = Math.floor((simulation_end_time - simulation_start_time)/timestep_size) - 1;
+		number_of_periods = Math.ceil((simulation_end_time - simulation_start_time)/timestep_size);
 	} else {
 		number_of_periods = 1;
 	}
@@ -993,32 +993,14 @@
 		var max_value = -1000;
 		var min_value = 1000;
 		var distinct_values = new Set();
+		
 
 
 		for (var period_number = 0; period_number < number_of_periods; period_number++) {
 			
 			// Period's Time
-			var current_timestamp= simulation_start_time + (timestep_size * (period_number + 1));
-			var current_date = new Date(current_timestamp*1000);
-			var year = current_date.getFullYear();
-			var month = current_date.getMonth();
-			var day = current_date.getDate();
-			var hours = current_date.getHours();
-			var minutes = "0" + current_date.getMinutes();
-			var seconds = "0" + current_date.getSeconds();
-			
-			var date_string = '';
-			if (timestep_size >= 31535998) {
-				date_string = year;
-			} else if (timestep_size >= 2419198) {
-				date_string = year+'-'+month;
-			} else if (timestep_size >= 86398) {
-				date_string = year+'-'+month+'-'+day;
-			} else if (timestep_size >= 58) {
-				date_string = year+'-'+month+'-'+day+' '+hours + ':' + minutes.substr(-2);
-			} else {
-				date_string = year+'-'+month+'-'+day+' '+hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-			}
+			var current_timestamp= simulation_start_time + (timestep_size * period_number);
+			var date_string = makeDateString(current_timestamp);
 			
 			var linegraph_data_row = [date_string];
 
@@ -1058,13 +1040,40 @@
 			simulation_number = all_simulations_list.indexOf(selected_simulations_list[k]);
 			simulation_numbers.push(simulation_number);
 		}
-		
-		
+
 		return {'data':linegraph_data, 'min_value':min_value, 'max_value':max_value, 'distinct_values':distinct_values_list, 'simulation_numbers':simulation_numbers};
 	}
 	
 	
 	
+	
+	
+	
+	function makeDateString(current_timestamp) {
+		var current_date = new Date(current_timestamp*1000);
+		
+		var year = current_date.getUTCFullYear();
+		var month = current_date.getUTCMonth() + 1;
+		var day = current_date.getUTCDate();
+		var hours = current_date.getUTCHours();
+		var minutes = "0" + current_date.getUTCMinutes();
+		var seconds = "0" + current_date.getUTCSeconds();
+		
+		var date_string = '';
+		if (timestep_size >= 31622400) {
+			date_string = year;
+		} else if (timestep_size >= 2419198) {
+			date_string = year+'-'+month;
+		} else if (timestep_size >= 86398) {
+			date_string = year+'-'+month+'-'+day;
+		} else if (timestep_size >= 58) {
+			date_string = year+'-'+month+'-'+day+' '+hours + ':' + minutes.substr(-2);
+		} else {
+			date_string = year+'-'+month+'-'+day+' '+hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+		}
+		
+		return date_string;
+	}
 
 	//========================  PLOT GRAPH - TOP PANEL   =================================
 			
@@ -1246,14 +1255,14 @@
 			var simulation_id = selected_simulations_list[0];
 		
 			if (period_number == null) {
-				triggerd_rules_html = '';
+				triggerd_rules_html = '<div class="triggerd-rules-period"></div>';
 				for (var period_number = 0; period_number < number_of_periods; period_number++) {
 					var triggerd_rules_period_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number, false);
 					triggerd_rules_html += triggerd_rules_period_html[0];
 					if (triggerd_rules_period_html[1] > max_number_of_rules) {max_number_of_rules = triggerd_rules_period_html[1];}
 				}
 				$('#triggerd-rule-periods').html(triggerd_rules_html);
-				$('.triggerd-rules-period').css('width', (100/number_of_periods).toFixed(3) + '%');
+				$('.triggerd-rules-period').css('width', (100/(number_of_periods+1)).toFixed(3) + '%');
 			} else {
 				triggerd_rules_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  0, true);
 				$('#triggerd-rule-periods').html(triggerd_rules_html[0]);
@@ -1305,15 +1314,9 @@
 					
 					// rule_number
 					rule_number = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].indexOf(rule_id) + 1;
-					
-					
+							
 					// tooltip_text
-					if (rule['is_conditionless']) {
-						tooltip_text = "At every timestep: [" + attribute_name + "] = " + rule['effect_text'];
-					} else {
-						tooltip_text = "IF " +  rule['condition_text'] + " THEN [" + attribute_name + "] = " + rule['effect_text'];
-					}
-					tooltip_text += "&#013;---&#013;current value=|" + triggered_rule_info['v'] + "|  vs.  correct value=|" + String(triggered_rules[simulation_id][column_name][period_number]['correct_value']) + "|";  // v = new_value
+					tooltip_text = "current value=|" + triggered_rule_info['v'] + "|  vs.  correct value=|" + String(triggered_rules[simulation_id][column_name][period_number]['correct_value']) + "|";  // v = new_value
 					
 
 					//probability_html

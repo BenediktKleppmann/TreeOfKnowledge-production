@@ -944,6 +944,20 @@ def save_rule(request):
                 rule_record.has_probability_1 = request_body['has_probability_1']
                 rule_record.save()
 
+                # reset all likelihood functions associated with this rule
+                likelihood_fuctions = Likelihood_fuction.objects.filter(rule_id=rule_id)
+                for likelihood_fuction in likelihood_fuctions:
+                    likelihood_fuction.list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                    likelihood_fuction.save()
+
+                rule_parameters = Rule_parameter.objects.filter(rule_id=rule_id)
+                for rule_parameter in rule_parameters:
+                    likelihood_fuctions = Likelihood_fuction.objects.filter(parameter_id=rule_parameter.id)
+                    for likelihood_fuction in likelihood_fuctions:
+                        likelihood_fuction.list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                        likelihood_fuction.save()
+
+
             else:
                 new_entry = Rule(changed_var_attribute_id= request_body['changed_var_attribute_id'],
                                 changed_var_data_type= request_body['changed_var_data_type'],
@@ -1186,6 +1200,9 @@ def delete_rule(request):
 
             likelihood_fuctions = Likelihood_fuction.objects.filter(rule_id=rule_id)
             likelihood_fuctions.delete()
+
+            rule_parameters = Rule_parameter.objects.filter(rule_id=rule_id)
+            rule_parameters.delete()
             return HttpResponse("success")
 
         except Exception as error:
@@ -1520,7 +1537,7 @@ def edit_simulation_new(request):
                                         environment_end_time=1577836800, 
                                         simulation_start_time=946684800, 
                                         simulation_end_time=1577836800, 
-                                        timestep_size=31536000,
+                                        timestep_size=31622400,
 										data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
     simulation_model.save()
     new_simulation_id = simulation_model.id
@@ -1593,7 +1610,7 @@ def analyse_simulation(request, simulation_id):
 
 #     valid_times = []
 #     times = np.arange(simulation_model.simulation_start_time + simulation_model.timestep_size, simulation_model.simulation_end_time, simulation_model.timestep_size)
-#     for index in range(len(times)-1):
+#     for index in range(len(times)):
 #         valid_times.append([int(times[index]), int(times[index + 1])])
 
 #     learned_rule = Learned_rule(object_type_id=objects_dict[str(object_number)]['object_type_id'], 
@@ -1835,17 +1852,24 @@ def upload_file(request):
 # ==================
 def test_page1(request):
 
-    with connection.cursor() as cursor:
-        query_string = "SELECT DISTINCT id FROM collection_rule"
-        cursor.execute(query_string)
-        rule_ids = [entry[0] for entry in cursor.fetchall()]
+    # with connection.cursor() as cursor:
+    #     query_string = "SELECT DISTINCT id FROM collection_rule"
+    #     cursor.execute(query_string)
+    #     rule_ids = [entry[0] for entry in cursor.fetchall()]
 
-    for rule_id in rule_ids:
-        rule_record = Rule.objects.get(id=rule_id)
-        rule_record.used_attribute_ids = rule_record.used_attribute_ids.replace("'",'"')
-        rule_record.used_parameter_ids = rule_record.used_parameter_ids.replace("'",'"')
-        rule_record.save()
+    # for rule_id in rule_ids:
+    #     rule_record = Rule.objects.get(id=rule_id)
+    #     rule_record.used_attribute_ids = rule_record.used_attribute_ids.replace("'",'"')
+    #     rule_record.used_parameter_ids = rule_record.used_parameter_ids.replace("'",'"')
+    #     rule_record.save()
     # return render(request, 'tool/test_page1.html')
+
+    likelihood_fuctions = Likelihood_fuction.objects.filter(parameter_id=42)
+    for likelihood_fuction in likelihood_fuctions:
+        likelihood_fuction.list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        likelihood_fuction.save()
+    return HttpResponse('success')
+
 
 
 
