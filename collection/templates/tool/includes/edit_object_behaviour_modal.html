@@ -471,7 +471,7 @@
 		margin-top: -2px;
 	}
 	
-	#parameter-this-simulation-warning-message {
+	#parameter-this-simulation-warning-message, #parameter-all-simulations-warning-message {
 		text-align: center;
 	}
 	/* ----------------------------------------------------------*/
@@ -1195,7 +1195,8 @@ var parameter_info = {};
 												'<div id="parameter-pdf-graph-all-simulations"></div>' +
 											'</div>' +
 											'<div class="pdf-x-axis"><div class="left">' + min_value + '</div><div class="right">' + max_value + '</div></div>' +
-											'<div class="pdf-title">Learned from all simulations</div>' +
+											'<div class="pdf-title" data-toggle="tooltip" title="">Learned from all simulations</div>' +
+											'<div id="parameter-all-simulations-warning-message"></div>' +
 										'</div>' +
 									'</div>';
 		$('#parameter-info-box').html(parameter_info_box_html);
@@ -1244,7 +1245,7 @@ var parameter_info = {};
 					chart.draw();
 				});
 				
-				$('#parameter-this-simulation-warning-message').html(message);
+				$('#parameter-this-simulation-warning-message').html(message + '<br>(' + response['nb_of_values_in_posterior'] + ' correct runs)');
 				
 			}
 		};
@@ -1259,7 +1260,7 @@ var parameter_info = {};
 				var pdf_data = [];
 				var response = JSON.parse(this.responseText);
 				if (response) {
-					pdf_data = response;
+					pdf_data = response['pdf']
 					//pdf_data = scalePDFToParameterRange(pdf_data, min_value, max_value);
 				} else {
 					pdf_data = [[0.0, 1.0], [0.03333333333333333, 1.0], [0.06666666666666667, 1.0], [0.1, 1.0], [0.13333333333333333, 1.0], [0.16666666666666666, 1.0], [0.2, 1.0], [0.23333333333333334, 1.0], [0.26666666666666666, 1.0], [0.3, 1.0], [0.3333333333333333, 1.0], [0.36666666666666664, 1.0], [0.4, 1.0], [0.43333333333333335, 1.0], [0.4666666666666667, 1.0], [0.5, 1.0], [0.5333333333333333, 1.0], [0.5666666666666667, 1.0], [0.6, 1.0], [0.6333333333333333, 1.0], [0.6666666666666666, 1.0], [0.7, 1.0], [0.7333333333333333, 1.0], [0.7666666666666666, 1.0], [0.8, 1.0], [0.8333333333333334, 1.0], [0.8666666666666667, 1.0], [0.9, 1.0], [0.9333333333333333, 1.0], [0.9666666666666667, 1.0]];
@@ -1281,6 +1282,12 @@ var parameter_info = {};
 					chart.container('parameter-pdf-graph-all-simulations');
 					chart.draw();
 				});
+				
+				if (response['nb_of_simulations']>1) {
+					$('.pdf-all-simulations .pdf-title').attr('title', 'This distribution was learned from ' + response['nb_of_simulations'] + ' different simulations');
+					$('[data-toggle="tooltip"]').tooltip()
+				}
+				$('#parameter-all-simulations-warning-message').html('(total: ' + response['nb_of_values_in_posterior'] + ' correct runs)');
 				
 			}
 		};
@@ -1484,7 +1491,8 @@ var parameter_info = {};
 														'<div id="pdf-graph-all-simulations"></div>' +
 													'</div>' +
 													'<div class="pdf-x-axis"><div class="left">0%</div><div class="right">100%</div></div>' +
-													'<div class="pdf-title">Learned from all simulations</div>' +
+													'<div class="pdf-title" data-toggle="tooltip" title="">Learned from all simulations</div>' +
+													'<div id="parameter-all-simulations-warning-message"></div>' +
 												'</div>';
 												
 			$('#rule-pdf-panel').html(rule_probability_html_string);

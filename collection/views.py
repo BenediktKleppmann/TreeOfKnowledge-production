@@ -536,7 +536,7 @@ def get_object_rules(request):
             rule['used_parameter_ids'] = json.loads(rule['used_parameter_ids'])
 
             # calculate 'probability' and 'standard_dev'
-            histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule['id'], True)
+            histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations = get_from_db.get_rules_pdf(rule['id'], True)
             print('rule_id: ' +  str(rule['id']))
             print('mean: ' + str(mean))
             print('standard_dev: ' + str(standard_dev))
@@ -557,12 +557,14 @@ def get_object_rules(request):
 # used in edit_object_behaviour_modal.html (which in turn is used in edit_simulation.html and analyse_simulation.html)
 @login_required
 def get_rules_pdf(request):
-    # print('====================   get_rules_pdf   ==================================')
+    print('====================   get_rules_pdf   ==================================')
     rule_or_parameter_id = request.GET.get('rule_or_parameter_id', '')
     is_rule = (request.GET.get('is_rule', '').lower() == 'true')
-    histogram, mean, standard_dev = get_from_db.get_rules_pdf(rule_or_parameter_id, is_rule)
-    # print('histogram: ' + str(histogram))
-    
+
+    histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations = get_from_db.get_rules_pdf(rule_or_parameter_id, is_rule)
+    response = {'nb_of_values_in_posterior': nb_of_values_in_posterior,
+                'nb_of_simulations': nb_of_simulations}
+
     if histogram is None:
         return HttpResponse('null')
     
@@ -581,9 +583,9 @@ def get_rules_pdf(request):
         if pdf_values[29] > 100:
             pdf_values[29] = pdf_values[28]
         pdf_values = np.minimum(pdf_values, 100)
-        response = [[x, min(prob,100)] for x, prob in zip(x_values, pdf_values)]
+        response['pdf'] = [[x, min(prob,100)] for x, prob in zip(x_values, pdf_values)]
     else:
-        response = [[bucket_value, min(count,10000)] for bucket_value, count in zip(histogram[1], histogram[0])]
+        response['pdf'] = [[bucket_value, min(count,10000)] for bucket_value, count in zip(histogram[1], histogram[0])]
     return HttpResponse(json.dumps(response))
 
 
@@ -595,7 +597,7 @@ def get_single_pdf(request):
     object_number = request.GET.get('object_number', '')
     rule_or_parameter_id = request.GET.get('rule_or_parameter_id', '')
     is_rule = (request.GET.get('is_rule', '').lower() == 'true')
-    histogram, mean, standard_dev, message = get_from_db.get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule)
+    histogram, mean, standard_dev, nb_of_values_in_posterior, message = get_from_db.get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule)
     print('====================   get_single_pdf   ==================================')
     print(str(rule_or_parameter_id))
     print(str(simulation_id))
@@ -605,6 +607,7 @@ def get_single_pdf(request):
     print(str(histogram is None))
     print(str(histogram))
     print('=========================================================================')
+    response['nb_of_values_in_posterior'] = nb_of_values_in_posterior
     if message != '':
         response['message'] = message
 

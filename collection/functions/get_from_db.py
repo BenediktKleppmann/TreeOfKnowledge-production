@@ -202,28 +202,36 @@ def get_available_relations():
 
 # used in simulation.py
 def get_rules_pdf(rule_or_parameter_id, is_rule):
+    print('-----------  get_rules_pdf(' + str(rule_or_parameter_id) + ', ' + str(is_rule) + ')  ----------------------')
     if is_rule:
-        likelihood_functions = list(Likelihood_fuction.objects.filter(rule_id=rule_or_parameter_id).values())
+        likelihood_functions = list(Likelihood_fuction.objects.filter(rule_id=rule_or_parameter_id).exclude(nb_of_values_in_posterior=0).values())
     else:
-        likelihood_functions = list(Likelihood_fuction.objects.filter(parameter_id=rule_or_parameter_id).values())
+        likelihood_functions = list(Likelihood_fuction.objects.filter(parameter_id=rule_or_parameter_id).exclude(nb_of_values_in_posterior=0).values())
 
     if len(likelihood_functions) > 0:
         # multiply the likelihood functions of all different simulations/evidences to get a combined posterior
         posterior_probabilities = np.array([1] * 30)
+        nb_of_values_in_posterior = 0
+        nb_of_simulations = len(likelihood_functions)
         for likelihood_function in likelihood_functions:
             list_of_probabilities = json.loads(likelihood_function['list_of_probabilities'])
-            posterior_probabilities = posterior_probabilities * list_of_probabilities           # multiply with likelihood function
+            if not np.any(np.isnan(list_of_probabilities)):
+                posterior_probabilities = posterior_probabilities * list_of_probabilities           # multiply with likelihood function
+                nb_of_values_in_posterior += likelihood_function['nb_of_values_in_posterior']
         
-        posterior_probabilities = posterior_probabilities * 30/ np.sum(posterior_probabilities) # re-normalisation
+        if np.sum(posterior_probabilities)>0:
+            posterior_probabilities = posterior_probabilities * 30/ np.sum(posterior_probabilities) # re-normalisation
+        else: 
+            posterior_probabilities = np.array([1] * 30)
         histogram = (posterior_probabilities.tolist(), np.linspace(0,1,31).tolist())
 
         x_values = np.linspace(0,0.966666666666667,30) + 1/60
         mean = np.average(x_values, weights=posterior_probabilities)
         standard_dev = np.sqrt(np.average((x_values - mean)**2, weights=posterior_probabilities))
-        return histogram, mean, standard_dev
+        return histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations
             
     else:
-        return None, None, None
+        return None, None, None, 0, 0
 
 
 def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
@@ -236,6 +244,7 @@ def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
     print('len(likelihood_functions)@: ' + str(len(likelihood_functions)))
     if len(likelihood_functions) > 0:
 
+        nb_of_values_in_posterior = likelihood_functions[0]['nb_of_values_in_posterior']
         list_of_probabilities = json.loads(likelihood_functions[0]['list_of_probabilities'])
         histogram = (list(list_of_probabilities), list(np.linspace(0,1,31)))
         print('histogram: ' + str(histogram))
@@ -253,10 +262,10 @@ def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
             message = ''
 
         print('histogram: ' + str(histogram))
-        return histogram, mean, standard_dev, message
+        return histogram, mean, standard_dev, nb_of_values_in_posterior, message
 
     else:
-        return None, None, None, None
+        return None, None, None, 0, None
 
 
     

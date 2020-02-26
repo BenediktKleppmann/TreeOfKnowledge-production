@@ -1255,14 +1255,14 @@
 			var simulation_id = selected_simulations_list[0];
 		
 			if (period_number == null) {
-				triggerd_rules_html = '<div class="triggerd-rules-period"></div>';
+				triggerd_rules_html = '';
 				for (var period_number = 0; period_number < number_of_periods; period_number++) {
 					var triggerd_rules_period_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number, false);
 					triggerd_rules_html += triggerd_rules_period_html[0];
 					if (triggerd_rules_period_html[1] > max_number_of_rules) {max_number_of_rules = triggerd_rules_period_html[1];}
 				}
 				$('#triggerd-rule-periods').html(triggerd_rules_html);
-				$('.triggerd-rules-period').css('width', (100/(number_of_periods+1)).toFixed(3) + '%');
+				$('.triggerd-rules-period').css('width', (100/(number_of_periods)).toFixed(3) + '%');
 			} else {
 				triggerd_rules_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  0, true);
 				$('#triggerd-rule-periods').html(triggerd_rules_html[0]);
