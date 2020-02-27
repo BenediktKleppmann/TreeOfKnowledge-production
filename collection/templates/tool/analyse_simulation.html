@@ -105,32 +105,32 @@
 	/* Left Panel ---------------------------------------------------------------*/
 	/* --------------------------------------------------------------------------*/
 	
-	.simulation-selection-area {
+	.run-selection-area {
 	    margin-top: 34px;
 		margin-left: 15px;
 		width: 217px;
 	}
 	
 	
-	#initial-state-simulation-selection-buttons {
+	#initial-state-run-selection-buttons {
 		margin-top: 26px;
 		max-height: 132px;
 		overflow-y: auto;
 	}
 	
-	#individual-simulation-selection-buttons {
+	#individual-run-selection-buttons {
 		margin-top: 26px;
 		max-height: calc(100vh - 400px);
 		overflow-y: auto;
 	}
 	
-	.simulation-selection-button {
+	.run-selection-button {
 		width: 100%;
 		background: rgb(248, 248, 248);
 		border: 1px solid rgb(210, 210, 210);
 	}
 	
-	.simulation-selection-button.active {
+	.run-selection-button.active {
 		background: rgb(219, 219, 219)
 	}
 	
@@ -382,14 +382,14 @@
 {% block content %}
 <div id="score-box">Overall Score: <div id="simulation-score"></div></div>
 <div class="left-panel">
-	<div class="simulation-selection-area">
-		<div class="simulation-selection-box">
-			<button id="all-simulations-button" class="btn btn-light simulation-selection-button" type="button" onclick="selectAllSimulations()">All Simulations</button>
-			<button id="correct-simulations-button" class="btn btn-light simulation-selection-button" type="button" onclick="selectCorrectSimulations()">Correct Simulations</button>
-			<button id="false-simulations-button" class="btn btn-light simulation-selection-button" type="button" onclick="selectFalseSimulations()">False Simulations</button>
+	<div class="run-selection-area">
+		<div class="run-selection-box">
+			<button id="all-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectAllRuns()">All Runs</button>
+			<button id="correct-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectCorrectRuns()">Correct Runs</button>
+			<button id="false-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectFalseRuns()">False Runs</button>
 		</div>
-		<div id="initial-state-simulation-selection-buttons" class="simulation-selection-box"></div>
-		<div id="individual-simulation-selection-buttons" class="simulation-selection-box"></div>
+		<div id="initial-state-run-selection-buttons" class="run-selection-box"></div>
+		<div id="individual-run-selection-buttons" class="run-selection-box"></div>
 	</div>
 </div>
 <div class="right-panel-container">
@@ -440,8 +440,8 @@
 
 
 	
-	var selected_simulations = new Set(); 
-	var all_simulations_list = Object.keys(simulation_data);
+	var selected_runs = new Set(); 
+	var all_runs_list = Object.keys(simulation_data);
 	var selected_object_attribute = null;
 
 			
@@ -466,9 +466,9 @@
 	function drawLeftPanel() {
 	
 		initial_state_ids = []; 
-		var all_simulation_numbers = Object.keys(simulation_data);
-		for (var i = 0; i < all_simulation_numbers.length; i++) {
-			var initial_state_id = all_simulation_numbers[i].split('-')[0];
+		var all_run_numbers = Object.keys(simulation_data);
+		for (var i = 0; i < all_run_numbers.length; i++) {
+			var initial_state_id = all_run_numbers[i].split('-')[0];
 			if (!initial_state_ids.includes(initial_state_id)) {
 				initial_state_ids.push(initial_state_id);
 			}
@@ -476,15 +476,15 @@
 		
 		var initial_state_selection_buttons = '';
 		for (var i = 0; i < initial_state_ids.length; i++) {
-			initial_state_selection_buttons += '<button id="initial-state-btn' + i + '" class="btn btn-light simulation-selection-button" type="button" onclick="selectSimulationsWithInitialState(' + initial_state_ids[i] + ')">All with Intital State ' + initial_state_ids[i] + '</button>';
+			initial_state_selection_buttons += '<button id="initial-state-btn' + i + '" class="btn btn-light run-selection-button" type="button" onclick="selectRunsWithInitialState(' + initial_state_ids[i] + ')">All with Intital State ' + initial_state_ids[i] + '</button>';
 		}	
-		$('#initial-state-simulation-selection-buttons').html(initial_state_selection_buttons);
+		$('#initial-state-run-selection-buttons').html(initial_state_selection_buttons);
 		
 		var individual_selection_buttons = '';
-		for (var i = 0; i < all_simulation_numbers.length; i++) {
-			individual_selection_buttons += '<button id="selection-button-' + all_simulation_numbers[i] + '" class="btn btn-light simulation-selection-button simulation-toggle" type="button" onclick="selectSimulation(\'' + all_simulation_numbers[i] + '\')">Simulation ' + i + '</button>'
+		for (var i = 0; i < all_run_numbers.length; i++) {
+			individual_selection_buttons += '<button id="selection-button-' + all_run_numbers[i] + '" class="btn btn-light run-selection-button run-toggle" type="button" onclick="selectRun(\'' + all_run_numbers[i] + '\')">Run ' + i + '</button>'
 		}	
-		$('#individual-simulation-selection-buttons').html(individual_selection_buttons);
+		$('#individual-run-selection-buttons').html(individual_selection_buttons);
 	} 
 
 
@@ -493,114 +493,114 @@
 	
 	
 	
-	//All Simulations -------------------------------  
+	//All Runs -------------------------------  
 	
-	function selectAllSimulations() {	
-		$('#all-simulations-button').toggleClass('active');
+	function selectAllRuns() {	
+		$('#all-runs-button').toggleClass('active');
 
 		if (clicked_selection_buttons['select_all_clicked']) {
 			clicked_selection_buttons['select_all_clicked'] = false;
 			
-			selected_simulations = new Set()		
-			$('.simulation-toggle').removeClass('active');
+			selected_runs = new Set()		
+			$('.run-toggle').removeClass('active');
 			$('#bottom-object-items').html('');
 			$('#graph-panel').html('');
 		} else {
 			clicked_selection_buttons['select_all_clicked'] = true;
 			
-			all_simulation_numbers = Object.keys(simulation_data);
-			for (var i = 0; i < all_simulation_numbers.length; i++) {
-				selected_simulations.add(all_simulation_numbers[i]);
+			all_run_numbers = Object.keys(simulation_data);
+			for (var i = 0; i < all_run_numbers.length; i++) {
+				selected_runs.add(all_run_numbers[i]);
 			}		
-			$('.simulation-toggle').addClass('active');
+			$('.run-toggle').addClass('active');
 			
 			refreshRestOfScreen();
 		}
 	}
 	
-	//Correct Simulations  -------------------------------
-	function selectCorrectSimulations() {
-		$('#correct-simulations-button').toggleClass('active');
+	//Correct Runs  -------------------------------
+	function selectCorrectRuns() {
+		$('#correct-runs-button').toggleClass('active');
 		if (clicked_selection_buttons['select_correct_clicked']) {
 			clicked_selection_buttons['select_correct_clicked'] = false;
 			
-			for (var i = 0; i < errors['correct_simulations'].length; i++) {
-				var simulation_number = errors['correct_simulations'][i];
-				selected_simulations.delete(simulation_number);
-				$('#selection-button-' + simulation_number).removeClass('active');
+			for (var i = 0; i < errors['correct_runs'].length; i++) {
+				var run_number = errors['correct_runs'][i];
+				selected_runs.delete(run_number);
+				$('#selection-button-' + run_number).removeClass('active');
 			}
 				
 		} else {
 			clicked_selection_buttons['select_correct_clicked'] = true;
 			
-			for (var i = 0; i < errors['correct_simulations'].length; i++) {
-				var simulation_number = errors['correct_simulations'][i];
-				selected_simulations.add(simulation_number);
-				$('#selection-button-' + simulation_number).addClass('active');
+			for (var i = 0; i < errors['correct_runs'].length; i++) {
+				var run_number = errors['correct_runs'][i];
+				selected_runs.add(run_number);
+				$('#selection-button-' + run_number).addClass('active');
 			}
 		}
 		refreshRestOfScreen();
 	}
 	
-	//False Simulations  -------------------------------
-	function selectFalseSimulations() {
-		$('#false-simulations-button').toggleClass('active');
+	//False Runs  -------------------------------
+	function selectFalseRuns() {
+		$('#false-runs-button').toggleClass('active');
 		if (clicked_selection_buttons['select_false_clicked']) {
 			clicked_selection_buttons['select_false_clicked'] = false;
 			
-			for (var i = 0; i < errors['false_simulations'].length; i++) {
-				var simulation_number = errors['false_simulations'][i];
-				selected_simulations.delete(simulation_number);
-				$('#selection-button-' + simulation_number).removeClass('active');
+			for (var i = 0; i < errors['false_runs'].length; i++) {
+				var run_number = errors['false_runs'][i];
+				selected_runs.delete(run_number);
+				$('#selection-button-' + run_number).removeClass('active');
 			}
 				
 		} else {
 			clicked_selection_buttons['select_false_clicked'] = true;
 			
-			for (var i = 0; i < errors['false_simulations'].length; i++) {
-				var simulation_number = errors['false_simulations'][i];
-				selected_simulations.add(simulation_number);
-				$('#selection-button-' + simulation_number).addClass('active');
+			for (var i = 0; i < errors['false_runs'].length; i++) {
+				var run_number = errors['false_runs'][i];
+				selected_runs.add(run_number);
+				$('#selection-button-' + run_number).addClass('active');
 			}
 		}
 		refreshRestOfScreen();
 	}
 	
 	//All with Initial State X  -------------------------------
-	function selectSimulationsWithInitialState(initial_state_id) {
+	function selectRunsWithInitialState(initial_state_id) {
 		$('#initial-state-btn' + initial_state_id).toggleClass('active');
 		if (clicked_selection_buttons['select_initial_state' + initial_state_id +'_clicked']) {
 			clicked_selection_buttons['select_initial_state' + initial_state_id +'_clicked'] = false;
 			
-			var all_simulation_numbers = Object.keys(simulation_data);
-			for (var i = 0; i < all_simulation_numbers.length; i++) {
-				if (all_simulation_numbers[i].split('-')[0] == String(initial_state_id)) {
-					selected_simulations.delete(all_simulation_numbers[i]);
-					$('#selection-button-' + all_simulation_numbers[i]).removeClass('active');
+			var all_run_numbers = Object.keys(simulation_data);
+			for (var i = 0; i < all_run_numbers.length; i++) {
+				if (all_run_numbers[i].split('-')[0] == String(initial_state_id)) {
+					selected_runs.delete(all_run_numbers[i]);
+					$('#selection-button-' + all_run_numbers[i]).removeClass('active');
 				}
 			}		
 		} else {
 			clicked_selection_buttons['select_initial_state' + initial_state_id +'_clicked'] = true;
 			
-			var all_simulation_numbers = Object.keys(simulation_data);
-			for (var i = 0; i < all_simulation_numbers.length; i++) {
-				if (all_simulation_numbers[i].split('-')[0] == String(initial_state_id)) {
-					selected_simulations.add(all_simulation_numbers[i]);
-					$('#selection-button-' + all_simulation_numbers[i]).addClass('active');
+			var all_run_numbers = Object.keys(simulation_data);
+			for (var i = 0; i < all_run_numbers.length; i++) {
+				if (all_run_numbers[i].split('-')[0] == String(initial_state_id)) {
+					selected_runs.add(all_run_numbers[i]);
+					$('#selection-button-' + all_run_numbers[i]).addClass('active');
 				}
 			}	
 		}
 		refreshRestOfScreen();
 	}
 	
-	//Simulation X  -------------------------------
-	function selectSimulation(simulation_number) {
-		if ($('#selection-button-' + simulation_number).hasClass('active')) {
-			selected_simulations.delete(simulation_number);
-			$('#selection-button-' + simulation_number).removeClass('active');
+	//Run X  -------------------------------
+	function selectRun(run_number) {
+		if ($('#selection-button-' + run_number).hasClass('active')) {
+			selected_runs.delete(run_number);
+			$('#selection-button-' + run_number).removeClass('active');
 		} else {
-			selected_simulations.add(simulation_number);
-			$('#selection-button-' + simulation_number).addClass('active');
+			selected_runs.add(run_number);
+			$('#selection-button-' + run_number).addClass('active');
 		}
 		refreshRestOfScreen();
 	}
@@ -642,8 +642,8 @@
 	function drawBottomPanel() {
 		var object_items_html = '';
 		
-		var selected_simulations_list = Array.from(selected_simulations);
-		if (selected_simulations_list.length > 0) {
+		var selected_runs_list = Array.from(selected_runs);
+		if (selected_runs_list.length > 0) {
 			var object_numbers = Object.keys(objects_dict);
 			object_items_html = '';
 			for (var i = 0; i < object_numbers.length; i++) {
@@ -694,7 +694,7 @@
 	// Fill in Values  -------------------------------
 	function fillBottomPanel(metric) {
 		
-		var selected_simulations_list = Array.from(selected_simulations);
+		var selected_runs_list = Array.from(selected_runs);
 		var object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length; i++) {
 			var object_number = object_numbers[i];
@@ -707,10 +707,10 @@
 					
 					// values
 					var values = []
-					for (var k = 0; k < selected_simulations_list.length; k++) {
-						var simulation_number = selected_simulations_list[k];
+					for (var k = 0; k < selected_runs_list.length; k++) {
+						var run_number = selected_runs_list[k];
 						var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
-						values.push(simulation_data[simulation_number][column_name][period_number]);
+						values.push(simulation_data[run_number][column_name][period_number]);
 					}
 					
 					// calculate the resulting value
@@ -903,7 +903,7 @@
 	// Histogram Graph Data ------------------------
 	function prepareHistogramData(is_categorical, object_number, attribute_id, period_number) {
 	
-		var selected_simulations_list = Array.from(selected_simulations);
+		var selected_runs_list = Array.from(selected_runs);
 		var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
 		var histogram_data = {};
 		
@@ -911,14 +911,14 @@
 			// value_occurences & value_labels
 			var value_occurences = {}
 			var value_labels = {}
-			for (var i = 0; i < selected_simulations_list.length; i++) {
-				var value = String(simulation_data[selected_simulations_list[i]][column_name][period_number]);
+			for (var i = 0; i < selected_runs_list.length; i++) {
+				var value = String(simulation_data[selected_runs_list[i]][column_name][period_number]);
 				if (Object.keys(value_occurences).includes(value)) {
 					value_occurences[value] += 1;
-					value_labels[value] += 'Simulation' + all_simulations_list.indexOf(selected_simulations_list[i])  + '\n';
+					value_labels[value] += 'Run' + all_runs_list.indexOf(selected_runs_list[i])  + '\n';
 				} else {
 					value_occurences[value] = 1;
-					value_labels[value] = 'Simulation' + all_simulations_list.indexOf(selected_simulations_list[i])  + '\n';
+					value_labels[value] = 'Run' + all_runs_list.indexOf(selected_runs_list[i])  + '\n';
 				}
 			}
 			
@@ -936,10 +936,10 @@
 			// overall value range
 			var minimum_overall_value = 100000;
 			var maximum_overall_value = -100000;
-			var all_simulations = Object.keys(simulation_data);
-			for (var i = 0; i < all_simulations.length; i++) {
+			var all_runs = Object.keys(simulation_data);
+			for (var i = 0; i < all_runs.length; i++) {
 				for (var period_nb = 0; period_nb < number_of_periods; period_nb++) {
-					var value = simulation_data[all_simulations[i]][column_name][period_nb];
+					var value = simulation_data[all_runs[i]][column_name][period_nb];
 					if (value > maximum_overall_value) {maximum_overall_value = value;}
 					if (value < minimum_overall_value) {minimum_overall_value = value;}
 				}
@@ -958,14 +958,14 @@
 			// bin_occurences & bin_labels
 			bin_occurences = Array(40).fill(0);
 			bin_labels = Array(40).fill(''); 
-			for (var i = 0; i < selected_simulations_list.length; i++) {
-				var value = simulation_data[selected_simulations_list[i]][column_name][period_number];
+			for (var i = 0; i < selected_runs_list.length; i++) {
+				var value = simulation_data[selected_runs_list[i]][column_name][period_number];
 				var bin_number = 0;
 				for (var j = 0; j < bin_lower_bounds.length; j++) {
 					if (value > bin_lower_bounds[j]) { bin_number = j;	}
 				}
 				bin_occurences[bin_number] += 1;
-				bin_labels[bin_number] += 'Simulation' + all_simulations_list.indexOf(selected_simulations_list[i])  + ': ' + String(value) + '\n';
+				bin_labels[bin_number] += 'Run' + all_runs_list.indexOf(selected_runs_list[i])  + ': ' + String(value) + '\n';
 			}
 			
 			// histogram_data
@@ -984,9 +984,9 @@
 	// Line Graph Data ------------------------------------
 	function prepareLineGraphData_Attribute(object_number, attribute_id) {
 
-		var selected_simulations_list = Array.from(selected_simulations);
-		if (selected_simulations_list.length > 20) {
-			selected_simulations_list = selected_simulations_list.slice(0, 20);
+		var selected_runs_list = Array.from(selected_runs);
+		if (selected_runs_list.length > 20) {
+			selected_runs_list = selected_runs_list.slice(0, 20);
 		}
 		
 		var linegraph_data = [];
@@ -1005,10 +1005,10 @@
 			var linegraph_data_row = [date_string];
 
 			// values
-			for (var k = 0; k < selected_simulations_list.length; k++) {
-				var simulation_number = selected_simulations_list[k];
+			for (var k = 0; k < selected_runs_list.length; k++) {
+				var run_number = selected_runs_list[k];
 				var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
-				var value = simulation_data[simulation_number][column_name][period_number];
+				var value = simulation_data[run_number][column_name][period_number];
 				linegraph_data_row.push(value);
 				
 				// correct values
@@ -1016,8 +1016,8 @@
 				for (var l = 0; l < y_value_attributes.length; l++) { 
 					if (y_value_attributes[l]['object_number']==object_number && y_value_attributes[l]['attribute_id']==attribute_id) {is_y_value_attribute = true;}
 				}
-				if (selected_simulations_list.length == 1 && is_y_value_attribute) {
-					var initial_state_index = simulation_number.split('-')[0];
+				if (selected_runs_list.length == 1 && is_y_value_attribute) {
+					var initial_state_index = run_number.split('-')[0];
 					var correct_value = correct_values[column_name + 'period' + period_number][initial_state_index];
 					linegraph_data_row.push(correct_value);
 				}
@@ -1034,14 +1034,14 @@
 		// distinct_values
 		let distinct_values_list = Array.from(distinct_values);
 		
-		// simulation_numbers
-		simulation_numbers = []
-		for (var k = 0; k < selected_simulations_list.length; k++) {
-			simulation_number = all_simulations_list.indexOf(selected_simulations_list[k]);
-			simulation_numbers.push(simulation_number);
+		// run_numbers
+		run_numbers = []
+		for (var k = 0; k < selected_runs_list.length; k++) {
+			run_number = all_runs_list.indexOf(selected_runs_list[k]);
+			run_numbers.push(run_number);
 		}
 
-		return {'data':linegraph_data, 'min_value':min_value, 'max_value':max_value, 'distinct_values':distinct_values_list, 'simulation_numbers':simulation_numbers};
+		return {'data':linegraph_data, 'min_value':min_value, 'max_value':max_value, 'distinct_values':distinct_values_list, 'run_numbers':run_numbers};
 	}
 	
 	
@@ -1129,7 +1129,7 @@
 	// Plot Line Graph  ----------------------------------
 	function plotLineGraph(is_categorical, object_name, attribute_name, linegraph_data) {
 	
-		var selected_simulations_list = Array.from(selected_simulations);
+		var selected_runs_list = Array.from(selected_runs);
 		anychart.onDocumentReady(function () {
 			// load data
 			var dataSet = anychart.data.set(linegraph_data['data']);
@@ -1166,7 +1166,7 @@
 
 
 			//true values
-			if (selected_simulations_list.length == 1 && linegraph_data['data'][0].length == 3) {
+			if (selected_runs_list.length == 1 && linegraph_data['data'][0].length == 3) {
 				var series_1 = chart.jumpLine(dataSet.mapAs({'x': 0, 'value': 2}));
 				series_1.name('True values')
 						.stroke("4.5 #3ec400");
@@ -1183,7 +1183,7 @@
 			
 
 
-			for (var i = 0; i < selected_simulations_list.length; i++) {
+			for (var i = 0; i < selected_runs_list.length; i++) {
 				// create first series with mapped data
 				var series_2;
 				if (is_categorical) {
@@ -1191,7 +1191,7 @@
 				} else {
 					series_2 = chart.line(dataSet.mapAs({'x': 0, 'value': i+1}));
 				}
-				series_2.name('Simulation' + linegraph_data['simulation_numbers'][i])
+				series_2.name('Run' + linegraph_data['run_numbers'][i])
 						.stroke("1.5 #4c82d9");
 				series_2.hovered().markers()
 						.enabled(true)
@@ -1250,21 +1250,21 @@
 	function drawRulePanel(object_number, attribute_id, attribute_name,  period_number){
 	
 		var max_number_of_rules = 0;
-		var selected_simulations_list = Array.from(selected_simulations);
-		if (selected_simulations_list.length == 1) {
-			var simulation_id = selected_simulations_list[0];
+		var selected_runs_list = Array.from(selected_runs);
+		if (selected_runs_list.length == 1) {
+			var run_id = selected_runs_list[0];
 		
 			if (period_number == null) {
 				triggerd_rules_html = '';
 				for (var period_number = 0; period_number < number_of_periods; period_number++) {
-					var triggerd_rules_period_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number, false);
+					var triggerd_rules_period_html = getTriggeredRulePeriodString(run_id, object_number, attribute_id, attribute_name,  period_number, false);
 					triggerd_rules_html += triggerd_rules_period_html[0];
 					if (triggerd_rules_period_html[1] > max_number_of_rules) {max_number_of_rules = triggerd_rules_period_html[1];}
 				}
 				$('#triggerd-rule-periods').html(triggerd_rules_html);
 				$('.triggerd-rules-period').css('width', (100/(number_of_periods)).toFixed(3) + '%');
 			} else {
-				triggerd_rules_html = getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  0, true);
+				triggerd_rules_html = getTriggeredRulePeriodString(run_id, object_number, attribute_id, attribute_name,  0, true);
 				$('#triggerd-rule-periods').html(triggerd_rules_html[0]);
 				if (triggerd_rules_html[1] > max_number_of_rules) {max_number_of_rules = triggerd_rules_html[1];}
 			}
@@ -1292,14 +1292,14 @@
 	
 	
 	
-	function getTriggeredRulePeriodString(simulation_id, object_number, attribute_id, attribute_name,  period_number, is_single_period){
+	function getTriggeredRulePeriodString(run_id, object_number, attribute_id, attribute_name,  period_number, is_single_period){
 	
 		var number_of_rules = 0;
 		var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
 		triggerd_rules_period_html  = '<div class="triggerd-rules-period">';
-		if (Object.keys(triggered_rules[simulation_id]).includes(column_name)) {
-			if (Object.keys(triggered_rules[simulation_id][column_name]).includes(String(period_number))) {
-				var triggered_rule_infos = triggered_rules[simulation_id][column_name][period_number]['rules'];
+		if (Object.keys(triggered_rules[run_id]).includes(column_name)) {
+			if (Object.keys(triggered_rules[run_id][column_name]).includes(String(period_number))) {
+				var triggered_rule_infos = triggered_rules[run_id][column_name][period_number]['rules'];
 				for (var i = 0; i < triggered_rule_infos.length; i++) {
 					var triggered_rule_info = triggered_rule_infos[i];
 					var rule_id = triggered_rule_info['id'];
@@ -1316,7 +1316,7 @@
 					rule_number = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].indexOf(rule_id) + 1;
 							
 					// tooltip_text
-					tooltip_text = "current value=|" + triggered_rule_info['v'] + "|  vs.  correct value=|" + String(triggered_rules[simulation_id][column_name][period_number]['correct_value']) + "|";  // v = new_value
+					tooltip_text = "current value=|" + triggered_rule_info['v'] + "|  vs.  correct value=|" + String(triggered_rules[run_id][column_name][period_number]['correct_value']) + "|";  // v = new_value
 					
 
 					//probability_html
@@ -1391,13 +1391,13 @@
 	
 	
 	function saveSimulation() {
-		// get simulation_id
+		// get run_id
 		var url_components = window.location.href.split("/");
-		var simulation_id = url_components[url_components.length - 2];
+		var run_id = url_components[url_components.length - 2];
 			
 		
 		request_body = {
-			'simulation_id': simulation_id,
+			'run_id': run_id,
 			'is_timeseries_analysis': is_timeseries_analysis,
 			'objects_dict': objects_dict,
 			'y_value_attributes': y_value_attributes,

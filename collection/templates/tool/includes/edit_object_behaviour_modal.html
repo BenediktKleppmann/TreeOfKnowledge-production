@@ -1216,12 +1216,12 @@ var parameter_info = {};
 					pdf_data = response['pdf'];
 					//var pdf_data = scalePDFToParameterRange(pdf_data, min_value, max_value);
 					if (response['message']) {
-						message = response['message'];
+						message = response['message'] + '<br>';
 						$('#this-simulation-warning-message').css('color', 'red');
 					}
 				} else {
 					pdf_data = [[0.0, 1.0], [0.03333333333333333, 1.0], [0.06666666666666667, 1.0], [0.1, 1.0], [0.13333333333333333, 1.0], [0.16666666666666666, 1.0], [0.2, 1.0], [0.23333333333333334, 1.0], [0.26666666666666666, 1.0], [0.3, 1.0], [0.3333333333333333, 1.0], [0.36666666666666664, 1.0], [0.4, 1.0], [0.43333333333333335, 1.0], [0.4666666666666667, 1.0], [0.5, 1.0], [0.5333333333333333, 1.0], [0.5666666666666667, 1.0], [0.6, 1.0], [0.6333333333333333, 1.0], [0.6666666666666666, 1.0], [0.7, 1.0], [0.7333333333333333, 1.0], [0.7666666666666666, 1.0], [0.8, 1.0], [0.8333333333333334, 1.0], [0.8666666666666667, 1.0], [0.9, 1.0], [0.9333333333333333, 1.0], [0.9666666666666667, 1.0]];
-					message = 'Initial distribution: uniform';
+					message = 'Initial distribution: uniform<br>';
 					$('#this-simulation-warning-message').css('color', 'black');
 				}
 				
@@ -1245,7 +1245,7 @@ var parameter_info = {};
 					chart.draw();
 				});
 				
-				$('#parameter-this-simulation-warning-message').html(message + '<br>(' + response['nb_of_values_in_posterior'] + ' correct runs)');
+				$('#parameter-this-simulation-warning-message').html(message + '(' + response['nb_of_values_in_posterior'] + ' correct runs)');
 				
 			}
 		};

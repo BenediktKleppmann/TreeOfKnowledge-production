@@ -555,8 +555,8 @@ class Simulator:
 
         errors = {}
         errors['score'] = 1 - errors_df['error'].mean()
-        errors['correct_simulations'] = list(errors_df.loc[errors_df['error'] < 0.5, 'simulation_number'])
-        errors['false_simulations'] = list(errors_df.loc[errors_df['error'] > 0.5, 'simulation_number'])
+        errors['correct_runs'] = list(errors_df.loc[errors_df['error'] < 0.5, 'simulation_number'])
+        errors['false_runs'] = list(errors_df.loc[errors_df['error'] > 0.5, 'simulation_number'])
 
 
 

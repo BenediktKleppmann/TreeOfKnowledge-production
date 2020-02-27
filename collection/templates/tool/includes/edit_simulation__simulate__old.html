@@ -103,39 +103,6 @@
 	  }
 	}
 	
-	/* Object Header ----------------------------------------------------------*/
-	.object-header-object-icon {
-		display: inline-block;
-		margin-top: 5px;
-		margin-left: 70px;
-		margin-bottom: 8px;
-		height: 38px;
-		width: 38px;
-		border: 1px solid rgb(193, 193, 193);
-		border-radius: 3px;
-		padding-top: 1px;
-		padding-left: 1px;
-		padding-right: 1px;
-		background: rgb(230, 230, 230);
-	}
-	
-	.object-header-object-name {
-		display: inline-block;
-		font-size: 18px;
-		margin-left: 12px;
-		margin-bottom: 11px;
-		vertical-align: bottom;
-	}
-	
-	#object-attribute-search-field {
-	    margin-left: 2px;
-		height: 35px;
-		margin-bottom: 1px;
-		width: 182px;
-		margin-top: 4px;
-	}
-	
-	
 	
 	/* Object Body ----------------------------------------------------------*/
 	#right-sidebar-body {
@@ -146,15 +113,6 @@
 	#object-attributes-table {
 		border-collapse: collapse;
 	}
-	
-	
-	#object-attributes-table .list-group-item{
-		padding: 0px;
-		border: 0px;
-		border-top: 1px solid rgb(221, 221, 221);
-	}
-	
-	
 	
 	.attribute-name.active {
 		background: -moz-linear-gradient(
@@ -188,21 +146,14 @@
 			inset 0px 0px 3px rgba(255,255,255,0.9);
 			
 		color: black;
-		display: inline-block;
-		min-height: 36px;
 	}
 	
 
-	.attribute-name .attribute-name-paragraph {
-		transform: translate(0, 7px);
-	}
 
 	.attribute-value-box {
 		border: 1px solid rgb(202, 202, 202);
-		width: 98px;
+		width: 109px;
 		padding: 0px;
-		display: inline-block;
-		vertical-align: bottom;
 	}
 	
 	.attribute-value {
@@ -215,15 +166,14 @@
 		border: 1px solid rgb(202, 202, 202);
 		width: 109px;
 		background: white;
-		display: inline-block;
-		vertical-align: bottom;
 	}
 	
 	.attribute-rule-button {
 		border: 1px solid rgb(202, 202, 202);
+		margin-left: 3px;
 		color: rgb(85, 85, 85);
 		padding: 4px 7px;
-		margin: 2px 2px;
+		margin: 3px 2px;
 		width: 105px;
 	}
 	
@@ -1270,32 +1220,19 @@
 				//var object_type_name = objects_dict[object_number]['object_type_name'];
 				//var object_name = objects_dict[object_number]['object_name'];
 				
-			} else {	
-				//object-header
-				object_header_string = 	'<div>' +
-											'<div class="object-header-object-icon">' +
-												'<img src="/static/images/object_icons/' + objects_dict[object_number]['object_icon'] + '.svg">' +
-											'</div>' + 
-											'<div class="object-header-object-name">' + objects_dict[object_number]['object_name'] + '</div>' +
-										'</div>' + 
-										'<input type="text" class="search" id="object-attribute-search-field" onkeyup="filterObjectAttributes();" placeholder=" Search">';
-				$('#object-header').html(object_header_string);
-
-				//right-sidebar-body
-				object_attributes_string = '<ul id="object-attributes-table" class="list-group">';
+			} else {		
+				object_attributes_string = '<table id="object-attributes-table">';
 				for (var i = 0; i < object_sorted_attribute_ids.length ; i++) {
 					var attribute_id = object_sorted_attribute_ids[i];
 
-					object_attributes_string += '<li class="list-group-item">' +
-													'<div id="optimisation-attribute-button-' + object_number + '-' + attribute_id + '" class="attribute-name" onclick="selectOptimisationAttribute(' + object_number + ', ' + attribute_id + ')">' + 
-														'<p class="attribute-name-paragraph">' + object_attributes[attribute_id]['attribute_name'] + '</p>' + 
-													'</div>' +
-													'<div class="attribute-value-box"><input class="form-control attribute-value" type="text" value="' + object_attributes[attribute_id]['attribute_value'] + '" onchange="attributeValueChange(' + object_number + ',' + attribute_id + ', this.value)"></div>' +
+					object_attributes_string += '<tr>' +
+													'<td id="optimisation-attribute-button-' + object_number + '-' + attribute_id + '" class="attribute-name" onclick="selectOptimisationAttribute(' + object_number + ', ' + attribute_id + ')">' + object_attributes[attribute_id]['attribute_name'] + '</td>' +
+													'<td class="attribute-value-box"><input class="form-control attribute-value" type="text" value="' + object_attributes[attribute_id]['attribute_value'] + '" onchange="attributeValueChange(' + object_number + ',' + attribute_id + ', this.value)"></td>' +
 													'<button type="button" id="format_violation' + 1 + '" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid value" style="display:none;" data-content="">!</button>' + 
-													'<div class="attribute-rule-box">' + 
+													'<td class="attribute-rule-box">' + 
 														'<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="openEditObjectBehaviourModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\', null)">edit behaviour</button>'
-													'</div>' +
-												'</li>';
+													'</td>' +
+												'</tr>';
 				}
 				object_attributes_string += '</table>';
 				$("#right-sidebar-body").html(object_attributes_string);
@@ -1307,26 +1244,6 @@
 			}	
 		}
 	}	
-	
-	
-	function filterObjectAttributes() {	
-		var current_query = $('#object-attribute-search-field').val().toLowerCase();
-		if (current_query !== "") {
-			$("#object-attributes-table li").hide();
-			$("#object-attributes-table li").each(function(){
-				var current_keyword = $(this).text().toLowerCase();
-				if (current_keyword.indexOf(current_query) >=0) {
-					$(this).show();    	 	
-				};
-			});    	
-		} else {
-			$("#object-attributes-table li").show();
-		};
-	}
-
-	
-	
-	
 	
 	function attributeValueChange(object_number, attribute_id , attribute_value) {
 		objects_dict[object_number]['object_attributes'][attribute_id]['attribute_value'] = attribute_value;
