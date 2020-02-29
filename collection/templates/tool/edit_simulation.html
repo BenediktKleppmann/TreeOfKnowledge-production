@@ -36,6 +36,7 @@
 <style>
 	.content {
 		padding: 0px;
+		height: calc(100% - 60px);
 	}
 	
 
@@ -53,6 +54,7 @@
 	  border: 1px solid silver;
 	  overflow: hidden;
 	  xtouch-action: none; /* avoid browser level touch actions */
+	  height: 100%;
 	}
 
 	#left-panel {
@@ -228,7 +230,7 @@
 		top: 58px; 
 		right: 0px; 
 		width: 0px; 
-		height: calc(100vh - 58px);
+		height: calc(100vh - 61px);
 	}
 	
 	#right-sidebar-left-edge {
@@ -245,7 +247,7 @@
 	
 	#right-sidebar-head {
 		display: inline-block;
-		width: 410px;
+		width: 413px;
 	}
 	
 
@@ -255,7 +257,8 @@
 	#object-header {
 		background: rgb(226, 226, 226);
 		box-shadow: 0  3px 6px 0 rgba(0, 0, 0, 0.20);
-		position: relative
+		position: relative;
+		margin-left: 4px;
 	}
 	
 	#object-icon-button {
@@ -381,8 +384,8 @@
 	</div>
 	
 	<div id="right-sidebar">
-		<div id="right-sidebar-left-edge"></div>
-		<div id="right-sidebar-head" class="form">
+		<div id="right-sidebar-left-edge" style="display:none;"></div>
+		<div id="right-sidebar-head" class="form"  style="display:none;">
 			<div id="object-header">
 				<button type="button" id="object-icon-button" class="btn" style="display:inline-block;" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" title="Choose icon" data-content=''>
 					<img src="{% static "images/object_icons/" %}si-glyph-mustache.svg">
@@ -759,7 +762,7 @@
 	
 	// Click on Object  =============================================================================
 	paper.on('element:pointerup', function(elementView, evt) {
-		var object_number = elementView.model.get('object_number');
+		var object_number = parseInt(elementView.model.get('object_number'));
 		
 		if (Object.keys(objects_dict).includes(String(object_number))) {
 			//make the object on the paper purple
@@ -805,6 +808,8 @@
 			}
 			
 			//show the right sidebar
+			$('#right-sidebar-left-edge').css('display','block');
+			$('#right-sidebar-head').css('display','block');
 			$('#right-sidebar').animate({width: '415px'}, 200, 'linear');  
 		}
 	});
@@ -1144,6 +1149,8 @@
 	// hide the right sidebar    ----------------------------------------
 	function hide_right_sidebar() {
 		$('#right-sidebar').animate({width: '0px'}, 200, 'linear');
+		$('#right-sidebar-left-edge').css('display','none');
+		$('#right-sidebar-head').css('display','none');
 		
 		// if any of the objects on the paper is purple, turn it back to white
 		_.each(graph.getElements(), function(el) {

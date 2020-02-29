@@ -139,7 +139,7 @@
 	
 	/* Object Body ----------------------------------------------------------*/
 	#right-sidebar-body {
-		height: calc(100vh - 145px);
+		height: calc(100vh - 152px);
 		overflow:auto;
 	}
 	
@@ -228,7 +228,16 @@
 	}
 	
 	
+	
+	
+	#create-new-attribute-button {
+		margin-left: 126px;
+		margin-top: 17px;
+	}
+	
+	
 	/* Object Footer ----------------------------------------------------------	
+	
 	#object-footer {
 		background: rgb(226, 226, 226);
 		box-shadow: 0  -3px 6px 0 rgba(0, 0, 0, 0.20);
@@ -550,9 +559,19 @@
 		width:98%; 
 		margin-left:1%;
 	}
+	
+	/*-- create attribute modal -----------*/
+	
+	.modal-dialog {
+		left: 0px;
+	}
+	
 
 	
 </style>
+
+
+	{% include "tool/includes/create_attribute_modal.html" %} 
 
 	<!-- Choose Rule Modal -->
 	<!-- 
@@ -1245,9 +1264,32 @@
 		xmlhttp.send(JSON.stringify(request_body));	
 	}
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	//========================================================================
 	//================   RIGHT SIDEBAR	======================================
 	//========================================================================
+	
+	
+	
+	
+	
 	
 	// Draw Right Sidebar ==============================================================		
 	function drawObjectAttributeTable(object_number) {
@@ -1278,6 +1320,7 @@
 											'</div>' + 
 											'<div class="object-header-object-name">' + objects_dict[object_number]['object_name'] + '</div>' +
 										'</div>' + 
+										'<input type="hidden" id="object-number-field" value=' + object_number + '>' + 
 										'<input type="text" class="search" id="object-attribute-search-field" onkeyup="filterObjectAttributes();" placeholder=" Search">';
 				$('#object-header').html(object_header_string);
 
@@ -1297,13 +1340,21 @@
 													'</div>' +
 												'</li>';
 				}
-				object_attributes_string += '</table>';
+				object_attributes_string += 	'<li class="list-group-item">' +
+													'<button id="create-new-attribute-button" class="btn btn-success" type="button" data-toggle="modal" data-target="#createAttributeModal">Create New Attribute</button>' +
+													//'<button id="create-attribute-button" type="button" class="btn btn-success" onclick="openEditObjectBehaviourModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\', null)">Create Attribute</button>'
+												'</li>' + 
+											'</ul>';
 				$("#right-sidebar-body").html(object_attributes_string);
 				
 				// press the active Optimisation-attribute-buttons
 				for (var i = 0; i < y_value_attributes.length; i++) {
 					$('#optimisation-attribute-button-' + y_value_attributes[i]['object_number'] + '-' + y_value_attributes[i]['attribute_id'] ).addClass('active');
 				}
+				
+				
+				// in the 'Create New Attribute' Modal, populate the first_applicable_object_type options
+				loadListOfParentObjects(objects_dict[object_number]['object_type_id']);
 			}	
 		}
 	}	
