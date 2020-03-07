@@ -81,11 +81,12 @@ urlpatterns = [
     url(r'^tool/get_attribute_details/$', views.get_attribute_details, name='get_attribute_details'),
 	url(r'^tool/get_attribute_rules_old/$', views.get_attribute_rules_old, name='get_attribute_rules_old'),    
     url(r'^tool/get_object_hierachy_tree/$', views.get_object_hierachy_tree, name='get_object_hierachy_tree'),
-    url(r'^tool/get_available_variables/$', views.get_available_variables, name='get_available_variables'),
+    # url(r'^tool/get_available_variables/$', views.get_available_variables, name='get_available_variables'),
     url(r'^tool/get_object_rules/$', views.get_object_rules, name='get_object_rules'),
     url(r'^tool/get_rules_pdf/$', views.get_rules_pdf, name='get_rules_pdf'),
     url(r'^tool/get_single_pdf/$', views.get_single_pdf, name='get_single_pdf'),
     url(r'^tool/get_parameter_info/$', views.get_parameter_info, name='get_parameter_info'),
+    url(r'^tool/get_execution_order/$', views.get_execution_order, name='get_execution_order'),
 
     # complex get
     url(r'^tool/get_data_points/$', views.get_data_points, name='get_data_points'),
@@ -110,6 +111,7 @@ urlpatterns = [
     url(r'^tool/save_changed_object_type_icon/$', views.save_changed_object_type_icon, name='save_changed_object_type_icon'),
     url(r'^tool/save_rule_parmeter/$', views.save_rule_parmeter, name='save_rule_parmeter'),
     url(r'^tool/save_likelihood_function/$', views.save_likelihood_function, name='save_likelihood_function'),
+    url(r'^tool/save_execution_order/$', views.save_execution_order, name='save_execution_order'),
     # delete
     url(r'^tool/delete_object_type/$', views.delete_object_type, name='delete_object_type'),
     url(r'^tool/delete_attribute/$', views.delete_attribute, name='delete_attribute'),

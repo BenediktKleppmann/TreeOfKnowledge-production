@@ -161,8 +161,9 @@ class Simulation_model(models.Model):
     y_value_attributes = models.TextField()
     sorted_attribute_ids = models.TextField()
     object_type_counts = models.TextField()
-    total_object_count= models.IntegerField()
+    total_object_count = models.IntegerField()
     number_of_additional_object_facts = models.IntegerField()
+    execution_order_id = models.IntegerField()
     environment_start_time = models.BigIntegerField()
     environment_end_time = models.BigIntegerField()
     simulation_start_time = models.BigIntegerField()
@@ -201,7 +202,12 @@ class Rule(models.Model):
     probability = models.FloatField(null=True)
     standard_dev = models.FloatField(null=True)
 
-    
+
+class Execution_order(models.Model):
+    name = models.TextField()
+    description = models.TextField()
+    execution_order = models.TextField()
+
 
 
 class Likelihood_fuction(models.Model):

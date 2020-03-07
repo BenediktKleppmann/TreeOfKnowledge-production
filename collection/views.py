@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule, Likelihood_fuction, Rule_parameter
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule, Execution_order, Likelihood_fuction, Rule_parameter
 from django.contrib.auth.models import User
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
@@ -24,6 +24,7 @@ from scipy.stats import beta
 import scipy
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+import pdb
 
 
 
@@ -498,14 +499,14 @@ def get_object_hierachy_tree(request):
     return HttpResponse(object_hierachy_tree)
 
 
-@login_required
-def get_available_variables(request):
-    object_type_id = request.GET.get('object_type_id', '')
-    available_variables = []
-    list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
-    for parent_object in list_of_parent_objects:
-        available_variables.extend(list(Attribute.objects.filter(first_applicable_object_type=parent_object['id']).values('name', 'id', 'data_type')))
-    return HttpResponse(json.dumps(available_variables))
+# @login_required
+# def get_available_variables(request):
+#     object_type_id = request.GET.get('object_type_id', '')
+#     available_variables = []
+#     list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
+#     for parent_object in list_of_parent_objects:
+#         available_variables.extend(list(Attribute.objects.filter(first_applicable_object_type=parent_object['id']).values('name', 'id', 'data_type')))
+#     return HttpResponse(json.dumps(available_variables))
     
 
 
@@ -523,23 +524,14 @@ def get_object_rules(request):
     
     print('attributes: ' + str(attributes))
     for attribute in attributes:
-        response[attribute['id']] = {'used_rules': {},
-                                    'not_used_rules':{},
-                                    'execution_order':[]}
+        response[attribute['id']] = {}
         rules_list = list(Rule.objects.filter(changed_var_attribute_id=attribute['id']).values())
         for rule in rules_list:
-            print('=========================================')
-            print(rule)
-            print(rule['used_attribute_ids'])
-            print(type(rule['used_attribute_ids']))
             rule['used_attribute_ids'] = json.loads(rule['used_attribute_ids'])
             rule['used_parameter_ids'] = json.loads(rule['used_parameter_ids'])
 
             # calculate 'probability' and 'standard_dev'
             histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations = get_from_db.get_rules_pdf(rule['id'], True)
-            print('rule_id: ' +  str(rule['id']))
-            print('mean: ' + str(mean))
-            print('standard_dev: ' + str(standard_dev))
             rule['probability'] = None if mean is None or np.isnan(mean) else mean 
             rule['standard_dev'] = None if standard_dev is None or np.isnan(standard_dev) else standard_dev 
 
@@ -549,8 +541,7 @@ def get_object_rules(request):
             if not rule['has_probability_1'] and rule['probability'] is None:
                 rule['learn_posterior'] = True
 
-            response[attribute['id']]['used_rules'][rule['id']] = rule
-            response[attribute['id']]['execution_order'].append(rule['id'])
+            response[attribute['id']][rule['id']] = rule
     return HttpResponse(json.dumps(response)) 
 
 
@@ -654,6 +645,96 @@ def get_parameter_info(request):
 
     return HttpResponse(json.dumps(parameter_info))   
 
+
+
+@login_required
+def get_execution_order(request):
+    execution_order_id = int(request.GET.get('execution_order_id', '1'))
+    execution_order = json.loads(Execution_order.objects.get(id=execution_order_id).execution_order)
+
+    # CORRECT TO CURRENT objects, attributes and rules
+
+    # PART 1A: extend with missing objects, attributes 
+    all_object_type_ids = [el[0] for el in list(Object_types.objects.all().values_list('id'))]
+    for object_type_id in all_object_type_ids:
+        list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
+        list_of_parent_object_ids = [el['id'] for el in list_of_parent_objects]
+        all_attributes = list(Attribute.objects.all().filter(first_applicable_object_type__in=list_of_parent_object_ids).values('id', 'name'))
+
+        if object_type_id not in execution_order['attribute_execution_order'].keys():
+            execution_order['attribute_execution_order'][object_type_id] = {'used_attributes':all_attributes, 'not_used_attributes': []}
+        else:
+            listed_attributes = execution_order['attribute_execution_order'][object_type_id]['used_attributes'] + execution_order['attribute_execution_order'][object_type_id]['not_used_attributes']
+            listed_attribute_ids = set([attribute['id'] for attribute in listed_attributes])
+            all_attribute_ids = set([attribute['id'] for attribute in all_attributes])
+            if len(listed_attribute_ids) < len(all_attribute_ids):
+                missing_attribute_ids = list(all_attribute_ids - listed_attribute_ids)
+                missing_attributes = [attribute for attribute in all_attributes if attribute['id'] in missing_attribute_ids]
+                execution_order['attribute_execution_order'][object_type_id]['used_attributes'] += missing_attribute_ids
+
+
+    # PART 1B: extend with missing attributes, rules
+    all_attribute_ids = [el[0] for el in list(Attribute.objects.all().values_list('id'))]
+    for attribute_id in all_attribute_ids:
+        all_rule_ids = [el[0] for el in list(Rule.objects.all().filter(changed_var_attribute_id=attribute_id).values_list('id'))]
+
+        if (str(attribute_id) not in execution_order['rule_execution_order'].keys()):
+            execution_order['rule_execution_order'][str(attribute_id)] = {'used_rule_ids': all_rule_ids, 'not_used_rule_ids': []}
+        else:
+            listed_rule_ids = set(execution_order['rule_execution_order'][str(attribute_id)]['used_rule_ids'] + execution_order['rule_execution_order'][str(attribute_id)]['not_used_rule_ids'])
+            if len(listed_rule_ids) < len(all_rule_ids):
+                missing_rule_ids = list(set(all_rule_ids) - listed_rule_ids)
+                execution_order['rule_execution_order'][str(attribute_id)]['used_rule_ids'] += missing_rule_ids
+
+
+    # PART 2A: remove no-longer-existing objects
+    no_longer_existing_object_type_ids = set(execution_order['attribute_execution_order'].keys()) - set(all_object_type_ids)
+    for no_longer_existing_object_type_id in no_longer_existing_object_type_ids:
+        del execution_order['attribute_execution_order'][no_longer_existing_object_type_id]
+
+    # PART 2B: remove no-longer-existing attributes 
+    for object_type_id in all_object_type_ids:
+        # used_attributes
+        used_attributes = execution_order['attribute_execution_order'][object_type_id]['used_attributes']
+        used_attribute_ids = [attribute['id'] for attribute in used_attributes]
+        no_longer_existing_attribute_ids = set(used_attribute_ids) - set(all_attribute_ids)
+        if len(no_longer_existing_attribute_ids)>0:
+            new_used_attributes = [attribute for attribute in used_attributes if attribute['id'] not in no_longer_existing_attribute_ids]
+            execution_order['attribute_execution_order'][object_type_id]['used_attributes'] = new_used_attributes
+
+        # not_used_attributes
+        not_used_attributes = execution_order['attribute_execution_order'][object_type_id]['not_used_attributes']
+        not_used_attribute_ids = [attribute['id'] for attribute in not_used_attributes]
+        no_longer_existing_attribute_ids = set(not_used_attribute_ids) - set(all_attribute_ids)
+        if len(no_longer_existing_attribute_ids)>0:
+            new_not_used_attributes = [attribute for attribute in not_used_attributes if attribute['id'] not in no_longer_existing_attribute_ids]
+            execution_order['attribute_execution_order'][object_type_id]['not_used_attributes'] = new_not_used_attributes
+
+    # PART 2C: remove no-longer-existing attributes 
+    all_attribute_ids = [str(el) for el in all_attribute_ids]
+    no_longer_existing_attribute_ids = set(execution_order['rule_execution_order'].keys()) - set(all_attribute_ids)
+    for no_longer_existing_attribute_id in no_longer_existing_attribute_ids:
+        del execution_order['rule_execution_order'][no_longer_existing_attribute_id]
+
+
+    # PART 2D: remove no-longer-existing rules 
+    all_rule_ids = [el[0] for el in list(Rule.objects.all().values_list('id'))]
+    for attribute_id in execution_order['rule_execution_order'].keys():
+        # used_rule_ids
+        used_rule_ids = execution_order['rule_execution_order'][attribute_id]['used_rule_ids']
+        no_longer_existing_rule_ids = set(used_rule_ids) - set(all_rule_ids)
+        if len(no_longer_existing_rule_ids)>0:
+            new_used_rule_ids = [rule_id for rule_id in used_rule_ids if rule_id not in no_longer_existing_rule_ids]
+            execution_order['rule_execution_order'][attribute_id]['used_rule_ids'] = new_used_rule_ids
+
+        # not_used_rule_ids
+        not_used_rule_ids = execution_order['rule_execution_order'][attribute_id]['not_used_rule_ids']
+        no_longer_existing_rule_ids = set(not_used_rule_ids) - set(all_rule_ids)
+        if len(no_longer_existing_rule_ids)>0:
+            new_not_used_rule_ids = [rule_id for rule_id in not_used_rule_ids if rule_id not in no_longer_existing_rule_ids]
+            execution_order['rule_execution_order'][attribute_id]['not_used_rule_ids'] = new_not_used_rule_ids
+
+    return HttpResponse(json.dumps(execution_order))
 
 
 # ==================
@@ -1002,6 +1083,7 @@ def save_changed_simulation(request):
             model_record.object_type_counts = json.dumps(request_body['object_type_counts'])
             model_record.total_object_count = request_body['total_object_count']
             model_record.number_of_additional_object_facts = request_body['number_of_additional_object_facts']
+            model_record.execution_order_id = request_body['execution_order_id']
             model_record.environment_start_time = request_body['environment_start_time']
             model_record.environment_end_time = request_body['environment_end_time']
             model_record.simulation_start_time = request_body['simulation_start_time']
@@ -1143,9 +1225,41 @@ def save_likelihood_function(request):
     else:
         return HttpResponse("This must be a POST request.")
 
+
+
+
+# used in: edit_simulation__simulate (the saveSimulation function)
+@login_required
+def save_execution_order(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+            if ('id' in request_body):
+                execution_order_record = Execution_order.objects.get(id=request_body['id'])
+                execution_order_record.name = request_body['name']
+                execution_order_record.description = request_body['description']
+                execution_order_record.execution_order = json.dumps(request_body['execution_order'])
+                execution_order_record.save()
+                return HttpResponse(str(execution_order_record.id))
+            else:
+                execution_order_record = Execution_order(name=name,description=request_body['description'], execution_order=json.dumps(request_body['execution_order']))
+                execution_order_record.save()
+                return HttpResponse(str(execution_order_record.id))
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
+
+
+
+
 # ==================
 # DELETE
 # ==================
+
 
 # used in: upload_data3 (the create-object-type modal)
 @login_required
@@ -1536,6 +1650,7 @@ def edit_simulation_new(request):
                                         object_type_counts=json.dumps({}),
                                         total_object_count=0,
                                         number_of_additional_object_facts=2,
+                                        execution_order_id=1,
                                         environment_start_time=946684800, 
                                         environment_end_time=1577836800, 
                                         simulation_start_time=946684800, 
@@ -1921,7 +2036,25 @@ def test_page3(request):
     # return HttpResponse(json.dumps(current_object_type))
     # list_of_object_ids = list(Object.objects.all().values_list(['id','object_type_id']))
     # return HttpResponse('success')
-    return HttpResponse(str(list(Likelihood_fuction.objects.filter(parameter_id=23).values())))
+    print('test_page3 - 1')
+    execution_order__object_attributes = {}
+    object_type_ids = [el[0] for el in list(Object_types.objects.all().values_list('id'))]
+    for object_type_id in object_type_ids:
+        list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
+        list_of_parent_object_ids = [el['id'] for el in list_of_parent_objects]
+        attribute_ids = [el[0] for el in list(Attribute.objects.all().filter(first_applicable_object_type__in=list_of_parent_object_ids).values_list('id'))]
+        execution_order__object_attributes[object_type_id] = attribute_ids
+
+
+    execution_order__attribute_rules = {}
+    attribute_ids = [el[0] for el in list(Attribute.objects.all().values_list('id'))]
+    for attribute_id in attribute_ids:
+        rule_ids = [el[0] for el in list(Rule.objects.all().filter(changed_var_attribute_id=attribute_id).values_list('id'))]
+        execution_order__attribute_rules[attribute_id] = rule_ids
+
+
+    execution_order = {'object_attributes': execution_order__object_attributes, 'attribute_rules': execution_order__attribute_rules}
+    return HttpResponse(json.dumps(execution_order))
     # return render(request, 'tool/test_page3.html')
 
 

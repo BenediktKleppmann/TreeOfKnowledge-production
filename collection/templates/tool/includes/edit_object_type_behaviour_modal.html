@@ -136,7 +136,7 @@
 		margin-left: 5px;
 	}
 	
-	#editObjectTypeModal #included-variables {
+	#editObjectTypeModal #used-attributes {
 		border: 1px solid rgb(202, 202, 202);
 		border-radius: 4px;
 		width: 100%;
@@ -144,7 +144,7 @@
 		overflow: auto;
 	}
 	
-	#editObjectTypeModal #remaining-variables {
+	#editObjectTypeModal #not-used-attributes {
 		border: 1px solid rgb(202, 202, 202);
 		border-radius: 4px;
 		width: 100%;
@@ -391,9 +391,9 @@
 					<div id="rule-block">
 						<div id="rule-left-panel">
 							<div class="rule-left-block-header">Use in Simulation:</div>
-							<ul id="included-variables" class="list-group object-type-variable-selection"></ul>
+							<ul id="used-attributes" class="list-group object-type-variable-selection"></ul>
 							<div class="rule-left-block-header">Not Used:</div>
-							<ul id="remaining-variables" class="list-group object-type-variable-selection"></ul>
+							<ul id="not-used-attributes" class="list-group object-type-variable-selection"></ul>
 
 
 						</div>
@@ -463,27 +463,28 @@ var b_rules = {};
 			
 			
 		
-		// LEFT: List Variables	
-		var xhttp = new XMLHttpRequest();       
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
+		// LEFT: List Variables			
+		used_attributes = execution_order['attribute_execution_order'][object_type_id]['used_attributes']
+		included_variables_html_string = '';
+		for (var i = 0; i < used_attributes.length ; i++) {
+			var attribute_id = used_attributes[i]['id'];
+			var attribute_name = used_attributes[i]['name'];
+			included_variables_html_string += 	'<li class="list-group-item listed-var-item" data-chosen-object-type-id="' + object_type_id + '" data-attribute-id="' + attribute_id + '"><img src="{% static "images/drag-grip2.png" %}"><button class="btn btn-outline-secondary listed-var-button" type="button" onclick="inspectBehaviourRulesForAttribute(\'' + object_type_id + '\', \'' + attribute_id + '\',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';	
+		}
+		$('#used-attributes').html(included_variables_html_string);	
+		
+		
+		not_used_attributes = execution_order['attribute_execution_order'][object_type_id]['not_used_attributes']
+		included_variables_html_string = '';
+		for (var i = 0; i < not_used_attributes.length ; i++) {
+			var attribute_id = not_used_attributes[i]['id'];
+			var attribute_name = not_used_attributes[i]['name'];
+			included_variables_html_string += 	'<li class="list-group-item listed-var-item" data-chosen-object-type-id="' + object_type_id + '" data-attribute-id="' + attribute_id + '"><img src="{% static "images/drag-grip2.png" %}"><button class="btn btn-outline-secondary listed-var-button" type="button" onclick="inspectBehaviourRulesForAttribute(\'' + object_type_id + '\', \'' + attribute_id + '\',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';	
+		}
+		$('#not-used-attributes').html(included_variables_html_string);	
 
-				included_variables = JSON.parse(this.responseText);
-				
-				included_variables_html_string = '';
-				for (var i = 0; i < included_variables.length ; i++) {
-					var attribute_id = included_variables[i]['id'];
-					var attribute_name = included_variables[i]['name'];
-					included_variables_html_string += 	'<li class="list-group-item listed-var-item"><img src="{% static "images/drag-grip2.png" %}"><button class="btn btn-outline-secondary listed-var-button" type="button" onclick="inspectBehaviourRulesForAttribute(\'' + object_type_id + '\', \'' + attribute_id + '\',\'' + attribute_name + '\')" scope="col">' + attribute_name + '</button></li>';
-					
-				}
-				
-				$('#included-variables').html(included_variables_html_string);	
 
-			}
-		};
-		xhttp.open('GET', '/tool/get_available_variables?object_type_id=' + object_type_id , true);
-		xhttp.send();
+
 		
 		
 			
@@ -647,16 +648,58 @@ jQuery(document).ready(function($){
 		$(function() {
 			$( ".object-type-variable-selection" ).sortable({
 				connectWith: ".object-type-variable-selection",
-				/*stop: function(event, ui) {
-					var item_sortable_list_id = $(this).attr('id');
-					console.log(ui);
-					//alert($(ui.sender).attr('id'))
-				},*/
-				receive: function(event, ui) {
-					//alert("dropped on = "+this.id); // Where the item is dropped
-					//alert("sender = "+ui.sender[0].id); // Where it came from
-					//alert("item = "+ui.item[0].innerHTML); //Which item (or ui.item[0].id)
-				}         
+				update: function(event, ui) {
+				
+					// move within used-attributes
+					if (ui.sender == null && this.id == 'used-attributes') {
+						
+						var object_type_id = ui.item[0].getAttribute('data-chosen-object-type-id');
+						var	attribute_id = parseInt(ui.item[0].getAttribute('data-attribute-id'));
+						
+						attribute_execution_order = execution_order['attribute_execution_order'][object_type_id]['used_attributes'];
+						var ordered_attribute_ids = []
+						for (var i = 0; i < attribute_execution_order.length ; i++) {
+							ordered_attribute_ids.push(attribute_execution_order[i]['id'])
+						}
+						old_index = ordered_attribute_ids.indexOf(attribute_id);
+						new_index = ui.item.index();
+						execution_order['attribute_execution_order'][object_type_id]['used_attributes'] = move(attribute_execution_order, old_index, new_index);
+					}
+				},
+				receive: function(event, ui) {					
+					var object_type_id = ui.item[0].getAttribute('data-chosen-object-type-id');
+					var	attribute_id = parseInt(ui.item[0].getAttribute('data-attribute-id'));
+					var sender = ui.sender[0].id;
+					var receiver = this.id;
+					
+					// from used-attributes to not-used-attributes
+					if (receiver == 'not-used-attributes' && sender == 'used-attributes') {
+						var attribute_execution_order = execution_order['attribute_execution_order'][object_type_id]['used_attributes'];
+						var ordered_attribute_ids = []
+						for (var i = 0; i < attribute_execution_order.length ; i++) {
+							ordered_attribute_ids.push(attribute_execution_order[i]['id'])
+						}
+						old_index = ordered_attribute_ids.indexOf(attribute_id);
+						new_index = ui.item.index();
+						moved_attribute = execution_order['attribute_execution_order'][object_type_id]['used_attributes'][old_index];
+						execution_order['attribute_execution_order'][object_type_id]['used_attributes'].splice(old_index,1);
+						execution_order['attribute_execution_order'][object_type_id]['not_used_attributes'].splice(new_index,0,moved_attribute);
+					}
+					
+					// from not-used-attributes to used-attributes
+					if (receiver == 'used-attributes' && sender == 'not-used-attributes') {
+						var attribute_execution_order = execution_order['attribute_execution_order'][object_type_id]['not_used_attributes'];
+						var ordered_attribute_ids = []
+						for (var i = 0; i < attribute_execution_order.length ; i++) {
+							ordered_attribute_ids.push(attribute_execution_order[i]['id'])
+						}
+						old_index = ordered_attribute_ids.indexOf(attribute_id);
+						new_index = ui.item.index();
+						moved_attribute = execution_order['attribute_execution_order'][object_type_id]['not_used_attributes'][old_index];
+						execution_order['attribute_execution_order'][object_type_id]['not_used_attributes'].splice(old_index,1);
+						execution_order['attribute_execution_order'][object_type_id]['used_attributes'].splice(new_index,0,moved_attribute);
+					}
+				}           
 			}).disableSelection();
 		});
 		

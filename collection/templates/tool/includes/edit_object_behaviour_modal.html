@@ -645,9 +645,9 @@ var parameter_info = {};
 		populateTheRulePanels(object_number, rules_attribute_id, rules_attribute_name);
 		
 		// load parameter_info
-		var rule_ids = objects_dict[object_number]['object_rules'][rules_attribute_id]['execution_order']
+		var rule_ids = execution_order['rule_execution_order'][String(rules_attribute_id)]['used_rule_ids'];
 		for (var i = 0; i < rule_ids.length ; i++) {
-			var parameter_ids = objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules'][rule_ids[i]]['used_parameter_ids'];	
+			var parameter_ids = objects_dict[object_number]['object_rules'][rules_attribute_id][rule_ids[i]]['used_parameter_ids'];	
 			for (var j = 0; j < parameter_ids.length ; j++) {
 				var parameter_id = parameter_ids[j];
 				if (!Object.keys(parameter_info).includes(parameter_id)) {
@@ -683,10 +683,10 @@ var parameter_info = {};
 		// populate rules-list -------------------------------------------------------------
 		rules_list_html_string = '';
 		
-		var rule_ids = Object.keys(objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules'])
+		var rule_ids = execution_order['rule_execution_order'][String(rules_attribute_id)]['used_rule_ids'];
 		for (var i = 0; i < rule_ids.length ; i++) {
 			var rule_id = rule_ids[i];
-			var rule = objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules'][rule_id];
+			var rule = objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id];
 			
 			if (rule['is_conditionless']) {
 				rule_text = "At every timestep: [" + rules_attribute_name + "] = " + rule['effect_text'];
@@ -699,7 +699,7 @@ var parameter_info = {};
 			}
 			
 			checked_string = '';
-			if (objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules'][rule_id]['learn_posterior'] == true) {checked_string = 'checked';}
+			if (objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id]['learn_posterior'] == true) {checked_string = 'checked';}
 			
 			if (rule['has_probability_1'] && rule['used_parameter_ids'].length ==0) {
 				rule_info =	'<div class="rule-probability"> known fact</div>';
@@ -748,10 +748,10 @@ var parameter_info = {};
 		// populate not-used-rules-list -------------------------------------------------------------
 		
 		not_used_rules_list_html_string = ""
-		var not_used_rule_ids = Object.keys(objects_dict[object_number]['object_rules'][rules_attribute_id]['not_used_rules'])
+		var not_used_rule_ids = execution_order['rule_execution_order'][String(rules_attribute_id)]['not_used_rule_ids'];
 		for (var i = 0; i < not_used_rule_ids.length ; i++) {
 			var rule_id = not_used_rule_ids[i];
-			var rule = objects_dict[object_number]['object_rules'][rules_attribute_id]['not_used_rules'][rule_id];
+			var rule = objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id];
 			
 			if (rule['is_conditionless']) {
 				rule_text = "At every timestep: [" + rules_attribute_name + "] = " + rule['effect_text'];
@@ -759,10 +759,12 @@ var parameter_info = {};
 				rule_text = "IF " +  rule['condition_text'] + " THEN [" + rules_attribute_name + "] = " + rule['effect_text'];
 			}
 			
-			if (rule_text.length > 75) {
-				rule_text = rule_text.substring(0, 72) + '...';
+			if (rule_text.length > 65) {
+				rule_text = rule_text.substring(0, 62) + '...';
 			}
 			
+			checked_string = '';
+			if (objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id]['learn_posterior'] == true) {checked_string = 'checked';}
 			
 			if (rule['has_probability_1'] && rule['used_parameter_ids'].length ==0) {
 				rule_info =	'<div class="rule-probability"> known fact</div>';
@@ -770,19 +772,19 @@ var parameter_info = {};
 			} else if (rule['has_probability_1'] && rule['used_parameter_ids'].length >0) {
 				rule_info =	'<div class="rule-probability"> known fact</div>' +	
 							'<div class="learn-probabililty-checkbox">' +
-								'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" checked>' +
+								'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" ' + checked_string + '>' +
 							'</div>';	
 			
 			} else if (!rule['has_probability_1'] && rule['probability'] == null) {
 			
 				rule_info =	'<div class="rule-probability"> unknown</div>' + 
 							'<div class="learn-probabililty-checkbox">' +
-								'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" checked>' +
+								'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" ' + checked_string + '>' +
 							'</div>';		
 			} else {
 				rule_info =	'<div class="rule-probability"> ' + Math.round(rule['probability'] * 100) + ' ±' + Math.round(rule['standard_dev'] * 100) + ' %</div>' + 
 							'<div class="learn-probabililty-checkbox">' +
-								'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" checked>' +
+								'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" ' + checked_string + '>' +
 							'</div>';
 			}
 			
@@ -831,11 +833,7 @@ var parameter_info = {};
 
 
 		// Rule Details ------------------------------------------------------------
-		if (Object.keys(objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules']).includes(String(rule_id))) {
-			rule = objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules'][rule_id];
-		} else {
-			rule = objects_dict[object_number]['object_rules'][rules_attribute_id]['not_used_rules'][rule_id];
-		}
+		rule = objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id];
 		
 		is_probabilitic_rule_checked_string = rule['has_probability_1'] ? '': 'checked';
 		has_parameters_checked_string = rule['used_parameter_ids'].length > 0 ? 'checked': '';
@@ -877,7 +875,7 @@ var parameter_info = {};
 							
 		
 		
-		var parameter_ids = objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules'][rule_id]['used_parameter_ids'];
+		var parameter_ids = objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id]['used_parameter_ids'];
 		rule_info_bottom_html = '<div class="parameter-form-group">' +
 									'<input type="checkbox" class="form-check-input" id="has_parameters" onchange="changeParameterCheckbox()" ' + has_parameters_checked_string + '>' +
 									'<label class="form-check-label" for="has_parameters">&nbsp;Parameters</label>' +
@@ -1044,12 +1042,11 @@ var parameter_info = {};
 	function removeBehaviourRule(object_number, attribute_id, rule_id) {
 		
 		// if the Rule Item is in the rules-list, then move it to the not-used-rules-list
-		if (Object.keys(objects_dict[object_number]['object_rules'][attribute_id]['used_rules']).includes(String(rule_id))){
+		if (execution_order['rule_execution_order'][String(attribute_id)]['used_rule_ids'].includes(rule_id)) {
 			// move it in the data
-			objects_dict[object_number]['object_rules'][attribute_id]['not_used_rules'][rule_id] = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
-			delete objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
-			execution_order_index = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].indexOf(rule_id);
-			objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].splice(execution_order_index, 1); 
+			old_index = execution_order['rule_execution_order'][String(attribute_id)]['used_rule_ids'].indexOf(rule_id);
+			execution_order['rule_execution_order'][String(attribute_id)]['used_rule_ids'].splice(old_index,1);
+			execution_order['rule_execution_order'][String(attribute_id)]['not_used_rule_ids'].push(rule_id);
 
 			// move it on the html
 			not_used_rules_list = document.getElementById('not-used-rules-list');
@@ -1070,7 +1067,7 @@ var parameter_info = {};
 			xmlhttp.send(JSON.stringify({'rule_id':rule_id}));
 			
 			// delete the rule's parameters
-			var used_parameter_ids = objects_dict[object_number]['object_rules'][attribute_id]['not_used_rules'][rule_id]['used_parameter_ids'];
+			var used_parameter_ids = objects_dict[object_number]['object_rules'][attribute_id][rule_id]['used_parameter_ids'];
 			for (var i = 0; i < used_parameter_ids.length ; i++) {
 				var xmlhttp = new XMLHttpRequest();  
 				xmlhttp.open("POST", "/tool/delete_parameter/");
@@ -1080,7 +1077,8 @@ var parameter_info = {};
 			}
 
 			// delete it from the frontend
-			delete objects_dict[object_number]['object_rules'][attribute_id]['not_used_rules'][rule_id];
+			old_index = execution_order['rule_execution_order'][String(attribute_id)]['not_used_rule_ids'].indexOf(rule_id);
+			execution_order['rule_execution_order'][String(attribute_id)]['not_used_rule_ids'].splice(old_index,1);
 			the_deleted_item = document.getElementById('rule' + rule_id).remove();
 			
 
@@ -1095,7 +1093,7 @@ var parameter_info = {};
 	// Learn-Probability Checkbox
 	function learnProbabilityChange(object_number,attribute_id, rule_id) {
 		var learn_posterior  = document.getElementById("learn-probabililty--rule" + rule_id).checked;
-		objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id]['learn_posterior'] = learn_posterior;
+		objects_dict[object_number]['object_rules'][attribute_id][rule_id]['learn_posterior'] = learn_posterior;
 	}
 	
 	
@@ -1360,7 +1358,7 @@ var parameter_info = {};
 						xmlhttp.send(JSON.stringify(new_likelihood_function_dict));
 						
 						// Save to Frontend 
-						objects_dict[response_request_body['object_number']]['object_rules'][ response_request_body['rules_attribute_id']]['used_rules'][ response_request_body['rule_id']]['used_parameter_ids'].push(response_dict['parameter_id']);
+						objects_dict[response_request_body['object_number']]['object_rules'][ response_request_body['rules_attribute_id']][response_request_body['rule_id']]['used_parameter_ids'].push(response_dict['parameter_id']);
 					} 
 					
 					// re-draw
@@ -1394,12 +1392,12 @@ var parameter_info = {};
 		
 		// Remove to Frontend 
 		delete parameter_info[parameter_id];
-		used_parameter_ids = objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules'][rule_id]['used_parameter_ids'];
+		used_parameter_ids = objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id]['used_parameter_ids'];
 		const index = used_parameter_ids.indexOf(parameter_id);
 		if (index > -1) {
 		  used_parameter_ids.splice(index, 1);
 		}
-		objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules'][rule_id]['used_parameter_ids'] = used_parameter_ids;
+		objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id]['used_parameter_ids'] = used_parameter_ids;
 		
 		saveSimulation() // save the changed objects_dict
 		inspectRule(object_number, rules_attribute_id, rules_attribute_name, rule_id); //redraw rule
@@ -1739,7 +1737,7 @@ var parameter_info = {};
 		
 		//2 - REMOVING/REPLACING PARAMETERS
 		if (rule_id) {
-			var used_parameter_ids = objects_dict[object_number]['object_rules'][rules_attribute_id]['used_rules'][rule_id]['used_parameter_ids'];
+			var used_parameter_ids = objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id]['used_parameter_ids'];
 			for (var i = 0; i < used_parameter_ids.length; i++) {
 				parameter_id = used_parameter_ids[i];
 				parameter_name = parameter_info[parameter_id]['parameter_name'];
@@ -1805,7 +1803,7 @@ var parameter_info = {};
 			stripped_rule_text = stripped_rule_text.replace(new RegExp(permitted_characters[i], 'g'), ' ');
 		}		
 		//removing permitted commands
-		var permitted_substrings = ['if','and','or']
+		var permitted_substrings = ['if','and','or', 'true', 'True', 'false', 'False']
 		for (var i = 0; i < permitted_substrings.length; i++) {
 			stripped_rule_text = stripped_rule_text.replace(new RegExp(permitted_substrings[i], 'g'), '');
 		}
@@ -1835,7 +1833,7 @@ var parameter_info = {};
 	
 	function saveBehaviourRule(rule_id, attribute_id, attribute_name, object_number) {
 		if (rule_id) {
-			rule_dict = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
+			rule_dict = objects_dict[object_number]['object_rules'][attribute_id][rule_id];
 		} else {
 			rule_dict = {};
 			rule_dict['used_parameter_ids'] = [];
@@ -1900,6 +1898,8 @@ var parameter_info = {};
 				effect_exec = effect_exec.substring(1, effect_exec.length - 1);
 			} else if (effect_exec.includes('.')){
 				effect_exec = parseFloat(effect_exec);
+			} else if (effect_exec.includes('rue') || effect_exec.includes('alse')){
+				effect_exec = (effect_exec.trim().toLowerCase()=='true');
 			} else {
 				effect_exec = parseInt(effect_exec);
 			}
@@ -1914,12 +1914,12 @@ var parameter_info = {};
 			if (this.readyState == 4 && this.status == 200) {
 			
 				var new_rule_id = parseInt(this.responseText);
-				if (rule_id == null){
-					objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].push(new_rule_id);
+				if (new_rule_id != null){
+					execution_order['rule_execution_order'][String(attribute_id)]['used_rule_ids'].push(new_rule_id);
 				}
 				
 				rule_dict['id'] = new_rule_id;
-				objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][new_rule_id] = rule_dict;
+				objects_dict[object_number]['object_rules'][attribute_id][new_rule_id] = rule_dict;
 				populateTheRulePanels(object_number, attribute_id, attribute_name);	
 			}
 		};
@@ -1928,8 +1928,21 @@ var parameter_info = {};
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send(JSON.stringify(rule_dict));
 		
+		
+		//load (all) Rule into objects_dict
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				objects_dict[object_number]['object_rules'] = JSON.parse(this.responseText);
+			}
+		};
+		xhttp.open('GET', '/tool/get_object_rules?object_type_id=' + objects_dict[object_number]['object_type_id'] , true);
+		xhttp.send();
+		
+		
 		// empty the right part of the modal
 		cancelRuleCreation();
+
 	}
 	
 	
@@ -1992,20 +2005,21 @@ var parameter_info = {};
 			$( ".rule-panel-body" ).sortable({
 				connectWith: ".list-group",
 				update: function(event, ui) {
+					// move within rules-list
 					if (ui.sender == null && this.id == 'rules-list') {
 						// move the + button to the bottom
 						document.getElementById('rules-list').appendChild(document.getElementById('plus-button-list-group-item'));
 					
-						// move within rules-list
+						// update the execution_order
 						var object_number = parseInt(ui.item[0].getAttribute('data-object-number'));
 						var	attribute_id = parseInt(ui.item[0].getAttribute('data-attribute-id'));
 						var	rule_id = parseInt(ui.item[0].getAttribute('data-rule-id'));
-						
-						execution_order = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'];
-						old_index = execution_order.indexOf(rule_id);
+						used_rule_ids = execution_order['rule_execution_order'][String(attribute_id)]['used_rule_ids'];
+						old_index = used_rule_ids.indexOf(rule_id);
 						new_index = ui.item.index();
-						objects_dict[object_number]['object_rules'][attribute_id]['execution_order'] = move(execution_order, old_index, new_index);
+						execution_order['rule_execution_order'][String(attribute_id)]['used_rule_ids'] = move(used_rule_ids, old_index, new_index);
 					}
+					
 				},
 				receive: function(event, ui) {					
 					var object_number = parseInt(ui.item[0].getAttribute('data-object-number'));
@@ -2014,31 +2028,31 @@ var parameter_info = {};
 					var sender = ui.sender[0].id;
 					var receiver = this.id;
 					
-					if (receiver == 'not-used-rules-list' && sender == 'rules-list') {
-						objects_dict[object_number]['object_rules'][attribute_id]['not_used_rules'][rule_id] = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
-						delete objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
+					
+					// move from rules-list to not-used-rules-list
+					if (receiver == 'not-used-rules-list' && sender == 'rules-list') {			
+						var used_rule_ids = execution_order['rule_execution_order'][String(attribute_id)]['used_rule_ids'];
+						old_index = used_rule_ids.indexOf(rule_id);
+						new_index = ui.item.index();
+						execution_order['rule_execution_order'][String(attribute_id)]['used_rule_ids'].splice(old_index,1);
+						execution_order['rule_execution_order'][String(attribute_id)]['not_used_rule_ids'].splice(new_index,0,rule_id);
 						
-						// update the execution_order
-						var execution_order = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'];
-						old_index = execution_order.indexOf(rule_id);
-						execution_order.splice(old_index,1);
-						objects_dict[object_number]['object_rules'][attribute_id]['execution_order'] = execution_order;
+						//uncheck learn_probabilities checkbox
+						document.getElementById("learn-probabililty--rule" + rule_id).checked = false;
 					}
 					
-					if (receiver == 'rules-list' && sender == 'not-used-rules-list') {
-						objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id] = objects_dict[object_number]['object_rules'][attribute_id]['not_used_rules'][rule_id];
-						delete objects_dict[object_number]['object_rules'][attribute_id]['not_used_rules'][rule_id];
-						
+					// move from not-used-rules-list to rules-list
+					if (receiver == 'rules-list' && sender == 'not-used-rules-list') {	
+					
 						// move the + button to the bottom
 						document.getElementById('rules-list').appendChild(document.getElementById('plus-button-list-group-item'));
 						
 						// update the execution_order
+						var not_used_rule_ids = execution_order['rule_execution_order'][String(attribute_id)]['not_used_rule_ids'];
+						old_index = not_used_rule_ids.indexOf(rule_id);
 						new_index = ui.item.index();
-						var execution_order = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'];
-						execution_order.splice(new_index, 0, rule_id);
-						objects_dict[object_number]['object_rules'][attribute_id]['execution_order'] = execution_order;
-						
-						
+						execution_order['rule_execution_order'][String(attribute_id)]['not_used_rule_ids'].splice(old_index,1);
+						execution_order['rule_execution_order'][String(attribute_id)]['used_rule_ids'].splice(new_index,0,rule_id);
 					}
 				}         
 			}).disableSelection();

@@ -418,33 +418,34 @@
  
 <script type="text/javascript">
 	// GLOBAL VARIABLES:
-	objects_dict = {{ simulation_model.objects_dict|safe }};
-	y_value_attributes = {{ simulation_model.y_value_attributes|safe }};
-	rule_infos = {{ simulation_model.rule_infos|safe }};
-	triggered_rules = {{ simulation_model.triggered_rules|safe }};
-	simulation_data = {{ simulation_model.simulation_data|safe }};
-	correct_values = {{ simulation_model.correct_values|safe }};
-	errors = {{ simulation_model.errors|safe }};
+	var objects_dict = {{ simulation_model.objects_dict|safe }};
+	var y_value_attributes = {{ simulation_model.y_value_attributes|safe }};
+	var rule_infos = {{ simulation_model.rule_infos|safe }};
+	var triggered_rules = {{ simulation_model.triggered_rules|safe }};
+	var simulation_data = {{ simulation_model.simulation_data|safe }};
+	var correct_values = {{ simulation_model.correct_values|safe }};
+	var errors = {{ simulation_model.errors|safe }};
 	
-	is_timeseries_analysis = {{ simulation_model.is_timeseries_analysis|yesno:"true,false" }};
-	simulation_start_time = {{ simulation_model.simulation_start_time }};
-    simulation_end_time = {{ simulation_model.simulation_end_time }};
-    timestep_size = {{ simulation_model.timestep_size }};
+	var is_timeseries_analysis = {{ simulation_model.is_timeseries_analysis|yesno:"true,false" }};
+	var simulation_start_time = {{ simulation_model.simulation_start_time }};
+    var simulation_end_time = {{ simulation_model.simulation_end_time }};
+    var timestep_size = {{ simulation_model.timestep_size }};
+	var execution_order_id = {{ simulation_model.execution_order_id }};
+	var execution_order = {};
 	
 	var number_of_periods;
 	if (is_timeseries_analysis) {
-		number_of_periods = Math.ceil((simulation_end_time - simulation_start_time)/timestep_size);
+		var number_of_periods = Math.ceil((simulation_end_time - simulation_start_time)/timestep_size);
 	} else {
-		number_of_periods = 1;
+		var number_of_periods = 1;
 	}
 
 
-	
 	var selected_runs = new Set(); 
 	var all_runs_list = Object.keys(simulation_data);
 	var selected_object_attribute = null;
-
-			
+	
+	
 	var clicked_selection_buttons = {'select_all_clicked': false, 'select_correct_clicked': false, 'select_false_clicked': false};
 	var delta_t_list = ['delta_t (years)', 'delta_t (months)', 'delta_t (days)', 'delta_t (hours)', 'delta_t (minutes)', 'delta_t (seconds)'];
 	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1];
@@ -1303,7 +1304,7 @@
 				for (var i = 0; i < triggered_rule_infos.length; i++) {
 					var triggered_rule_info = triggered_rule_infos[i];
 					var rule_id = triggered_rule_info['id'];
-					var rule = objects_dict[object_number]['object_rules'][attribute_id]['used_rules'][rule_id];
+					var rule = objects_dict[object_number]['object_rules'][attribute_id][rule_id];
 					
 					//text_decoration
 					if (triggered_rule_info['pt']){
@@ -1313,7 +1314,8 @@
 					}
 					
 					// rule_number
-					rule_number = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].indexOf(rule_id) + 1;
+					rule_number = execution_order['rule_execution_order'][String(attribute_id)]['used_rule_ids'].indexOf(rule_id) + 1;
+					//rule_number = objects_dict[object_number]['object_rules'][attribute_id]['execution_order'].indexOf(rule_id) + 1;
 							
 					// tooltip_text
 					tooltip_text = "current value=|" + triggered_rule_info['v'] + "|  vs.  correct value=|" + String(triggered_rules[run_id][column_name][period_number]['correct_value']) + "|";  // v = new_value
@@ -1442,7 +1444,15 @@
 	 
 
 
-	
+	//load execution order
+	var xhttp = new XMLHttpRequest();       
+	xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			execution_order = JSON.parse(this.responseText);
+		}
+	};
+	xhttp.open('GET', '/tool/get_execution_order?execution_order_id=' + execution_order_id , true);
+	xhttp.send();
 	 
 </script>
 

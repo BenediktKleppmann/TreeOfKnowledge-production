@@ -1060,11 +1060,11 @@
 		object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length ; i++) {
 			object_number = object_numbers[i];
-			object_rules = Object.keys(objects_dict[object_number]['object_rules']);
-			for (var j = 0; j < object_rules.length ; j++) {
-				used_rules = Object.keys(objects_dict[object_number]['object_rules'][object_rules[j]]['used_rules']);
-				for (var k = 0; k < used_rules.length ; k++) {
-					if (objects_dict[object_number]['object_rules'][object_rules[j]]['used_rules'][used_rules[k]]['learn_posterior']) {
+			attribute_ids = Object.keys(objects_dict[object_number]['object_rules']);
+			for (var j = 0; j < attribute_ids.length ; j++) {
+				rule_ids = Object.keys(objects_dict[object_number]['object_rules'][attribute_ids[j]]);
+				for (var k = 0; k < rule_ids.length ; k++) {
+					if (objects_dict[object_number]['object_rules'][attribute_ids[j]][rule_ids[k]]['learn_posterior']) {
 						number_of_rules_to_learn += 1;
 					}
 				}
@@ -1250,6 +1250,7 @@
 			'object_type_counts': object_type_counts,
 			'total_object_count': total_object_count,
 			'number_of_additional_object_facts': number_of_additional_object_facts,
+			'execution_order_id':execution_order_id,
 			'environment_start_time': environment_start_time,
 			'environment_end_time': environment_end_time,
 			'simulation_start_time': simulation_start_time,
@@ -1259,6 +1260,26 @@
 		
 		var xmlhttp = new XMLHttpRequest();       
 		xmlhttp.open("POST", "/tool/save_changed_simulation/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));	
+		
+		
+		//save Execution_order	
+		//var execution_order_name = $('#execution-order-name').val();
+		//var execution_order_description = $('#execution-order-description').val();
+		var execution_order_name = 'test_name';
+		var execution_order_description = 'test_description';
+		
+		request_body = {
+			'id': execution_order_id,
+			'name': execution_order_name,
+			'description': execution_order_description,
+			'execution_order': execution_order
+		}
+		
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.open("POST", "/tool/save_execution_order/");
 		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send(JSON.stringify(request_body));	
@@ -1320,6 +1341,7 @@
 											'</div>' + 
 											'<div class="object-header-object-name">' + objects_dict[object_number]['object_name'] + '</div>' +
 										'</div>' + 
+										'<input type="hidden" id="object-name-field" value=' + objects_dict[object_number]['object_name'] + '>' + 
 										'<input type="hidden" id="object-number-field" value=' + object_number + '>' + 
 										'<input type="text" class="search" id="object-attribute-search-field" onkeyup="filterObjectAttributes();" placeholder=" Search">';
 				$('#object-header').html(object_header_string);
@@ -1358,6 +1380,26 @@
 			}	
 		}
 	}	
+	
+	// this gets triggered when someone creates and saves a new attribute
+	function redrawAttributeSelections() {
+		get_new_object_data = true;
+		getObjectData();
+		
+		// the previous step only adds the attribute to object_attributes (in the objects_dict), here we also add it to object_rules 
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			var object_number = object_numbers[i];
+			var attribute_ids = Object.keys(objects_dict[object_number]['object_attributes']);
+			for (var j = 0; j < attribute_ids.length; j++) {
+			var attribute_id = parseInt(attribute_ids[j]);
+				if (!(attribute_id in objects_dict[object_number]['object_rules'])) {
+					objects_dict[object_number]['object_rules'][attribute_id] = {}
+				}
+			}
+		}
+	}
+	
 	
 	
 	function filterObjectAttributes() {	
