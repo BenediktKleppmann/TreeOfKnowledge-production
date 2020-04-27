@@ -1,3 +1,13 @@
+####################################################################
+# This file is part of the Tree of Knowledge project.
+# Copyright (c) 2019-2040 Benedikt Kleppmann
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version - see http://www.gnu.org/licenses/.
+#####################################################################
+
 from collection.models import Object_types, Attribute, Object, Data_point, Simulation_model
 import numpy as np
 import pandas as pd
