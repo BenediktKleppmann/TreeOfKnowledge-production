@@ -474,7 +474,7 @@
 
 	// THE DATA
 	var data_table_json = {{ uploaded_dataset.data_table_json | safe }}
-	console.log(data_table_json);
+	//console.log(data_table_json);
 
 	// GLOBAL VARIABLES ==========================================
 	var table_headers = data_table_json["table_header"]
@@ -1286,7 +1286,7 @@
 			if (this.readyState == 4 && this.status == 200) {
 				
 				
-				console.log(this.responseText)
+				//console.log(this.responseText)
 				var response_dict = JSON.parse(this.responseText)
 				var data_type = response_dict["fields"]["column"]["type"]
 				
@@ -1510,7 +1510,7 @@
 		
 		$("#edited-column-name").html(table_headers[attributenumber]);
 		edited_column = table_body[attributenumber]
-		console.log(edited_column);
+		//console.log(edited_column);
 		drawEditedColumnValues();
 		$("#subset-specification-div").attr("style","display:none;");
 		$("#subset_specification").val("");

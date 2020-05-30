@@ -167,8 +167,667 @@ def make_data_table_json_with_distinct_entities(uploaded_dataset):
 
 
 
+
+
+
 # called from upload_data7
 def perform_uploading(uploaded_dataset, request):
+    """
+        Main upload function for non-timeseries data.
+    """
+    print('1')
+    upload_id = uploaded_dataset.id
+    progress_tracking_file_name = 'collection/static/webservice files/runtime_data/upload_progress_' + str(upload_id) + '.txt'
+    with open(progress_tracking_file_name, "w") as progress_tracking_file:
+        progress_tracking_file.write('0')
+
+    with connection.cursor() as cursor:
+
+        # PART 0: Variables
+        print('2')
+        object_type_id = uploaded_dataset.object_type_id
+        data_quality = uploaded_dataset.correctness_of_data
+        attribute_selection = json.loads(uploaded_dataset.attribute_selection)
+        meta_data_facts = json.loads(uploaded_dataset.meta_data_facts)
+        list_of_matches = json.loads(uploaded_dataset.list_of_matches)
+        upload_only_matched_entities = uploaded_dataset.upload_only_matched_entities
+        valid_time_start = (uploaded_dataset.data_generation_date - datetime.date(1970, 1, 1)).days * 86400
+        data_table_json = json.loads(uploaded_dataset.data_table_json)
+        data_table_df = pd.DataFrame(data_table_json['table_body'])
+        print('3')
+
+
+        # PART 1: Add Meta Data Facts
+        for meta_data_fact in meta_data_facts:
+            attribute_selection += [int(meta_data_fact['attribute_id'])]
+            next_data_table_column_number = str(len(data_table_df.columns))
+            data_table_df[next_data_table_column_number] = [meta_data_fact['value']] * len(data_table_df)
+
+
+
+        # PART 2: Create missing objects/ Remove not-matched rows
+        data_table_df['object_id'] = list_of_matches
+
+        if upload_only_matched_entities == 'True':
+            data_table_df = data_table_df[data_table_df['object_id'].notnull()]
+            
+        else:
+            # make new_object_ids
+            print('4.1')
+            not_matched_indexes = data_table_df[data_table_df['object_id'].isnull()].index
+            
+
+            print('4.2')
+            if len(not_matched_indexes) > 0:
+                maximum_object_id = Object.objects.all().order_by('-id').first().id
+                new_object_ids = range(maximum_object_id + 1, maximum_object_id + len(not_matched_indexes) + 1)
+                data_table_df.loc[not_matched_indexes, 'object_id'] = new_object_ids
+
+                # create new object records  
+                print('4.4')      
+                table_rows = list(map(list, zip(*[new_object_ids, [object_type_id] * len(not_matched_indexes)])))
+                number_of_chunks =  math.ceil(len(not_matched_indexes) / 100)
+                print('4.5')
+                for chunk_index in range(number_of_chunks):
+                    print('4.6')
+
+                    rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
+                    insert_statement = '''
+                        INSERT INTO collection_object (id, object_type_id) 
+                        VALUES ''' 
+                    insert_statement += ','.join(['(%s, %s)']*len(rows_to_insert))
+                    cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+                    print('4.7')
+
+                    with open(progress_tracking_file_name, "w") as progress_tracking_file:
+                        percent_of_upload_completed = 5 * (chunk_index+1) / number_of_chunks
+                        progress_tracking_file.write(str(percent_of_upload_completed))
+
+
+        print('5')
+        with open(progress_tracking_file_name, "w") as progress_tracking_file:
+            progress_tracking_file.write('5')
+        print('6')
+
+
+        # PART 3: save object_id_column
+        uploaded_dataset.object_id_column = json.dumps(list(data_table_df['object_id']))
+        uploaded_dataset.save()
+
+
+        # PART 4: Insert into DataPoints
+        # for every column: create and save new_datapoint_records
+        number_of_entities = len(data_table_df)
+        for column_number, attribute_id in enumerate(attribute_selection):
+            print('=================================================================')
+            print(str(column_number))
+            print(str(attribute_id))
+            
+            attribute_record = Attribute.objects.get(id=attribute_id)
+            data_type = attribute_record.data_type
+            valid_time_end = valid_time_start + attribute_record.expected_valid_period
+            
+
+            if data_type == "string":             
+                numeric_value_column = [None]*number_of_entities
+                string_value_column = list(data_table_df[str(column_number)])
+                boolean_value_column = [None]*number_of_entities
+            elif data_type in ["int", "real", "relation"]: 
+                numeric_value_column = list(data_table_df[str(column_number)])
+                string_value_column = [None]*number_of_entities
+                boolean_value_column = [None]*number_of_entities
+            elif data_type == "bool": 
+                print('is boolean Value')
+                print(data_table_df[str(column_number)])
+                numeric_value_column = [None]*number_of_entities
+                string_value_column = [None]*number_of_entities
+                boolean_value_column = list(data_table_df[str(column_number)])
+            
+
+            print('2 - ' + str(time.time()))
+            print(len(data_table_df['object_id']))
+            print(len([str(attribute_id)]*number_of_entities))
+            print(len([str(value) for value in list(data_table_df[str(column_number)])]))
+            print(len(numeric_value_column))
+            print(len(string_value_column))
+            print(len(boolean_value_column))
+            print(len([valid_time_start]*number_of_entities))
+            print(len([valid_time_end]*number_of_entities))
+            print(len([data_quality]*number_of_entities))
+            print(len([upload_id]*number_of_entities))
+
+            new_datapoints_dict = {'object_id':data_table_df['object_id'],
+                                    'attribute_id':[str(attribute_id)]*number_of_entities,
+                                    'value_as_string':[str(value) for value in list(data_table_df[str(column_number)])],
+                                    'numeric_value':numeric_value_column,
+                                    'string_value':string_value_column,
+                                    'boolean_value':boolean_value_column,
+                                    'valid_time_start': [valid_time_start]*number_of_entities,
+                                    'valid_time_end':[valid_time_end]*number_of_entities,
+                                    'data_quality':[data_quality]*number_of_entities,
+                                    'upload_id': [upload_id]*number_of_entities}
+            # print(new_datapoints_dict)
+            new_datapoint_records = pd.DataFrame(new_datapoints_dict)
+
+
+            print('3 - ' + str(time.time()))
+            table_rows = new_datapoint_records.values.tolist()
+            # print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+            # print(table_rows)
+            number_of_chunks =  math.ceil(number_of_entities / 50)
+
+            for chunk_index in range(number_of_chunks):
+                rows_to_insert = table_rows[chunk_index*50: chunk_index*50 + 50]
+                insert_statement = '''
+                    INSERT INTO collection_data_point (object_id, attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end, data_quality, upload_id) 
+                    VALUES ''' 
+                insert_statement += ','.join(['(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)']*len(rows_to_insert))
+                cursor.fast_executemany = True 
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+            print('4 - ' + str(time.time()))
+
+            with open(progress_tracking_file_name, "w") as progress_tracking_file:
+                percent_of_upload_completed = 5 + (92 * (column_number+1) / len(attribute_selection)) 
+                progress_tracking_file.write(str(percent_of_upload_completed))
+                
+     
+
+        
+
+        # PART 5: Make new Simulation model with same initialisation
+        # create new simulation_model
+        object_type_record = Object_types.objects.get(id=object_type_id)
+        objects_dict = {}
+        objects_dict[1] = { 'object_name':object_type_record.name + ' 1', 
+                            'object_type_id':object_type_id, 
+                            'object_type_name':object_type_record.name, 
+                            'object_icon':object_type_record.object_type_icon, 
+                            'object_attributes':{},
+                            'object_rules':{},
+                            'object_relations': [],
+                            'object_filter_facts':json.loads(uploaded_dataset.meta_data_facts),
+                            'position':{'x':100, 'y':100},
+                            'get_new_object_data': True};
+
+        simulation_model = Simulation_model(user=request.user, 
+                                            is_timeseries_analysis=False,
+                                            objects_dict=json.dumps(objects_dict),
+                                            object_type_counts=json.dumps({object_type_id:1}),
+                                            total_object_count=0,
+                                            number_of_additional_object_facts=2,
+                                            execution_order_id=1,
+                                            environment_start_time=946684800, 
+                                            environment_end_time=1577836800, 
+                                            simulation_start_time=946684800, 
+                                            simulation_end_time=1577836800, 
+                                            timestep_size=31536000,
+                                            data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
+
+        simulation_model.save()
+        new_model_id = simulation_model.id
+
+
+        with open(progress_tracking_file_name, "w") as progress_tracking_file:
+            progress_tracking_file.write('100')
+
+        return (number_of_entities, new_model_id)
+
+
+
+
+
+
+
+
+
+
+# called from upload_data7
+def perform_uploading_for_timeseries(uploaded_dataset, request):
+    """
+        Main upload function for timeseries data.
+
+    Note: the valid times are determined as follows...
+    The start time is the measurement time.
+    The ending time is the smaller of the following two:
+        * the next measurement time for this object (minus 1 second)(if it exists)
+        * the start time plus the expected_valid_period of the attribute
+    """
+
+    upload_id = uploaded_dataset.id
+    progress_tracking_file_name = 'collection/static/webservice files/runtime_data/upload_progress_' + str(upload_id) + '.txt'
+    with open(progress_tracking_file_name, "w") as progress_tracking_file:
+        progress_tracking_file.write('0')
+
+    with connection.cursor() as cursor:
+
+        # PART 0: Variables
+        object_type_id = uploaded_dataset.object_type_id
+        data_quality = uploaded_dataset.correctness_of_data
+        attribute_selection = json.loads(uploaded_dataset.attribute_selection)
+        meta_data_facts = json.loads(uploaded_dataset.meta_data_facts)
+        list_of_matches = json.loads(uploaded_dataset.list_of_matches)
+        upload_only_matched_entities = uploaded_dataset.upload_only_matched_entities
+        data_table_json = json.loads(uploaded_dataset.data_table_json)
+        data_table_df = pd.DataFrame(data_table_json['table_body'])
+
+        object_identifiers = json.loads(uploaded_dataset.object_identifiers)
+        columns = list(data_table_df.columns)
+        idenifying_columns = None
+        if object_identifiers is not None:
+            idenifying_columns = list(compress(columns, object_identifiers))
+
+        datetime_column = json.loads(uploaded_dataset.datetime_column)
+        
+
+
+        # PART 1a: Add Meta Data Facts
+        for meta_data_fact in meta_data_facts:
+            attribute_selection += [int(meta_data_fact['attribute_id'])]
+            next_data_table_column_number = str(len(data_table_df.columns))
+            data_table_df[next_data_table_column_number] = [meta_data_fact['value']] * len(data_table_df)
+
+
+        # PART 1b: valid_time_start and next_time_step
+        valid_time_start_column = []
+        for date_string in datetime_column:
+            date_time = dateutil.parser.parse(date_string)
+            valid_time_start_column.append(int(time.mktime(date_time.timetuple())))
+        data_table_df['valid_time_start'] = valid_time_start_column
+        data_table_df = data_table_df.sort_values(idenifying_columns + ['valid_time_start'])
+
+        if idenifying_columns is not None:
+            data_table_df['next_time_step'] = list(data_table_df[1:]['valid_time_start']) + [9999999999999]
+            last_line_of_each_object = data_table_df.reset_index().groupby(idenifying_columns).index.last()
+            data_table_df.loc[last_line_of_each_object,'next_time_step'] = 9999999999999
+        
+
+
+
+
+        # PART 2: Create missing objects/ Remove not-matched rows
+        if upload_only_matched_entities == 'True':
+             
+            table_df = pd.DataFrame(data_table_json['table_body']) # making new table_df so that it is in the right order
+            aggregation_dict = {column:'first' for column in columns}
+            object_ids_df = table_df.groupby(idenifying_columns).aggregate(aggregation_dict)
+            object_ids_df['object_id'] = list_of_matches 
+            object_ids_df.index = range(len(object_ids_df))
+            data_table_df.index = range(len(data_table_df))
+            data_table_df = pd.merge(data_table_df, object_ids_df, on=idenifying_columns, how='inner', suffixes=['', '_remnant_from_merge'])
+            data_table_df = data_table_df[data_table_df['object_id'].notnull()]  
+        else:
+            # make new_object_ids
+            table_df = pd.DataFrame(data_table_json['table_body']) # making new table_df so that it is in the right order
+            aggregation_dict = {column:'first' for column in columns}
+            object_ids_df = table_df.groupby(idenifying_columns).aggregate(aggregation_dict)
+            object_ids_df['object_id'] = list_of_matches
+            not_matched_indexes = object_ids_df[object_ids_df['object_id'].isnull()].index       
+
+            if len(not_matched_indexes) > 0:
+                maximum_object_id = Object.objects.all().order_by('-id').first().id
+                new_object_ids = range(maximum_object_id + 1, maximum_object_id + len(not_matched_indexes) + 1)
+                object_ids_df.loc[not_matched_indexes, 'object_id'] = new_object_ids
+                object_ids_df.index = range(len(object_ids_df))
+                data_table_df.index = range(len(data_table_df))
+                data_table_df = pd.merge(data_table_df, object_ids_df, on=idenifying_columns, how='inner', suffixes=['', '_remnant_from_merge'])
+
+
+                # create new object records      
+                table_rows = list(map(list, zip(*[new_object_ids, [object_type_id] * len(not_matched_indexes)])))
+                number_of_chunks =  math.ceil(len(not_matched_indexes) / 100)
+                for chunk_index in range(number_of_chunks):
+
+                    rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
+                    insert_statement = '''
+                        INSERT INTO collection_object (id, object_type_id) 
+                        VALUES ''' 
+                    insert_statement += ','.join(['(%s, %s)']*len(rows_to_insert))
+                    cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+
+                    with open(progress_tracking_file_name, "w") as progress_tracking_file:
+                        percent_of_upload_completed = 5 * (chunk_index+1) / number_of_chunks
+                        progress_tracking_file.write(str(percent_of_upload_completed))
+
+
+
+
+
+        with open(progress_tracking_file_name, "w") as progress_tracking_file:
+            progress_tracking_file.write('5')
+
+
+        # PART 3: save object_id_column
+        uploaded_dataset.object_id_column = json.dumps(list(data_table_df['object_id']))
+        uploaded_dataset.save()
+
+
+        # PART 4: Insert into DataPoints
+        # for every column: create and save new_datapoint_records
+        data_table_df = data_table_df.sort_values(idenifying_columns + ['valid_time_start'])
+        number_of_entities = len(data_table_df)
+        for column_number, attribute_id in enumerate(attribute_selection):
+            print('=================================================================')
+            print(str(column_number))
+            print(str(attribute_id))
+            
+            attribute_record = Attribute.objects.get(id=attribute_id)
+            data_type = attribute_record.data_type
+            
+            # valid_time_end
+            if idenifying_columns is not None:
+                data_table_df['expected_end_time'] = data_table_df['valid_time_start'] + attribute_record.expected_valid_period
+                data_table_df['valid_time_end'] = data_table_df[['next_time_step','expected_end_time']].min(axis=1)
+            else:
+                data_table_df['valid_time_end'] = data_table_df['valid_time_start'] + attribute_record.expected_valid_period
+
+            if data_type == "string":           
+                numeric_value_column = [None]*number_of_entities
+                string_value_column = list(data_table_df[str(column_number)])
+                boolean_value_column = [None]*number_of_entities
+            elif data_type in ["int", "real", "relation"]: 
+                numeric_value_column = list(data_table_df[str(column_number)])
+                string_value_column = [None]*number_of_entities
+                boolean_value_column = [None]*number_of_entities
+            elif data_type == "bool": 
+                print('is boolean Value')
+                print(data_table_df[str(column_number)])
+                numeric_value_column = [None]*number_of_entities
+                string_value_column = [None]*number_of_entities
+                boolean_value_column = list(data_table_df[str(column_number)])
+            
+
+            print('9')
+            print('2 - ' + str(time.time()))
+            print(data_table_df['object_id'])
+            print(len([str(attribute_id)]*number_of_entities))
+            print(len([str(value) for value in list(data_table_df[str(column_number)])]))
+            print(len(numeric_value_column))
+            print(len(string_value_column))
+            print(len(boolean_value_column))
+            print(len(list(data_table_df['valid_time_start'])))
+            print(len(list(data_table_df['valid_time_end'])))
+            print(len([data_quality]*number_of_entities))
+            print(len([upload_id]*number_of_entities))
+
+            new_datapoints_dict = {'object_id':list(data_table_df['object_id']),
+                                    'attribute_id':[str(attribute_id)]*number_of_entities,
+                                    'value_as_string':[str(value) for value in list(data_table_df[str(column_number)])],
+                                    'numeric_value':numeric_value_column,
+                                    'string_value':string_value_column,
+                                    'boolean_value':boolean_value_column,
+                                    'valid_time_start': list(data_table_df['valid_time_start']),
+                                    'valid_time_end':list(data_table_df['valid_time_end']),
+                                    'data_quality':[data_quality]*number_of_entities,
+                                    'upload_id': [upload_id]*number_of_entities}
+            # print(new_datapoints_dict)
+            new_datapoint_records = pd.DataFrame(new_datapoints_dict)
+
+
+            print('3 - ' + str(time.time()))
+            table_rows = new_datapoint_records.values.tolist()
+            # print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+            number_of_chunks =  math.ceil(number_of_entities / 50)
+
+            for chunk_index in range(number_of_chunks):
+                rows_to_insert = table_rows[chunk_index*50: chunk_index*50 + 50]
+                insert_statement = '''
+                    INSERT INTO collection_data_point (object_id, attribute_id, value_as_string, numeric_value, string_value, boolean_value, valid_time_start, valid_time_end, data_quality, upload_id) 
+                    VALUES ''' 
+                insert_statement += ','.join(['(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)']*len(rows_to_insert))
+                cursor.fast_executemany = True 
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+            print('4 - ' + str(time.time()))
+
+            with open(progress_tracking_file_name, "w") as progress_tracking_file:
+                percent_of_upload_completed = 5 + (92 * (column_number+1) / len(attribute_selection)) 
+                progress_tracking_file.write(str(percent_of_upload_completed))
+                
+     
+
+        
+
+        # PART 5: Make new Simulation model with same initialisation
+        # create new simulation_model
+        object_type_record = Object_types.objects.get(id=object_type_id)
+        objects_dict = {}
+        objects_dict[1] = { 'object_name':object_type_record.name + ' 1', 
+                            'object_type_id':object_type_id, 
+                            'object_type_name':object_type_record.name, 
+                            'object_icon':object_type_record.object_type_icon, 
+                            'object_attributes':{},
+                            'object_rules':{},
+                            'object_relations': [],
+                            'object_filter_facts':json.loads(uploaded_dataset.meta_data_facts),
+                            'position':{'x':100, 'y':100},
+                            'get_new_object_data': True};
+
+        simulation_model = Simulation_model(user=request.user, 
+                                            is_timeseries_analysis=False,
+                                            objects_dict=json.dumps(objects_dict),
+                                            object_type_counts=json.dumps({object_type_id:1}),
+                                            total_object_count=0,
+                                            number_of_additional_object_facts=2,
+                                            execution_order_id=1,
+                                            environment_start_time=946684800, 
+                                            environment_end_time=1577836800, 
+                                            simulation_start_time=946684800, 
+                                            simulation_end_time=1577836800, 
+                                            timestep_size=31536000,
+                                            data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
+
+        simulation_model.save()
+        new_model_id = simulation_model.id
+
+
+        with open(progress_tracking_file_name, "w") as progress_tracking_file:
+            progress_tracking_file.write('100')
+
+        return (number_of_entities, new_model_id)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# called from upload_data7
+def perform_uploading_for_timeseries__old(uploaded_dataset, request):
+    """
+        Main upload function for timeseries data.
+
+    Note: the valid times are determined as follows...
+    The start time is the measurement time.
+    The ending time is the smaller of the following two:
+        * the next measurement time for this object (minus 1 second)(if it exists)
+        * the start time plus the expected_valid_period of the attribute
+    """
+    number_of_datapoints_saved = 0;
+
+
+    # PART 0: Variables
+    upload_id = uploaded_dataset.id
+    object_type_id = uploaded_dataset.object_type_id
+    list_of_matches = json.loads(uploaded_dataset.list_of_matches)
+    attribute_selection = json.loads(uploaded_dataset.attribute_selection)
+    datetime_column = json.loads(uploaded_dataset.datetime_column)
+    data_quality = uploaded_dataset.correctness_of_data
+    upload_only_matched_entities = uploaded_dataset.upload_only_matched_entities
+
+    # prepare list of data_types and of expected_valid_periods
+    data_types = []
+    expected_valid_periods = []
+    for attribute_id in attribute_selection:
+        attribute_record = Attribute.objects.get(id=attribute_id)
+        data_types.append(attribute_record.data_type)
+        expected_valid_periods.append(attribute_record.expected_valid_period)
+
+
+    # the submitted table
+    data_table_json = json.loads(uploaded_dataset.data_table_json)
+    data_table_df = pd.DataFrame(data_table_json['table_body'])
+    columns = list(data_table_df.columns)
+
+    # add the column 'valid_time_start'
+    valid_time_start_column = []
+    for date_string in datetime_column:
+        date_time = dateutil.parser.parse(date_string)
+        valid_time_start_column.append(int(time.mktime(date_time.timetuple())))
+    data_table_df['valid_time_start'] = valid_time_start_column
+
+
+
+    # add the columns 'object_id', 'measurement_times' and 'measurement_number'
+    if uploaded_dataset.object_identifiers is not None:
+        # 1. object_id
+        object_identifiers = json.loads(uploaded_dataset.object_identifiers)
+        grouped_data_table_json = make_data_table_json_with_distinct_entities(uploaded_dataset)
+        object_ids_df = pd.DataFrame(grouped_data_table_json['table_body'])
+        object_ids_df['object_id'] = list_of_matches
+
+
+        for index, row in object_ids_df.iterrows():
+            if row['object_id'] is None:
+                object_record = Object(object_type_id=object_type_id)
+                object_record.save()
+                object_ids_df.loc[index, 'object_id'] = object_record.id
+
+        join_columns = list(compress(columns, object_identifiers))
+        object_ids_df = object_ids_df[join_columns + ['object_id']]
+        data_table_df = pd.merge(data_table_df, object_ids_df, on=join_columns, how='left')
+
+        # 2. measurement_times
+        measurement_times_df = data_table_df.groupby(join_columns)['valid_time_start'].apply(list).to_frame()
+        measurement_times_df.reset_index(inplace=True) 
+        measurement_times_df = measurement_times_df.rename(index=str, columns={'valid_time_start': 'measurement_times'})
+        data_table_df = pd.merge(data_table_df, measurement_times_df, on=join_columns, how='left')
+
+        # 3. measurement_number
+        data_table_df = data_table_df.sort_values(join_columns + ['valid_time_start'])
+        data_table_df['measurement_number'] = data_table_df.groupby(join_columns).cumcount()+1
+
+    else: 
+        # 1. object_id
+        data_table_df['object_id'] = list_of_matches
+        for row_number, row in data_table_df.iterrows():
+            if row['object_id'] is None:
+                object_record = Object(object_type_id=object_type_id)
+                object_record.save()
+                data_table_df.loc[index, 'object_id'] = object_record.id
+
+        # 2. measurement_times
+        data_table_df['measurement_times'] = [[time] for time in data_table_df['valid_time_start']]
+
+        # 3. measurement_number
+        data_table_df['measurement_number'] = 1
+
+
+    # save the object_id_column
+    uploaded_dataset.object_id_column = list(data_table_df['object_id'])
+    uploaded_dataset.save()
+
+
+    # loop through rows and values 
+    if upload_only_matched_entities == 'True':
+        data_table_df = data_table_df[data_table_df['object_id'].notnull()]
+
+    for row_nb, row in data_table_df.iterrows():
+        print("row_nb: " + str(row_nb))
+            
+        object_id = row['object_id']
+
+        for column_number, column in enumerate(columns):
+            attribute_id = attribute_selection[column_number]
+            value = row[column]
+            valid_time_start = row['valid_time_start']
+            expected_end_time = valid_time_start + expected_valid_periods[column_number]
+            if row['measurement_number'] < len(row['measurement_times']):
+                next_measurement_time = row['measurement_times'][row['measurement_number']] # row['measurement_number'] is the index of the next measurement number, because the indexes start at 0 instead of 1
+                valid_time_end = min(next_measurement_time, expected_end_time)
+            else:
+                valid_time_end = expected_end_time
+
+
+            if value is not None:
+                value_as_string = str(value)
+
+                if data_types[column_number] == "string":             
+                    numeric_value = None
+                    string_value = value
+                    boolean_value = None
+                elif data_types[column_number] in ["int", "real", "relation"]: 
+                    numeric_value = value
+                    string_value = None
+                    boolean_value = None
+                elif data_types[column_number] == "bool": 
+                    numeric_value = value
+                    string_value = None
+                    boolean_value = None
+
+
+                data_point_record = Data_point( object_id=object_id, 
+                                                attribute_id=attribute_id, 
+                                                value_as_string=value_as_string, 
+                                                numeric_value=numeric_value, 
+                                                string_value=string_value, 
+                                                boolean_value=boolean_value, 
+                                                valid_time_start=valid_time_start, 
+                                                valid_time_end=valid_time_end, 
+                                                data_quality=data_quality,
+                                                upload_id=upload_id)
+                data_point_record.save()
+                number_of_datapoints_saved += 1
+
+
+    simulation_model = Simulation_model(user=request.user,
+                                        is_timeseries_analysis=True,
+                                        name="", description="", meta_data_facts=uploaded_dataset.meta_data_facts)
+    simulation_model.save()
+    new_model_id = simulation_model.id
+
+    return (number_of_datapoints_saved, new_model_id)
+
+
+
+
+ # ===================================================================================================================
+ #   ____  _     _                 _                             _   ______                _   _                 
+ #  / __ \| |   | |               | |                           | | |  ____|              | | (_)                
+ # | |  | | | __| |    _ __   ___ | |_ ______ _   _ ___  ___  __| | | |__ _   _ _ __   ___| |_ _  ___  _ __  ___ 
+ # | |  | | |/ _` |   | '_ \ / _ \| __|______| | | / __|/ _ \/ _` | |  __| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+ # | |__| | | (_| |_  | | | | (_) | |_       | |_| \__ \  __/ (_| | | |  | |_| | | | | (__| |_| | (_) | | | \__ \
+ #  \____/|_|\__,_( ) |_| |_|\___/ \__|       \__,_|___/\___|\__,_| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+ #                |/                                                                                             
+ # ===================================================================================================================
+
+
+
+
+
+# called from upload_data7
+def perform_uploading__old(uploaded_dataset, request):
     """
         Main upload function for non-timeseries data.
     """
@@ -290,9 +949,6 @@ def perform_uploading(uploaded_dataset, request):
                 boolean_value_column = table_body[str(column_number)]
             
 
-            attribute_id_column = [attribute_id]*number_of_entities
-            attribute_id_column = [str(attribute_id) for attribute_id in attribute_id_column]
-            
             print('2 - ' + str(time.time()))
             print(len(object_id_column))
             print(len([str(attribute_id)]*number_of_entities))
@@ -365,13 +1021,13 @@ def perform_uploading(uploaded_dataset, request):
                                             object_type_counts=json.dumps({object_type_id:1}),
                                             total_object_count=0,
                                             number_of_additional_object_facts=2,
-											execution_order_id=1,
-											environment_start_time=946684800, 
+                                            execution_order_id=1,
+                                            environment_start_time=946684800, 
                                             environment_end_time=1577836800, 
                                             simulation_start_time=946684800, 
                                             simulation_end_time=1577836800, 
                                             timestep_size=31536000,
-											data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
+                                            data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
         simulation_model.save()
         new_model_id = simulation_model.id
@@ -384,175 +1040,6 @@ def perform_uploading(uploaded_dataset, request):
 
 
 
-
-
-
-# called from upload_data7
-def perform_uploading_for_timeseries(uploaded_dataset, request):
-    """
-        Main upload function for timeseries data.
-
-    Note: the valid times are determined as follows...
-    The start time is the measurement time.
-    The ending time is the smaller of the following two:
-        * the next measurement time for this object (minus 1 second)(if it exists)
-        * the start time plus the expected_valid_period of the attribute
-    """
-    number_of_datapoints_saved = 0;
-
-
-    # get the values from uploaded_dataset
-    object_type_id = uploaded_dataset.object_type_id
-    list_of_matches = json.loads(uploaded_dataset.list_of_matches)
-    attribute_selection = json.loads(uploaded_dataset.attribute_selection)
-    datetime_column = json.loads(uploaded_dataset.datetime_column)
-    data_quality = uploaded_dataset.correctness_of_data
-    upload_only_matched_entities = uploaded_dataset.upload_only_matched_entities
-
-    # prepare list of data_types and of expected_valid_periods
-    data_types = []
-    expected_valid_periods = []
-    for attribute_id in attribute_selection:
-        attribute_record = Attribute.objects.get(id=attribute_id)
-        data_types.append(attribute_record.data_type)
-        expected_valid_periods.append(attribute_record.expected_valid_period)
-
-
-    # the submitted table
-    submitted_data_table_json = json.loads(uploaded_dataset.data_table_json)
-    submitted_data_table_df = pd.DataFrame(submitted_data_table_json['table_body'])
-    columns = list(submitted_data_table_df.columns)
-
-    # add the column 'valid_time_start'
-    valid_time_start_column = []
-    for date_string in datetime_column:
-        date_time = dateutil.parser.parse(date_string)
-        valid_time_start_column.append(int(time.mktime(date_time.timetuple())))
-    submitted_data_table_df['valid_time_start'] = valid_time_start_column
-
-
-
-    # add the columns 'object_id', 'measurement_times' and 'measurement_number'
-    if uploaded_dataset.object_identifiers is not None:
-        # 1. object_id
-        object_identifiers = json.loads(uploaded_dataset.object_identifiers)
-        grouped_data_table_json = make_data_table_json_with_distinct_entities(uploaded_dataset)
-        object_ids_df = pd.DataFrame(grouped_data_table_json['table_body'])
-        object_ids_df['object_id'] = list_of_matches
-
-
-        for index, row in object_ids_df.iterrows():
-            if row['object_id'] is None:
-                object_record = Object(object_type_id=object_type_id)
-                object_record.save()
-                object_ids_df.ix[index, 'object_id'] = object_record.id
-
-        join_columns = list(compress(columns, object_identifiers))
-        object_ids_df = object_ids_df[join_columns + ['object_id']]
-        submitted_data_table_df = pd.merge(submitted_data_table_df, object_ids_df, on=join_columns, how='left')
-
-        # 2. measurement_times
-        measurement_times_df = submitted_data_table_df.groupby(join_columns)['valid_time_start'].apply(list).to_frame()
-        measurement_times_df.reset_index(inplace=True) 
-        measurement_times_df = measurement_times_df.rename(index=str, columns={'valid_time_start': 'measurement_times'})
-        submitted_data_table_df = pd.merge(submitted_data_table_df, measurement_times_df, on=join_columns, how='left')
-
-        # 3. measurement_number
-        submitted_data_table_df = submitted_data_table_df.sort_values(join_columns + ['valid_time_start'])
-        submitted_data_table_df['measurement_number'] = submitted_data_table_df.groupby(join_columns).cumcount()+1
-
-    else: 
-        # 1. object_id
-        submitted_data_table_df['object_id'] = list_of_matches
-        for row_number, row in submitted_data_table_df.iterrows():
-            if row['object_id'] is None:
-                object_record = Object(object_type_id=object_type_id)
-                object_record.save()
-                submitted_data_table_df.ix[index, 'object_id'] = object_record.id
-
-        # 2. measurement_times
-        submitted_data_table_df['measurement_times'] = [[time] for time in submitted_data_table_df['valid_time_start']]
-
-        # 3. measurement_number
-        submitted_data_table_df['measurement_number'] = 1
-
-
-    # save the object_id_column
-    uploaded_dataset.object_id_column = list(submitted_data_table_df['object_id'])
-    uploaded_dataset.save()
-
-
-    # loop through rows and values 
-    if upload_only_matched_entities == 'True':
-        submitted_data_table_df = submitted_data_table_df[submitted_data_table_df['object_id'].notnull()]
-
-    for row_nb, row in submitted_data_table_df.iterrows():
-        print("row_nb: " + str(row_nb))
-            
-        object_id = row['object_id']
-
-        for column_number, column in enumerate(columns):
-            attribute_id = attribute_selection[column_number]
-            value = row[column]
-            valid_time_start = row['valid_time_start']
-            expected_end_time = valid_time_start + expected_valid_periods[column_number]
-            if row['measurement_number'] < len(row['measurement_times']):
-                next_measurement_time = row['measurement_times'][row['measurement_number']] # row['measurement_number'] is the index of the next measurement number, because the indexes start at 0 instead of 1
-                valid_time_end = min(next_measurement_time, expected_end_time)
-            else:
-                valid_time_end = expected_end_time
-
-
-            if value is not None:
-                value_as_string = str(value)
-
-                if data_types[column_number] == "string":             
-                    numeric_value = None
-                    string_value = value
-                    boolean_value = None
-                elif data_types[column_number] in ["int", "real", "relation"]: 
-                    numeric_value = value
-                    string_value = None
-                    boolean_value = None
-                elif data_types[column_number] == "bool": 
-                    numeric_value = value
-                    string_value = None
-                    boolean_value = None
-
-
-                data_point_record = Data_point( object_id=object_id, 
-                                                attribute_id=attribute_id, 
-                                                value_as_string=value_as_string, 
-                                                numeric_value=numeric_value, 
-                                                string_value=string_value, 
-                                                boolean_value=boolean_value, 
-                                                valid_time_start=valid_time_start, 
-                                                valid_time_end=valid_time_end, 
-                                                data_quality=data_quality)
-                data_point_record.save()
-                number_of_datapoints_saved += 1
-
-
-    simulation_model = Simulation_model(user=request.user,
-                                        is_timeseries_analysis=True,
-                                        name="", description="", meta_data_facts=uploaded_dataset.meta_data_facts)
-    simulation_model.save()
-    new_model_id = simulation_model.id
-
-    return (number_of_datapoints_saved, new_model_id)
-
-
-
-
- # ===================================================================================================================
- #   ____  _     _                 _                             _   ______                _   _                 
- #  / __ \| |   | |               | |                           | | |  ____|              | | (_)                
- # | |  | | | __| |    _ __   ___ | |_ ______ _   _ ___  ___  __| | | |__ _   _ _ __   ___| |_ _  ___  _ __  ___ 
- # | |  | | |/ _` |   | '_ \ / _ \| __|______| | | / __|/ _ \/ _` | |  __| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
- # | |__| | | (_| |_  | | | | (_) | |_       | |_| \__ \  __/ (_| | | |  | |_| | | | | (__| |_| | (_) | | | \__ \
- #  \____/|_|\__,_( ) |_| |_|\___/ \__|       \__,_|___/\___|\__,_| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
- #                |/                                                                                             
- # ===================================================================================================================
 
 
 
