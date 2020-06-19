@@ -11,7 +11,12 @@
 from calendar import isleap
 from datetime import datetime
 from datetime import timezone
+from datetime import timedelta
 import numpy as np
+import pandas as pd
+import pdb
+
+
 
 def intersections(row):
     """
@@ -51,20 +56,38 @@ def intersections(row):
 def unix_timestamp_to_string(unix_timestamp, timestep_size):
     
     if timestep_size >= 31535998:
-        return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y')
+        as_datetime = datetime(1970, 1, 1) + timedelta(seconds=unix_timestamp)
+        return as_datetime.strftime('%Y')
+        # return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y')
     elif timestep_size >= 2419198:
-        return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m')
+        as_datetime = datetime(1970, 1, 1) + timedelta(seconds=unix_timestamp)
+        return as_datetime.strftime('%Y-%m')
+        # return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m')
     elif timestep_size >= 86398:
-        return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d')
+        as_datetime = datetime(1970, 1, 1) + timedelta(seconds=unix_timestamp)
+        return as_datetime.strftime('%Y-%m-%d')
+        # return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d')
     elif timestep_sizeord >= 58:
-        return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M')
+        as_datetime = datetime(1970, 1, 1) + timedelta(seconds=unix_timestamp)
+        return as_datetime.strftime('%Y-%m-%d %H:%M')
+        # return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M')
     else:
-        return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M:%S')
+        as_datetime = datetime(1970, 1, 1) + timedelta(seconds=unix_timestamp)
+        return as_datetime.strftime('%Y-%m-%d %H:%M:%S')
+        # return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
 
 
 
-
+def deduplicate_list_of_dicts(list_of_dicts):
+    seen = set()
+    new_list = []
+    for dictionary in list_of_dicts:
+        tup = tuple(dictionary.items())
+        if tup not in seen:
+            seen.add(tup)
+            new_list.append(dictionary)
+    return new_list
 
 
 def get_list_of_times(simulation_start_time, simulation_end_time, timestep_size):
@@ -75,7 +98,8 @@ def get_list_of_times(simulation_start_time, simulation_end_time, timestep_size)
         times = [simulation_start_time]
         
         for period in range(number_of_timesteps):
-            new_datetime = datetime.utcfromtimestamp(times[period])
+            new_datetime = datetime(1970, 1, 1) + timedelta(seconds=times[period])
+            # new_datetime = datetime.utcfromtimestamp()
 #             print('before: ' + str(new_datetime))
             new_datetime = add_years(new_datetime, number_of_years_per_timestep)
 #             print('after: ' + str(new_datetime))
@@ -89,7 +113,8 @@ def get_list_of_times(simulation_start_time, simulation_end_time, timestep_size)
         times = [simulation_start_time]
         
         for period in range(number_of_timesteps):
-            new_datetime = datetime.utcfromtimestamp(times[period])
+            new_datetime = datetime(1970, 1, 1) + timedelta(seconds=times[period])
+            # new_datetime = datetime.utcfromtimestamp(times[period])
             new_datetime = add_months(new_datetime, number_of_months_per_timestep)
             new_timestamp = int(new_datetime.replace(tzinfo=timezone.utc).timestamp())
             times.append(new_timestamp)
@@ -129,3 +154,23 @@ def add_months(d, months):
             isleap(d.year) and not isleap(new_year)):
             return d.replace(year=new_year, month=new_month, day=28)
         raise
+
+
+
+# ================================================================================
+#  Decorators
+# ================================================================================        
+
+
+def cash_result(func):
+    def inner(objects_dict, times, timestep_size):
+        store = pd.HDFStore('C:/Users/l412/Documents/1 projects/2020-05-21 Lifecycle Simulation/data/HDFStore.h5')
+        cash_name = str(objects_dict) + '_' + str(times) + '_' + str(timestep_size)
+        if cash_name in store.keys():
+            return store[cash_name]
+        else:
+            df = func(objects_dict, times, timestep_size) 
+            store[cash_name] = df
+            return df
+    return inner
+

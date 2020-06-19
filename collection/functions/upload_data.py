@@ -356,11 +356,13 @@ def perform_uploading(uploaded_dataset, request):
                                             total_object_count=0,
                                             number_of_additional_object_facts=2,
                                             execution_order_id=1,
+											not_used_rules='{}',
                                             environment_start_time=946684800, 
                                             environment_end_time=1577836800, 
                                             simulation_start_time=946684800, 
                                             simulation_end_time=1577836800, 
                                             timestep_size=31536000,
+											validation_data='{}',
                                             data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
         simulation_model.save()
@@ -608,11 +610,13 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
                                             total_object_count=0,
                                             number_of_additional_object_facts=2,
                                             execution_order_id=1,
+											not_used_rules='{}',
                                             environment_start_time=946684800, 
                                             environment_end_time=1577836800, 
                                             simulation_start_time=946684800, 
                                             simulation_end_time=1577836800, 
                                             timestep_size=31536000,
+											validation_data='{}',
                                             data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
         simulation_model.save()
@@ -1022,11 +1026,13 @@ def perform_uploading__old(uploaded_dataset, request):
                                             total_object_count=0,
                                             number_of_additional_object_facts=2,
                                             execution_order_id=1,
+											not_used_rules='{}',
                                             environment_start_time=946684800, 
                                             environment_end_time=1577836800, 
                                             simulation_start_time=946684800, 
                                             simulation_end_time=1577836800, 
                                             timestep_size=31536000,
+											validation_data='{}',
                                             data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
         simulation_model.save()
@@ -1132,11 +1138,13 @@ def perform_uploading_OLD(uploaded_dataset, request):
                                         total_object_count=0,
                                         number_of_additional_object_facts=2,
 										execution_order_id=1,
+										not_used_rules='{}',
 										environment_start_time=946684800, 
                                         environment_end_time=1577836800, 
                                         simulation_start_time=946684800, 
                                         simulation_end_time=1577836800, 
                                         timestep_size=31536000,
+										validation_data='{}',
 										data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
     simulation_model.save()

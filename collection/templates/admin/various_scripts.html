@@ -97,6 +97,14 @@
 		<div class="section-title">Run Regularly:</div>
 		<br>
 		<div class="form-group row">
+			<div id="script-description" class="col-sm-2">Remove NULL Datapoints</div>
+			<div class="col-sm-8">
+				<button id="start-script-button" type="button" class="btn btn-success" onclick="remove_null_datapoints()">Run</button>
+				<div id="response-remove-null-datapoints"></div>
+			</div>
+		</div>
+		<br>
+		<div class="form-group row">
 			<div id="script-description" class="col-sm-2">Remove Duplicate Datapoints</div>
 			<div class="col-sm-8">
 				<button id="start-script-button" type="button" class="btn btn-success" onclick="remove_duplicate_datapoints()">Run</button>
@@ -179,6 +187,21 @@
 	//====  Scripts to run regularly  =================================================================================
 	//====================================================================================================
 	
+	//===  Remove Duplicate Datapoints  =============================================================================	
+    function remove_null_datapoints() {
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				$('#response-remove-null-datapoints').html(this.responseText);
+			}
+		};
+
+		xmlhttp.open("POST", "/admin/remove_null_datapoints/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send();	
+	}
+
 	
 	//===  Remove Duplicate Datapoints  =============================================================================	
     function remove_duplicate_datapoints() {

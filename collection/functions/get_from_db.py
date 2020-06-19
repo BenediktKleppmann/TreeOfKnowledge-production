@@ -12,6 +12,8 @@ from collection.models import Uploaded_dataset, Object_types, Attribute, Object,
 from django.db.models import Count
 import json
 import numpy as np
+import pdb
+import pandas as pd
 
 
 
@@ -212,22 +214,26 @@ def get_available_relations():
 
 # used in simulation.py
 def get_rules_pdf(rule_or_parameter_id, is_rule):
+   
     print('-----------  get_rules_pdf(' + str(rule_or_parameter_id) + ', ' + str(is_rule) + ')  ----------------------')
     if is_rule:
-        likelihood_functions = list(Likelihood_fuction.objects.filter(rule_id=rule_or_parameter_id).exclude(nb_of_values_in_posterior=0).values())
+        likelihoods_df = pd.DataFrame(Likelihood_fuction.objects.filter(rule_id=rule_or_parameter_id).values())
     else:
-        likelihood_functions = list(Likelihood_fuction.objects.filter(parameter_id=rule_or_parameter_id).exclude(nb_of_values_in_posterior=0).values())
+        likelihoods_df = pd.DataFrame(Likelihood_fuction.objects.filter(parameter_id=rule_or_parameter_id).values())
 
-    if len(likelihood_functions) > 0:
+    if len(likelihoods_df) > 0:
         # multiply the likelihood functions of all different simulations/evidences to get a combined posterior
+        likelihoods_df = likelihoods_df.sort_values(['simulation_id','id'], ascending=[False, False])
+        likelihoods_df = likelihoods_df.groupby(['simulation_id', 'object_number']).aggregate({'simulation_id':'first', 'object_number':'first', 'list_of_probabilities':'first', 'nb_of_simulations':'first', 'nb_of_sim_in_which_rule_was_used':'first', 'nb_of_values_in_posterior':'first'})
+
         posterior_probabilities = np.array([1] * 30)
         nb_of_values_in_posterior = 0
-        nb_of_simulations = len(likelihood_functions)
-        for likelihood_function in likelihood_functions:
-            list_of_probabilities = json.loads(likelihood_function['list_of_probabilities'])
+        nb_of_simulations = len(likelihoods_df)
+        for index, row in likelihoods_df.iterrows():
+            list_of_probabilities = json.loads(row['list_of_probabilities'])
             if not np.any(np.isnan(list_of_probabilities)):
                 posterior_probabilities = posterior_probabilities * list_of_probabilities           # multiply with likelihood function
-                nb_of_values_in_posterior += likelihood_function['nb_of_values_in_posterior']
+                nb_of_values_in_posterior += row['nb_of_values_in_posterior']
         
         if np.sum(posterior_probabilities)>0:
             posterior_probabilities = posterior_probabilities * 30/ np.sum(posterior_probabilities) # re-normalisation
@@ -247,15 +253,14 @@ def get_rules_pdf(rule_or_parameter_id, is_rule):
 def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
     print('----  get_single_pdf  ----')
     if is_rule:
-        likelihood_functions = list(Likelihood_fuction.objects.filter(simulation_id=simulation_id, object_number=object_number, rule_id=rule_or_parameter_id).values())
+        likelihood_function = Likelihood_fuction.objects.filter(simulation_id=simulation_id, object_number=object_number, rule_id=rule_or_parameter_id).order_by('-id').first()
     else:
-        likelihood_functions = list(Likelihood_fuction.objects.filter(simulation_id=simulation_id, object_number=object_number, parameter_id=rule_or_parameter_id).values())
+        likelihood_function = Likelihood_fuction.objects.filter(simulation_id=simulation_id, object_number=object_number, parameter_id=rule_or_parameter_id).order_by('-id').first()
 
-    print('len(likelihood_functions)@: ' + str(len(likelihood_functions)))
-    if len(likelihood_functions) > 0:
+    if likelihood_function is not None:
 
-        nb_of_values_in_posterior = likelihood_functions[0]['nb_of_values_in_posterior']
-        list_of_probabilities = json.loads(likelihood_functions[0]['list_of_probabilities'])
+        nb_of_values_in_posterior = likelihood_function.nb_of_values_in_posterior
+        list_of_probabilities = json.loads(likelihood_function.list_of_probabilities)
         histogram = (list(list_of_probabilities), list(np.linspace(0,1,31)))
         print('histogram: ' + str(histogram))
 
@@ -263,11 +268,11 @@ def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
         mean = np.average(x_values, weights=list_of_probabilities)
         standard_dev = np.sqrt(np.average((x_values - mean)**2, weights=list_of_probabilities))
 
-        nb_of_sim_in_which_rule_was_used = likelihood_functions[0]['nb_of_sim_in_which_rule_was_used'] 
+        nb_of_sim_in_which_rule_was_used = likelihood_function.nb_of_sim_in_which_rule_was_used
         if (nb_of_sim_in_which_rule_was_used == 0):
             message = 'Initial distribution: uniform'
         elif (nb_of_sim_in_which_rule_was_used < 200):
-            message = 'This rule was triggered in only ' + str(nb_of_sim_in_which_rule_was_used) + ' of the ' + str(likelihood_functions[0]['nb_of_simulations']) + ' simulations.'
+            message = 'This rule was triggered in only ' + str(nb_of_sim_in_which_rule_was_used) + ' of the ' + str(likelihood_function.nb_of_simulations) + ' simulations.'
         else:
             message = ''
 

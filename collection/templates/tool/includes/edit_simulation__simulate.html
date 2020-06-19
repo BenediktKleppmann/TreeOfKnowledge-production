@@ -703,7 +703,7 @@
 					var all_timestamps = [];
 					for (var i = 0; i < object_numbers.length ; i++) {
 						timestamps = Object.keys(data_querying_info['timestamps'][object_numbers[i]]);
-						for (var j = 0; j < object_numbers.length ; j++) {
+						for (var j = 0; j < timestamps.length ; j++) {
 							var total_number_of_entities = data_querying_info['table_sizes'][object_numbers[i]]['number_of_objects'];
 							if (data_querying_info['timestamps'][object_numbers[i]][timestamps[j]] > 0.1*total_number_of_entities ) {
 								all_timestamps.push(timestamps[j]);

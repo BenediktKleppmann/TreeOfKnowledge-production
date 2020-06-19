@@ -21,6 +21,8 @@ import sqlite3
 import itertools
 import math
 import os
+import networkx as nx
+import pdb
 
 
 def find_matching_entities(match_attributes, match_values):
@@ -345,7 +347,6 @@ def get_data_from_random_related_object(simulation_id, objects_dict, environment
     merged_object_data_tables = get_data_from_related_objects(objects_dict, environment_start_time, environment_end_time, simulation_id)
     print('len(merged_object_data_tables): ' + str(len(merged_object_data_tables)))
 
-
     if len(merged_object_data_tables) > 0:
 
         # Sort Columns - top = biggest_number_of_non_nulls - attribute_id
@@ -378,7 +379,10 @@ def get_data_from_random_related_object(simulation_id, objects_dict, environment
             for object_column in object_columns:
                 attribute_id = object_column.split('attr')[1]
                 attribute_record = Attribute.objects.get(id=attribute_id)
-                all_attribute_values[object_number]['object_attributes'][attribute_id] = {  'attribute_value': merged_object_data_tables['obj' + str(object_number) + 'attr' + str(attribute_id)].iloc[chosen_row], 
+                attribute_value = merged_object_data_tables['obj' + str(object_number) + 'attr' + str(attribute_id)].iloc[chosen_row]
+                if attribute_record.data_type in ['int', 'relation'] and attribute_value is not None:
+                    attribute_value = int(attribute_value)
+                all_attribute_values[object_number]['object_attributes'][attribute_id] = {  'attribute_value': attribute_value, 
                                                                                             'attribute_name':attribute_record.name, 
                                                                                             'attribute_data_type':attribute_record.data_type, 
                                                                                             'attribute_rule': None}
@@ -393,8 +397,341 @@ def get_data_from_random_related_object(simulation_id, objects_dict, environment
 
 
 
+
+
+
+# def get_data_from_related_objects__multiple_timesteps(objects_dict, times, timestep_size, number_of_instances=None):
+#     valid_time_start = times[0]
+#     valid_time_end = times[-1]
+def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_start, valid_time_end, timestep_size, number_of_instances=None):
+    print('~~~~~~~~~~~~~~~~~  get_data_from_related_objects__multiple_timesteps  ~~~~~~~~~~~~~~~~~')
+    print('valid_time_start:' + str(valid_time_start))
+    print('valid_time_end:' + str(valid_time_end))
+    print('timestep_size:' + str(timestep_size))
+    sqlite_database = 'IS_USING_SQLITE_DB' in dict(os.environ).keys()
+    object_numbers = list(objects_dict.keys())
+    condition_holding_period_start = valid_time_start
+    condition_holding_period_end = max((valid_time_end-valid_time_start)/2, valid_time_start + timestep_size) # valid_time_end equals either the half-time or the first timestep (whichever is later)
+
+    # ==================================================================================================
+    # PART 1: for every object get a table with the object id that fulfill the internal criteria
+    # ==================================================================================================
+    print('part1')
+    with connection.cursor() as cursor:
+        for object_number in object_numbers:
+
+            object_type_id = objects_dict[object_number]['object_type_id']
+            relation_ids = [relation['attribute_id'] for relation in objects_dict[object_number]['object_relations']]
+            filter_facts  = objects_dict[object_number]['object_filter_facts']
+
+            child_object_types = get_from_db.get_list_of_child_objects(object_type_id)
+            child_object_type_ids = [el['id'] for el in child_object_types]
+            child_object_types_string = ", ".join("'{0}'".format(object_type_id) for object_type_id in child_object_type_ids)
+
+
+            # 1.1 create table with object_ids and potentially relation_ids
+            cursor.execute('DROP TABLE IF EXISTS object_%s' % str(object_number))
+
+            if len(relation_ids) == 0:                
+                sql_string1 = """CREATE TEMPORARY TABLE object_%s AS
+                                        SELECT DISTINCT object_id AS obj%sattrobject_id
+                                        FROM collection_data_point
+                                        WHERE valid_time_start > %s
+                                          AND valid_time_end > %s
+                                          AND object_id IN (
+                                                            SELECT DISTINCT id 
+                                                            FROM collection_object 
+                                                            WHERE object_type_id IN (%s)
+                                                            )
+                                """ % (str(object_number), str(object_number), str(condition_holding_period_start), str(condition_holding_period_end), child_object_types_string)
+
+            elif len(relation_ids) == 1:
+                sql_string1 = """CREATE TEMPORARY TABLE object_%s AS
+                                        SELECT DISTINCT object_id AS obj%sattrobject_id, numeric_value AS object_%s_relation_%s
+                                        FROM collection_data_point
+                                        WHERE attribute_id = %s
+                                          AND valid_time_start > %s
+                                          AND valid_time_end > %s
+                                          AND object_id IN (
+                                                            SELECT DISTINCT id 
+                                                            FROM collection_object 
+                                                            WHERE object_type_id IN (%s)
+                                                            )
+                                """ % (str(object_number), str(object_number), str(object_number), str(relation_ids[0]), str(condition_holding_period_start), str(condition_holding_period_end), str(relation_ids[0]), child_object_types_string)
+
+            else: 
+                cursor.execute('DROP TABLE IF EXISTS object_%s__with_missing_relations' % str(object_number))
+                sql_string1 = """CREATE TEMPORARY TABLE object_%s_object_ids__with_missing_relations AS
+                                        SELECT DISTINCT object_id, numeric_value AS object_%s_relation_%s
+                                        FROM collection_data_point
+                                        WHERE attribute_id = %s
+                                          AND valid_time_start > %s
+                                          AND valid_time_end > %s
+                                          AND object_id IN (
+                                                            SELECT DISTINCT id 
+                                                            FROM collection_object 
+                                                            WHERE object_type_id IN (%s)
+                                                            )
+                                """ % (str(object_number), str(object_number), str(relation_ids[0]), str(condition_holding_period_start), str(condition_holding_period_end), str(relation_ids[0]), child_object_types_string)
+
+
+
+
+            for fact_index, filter_fact in enumerate(filter_facts):
+                sql_string1    += '''INTERSECT
+                                    SELECT DISTINCT object_id
+                                    FROM collection_data_point
+                                    WHERE
+                '''
+                if filter_fact['operation'] == '=':     
+                    sql_string1 +=      "attribute_id = '%s' AND string_value = '%s'" % (filter_fact['attribute_id'], filter_fact['value'])
+                elif filter_fact['operation'] == '>':
+                    sql_string1 +=      "attribute_id = '%s' AND numeric_value > %s" % (filter_fact['attribute_id'], filter_fact['value'])
+                elif filter_fact['operation'] == '<':
+                    sql_string1 +=      "attribute_id = '%s' AND numeric_value < %s" % (filter_fact['attribute_id'], filter_fact['value'])
+                elif filter_fact['operation'] == 'in':
+                    values = ['"%s"' % value for value in filter_fact['value']]
+                    sql_string1 +=      "attribute_id = '%s' AND string_value IN (%s)" % (filter_fact['attribute_id'], ', '.join(values))
+
+            print('1.1')
+            cursor.execute(sql_string1)
+
+
+
+            # 1.2 add any missing relation_ids to the table
+            print('1.2')
+            if len(relation_ids) > 1: 
+                missing_relations = relation_ids[1:]
+                missing_relations_string = ", ".join("relation_table_%s.object_%s_relation_%s" % (relation_id, object_number, relation_id) for relation_id in missing_relations)
+
+                sql_string2 = """CREATE TEMPORARY TABLE object_%s AS
+                                    SELECT original_table.object_id AS obj%sattrobject_id, original_table.object_%s_relation_%s, %s
+                                    FROM object_%s__with_missing_relations AS original_table
+
+                            """ % (str(object_number), str(object_number), str(object_number), str(relation_ids[0]), missing_relations_string, str(object_number))
+
+                for missing_relation in missing_relations:
+                    sql_string2 += """INNER JOIN (
+                                            SELECT DISTINCT object_id, numeric_value AS object_%s_relation_%s
+                                            FROM collection_data_point
+                                            WHERE attribute_id = %s
+                                              AND valid_time_start > %s
+                                              AND valid_time_end > %s
+                                              AND object_id IN (SELECT DISTINCT object_id FROM object_%s_object_ids__with_missing_relations)
+                                    ) AS relation_table_%s
+                                    ON original_table.object_id = relation_%s.object_id 
+                                """ % (str(object_number), str(missing_relation), str(missing_relation), str(condition_holding_period_start), str(condition_holding_period_end), str(object_number), str(missing_relation), str(missing_relation))
+                cursor.execute(sql_string2)
+            print('1.3')
+
+
+    # ==================================================================================================
+    # PART 2: join the object-tables
+    # ==================================================================================================   
+        print('part2')
+        # 2.1 prepare directed graph 
+        G = nx.MultiDiGraph()
+        node_sizes = {}
+        edge_counter = 0
+        edge_info = {}
+
+        for object_number in object_numbers: 
+            # populate node_sizes    
+            if sqlite_database:
+                cursor.execute("SELECT COUNT(obj%sattrobject_id) AS approximate_row_count FROM object_%s;" % (object_number, object_number))
+            else:
+                cursor.execute("SELECT reltuples AS approximate_row_count FROM pg_class WHERE relname = 'object_%s';")
+            node_sizes[object_number] = cursor.fetchall()[0][0]
+
+            # add nodes and edges (the edge-weight is an id used for storing additional edge_info)
+            G.add_node(object_number)
+            for relation in objects_dict[object_number]['object_relations']:
+                edge_counter += 1
+                G.add_edge(object_number, relation['target_object_number'], weight=edge_counter)
+                edge_info[edge_counter] = {'related_object_nb': relation['target_object_number'], 'relation_column_name': 'object_%s_relation_%s' % (object_number, relation['attribute_id'])}
+
+
+
+        # 2.2 sequential collapse
+        while len(G.edges()) > 0:
+            # sort the edges - we always collapse/contract the edge with the lowest score
+            edges_with_scores = [(edge[2], (edge[0], edge[1]), min(node_sizes[edge[0]],node_sizes[edge[1]])) for edge in list(G.edges_iter(data='weight', default=1))]
+            edges_with_scores = sorted(edges_with_scores, key=lambda tup: tup[2]) 
+            origin_object_nb = edges_with_scores[0][1][0]
+            target_object_nb = edges_with_scores[0][1][1] 
+            relation_column_name = edge_info[edges_with_scores[0][0]]['relation_column_name']
+            related_object_nb = edge_info[edges_with_scores[0][0]]['related_object_nb']
+
+
+            # the target object will be fused into the origin i.e. the target is removed
+            # collapsing the tables
+            sql_string3 = '''  
+                        ALTER TABLE object_%s RENAME TO object_%s__temp;
+                        TRUNCATE object_%s;
+                        INSERT INTO object_%s
+                        SELECT * 
+                        FROM object_%s__temp AS origin
+                        INNER JOIN (
+                            SELECT * FROM object_%s
+                        ) AS target
+                        ON origin.%s = target.object_%s_object_id;
+                ''' % (origin_object_nb, origin_object_nb, origin_object_nb, origin_object_nb, origin_object_nb, target_object_nb, relation_column_name, related_object_nb)
+            cursor.execute(sql_string3)
+
+            # collapsing the graph
+            node_sizes[origin_object_nb] = min(node_sizes[origin_object_nb],node_sizes[target_object_nb])
+            del node_sizes[target_object_nb] 
+
+
+        # 2.3 cross-join the remaining nodes/tables
+        if len(G.nodes()) > 1:
+
+            select_columns = ", ".join("object_%s.*" % (node_id) for node_id in list(G.nodes()))
+            sql_string4 = '''  
+                        CREATE TEMPORARY TABLE object_ids_table AS
+                            SELECT %s
+                            FROM object_%s 
+                        ''' % (select_columns, list(G.nodes())[0])
+            for node_id in list(G.nodes())[1:]:
+                sql_string4 += 'CROSS JOIN object_%s ' % node_id
+            sql_string4 += ';' 
+            cursor.execute(sql_string4)
+        else:
+            cursor.execute('ALTER TABLE object_%s RENAME TO object_ids_table;' % G.nodes()[0])
+
+        # 2.4 
+        if number_of_instances is not None:
+            sql_string5 = '''  
+                        ALTER TABLE object_ids_table RENAME TO object_ids_table_long;
+                        TRUNCATE object_ids_table;
+                        INSERT INTO object_ids_table
+                        SELECT * 
+                        FROM object_ids_table_long
+                        ORDER BY random()
+                        LIMIT %s;
+                        ''' % number_of_instances
+
+        # 2.5 get the object_ids_table and add the periods
+        object_ids_df = pd.read_sql_query("SELECT *, 1 as cross_join_column FROM object_ids_table", connection)
+        # TESTING ----------------------------------------------------
+        # object_ids_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-11/object_ids_df.csv', index=False)
+        # ------------------------------------------------------------
+
+        # number_of_periods = int(np.ceil(valid_time_end - valid_time_start)/timestep_size)
+        # periods_df = pd.DataFrame({'period': range(number_of_periods), 'cross_join_column': [1]*number_of_periods})
+        # object_ids_df = pd.merge(object_ids_df, periods_df, on='cross_join_column')
+
+        
+
+    # ==================================================================================================
+    # PART 3: get the remaining data
+    # ==================================================================================================  
+        print('part3')
+        for object_number in object_numbers: 
+
+            query_string = "SELECT DISTINCT obj%sattrobject_id FROM object_ids_table" % (object_number)
+            cursor.execute(query_string)
+            object_ids = [entry[0] for entry in cursor.fetchall()]
+
+            if sqlite_database:
+                sql_string5 = '''
+                            SELECT 
+                                'obj%sattr' || CAST(attribute_id AS TEXT) || 'period' || CAST(period AS TEXT) AS column_name,
+                                object_id, 
+                                --attribute_id, 
+                                value_as_string,
+                                period
+                            FROM (
+                                    SELECT  object_id, 
+                                            attribute_id, 
+                                            value_as_string, 
+                                            valid_time_start, 
+                                            CAST((valid_time_start-%s)/%s AS INT) AS period,
+                                            ROW_NUMBER() OVER(PARTITION BY object_id, attribute_id, CAST((valid_time_start-%s)/%s AS INT) ORDER BY data_quality,upload_id DESC) AS rank
+                                    FROM collection_data_point
+                                    WHERE object_id IN (
+                                                          SELECT DISTINCT obj%sattrobject_id 
+                                                          FROM object_ids_table
+                                                        )
+                                      AND valid_time_start > %s
+                                      AND valid_time_end < %s 
+                                )
+                            WHERE rank = 1
+                        ''' % (object_number, valid_time_start, timestep_size, valid_time_start, timestep_size, object_number, valid_time_start, valid_time_end)
+            else:
+                sql_string5 = '''
+                            SELECT 
+                                
+                                object_id, 
+                                concat('obj%sattr', attribute_id, 'period', period) AS column_name,
+                                --attribute_id, 
+                                value_as_string,
+                                period
+                            FROM (
+                                    SELECT  object_id, 
+                                            attribute_id, 
+                                            value_as_string, 
+                                            valid_time_start, 
+                                            FLOOR((valid_time_start-%s)/%s) AS period,
+                                            ROW_NUMBER() OVER(PARTITION BY object_id, attribute_id, FLOOR((valid_time_start-%s)/%s) ORDER BY data_quality,upload_id DESC) AS rank
+                                    FROM collection_data_point
+                                    WHERE object_id IN (
+                                                          SELECT DISTINCT obj%sattrobject_id 
+                                                          FROM object_ids_table
+                                                        )
+                                      AND valid_time_start > %s
+                                      AND valid_time_end < %s 
+                                )
+                            WHERE rank = 1
+                        ''' % (object_number, valid_time_start, timestep_size, valid_time_start, timestep_size, object_number, valid_time_start, valid_time_end)
+
+            long_table_df = pd.read_sql_query(sql_string5, connection)
+            # TESTING ----------------------------------------------------
+            # long_table_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-11/long_table_df.csv', index=False)
+            # ------------------------------------------------------------
+
+            long_table_df.set_index(['object_id','column_name','period'],inplace=True)
+            broad_table_df = long_table_df.unstack(level=['column_name', 'period'])
+            # long_table_df.set_index(['object_id','column_name','period', 'attribute_id'],inplace=True)
+            # long_table_df.unstack(level=['column_name', 'period', 'attribute_id'])
+            broad_table_df.columns = [col[1] for col in list(broad_table_df.columns)]
+            # TESTING ----------------------------------------------------
+            # broad_table_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-11/broad_table_df.csv', index=False)
+            # ------------------------------------------------------------
+
+            object_ids_df = pd.merge(object_ids_df, broad_table_df, left_on='obj%sattrobject_id' % object_number, right_on='object_id', how='inner')
+
+
+    # ==================================================================================================
+    # PART 4: convert to correct datatype
+    # ================================================================================================== 
+    print('part4')
+    attribute_data_types_dict = {attribute.id: attribute.data_type for attribute in list(Attribute.objects.all())}
+    for column_name in object_ids_df.columns:
+        if 'period' in column_name:
+            col_attribute_id = int(column_name.split('attr')[1].split('period')[0])
+            col_data_type = attribute_data_types_dict[col_attribute_id]
+
+            if col_data_type in ['relation','int','real']:
+                object_ids_df[column_name] = object_ids_df[column_name].astype(float)
+            elif col_data_type in ['boolean','bool']:
+                object_ids_df[column_name] = object_ids_df[column_name].replace({'True':True,'False':False})
+
+
+    return object_ids_df
+
+
+
+
+
+
+
+
+
+
 # used by simulation.py
-def get_data_from_related_objects__multiple_timesteps(objects_dict, times, timestep_size):
+@generally_useful_functions.cash_result
+def get_data_from_related_objects__multiple_timesteps__old(objects_dict, times, timestep_size):
     print('~~~~~~~~~~~~~~~  get_data_from_related_objects__multiple_timesteps  ~~~~~~~~~~~~~~~~~~~~~~')
     object_numbers = list(objects_dict.keys())
 
@@ -460,7 +797,6 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, times, times
       
 
 
-
     # PART3: merge the object_data_tables according to the relations
     print('PART3: merge the object_data_tables according to the relations')
     merged_object_data_tables = pd.DataFrame({'cross_join_column':[1]})
@@ -516,6 +852,9 @@ def make_the_columns_for_joining_relations_on(merged_object_data_tables, object_
         for column_to_combine in columns_to_combine:
             merged_object_data_tables[new_column] = merged_object_data_tables[new_column].combine_first(merged_object_data_tables[column_to_combine])
     return merged_object_data_tables
+
+
+
 
 
 
@@ -864,6 +1203,7 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             broad_table_df.reindex()
             broad_table_df = broad_table_df.where(pd.notnull(broad_table_df), None)
 
+
             # insert the object_type's additional facts
             print('2.14 - ' + str(len(broad_table_df)))
             additional_attribute_values = []
@@ -887,7 +1227,6 @@ def filter_and_make_df_from_datapoints(object_type_id, object_ids, filter_facts,
             for attribute_id in all_attribute_ids:
                 if attribute_id not in existing_columns:
                     broad_table_df[attribute_id] = None
-
 
             return broad_table_df
 

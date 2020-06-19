@@ -365,8 +365,11 @@
 	/* ----------------------------------------------------------*/
 	/* PARAMETERS PDF -------------------------------------------------*/
 	/* ----------------------------------------------------------*/
-	parameter-button-row
 
+	#parameter-details {
+		width: 736px;
+	}
+	
 	#parameter-button-group {
 		display: inline-block;
 		position: relative;
@@ -1925,10 +1928,11 @@ var parameter_info = {};
 			if (this.readyState == 4 && this.status == 200) {
 			
 				var new_rule_id = parseInt(this.responseText);
-				if (new_rule_id != null){
+				if (!rule_id) {
 					execution_order['rule_execution_order'][String(attribute_id)]['used_rule_ids'].push(new_rule_id);
 				}
 				
+
 				rule_dict['id'] = new_rule_id;
 				objects_dict[object_number]['object_rules'][attribute_id][new_rule_id] = rule_dict;
 				populateTheRulePanels(object_number, attribute_id, attribute_name);	

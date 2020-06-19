@@ -712,71 +712,74 @@
 		for (var i = 0; i < object_numbers.length; i++) {
 			var object_number = object_numbers[i];
 			
-			var attribute_ids = Object.keys(objects_dict[object_number]['object_attributes']);
-			for (var j = 0; j < attribute_ids.length; j++) {
-				var attribute_id = attribute_ids[j];
-				
-				for (var period_number = 0; period_number < number_of_periods; period_number++) {
+			var column_names = Object.keys(simulation_data['0-0']);
+			for (var j = 0; j < column_names.length; j++) {
+				var column_name = column_names[j];
+				if (!column_name.includes('object_id') && !column_name.includes('param') && column_name!='delta_t') {
+					var attribute_id = parseInt(column_name.split('attr')[1]);
 					
-					// values
-					var values = []
-					for (var k = 0; k < selected_runs_list.length; k++) {
-						var run_number = selected_runs_list[k];
-						var column_name = 'obj' + String(object_number) + 'attr' + String(attribute_id);
-						values.push(simulation_data[run_number][column_name][period_number]);
-					}
-					
-					// calculate the resulting value
-					var resulting_value;
-					var datatype = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
-					if (['real','int'].includes(datatype) && metric=='mean') { // -> average value
-						var sum_of_values = 0;
-						var number_of_values = 0;
-						for (var l = 0; l < values.length; l++) {
-							if (! isNaN(values[l])) {
-								sum_of_values += values[l];
-								number_of_values += 1;
-							}
+					for (var period_number = 0; period_number < number_of_periods; period_number++) {
+						
+						// values
+						var values = []
+						for (var k = 0; k < selected_runs_list.length; k++) {
+							var run_number = selected_runs_list[k];
+							values.push(simulation_data[run_number][column_name][period_number]);
 						}
-						resulting_value = sum_of_values/number_of_values;
-						if (resulting_value % 0.001 !== 0 ){
-							resulting_value = resulting_value.toPrecision(3);
-							/*
-							attribute_data_type = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type']
-							if (['int','relation'].includes(attribute_data_type)) {
-								resulting_value = resulting_value.toFixed(0);
-							} else {
+						
+						// calculate the resulting value
+						var resulting_value;
+						console.log(attribute_id);
+						console.log(column_name);
+						var datatype = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type'];
+						if (['real','int'].includes(datatype) && metric=='mean') { // -> average value
+							var sum_of_values = 0;
+							var number_of_values = 0;
+							for (var l = 0; l < values.length; l++) {
+								if (! isNaN(values[l])) {
+									sum_of_values += values[l];
+									number_of_values += 1;
+								}
+							}
+							resulting_value = sum_of_values/number_of_values;
+							if (resulting_value % 0.001 !== 0 ){
 								resulting_value = resulting_value.toPrecision(3);
-							}
-							*/
-						}
-					}
-					
-					if (['string', 'relation', 'bool'].includes(datatype)) {  // -> most common value
-						var value_occurences = {}
-						for (var l = 0; l < values.length; l++) {
-							var value = String(values[l]);
-							if (Object.keys(value_occurences).includes(value)) {
-								value_occurences[value] += 1;
-							} else {
-								value_occurences[value] = 1;
+								/*
+								attribute_data_type = objects_dict[object_number]['object_attributes'][attribute_id]['attribute_data_type']
+								if (['int','relation'].includes(attribute_data_type)) {
+									resulting_value = resulting_value.toFixed(0);
+								} else {
+									resulting_value = resulting_value.toPrecision(3);
+								}
+								*/
 							}
 						}
 						
-						var max_count = 0;
-						var distinct_values = Object.keys(value_occurences);
-						
-						for (var l = 0; l < distinct_values.length; l++) {
-							if (value_occurences[distinct_values[l]] > max_count) {
-								resulting_value = distinct_values[l];
-								max_count = distinct_values[distinct_values[l]];
+						if (['string', 'relation', 'bool'].includes(datatype)) {  // -> most common value
+							var value_occurences = {}
+							for (var l = 0; l < values.length; l++) {
+								var value = String(values[l]);
+								if (Object.keys(value_occurences).includes(value)) {
+									value_occurences[value] += 1;
+								} else {
+									value_occurences[value] = 1;
+								}
+							}
+							
+							var max_count = 0;
+							var distinct_values = Object.keys(value_occurences);
+							
+							for (var l = 0; l < distinct_values.length; l++) {
+								if (value_occurences[distinct_values[l]] > max_count) {
+									resulting_value = distinct_values[l];
+									max_count = distinct_values[distinct_values[l]];
+								}
 							}
 						}
-					}
-					
-					// insert the resulting value
-					$('#' + object_number + '-' + attribute_id + '-' + period_number).html('<aside class="attribute-value-span">' + resulting_value + '</aside>');
 						
+						// insert the resulting value
+						$('#' + object_number + '-' + attribute_id + '-' + period_number).html('<aside class="attribute-value-span">' + resulting_value + '</aside>');
+					}	
 				}
 			}
 		}

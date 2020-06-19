@@ -181,6 +181,7 @@ urlpatterns = [
     url(r'^admin/delete_objects/$', views.delete_objects, name='delete_objects'),
     # various scripts
     url(r'^admin/various_scripts/$', views.various_scripts, name='various_scripts'),
+    url(r'^admin/remove_null_datapoints/$', views.remove_null_datapoints, name='remove_null_datapoints'),
     url(r'^admin/remove_duplicate_datapoints/$', views.remove_duplicate_datapoints, name='remove_duplicate_datapoints'),
     url(r'^admin/backup_database/$', views.backup_database, name='backup_database'),
     url(r'^admin/clear_database/$', views.clear_database, name='clear_database'),

@@ -660,9 +660,11 @@ def get_parameter_info(request):
 
 @login_required
 def get_execution_order(request):
+    
+    print('------------------ get_execution_order --------------------------------')
     execution_order_id = int(request.GET.get('execution_order_id', '1'))
+    print('test')
     execution_order = json.loads(Execution_order.objects.get(id=execution_order_id).execution_order)
-
     # CORRECT TO CURRENT objects, attributes and rules
 
     # PART 1A: extend with missing objects, attributes 
@@ -672,6 +674,7 @@ def get_execution_order(request):
         list_of_parent_object_ids = [el['id'] for el in list_of_parent_objects]
         all_attributes = list(Attribute.objects.all().filter(first_applicable_object_type__in=list_of_parent_object_ids).values('id', 'name'))
 
+        
         if object_type_id not in execution_order['attribute_execution_order'].keys():
             execution_order['attribute_execution_order'][object_type_id] = {'used_attributes':all_attributes, 'not_used_attributes': []}
         else:
@@ -682,7 +685,6 @@ def get_execution_order(request):
                 missing_attribute_ids = list(all_attribute_ids - listed_attribute_ids)
                 missing_attributes = [attribute for attribute in all_attributes if attribute['id'] in missing_attribute_ids]
                 execution_order['attribute_execution_order'][object_type_id]['used_attributes'] += missing_attribute_ids
-
 
     # PART 1B: extend with missing attributes, rules
     all_attribute_ids = [el[0] for el in list(Attribute.objects.all().values_list('id'))]
@@ -744,7 +746,6 @@ def get_execution_order(request):
         if len(no_longer_existing_rule_ids)>0:
             new_not_used_rule_ids = [rule_id for rule_id in not_used_rule_ids if rule_id not in no_longer_existing_rule_ids]
             execution_order['rule_execution_order'][attribute_id]['not_used_rule_ids'] = new_not_used_rule_ids
-
     return HttpResponse(json.dumps(execution_order))
 
 
@@ -792,9 +793,8 @@ def get_data_from_random_related_object(request):
 
     objects_data = query_datapoints.get_data_from_random_related_object(simulation_id, objects_dict, environment_start_time, environment_end_time)
     data_querying_info = Simulation_model.objects.get(id=simulation_id).data_querying_info
-
     response = {'objects_data': objects_data, 
-                'data_querying_info': data_querying_info}
+                'data_querying_info': data_querying_info}               
     return HttpResponse(json.dumps(response))
 
 
@@ -1242,6 +1242,7 @@ def save_likelihood_function(request):
 # used in: edit_simulation__simulate (the saveSimulation function)
 @login_required
 def save_execution_order(request):
+    print('-------  save_execution_order  -----------')
     if request.method == 'POST':
         try:
             request_body = json.loads(request.body)
@@ -1662,11 +1663,13 @@ def edit_simulation_new(request):
                                         total_object_count=0,
                                         number_of_additional_object_facts=2,
                                         execution_order_id=1,
+                                        not_used_rules='{}',
                                         environment_start_time=946684800, 
                                         environment_end_time=1577836800, 
                                         simulation_start_time=946684800, 
                                         simulation_end_time=1577836800, 
                                         timestep_size=31622400,
+										validation_data='{}',
 										data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
     simulation_model.save()
     new_simulation_id = simulation_model.id
@@ -1907,7 +1910,11 @@ def delete_objects_page(request):
 @staff_member_required
 def delete_objects(request):
     if request.method == 'POST':
+        print('===================')
+        print(request.body)
         object_ids = json.loads(request.body)
+        print('+++++++++++++++++++++++')
+        print(str(object_ids))
         Object.objects.filter(id__in=object_ids).delete()
         Data_point.objects.filter(object_id__in=object_ids).delete()
     return HttpResponse('Objects deleted!')
@@ -1921,6 +1928,12 @@ def delete_objects(request):
 def various_scripts(request):
     return render(request, 'admin/various_scripts.html',)
 
+
+@staff_member_required
+def remove_null_datapoints(request):
+    print('views.remove_null_datapoints')
+    admin_fuctions.remove_null_datapoints()
+    return HttpResponse('success')
 
 @staff_member_required
 def remove_duplicate_datapoints(request):
@@ -1980,24 +1993,32 @@ def upload_file(request):
 # TEST PAGES
 # ==================
 def test_page1(request):
+    from django.db import connection
+    with connection.cursor() as cursor:
+        # cursor.execute('''SELECT Count(*) AS count
+        #                     FROM collection_data_point
+        #                     WHERE value_as_string in ('null', 'NaN', 'None');
+        #                         ''')
+        cursor.execute('''SELECT * 
+                    FROM collection_likelihood_fuction
+                    WHERE simulation_id = 416
+                     AND object_number = 1
+                      AND parameter_id = 60;
+                        ''')
 
-    # with connection.cursor() as cursor:
-    #     query_string = "SELECT DISTINCT id FROM collection_rule"
-    #     cursor.execute(query_string)
-    #     rule_ids = [entry[0] for entry in cursor.fetchall()]
 
-    # for rule_id in rule_ids:
-    #     rule_record = Rule.objects.get(id=rule_id)
-    #     rule_record.used_attribute_ids = rule_record.used_attribute_ids.replace("'",'"')
-    #     rule_record.used_parameter_ids = rule_record.used_parameter_ids.replace("'",'"')
-    #     rule_record.save()
-    # return render(request, 'tool/test_page1.html')
+        bla = cursor.fetchall()
+        print(str(bla))
 
-    likelihood_fuctions = Likelihood_fuction.objects.filter(parameter_id=42)
-    for likelihood_fuction in likelihood_fuctions:
-        likelihood_fuction.list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        likelihood_fuction.save()
-    return HttpResponse('success')
+
+        # postgresql
+        # SELECT id 
+        # INTO unfiltered_object_ids_x
+        # FROM unfiltered_object_ids_x;
+
+
+
+        return HttpResponse(str(bla))
 
 
 

@@ -24,6 +24,7 @@ import math
 from copy import deepcopy
 from colour import Color
 import re
+import traceback
 import pdb
 
 # called from edit_model.html
@@ -66,10 +67,19 @@ class Simulator:
 
     def __init__(self, simulation_id):
 
+        # IMPORTANT SETTINGS  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+        self.nb_of_accepted_simulations = 2000
+        self.error_threshold = 0.98
+        # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        
+
+
+
         self.simulation_id = simulation_id
         simulation_model_record = Simulation_model.objects.get(id=simulation_id)
 
         # self.elfi_model = elfi.ElfiModel() 
+        self.elfi_sampler = None
         elfi.new_model()
         self.objects_dict = json.loads(simulation_model_record.objects_dict)
         self.execution_order_id = simulation_model_record.execution_order_id
@@ -80,6 +90,12 @@ class Simulator:
         self.timestep_size = simulation_model_record.timestep_size  
         self.is_timeseries_analysis = simulation_model_record.is_timeseries_analysis
         self.rule_priors = [] 
+        execution_order = json.loads(Execution_order.objects.get(id=self.execution_order_id).execution_order)
+
+        if not self.is_timeseries_analysis:
+            self.timestep_size = self.simulation_end_time - self.simulation_start_time
+
+
 
 
         # logging
@@ -89,9 +105,7 @@ class Simulator:
 
 
 
-        # #(simulations)
-        self.nb_of_accepted_simulations = 500
-        self.elfi_sampler = None
+
 
 
         #  --- colors ---
@@ -101,64 +115,49 @@ class Simulator:
         # colour = self.colors[int(min(error,1.)*1000)]
 
 
-        #  --- df ---
-        self.df = query_datapoints.get_data_from_related_objects(self.objects_dict, self.environment_start_time, self.environment_end_time,)
-        self.df.fillna(value=pd.np.nan, inplace=True)
-        self.df.index = range(len(self.df))
-
-
         #  --- y0_columns & y0_column_dt ---
         y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
-        for y_value_attribute in y_value_attributes:
+        for y_value_attribute in generally_useful_functions.deduplicate_list_of_dicts(y_value_attributes):
             column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
             self.y0_columns.append(column_name)
             self.y0_column_dt[column_name] = Attribute.objects.get(id=y_value_attribute['attribute_id']).data_type
 
 
-
-        #  --- df and y0_values ---
-        self.y0_values = []
+        #  --- times ---
         if self.is_timeseries_analysis:
-            
-            # times = np.arange(self.simulation_start_time, self.simulation_end_time, self.timestep_size)
             self.times = generally_useful_functions.get_list_of_times(self.simulation_start_time, self.simulation_end_time, self.timestep_size)
-            merged_object_data_tables = query_datapoints.get_data_from_related_objects__multiple_timesteps(self.objects_dict, self.times, self.timestep_size)
-            merging_columns =  ['obj' + obj_num + 'attrobject_id' for obj_num in self.objects_dict.keys()]
-            merged_periods_df = pd.merge(self.df, merged_object_data_tables, on=merging_columns, how='outer', suffixes=['','__from_periods'])
-            original_df_columns = self.df.columns
-
-            for col in self.y0_columns:
-                desired_column_names = [col + 'period'+ str(period) for period in range(len(self.times))]
-                for desired_column_name in desired_column_names:
-                    if desired_column_name not in merged_periods_df.columns:
-                        merged_periods_df[desired_column_name] = np.nan
-
-            merged_periods_df = self.reduce_number_of_rows(merged_periods_df, 500)
-            merged_periods_df.index = range(len(merged_periods_df))
-
-            self.df = merged_periods_df[original_df_columns]
-            merged_periods_df = merged_periods_df[[col for col in merged_periods_df.columns if col.split('period')[0] in self.y0_columns]]
-            self.y0_values = [row for index, row in sorted(merged_periods_df.to_dict('index').items())]
-
         else:
             self.times = [self.simulation_start_time, self.simulation_start_time]
-            self.df = self.reduce_number_of_rows(self.df, 500)
-            df_copy = pd.DataFrame(self.df[self.y0_columns].copy())
-            df_copy.columns = [col + 'period0' for col in df_copy.columns]
-            df_copy = df_copy[[col for col in df_copy.columns if col.split('period')[0] in self.y0_columns]]
-            # print('=== Testing  ==================================================')
-            # df_copy.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-01-20/df_copy_crosssectional_analysis.csv', index=False)
-            # print('===============================================================')
-            self.y0_values = [row for index, row in sorted(df_copy.to_dict('index').items())]
 
+
+
+        #  --- df & y0_values ---
+        validation_data = json.loads(simulation_model_record.validation_data)  
+        reduced_objects_dict = {}
+        for object_number in self.objects_dict.keys():
+            reduced_objects_dict[object_number] = {'object_filter_facts':self.objects_dict[object_number]['object_filter_facts'], 'object_relations':self.objects_dict[object_number]['object_relations'] }
+        new_simulation_state_code = str(self.is_timeseries_analysis) + str(reduced_objects_dict) + str(self.simulation_start_time) + str(self.simulation_end_time) + str(self.timestep_size) + str(self.y0_columns) + str(self.nb_of_accepted_simulations)
+        pdb.set_trace()
+        if 'simulation_state_code' in validation_data.keys() and validation_data['simulation_state_code'] == new_simulation_state_code:
+            self.df = pd.DataFrame.from_dict(validation_data['df'])
+            self.y0_values = validation_data['y0_values']
+        else:
+            (self.df, self.y0_values) = self.get_new_df_and_y0_values(self.is_timeseries_analysis, self.objects_dict, self.simulation_start_time, self.simulation_end_time, self.timestep_size, self.times, self.y0_columns, self.nb_of_accepted_simulations)
+            validation_data = {'simulation_state_code': new_simulation_state_code,
+                                'df': self.df.to_dict(orient='list'),
+                                'y0_values':self.y0_values}
+            simulation_model_record.validation_data = json.dumps(validation_data)
+            simulation_model_record.save()
         self.y0_values_df = pd.DataFrame(self.y0_values)
 
 
 
 
 
+
+
+
         #  --- Rules ---
-        self.rules = []
 
         # preparation: put relations into a dictionary for easier access
         relation_dict = {}
@@ -170,13 +169,13 @@ class Simulator:
                     relation_dict[object_number][relation['attribute_id']] = [relation['target_object_number']]
                 else:
                     relation_dict[object_number][relation['attribute_id']] += [relation['target_object_number']]
-        print('------------ relation_dict ------------')
 
-        # preparation: get execution_order
-        execution_order = json.loads(Execution_order.objects.get(id=self.execution_order_id).execution_order)
 
 
         # adapt condition_exec and effect_exec to current df
+        self.rules = []
+        self.not_used_rules = {object_number:{} for object_number in object_numbers}
+
         number_of_priors = 0  
         for object_number in object_numbers:
 
@@ -193,127 +192,141 @@ class Simulator:
 
                 for rule_id in set(rule_ids):
                     print(str(object_number) + ', ' + str(attribute_id) + ', ' + str(rule_id))
-                    rule = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)][str(rule_id)]
-                    # if set(rule['used_attribute_ids']) <= set(self.df.columns): # the attributes used in this rule must appear in df
-                    
 
-                    if self.is_timeseries_analysis or 'df.delta_t' not in rule['effect_exec']:  # don't include rules containing delta_t for cross-sectional analyses 
+                    try:
+                        rule = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)][str(rule_id)]
 
-                        if rule['effect_is_calculation']:
-                            rule['effect_exec'] = rule['effect_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
-                        elif rule['changed_var_data_type'] in ['relation','int']:
-                            rule['effect_exec'] = int(rule['effect_exec'])
-                        elif rule['changed_var_data_type'] == 'real':
-                            rule['effect_exec'] = float(rule['effect_exec'])
-                        elif rule['changed_var_data_type'] in ['boolean','bool']:
-                            rule['effect_exec'] = (rule['effect_exec'] in ['True','true','T','t'])
-                        
-                        # --- convert condition_exec ---
-                        if not rule['is_conditionless']:
+                        # if set(rule['used_attribute_ids']) <= set(self.df.columns): # the attributes used in this rule must appear in df
+                        if self.is_timeseries_analysis or 'df.delta_t' not in rule['effect_exec']:  # don't include rules containing delta_t for cross-sectional analyses 
+                            if rule['effect_is_calculation']:
+                                rule['effect_exec'] = rule['effect_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
+                            elif rule['changed_var_data_type'] in ['relation','int']:
+                                rule['effect_exec'] = int(rule['effect_exec'])
+                            elif rule['changed_var_data_type'] == 'real':
+                                rule['effect_exec'] = float(rule['effect_exec'])
+                            elif rule['changed_var_data_type'] in ['boolean','bool']:
+                                rule['effect_exec'] = (rule['effect_exec'] in ['True','true','T','t'])
+                            
+                            # --- convert condition_exec ---
+                            if not rule['is_conditionless']:
 
-                            # exists_expressions
-                            exists_expressions = re.findall(r'\([∀∃]rel\d+\)\[[^\]]*\]', rule['condition_exec'])
-                            for exists_expression in exists_expressions:
-                                relation_id = int(re.findall(r'\d+', exists_expression)[0])
-                                target_object_numbers = relation_dict[object_number][relation_id]
-
-                                exists_expression_inner = re.findall(r'\[.*\]',exists_expression)[0]
-                                list_of_different_inner_expressions = [exists_expression_inner.replace('df.rel' + str(relation_id), 'df.obj'+ str(target_object_number)) for target_object_number in target_object_numbers]
-                                if exists_expression[1]=='∃':
-                                    replacement = '(' + ' or '.join(list_of_different_inner_expressions) + ')'
-                                else:
-                                    replacement = '(' + ' and '.join(list_of_different_inner_expressions) + ')'
-                                
-                                rule['condition_exec'] = rule['condition_exec'].replace(exists_expression, replacement)
+                                # exists_expressions
+                                exists_expressions = re.findall(r'\([∀∃]rel\d+\)\[[^\]]*\]', rule['condition_exec'])
+                                for exists_expression in exists_expressions:
+                                    relation_id = int(re.findall(r'\d+', exists_expression)[0])
+                                    target_object_numbers = relation_dict[object_number][relation_id]
+                                    exists_expression_inner = re.findall(r'\[.*\]',exists_expression)[0]
+                                    list_of_different_inner_expressions = [exists_expression_inner.replace('df.rel' + str(relation_id), 'df.obj'+ str(target_object_number)) for target_object_number in target_object_numbers]
+                                    if exists_expression[1]=='∃':
+                                        replacement = '(' + ' or '.join(list_of_different_inner_expressions) + ')'
+                                    else:
+                                        replacement = '(' + ' and '.join(list_of_different_inner_expressions) + ')'
+                                    rule['condition_exec'] = rule['condition_exec'].replace(exists_expression, replacement)
 
 
-                            # relations
-                            # first level
-                            relation_occurences = re.findall(r'df.rel\d+\.', rule['condition_exec'])
-                            for relation_occurence in relation_occurences:
-                               relation_id = int(re.findall(r'\d+', relation_occurence)[0]) 
-                               target_object_number = relation_dict[object_number][relation_id][0]
-                               rule['condition_exec'] = rule['condition_exec'].replace(relation_occurence, 'df.obj' + str(target_object_number))
 
-                            # further levels
-                            for level in range(2): # you can maximally have a relation of a relation of a relation (=3)
-                                relation_occurences = re.findall(r'df.obj\d+rel\d+\.', rule['condition_exec'])
+                                # relations
+                                # first level
+                                relation_occurences = re.findall(r'df.rel\d+\.', rule['condition_exec'])
                                 for relation_occurence in relation_occurences:
-                                    given_object_number = int(re.findall(r'\d+', relation_occurence)[0]) 
-                                    relation_id = int(re.findall(r'\d+', relation_occurence)[1]) 
-                                    target_object_number = relation_dict[given_object_number][relation_id][0]
-                                    rule['condition_exec'] = rule['condition_exec'].replace(relation_occurence, 'df.obj' + str(target_object_number))
+                                    relation_id = int(re.findall(r'\d+', relation_occurence)[0]) 
+                                    if relation_id in relation_dict[object_number].keys():
+                                        target_object_number = relation_dict[object_number][relation_id][0]
+                                        rule['condition_exec'] = rule['condition_exec'].replace(relation_occurence, 'df.obj' + str(target_object_number))
+                                    else: 
+                                        relation_name = Attribute.objects.get(id=relation_id).name
+                                        raise Exception(self.objects_dict[object_number]['object_name'] +  " doesn't have the relation '" + relation_name + "'")
 
 
-                        rule['condition_exec'] = rule['condition_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
-                        rule['column_to_change'] = 'obj' + str(object_number) + 'attr' + str(rule['changed_var_attribute_id'])
-                        rule['object_number'] = object_number
+                                # further levels
+                                for level in range(2): # you can maximally have a relation of a relation of a relation (=3)
+                                    relation_occurences = re.findall(r'df.obj\d+rel\d+\.', rule['condition_exec'])
+                                    for relation_occurence in relation_occurences:
+                                        given_object_number = int(re.findall(r'\d+', relation_occurence)[0]) 
+                                        relation_id = int(re.findall(r'\d+', relation_occurence)[1]) 
+                                        target_object_number = relation_dict[given_object_number][relation_id][0]
+                                        rule['condition_exec'] = rule['condition_exec'].replace(relation_occurence, 'df.obj' + str(target_object_number))
 
-                        rule['parameters'] = {}
-                        for used_parameter_id in rule['used_parameter_ids']:
-                            parameter = Rule_parameter.objects.get(id=used_parameter_id)
-                            rule['parameters'][used_parameter_id] = {'min_value': parameter.min_value, 'max_value': parameter.max_value}
+
+                            rule['condition_exec'] = rule['condition_exec'].replace('df.attr', 'df.obj' + str(object_number) + 'attr')
+                            rule['column_to_change'] = 'obj' + str(object_number) + 'attr' + str(rule['changed_var_attribute_id'])
+                            rule['object_number'] = object_number
+
+                            rule['parameters'] = {}
+                            for used_parameter_id in rule['used_parameter_ids']:
+                                parameter = Rule_parameter.objects.get(id=used_parameter_id)
+                                rule['parameters'][used_parameter_id] = {'min_value': parameter.min_value, 'max_value': parameter.max_value}
 
 
-                        # ---  priors  ---
-                        if rule['learn_posterior']:
+                            # ---  priors  ---
+                            if rule['learn_posterior']:
+                                # rule probability
+                                if not rule['has_probability_1']:
+                                    new_prior = elfi.Prior('uniform', 0, 1, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
+                                    self.rule_priors.append(new_prior)
+                                    rule['prior_index'] = number_of_priors
+                                    number_of_priors += 1
+                                    self.parameter_columns.append('triggerThresholdForRule' + str(rule_id))
+
+                                # parameter
+                                for used_parameter_id in rule['used_parameter_ids']:
+                                    min_value = rule['parameters'][used_parameter_id]['min_value']
+                                    max_value = rule['parameters'][used_parameter_id]['max_value']
+                                    parameter_interval_size = max_value - min_value
+                                    new_prior = elfi.Prior('uniform', min_value, parameter_interval_size, name='prior__object' + str(object_number) + '_rule' + str(rule_id) + '_param' + str(used_parameter_id))  
+                                    self.rule_priors.append(new_prior)
+                                    rule['parameters'][used_parameter_id]['prior_index'] = number_of_priors
+                                    number_of_priors += 1
+                                    self.parameter_columns.append('param' + str(used_parameter_id))
+
+                                    self.posterior_values_to_delete['param' + str(used_parameter_id)] = []
+                                    self.posterior_values['param' + str(used_parameter_id)] = []
+
+
+                            # ---  histograms  ---
                             # rule probability
-                            if not rule['has_probability_1']:
-                                new_prior = elfi.Prior('uniform', 0, 1, name='prior__object' + str(object_number) + '_rule' + str(rule_id))  
-                                self.rule_priors.append(new_prior)
-                                rule['prior_index'] = number_of_priors
-                                number_of_priors += 1
+                            if (not rule['has_probability_1']) and (not rule['learn_posterior']):
+                                # if a specific posterior for this simulation has been learned, take this, else take the combined posterior of all other simulations
+                                histogram, mean, standard_dev, nb_of_values_in_posterior, message= get_from_db.get_single_pdf(simulation_id, object_number, rule_id, True)
+                                if histogram is None:
+                                    histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations = get_from_db.get_rules_pdf(rule_id, True)
+                                rule['histogram'] = histogram
 
                             # parameter
-                            for used_parameter_id in rule['used_parameter_ids']:
-                                min_value = rule['parameters'][used_parameter_id]['min_value']
-                                max_value = rule['parameters'][used_parameter_id]['max_value']
-                                new_prior = elfi.Prior('uniform', min_value, max_value, name='prior__object' + str(object_number) + '_rule' + str(rule_id) + '_param' + str(used_parameter_id))  
-                                self.rule_priors.append(new_prior)
-                                rule['parameters'][used_parameter_id]['prior_index'] = number_of_priors
-                                number_of_priors += 1
-                                self.parameter_columns.append('param' + str(used_parameter_id))
+                            if not rule['learn_posterior']:
+                                for used_parameter_id in rule['used_parameter_ids']: 
+                                    histogram, mean, standard_dev, nb_of_values_in_posterior, message= get_from_db.get_single_pdf(simulation_id, object_number, used_parameter_id, False)
+                                    if histogram is None:
+                                        histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations = get_from_db.get_rules_pdf(used_parameter_id, False)
 
-                                self.posterior_values_to_delete['param' + str(used_parameter_id)] = []
-                                self.posterior_values['param' + str(used_parameter_id)] = []
-
-
-                        # ---  histograms  ---
-                        # rule probability
-                        if (not rule['has_probability_1']) and (not rule['learn_posterior']):
-                            # if a specific posterior for this simulation has been learned, take this, else take the combined posterior of all other simulations
-                            histogram, mean, standard_dev, nb_of_values_in_posterior, message= get_from_db.get_single_pdf(simulation_id, object_number, rule_id, True)
-                            if histogram is None:
-                                histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations = get_from_db.get_rules_pdf(rule_id, True)
-                            rule['histogram'] = histogram
-
-                        # parameter
-                        if not rule['learn_posterior']:
-                            for used_parameter_id in rule['used_parameter_ids']: 
-                                histogram, mean, standard_dev, nb_of_values_in_posterior, message= get_from_db.get_single_pdf(simulation_id, object_number, used_parameter_id, False)
-                                if histogram is None:
-                                    histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations = get_from_db.get_rules_pdf(used_parameter_id, False)
-
-                                # change to the parameter's range
-                                min_value = rule['parameters'][used_parameter_id]['min_value']
-                                max_value = rule['parameters'][used_parameter_id]['max_value']
-                                histogram = (histogram[0], np.linspace(min_value,max_value,31))
-                                rule['parameters'][used_parameter_id]['histogram'] = histogram
-                                self.parameter_columns.append('param' + str(used_parameter_id))
+                                    # change to the parameter's range
+                                    min_value = rule['parameters'][used_parameter_id]['min_value']
+                                    max_value = rule['parameters'][used_parameter_id]['max_value']
+                                    histogram = (histogram[0], np.linspace(min_value,max_value,31))
+                                    rule['parameters'][used_parameter_id]['histogram'] = histogram
+                                    self.posterior_values['param' + str(used_parameter_id)] = []
 
 
-                        # used_columns
-                        used_columns = re.findall(r'df\.[^ \.]*', rule['condition_exec'])
-                        used_columns = [col.replace('df.','') for col in used_columns]
-                        rule['used_columns'] = used_columns
-                        rule['condition_exec'] = rule['condition_exec'].replace('df.', 'populated_df.')
+                            # used_columns
+                            used_columns = re.findall(r'df\.[^ \(\)\*\+\-\.\"\']*', rule['condition_exec'])
+                            used_columns = [col.replace('df.','') for col in used_columns]
+                            rule['used_columns'] = used_columns
+                            rule['condition_exec'] = rule['condition_exec'].replace('df.', 'populated_df.')
 
-                        # check if all the mentioned columns appear in df
-                        mentioned_columns = re.findall(r'df\.[a-zA-Z0-9_]+', rule['condition_exec'] + ' ' + str(rule['effect_exec']))
-                        mentioned_columns = [col for col in mentioned_columns if col[:8] != 'df.param']
-                        df_columns = ['df.'+col for col in self.df.columns]
-                        if (set(mentioned_columns) <= set(df_columns + ['df.delta_t'])):
-                            self.rules.append(rule)
+                            # check if all the mentioned columns appear in df
+                            mentioned_columns = re.findall(r'df\.[a-zA-Z0-9_]+', rule['condition_exec'] + ' ' + str(rule['effect_exec']))
+                            mentioned_columns = [col for col in mentioned_columns if col[:8] != 'df.param']
+                            mentioned_columns += ['df.' + rule['column_to_change']]
+                            df_columns = ['df.'+col for col in self.df.columns]
+                            if (set(mentioned_columns) <= set(df_columns + ['df.delta_t', 'df.randomNumber'])):
+                                self.rules.append(rule)
+                            else: 
+                                raise Exception("The following columns are missing: " + str(list(set(mentioned_columns) - set(df_columns + ['df.delta_t']))))
+
+                    except Exception:
+                        self.not_used_rules[object_number][rule_id] = {'condition_text':rule['condition_text'], 
+                                                                        'effect_text':rule['effect_text'], 
+                                                                        'reason':str(traceback.format_exc())}
 
 
 
@@ -327,6 +340,54 @@ class Simulator:
 
 
 
+
+    def get_new_df_and_y0_values(self, is_timeseries_analysis, objects_dict, simulation_start_time, simulation_end_time, timestep_size, times, y0_columns, nb_of_accepted_simulations):
+
+        all_periods_df = query_datapoints.get_data_from_related_objects__multiple_timesteps(objects_dict, simulation_start_time, simulation_end_time, timestep_size)
+        
+        y0_values = []
+        if is_timeseries_analysis:
+            
+            all_periods_df = self.reduce_number_of_rows(all_periods_df, nb_of_accepted_simulations)
+            all_periods_df.index = range(len(all_periods_df))
+
+            # coalesce the first periods into the starting values (i.e. self.df)
+            number_of_periods_in_df = int(np.ceil(len(times)/3)) 
+            object_id_columns = [col for col in all_periods_df.columns if 'object_id' in col]
+            df = all_periods_df[object_id_columns]
+            attribute_columns = set([col.split('period')[0] for col in all_periods_df.columns if 'period' in col])
+            for attribute_column in attribute_columns:
+                the_attributes_periods__tuples = [(col, int(col.split('period')[1])) for col in all_periods_df.columns if col.split('period')[0]==attribute_column and int(col.split('period')[1])<=number_of_periods_in_df]
+                the_attributes_periods = [period[0] for period in sorted(the_attributes_periods__tuples, key=lambda tup: tup[1])] 
+                if len(the_attributes_periods) > 0:
+                    df[attribute_column] = all_periods_df[the_attributes_periods].values[np.arange(len(all_periods_df)), np.argmin(pd.isnull(all_periods_df[the_attributes_periods]).values, axis=1)]
+
+            for col in y0_columns:
+                desired_column_names = [col + 'period'+ str(period) for period in range(len(times))]
+                for desired_column_name in desired_column_names:
+                    if desired_column_name not in all_periods_df.columns:
+                        all_periods_df[desired_column_name] = np.nan
+
+            
+            all_periods_df = pd.merge(all_periods_df, df, on=object_id_columns)
+            all_periods_df = all_periods_df[[col for col in all_periods_df.columns if col.split('period')[0] in y0_columns]]
+            y0_values = [row for index, row in sorted(all_periods_df.to_dict('index').items())]
+
+
+        else:
+            df = all_periods_df
+            df.columns = [col.split('period')[0] for col in df.columns]
+            df = self.reduce_number_of_rows(df, nb_of_accepted_simulations)
+            df_copy = pd.DataFrame(df[y0_columns].copy())
+            df_copy.columns = [col + 'period0' for col in df_copy.columns]
+            df_copy = df_copy[[col for col in df_copy.columns if col.split('period')[0] in y0_columns]]
+            y0_values = [row for index, row in sorted(df_copy.to_dict('index').items())]
+
+
+        df.fillna(value=pd.np.nan, inplace=True)
+        df.index = range(len(df))
+
+        return (df, y0_values)
 
 # ==========================================================================================
 #    __  __       _       
@@ -343,7 +404,6 @@ class Simulator:
 
 
         if len(self.rule_priors) > 0:
-            self.nb_of_accepted_simulations = 2000
             self.__learn_likelihoods()
 
 
@@ -380,7 +440,7 @@ class Simulator:
         print('learn_likelihoods2')
         self.elfi_sampler = rej
         print('learn_likelihoods3: ' + str(self.nb_of_accepted_simulations))
-        result = rej.sample(self.nb_of_accepted_simulations, threshold=.5)
+        result = rej.sample(self.nb_of_accepted_simulations, threshold=self.error_threshold)
         self.currently_running_learn_likelihoods = False
 
         # # TESTING ----------------------------------------------------
@@ -400,6 +460,7 @@ class Simulator:
                 if not rule['has_probability_1']:
                     print('==== post-processing rule ' + str(rule['id']) + '  ===================================================')
                     samples = result.samples['prior__object' + str(rule['object_number']) + '_rule' + str(rule['id']) ]
+
 
                     # version 1
                     histogram = np.histogram(samples, bins=30, range=(0.0,1.0))
@@ -513,6 +574,7 @@ class Simulator:
 
 
         # rule_infos
+        print('process_data_2')
         triggered_rules_df = triggered_rules_df[triggered_rules_df['triggered_rule'].notnull()]
         rule_ids = [triggered_rule_info['id'] for triggered_rule_info  in list(triggered_rules_df['triggered_rule'])]
         rule_ids = list(set(rule_ids))
@@ -524,6 +586,7 @@ class Simulator:
 
 
         # triggered_rules
+        print('process_data_3.0')
         triggered_rules_per_period = triggered_rules_df.groupby(['batch_number','initial_state_id','attribute_id','period']).aggregate({'initial_state_id':'first',
                                                                                                         'batch_number':'first',
                                                                                                         'attribute_id':'first',
@@ -532,10 +595,12 @@ class Simulator:
                                                                                                         'correct_value':'first',})  
         attribute_dict = {attribute_id: {} for attribute_id in triggered_rules_df['attribute_id'].unique().tolist()}
         triggered_rules = {}
+        print('process_data_3.1 - ' + str(len(triggered_rules_df['batch_number'].unique())) )
         for batch_number in triggered_rules_df['batch_number'].unique().tolist():
             for initial_state_id in triggered_rules_df['initial_state_id'].unique().tolist():
                 triggered_rules[str(initial_state_id) + '-' + str(batch_number)] = deepcopy(attribute_dict)
 
+        print('process_data_3.2 - ' + str(len(triggered_rules_per_period)))
         for index, row in triggered_rules_per_period.iterrows():
             triggered_rules[str(row['initial_state_id']) + '-' + str(row['batch_number'])][row['attribute_id']][int(row['period'])] = {'rules': row['triggered_rule'], 'correct_value': row['correct_value']}
 
@@ -543,6 +608,7 @@ class Simulator:
 
 
         # simulation_data
+        print('process_data_4')
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write(json.dumps({"learning_likelihoods": (len(self.rule_priors) > 0) , "nb_of_accepted_simulations_total": self.nb_of_accepted_simulations, "nb_of_accepted_simulations_current": self.nb_of_accepted_simulations , "learning__post_processing": "" , "running_monte_carlo": "true", "monte_carlo__simulation_number": number_of_simulations, "monte_carlo__number_of_simulations":  number_of_simulations, "monte_carlo__post_processing":"Post-processing:  formatting simulated values"}))
 
@@ -555,7 +621,7 @@ class Simulator:
         simulation_data_per_entity_attribute['initial_state_id'] = simulation_data_per_entity_attribute['initial_state_id'].astype(int)
         simulation_data_per_entity_attribute['batch_number'] = simulation_data_per_entity_attribute['batch_number'].astype(int)
 
-
+        print('process_data_4.1 - ' + str(len(simulation_data_per_entity_attribute)))
         for index, row in simulation_data_per_entity_attribute.iterrows():
             for attribute_id in attribute_ids:
                 simulation_number = str(row['initial_state_id']) + '-' + str(row['batch_number'])
@@ -568,19 +634,20 @@ class Simulator:
 
 
         # errors
-        print('process_data_4')
+        print('process_data_5')
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write(json.dumps({"learning_likelihoods": (len(self.rule_priors) > 0), "nb_of_accepted_simulations_total": self.nb_of_accepted_simulations, "nb_of_accepted_simulations_current": self.nb_of_accepted_simulations, "learning__post_processing": "" , "running_monte_carlo": True, "monte_carlo__simulation_number": number_of_simulations, "monte_carlo__number_of_simulations":  number_of_simulations, "monte_carlo__post_processing":"Post-processing:  calculating the simulated values' errors"}))
 
 
         errors = {}
         errors['score'] = 1 - errors_df['error'].mean()
-        errors['correct_runs'] = list(errors_df.loc[errors_df['error'] < 0.5, 'simulation_number'])
-        errors['false_runs'] = list(errors_df.loc[errors_df['error'] > 0.5, 'simulation_number'])
+        errors['correct_runs'] = list(errors_df.loc[errors_df['error'] < self.error_threshold, 'simulation_number'])
+        errors['false_runs'] = list(errors_df.loc[errors_df['error'] > self.error_threshold, 'simulation_number'])
 
 
 
         # Front-End too slow?
+        print('process_data_6')
         number_of_megabytes =len(json.dumps(simulation_data))/1000000
         if number_of_megabytes > 3:
             number_of_simulations_to_keep = int(len(simulation_data) * 3 / number_of_megabytes)
@@ -592,8 +659,10 @@ class Simulator:
 
 
 
+        print('process_data_7')
         simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
         simulation_model_record.rule_infos = json.dumps(rule_infos)
+        simulation_model_record.not_used_rules = self.not_used_rules
         simulation_model_record.triggered_rules = json.dumps(triggered_rules)
         simulation_model_record.simulation_data = json.dumps(simulation_data)
         simulation_model_record.correct_values = json.dumps(correct_values)
@@ -637,12 +706,12 @@ class Simulator:
                 if not rule['has_probability_1']:
                     df['triggerThresholdForRule' + str(rule['id'])] = rule_priors[rule['prior_index']]
                 for used_parameter_id in rule['used_parameter_ids']:
-                   df['param' + str(used_parameter_id)] = rule_priors[rule['parameters'][used_parameter_id]['prior_index']]
+                    df['param' + str(used_parameter_id)] = rule_priors[rule['parameters'][used_parameter_id]['prior_index']]
             else:
                 if not rule['has_probability_1']:
                     df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
                 for used_parameter_id in rule['used_parameter_ids']:
-                   df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][used_parameter_id]['histogram']).rvs(size=batch_size)
+                    df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][used_parameter_id]['histogram']).rvs(size=batch_size)
 
 
         if self.is_timeseries_analysis: 
@@ -668,6 +737,7 @@ class Simulator:
                 populated_df = df[populated_df_rows]
 
                 if rule['is_conditionless']:
+                    condition_satisfying_rows = pd.Series([True] * batch_size)
                     if rule['has_probability_1']:
                         satisfying_rows = pd.Series([True] * batch_size)
                     else:
@@ -683,7 +753,7 @@ class Simulator:
                         if condition_satisfying_rows.iloc[0] in [-1,-2]: #messy bug-fix for bug where eval returns -1 and -2 instead of True and False
                             condition_satisfying_rows += 2
                             condition_satisfying_rows = condition_satisfying_rows.astype(bool)
-                        satisfying_rows = condition_satisfying_rows.tolist()
+                        satisfying_rows = condition_satisfying_rows
                     else:
                         condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
                         triggered_rules = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
@@ -712,15 +782,14 @@ class Simulator:
                         new_values[nan_rows] = np.nan
 
                 else:
-                    new_values = rule['effect_exec']
-                    # new_values = json.loads(rule['effect_exec'])
+                    # new_values = rule['effect_exec']
+                    new_values = pd.Series(json.loads(rule['effect_exec']) * batch_size)
 
 
                 # df.loc[satisfying_rows,rule['column_to_change']] = new_values 
                 satisfying_rows[satisfying_rows.isna()] = False
                 new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
                 df[rule['column_to_change']] = new_values
-
 
 
             y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
@@ -820,7 +889,6 @@ class Simulator:
                             satisfying_rows = populated_df_rows
                             trigger_thresholds = [0] * batch_size
                         elif rule['has_probability_1']:
-                            # pdb.set_trace()
                             condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
                             if condition_satisfying_rows.iloc[0] in [-1,-2]: #messy bug-fix for bug where eval returns -1 and -2 instead of True and False
                                 condition_satisfying_rows += 2
@@ -836,6 +904,7 @@ class Simulator:
 
                     # --------  THEN  --------
                     if rule['effect_is_calculation']:
+                        print(rule['effect_exec'])
                         all_new_values = pd.eval(rule['effect_exec'])
                         if rule['changed_var_data_type'] in ['relation','int']:
                             nan_rows = all_new_values.isnull()
@@ -910,7 +979,8 @@ class Simulator:
 
 
             errors = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), self.y0_values)
-            error_df = pd.DataFrame({  'simulation_number': [str(index) + '-' + str(batch_number) for index in df.index],
+            error_df = pd.DataFrame({  'simulation_number': [str(index) + '-' + str(batch_nb) for index, batch_nb in zip(df.index, [batch_number]*len(df))],
+                                        # 'simulation_number': [str(index) + '-' + str(batch_number) for index in df.index],
                                         'error': errors})
             errors_df = errors_df.append(error_df)
 
@@ -967,7 +1037,7 @@ class Simulator:
         u_df = u_df.fillna(np.nan)
         v_df = v_df.fillna(np.nan)
 
-        
+
         total_error = np.zeros(shape=len(u))
         dimensionality = np.zeros(shape=len(u))
         for y0_column in self.y0_columns:
@@ -976,10 +1046,13 @@ class Simulator:
                 for period_column in period_columns:
                     error = 1. - np.equal(np.array(u_df[period_column]), np.array(v_df[period_column])).astype(int)
                     error[pd.isnull(v_df[period_column])] = 0 # set the error to zero where the correct value was not given
+                    error[pd.isnull(u_df[period_column])] = 0 # set the error to zero where the simulation value was not given
                     total_error += error
                     dimensionality += 1 - np.array(np.logical_or(v_df[period_column].isnull(),u_df[period_column].isnull()).astype(int))
-            if self.y0_column_dt[y0_column] in ['int','real']:
+            elif self.y0_column_dt[y0_column] in ['int','real']:
                 for period_column in period_columns:
+                    # if period_column == 'obj1attr185period8':
+                    #     pdb.set_trace()
                     period_number = max(int(period_column.split('period')[1]), 1)
       
                     # relative_change = np.abs(np.array(u_df[period_column]) - np.array(v_df[period_column.split('period')[0]]))/period_number
@@ -993,34 +1066,41 @@ class Simulator:
                     # # absolute_change_non_null = np.nan_to_num(absolute_change, nan=1.0) 
 
                     residuals = np.abs(np.array(u_df[period_column]) - np.array(v_df[period_column]))
-                    error_in_error_range =  residuals/np.percentile(residuals, 30)
+                    non_null_residuals = residuals[~np.isnan(residuals)]
+                    nth_percentile = np.percentile(non_null_residuals, self.error_threshold*100) if len(non_null_residuals) > 0 else 1# whereby n is the error_threshold. It therefore automatically adapts to the senistivity...
+                    error_divisor = nth_percentile if nth_percentile != 0 else 1
+                    error_in_error_range =  residuals/error_divisor
                     error_in_error_range_non_null = np.nan_to_num(error_in_error_range, nan=1.0)  
+                    error_in_error_range_non_null = np.minimum(error_in_error_range_non_null, 1)
 
                     true_change_percent = ((np.array(v_df[period_column]) - np.array(v_df[period_column.split('period')[0]]))/np.array(v_df[period_column.split('period')[0]]))
                     true_change_percent_per_period = np.power(true_change_percent, (1/period_number))
-                    simulated_change_percent = ((np.array(u_df[period_column]) - np.array(v_df[period_column.split('period')[0]]))/np.array(v_df[period_column.split('period')[0]]))/period_number
+                    simulated_change_percent = ((np.array(u_df[period_column]) - np.array(v_df[period_column.split('period')[0]]))/np.array(v_df[period_column.split('period')[0]]))
                     simulated_change_percent_per_period = np.power(simulated_change_percent, (1/period_number))
                     error_of_value_change = np.abs(simulated_change_percent_per_period - true_change_percent_per_period) 
                     error_of_value_change_non_null = np.nan_to_num(error_of_value_change, nan=1.0)  
+                    error_of_value_change_non_null = np.minimum(error_of_value_change_non_null, 1)
 
                     error = 0.5*np.minimum(error_in_error_range_non_null,error_of_value_change_non_null) + 0.25*np.sqrt(error_in_error_range_non_null) + 0.25*np.sqrt(error_of_value_change_non_null)
-                    error = np.minimum(error, 1)
+                    
                     null_value_places = np.logical_and(np.isnan(error_in_error_range), np.isnan(error_of_value_change))
-                    error[null_value_places] = 0
+                    error[null_value_places] = 1
 
                     dimensionality += 1 - null_value_places.astype('int')
                     total_error += error 
 
+        non_validated_rows = dimensionality == 0
         dimensionality = np.maximum(dimensionality, [1]*len(u))
         error = total_error/dimensionality
+        error[non_validated_rows] = 1
 
 
         # posterior_values_to_delete   (delete value from posterior if it's rule was not used in the simulation)
         if self.currently_running_learn_likelihoods:
             for rule in self.rules:
                 if rule['learn_posterior']:
-                    to_be_deleted_rows = np.array(error < 0.5)  &  np.invert(u_df['rule_used_in_simulation_' + str(rule['id'])])
-                    posterior_value_rows = np.array(error < 0.5)  &  u_df['rule_used_in_simulation_' + str(rule['id'])]
+                    to_be_deleted_rows = np.array(error < self.error_threshold)  &  np.invert(u_df['rule_used_in_simulation_' + str(rule['id'])])
+                    posterior_value_rows = np.array(error < self.error_threshold)  &  u_df['rule_used_in_simulation_' + str(rule['id'])]
                     if not rule['has_probability_1']:
                         self.posterior_values_to_delete[rule['id']].extend(list(u_df.loc[to_be_deleted_rows, 'triggerThresholdForRule' + str(rule['id'])]))
                         # ================ TESTING =======================================
@@ -1029,7 +1109,6 @@ class Simulator:
 
                     parameter_columns = [col for col in u_df.columns if len(col.split('param'))>1]
                     for parameter_column in parameter_columns:
-
                         self.posterior_values_to_delete[parameter_column].extend(list(u_df.loc[to_be_deleted_rows, parameter_column]))
                         # print('========================================================================')
                         # print('===============  posterior_values_to_delete  ===========================')
@@ -1040,6 +1119,7 @@ class Simulator:
                         # print('---')
                         # ================ TESTING =======================================
                         self.posterior_values[parameter_column].extend(list(u_df.loc[posterior_value_rows, parameter_column]))
+                        print(parameter_column + ': ' + str(len(self.posterior_values[parameter_column])))
                         # ================================================================
         return error
             

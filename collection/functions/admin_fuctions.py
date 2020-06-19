@@ -207,6 +207,24 @@ def remove_datapoints_with_the_wrong_datatype():
 
     return 'success'
 
+
+
+# ===========================================================================
+# NULL Values ================================================================
+# ===========================================================================
+
+def remove_null_datapoints():
+    print('admin_functions.remove_null_datapoints')
+    with connection.cursor() as cursor:
+        print('1')
+        cursor.execute('''DELETE FROM  collection_data_point
+                          WHERE value_as_string in ('null', 'nan', 'None', 'unknown');
+                                ''')
+        print('2')
+
+
+
+
 # ===========================================================================
 # Duplicates ================================================================
 # ===========================================================================
