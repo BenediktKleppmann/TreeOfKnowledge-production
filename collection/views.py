@@ -36,6 +36,7 @@ import scipy
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 import pdb
+from boto import sns
 
 
 
@@ -2024,29 +2025,9 @@ def test_page1(request):
 
 
 def test_page2(request):
-    # return render(request, 'tool/test_page2.html')
-    # bla = list(Object.objects.filter(object_type_id__in=['j1_5']).values_list('id'))
-    # bla = Uploaded_dataset.objects.get(id=94).data_table_json
-    # bla = list(Object.objects.all().values('object_type_id'))
-    # list_of_object_ids = list(Object_types.objects.all().values())
-    # american = Object_types.objects.all().get(id="j2_1")
-    # american.li_attr = "{\"attribute_values\": [{\"attribute\": \"Nationality\", \"attribute_id\": \"69\", \"operation\": \"=\", \"value\": 11080}]}"
-    # american.save()     
-    # return HttpResponse('success')
-    # kingdom = Attribute.objects.all().get(id=11)
-    # kingdom.first_applicable_object_type = "n3"
-    # kingdom.save()     
-    # return HttpResponse('success')
-    # return HttpResponse(json.dumps(list_of_object_ids))
-    from django.db import connection
-    sql_query = 'SELECT object_id, attribute_id, valid_time_start, valid_time_end,  value_as_string, upload_id FROM collection_data_point WHERE object_id = 11464'
-    object_values_df = pd.read_sql_query(sql_query, connection)
-    object_values_df['valid_time_start_0'] = pd.to_datetime(object_values_df['valid_time_start']).dt.strftime('%Y-%m-%d')
-    object_values_df['valid_time_end_0'] = pd.to_datetime(object_values_df['valid_time_end']).dt.strftime('%Y-%m-%d')
-    object_values_df['valid_time_start_1'] = pd.to_datetime(object_values_df['valid_time_start']*1000).dt.strftime('%Y-%m-%d')
-    object_values_df['valid_time_end_1'] = pd.to_datetime(object_values_df['valid_time_end']*1000).dt.strftime('%Y-%m-%d')
-    print(object_values_df)
-    return HttpResponse(json.dumps(object_values_df.to_dict()))
+    sns_conn = sns.connect_to_region('eu-central-1')
+    sns_conn.publish('some topic', '{"some test json":[3,4,5], "etc.":[1,2,3]}', "Test test test")
+    return HttpResponse('success')
 
     
 
