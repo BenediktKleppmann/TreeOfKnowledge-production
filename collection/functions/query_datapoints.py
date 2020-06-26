@@ -400,10 +400,8 @@ def get_data_from_random_related_object(simulation_id, objects_dict, environment
 
 
 
-# def get_data_from_related_objects__multiple_timesteps(objects_dict, times, timestep_size, number_of_instances=None):
-#     valid_time_start = times[0]
-#     valid_time_end = times[-1]
-def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_start, valid_time_end, timestep_size, number_of_instances=None):
+
+def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_start, valid_time_end, timestep_size, number_of_instances=None, y0_columns=None):
     print('~~~~~~~~~~~~~~~~~  get_data_from_related_objects__multiple_timesteps  ~~~~~~~~~~~~~~~~~')
     print('valid_time_start:' + str(valid_time_start))
     print('valid_time_end:' + str(valid_time_end))
@@ -411,7 +409,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
     sqlite_database = 'IS_USING_SQLITE_DB' in dict(os.environ).keys()
     object_numbers = list(objects_dict.keys())
     condition_holding_period_start = valid_time_start
-    condition_holding_period_end = max((valid_time_end-valid_time_start)/2, valid_time_start + timestep_size) # valid_time_end equals either the half-time or the first timestep (whichever is later)
+    condition_holding_period_end = max((valid_time_end-valid_time_start)/3, valid_time_start + timestep_size) # valid_time_end equals either the half-time or the first timestep (whichever is later)
 
     # ==================================================================================================
     # PART 1: for every object get a table with the object id that fulfill the internal criteria
@@ -436,28 +434,28 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                 sql_string1 = """CREATE TEMPORARY TABLE object_%s AS
                                         SELECT DISTINCT object_id AS obj%sattrobject_id
                                         FROM collection_data_point
-                                        WHERE valid_time_start > %s
+                                        WHERE valid_time_start < %s
                                           AND valid_time_end > %s
                                           AND object_id IN (
                                                             SELECT DISTINCT id 
                                                             FROM collection_object 
                                                             WHERE object_type_id IN (%s)
                                                             )
-                                """ % (str(object_number), str(object_number), str(condition_holding_period_start), str(condition_holding_period_end), child_object_types_string)
+                                """ % (str(object_number), str(object_number), str(condition_holding_period_end), str(condition_holding_period_start), child_object_types_string)
 
             elif len(relation_ids) == 1:
                 sql_string1 = """CREATE TEMPORARY TABLE object_%s AS
                                         SELECT DISTINCT object_id AS obj%sattrobject_id, numeric_value AS object_%s_relation_%s
                                         FROM collection_data_point
                                         WHERE attribute_id = %s
-                                          AND valid_time_start > %s
+                                          AND valid_time_start < %s
                                           AND valid_time_end > %s
                                           AND object_id IN (
                                                             SELECT DISTINCT id 
                                                             FROM collection_object 
                                                             WHERE object_type_id IN (%s)
                                                             )
-                                """ % (str(object_number), str(object_number), str(object_number), str(relation_ids[0]), str(condition_holding_period_start), str(condition_holding_period_end), str(relation_ids[0]), child_object_types_string)
+                                """ % (str(object_number), str(object_number), str(object_number), str(relation_ids[0]), str(condition_holding_period_end), str(condition_holding_period_start), str(relation_ids[0]), child_object_types_string)
 
             else: 
                 cursor.execute('DROP TABLE IF EXISTS object_%s__with_missing_relations' % str(object_number))
@@ -465,35 +463,54 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                         SELECT DISTINCT object_id, numeric_value AS object_%s_relation_%s
                                         FROM collection_data_point
                                         WHERE attribute_id = %s
-                                          AND valid_time_start > %s
+                                          AND valid_time_start < %s
                                           AND valid_time_end > %s
                                           AND object_id IN (
                                                             SELECT DISTINCT id 
                                                             FROM collection_object 
                                                             WHERE object_type_id IN (%s)
                                                             )
-                                """ % (str(object_number), str(object_number), str(relation_ids[0]), str(condition_holding_period_start), str(condition_holding_period_end), str(relation_ids[0]), child_object_types_string)
+                                """ % (str(object_number), str(object_number), str(relation_ids[0]), str(condition_holding_period_end), str(condition_holding_period_start), str(relation_ids[0]), child_object_types_string)
 
 
 
 
             for fact_index, filter_fact in enumerate(filter_facts):
                 sql_string1    += '''INTERSECT
-                                    SELECT DISTINCT object_id
-                                    FROM collection_data_point
-                                    WHERE
+                                        SELECT DISTINCT object_id
+                                        FROM collection_data_point
+                                        WHERE
                 '''
                 if filter_fact['operation'] == '=':     
-                    sql_string1 +=      "attribute_id = '%s' AND string_value = '%s'" % (filter_fact['attribute_id'], filter_fact['value'])
+                    sql_string1 +=            "attribute_id = '%s' AND string_value = '%s' AND valid_time_start < %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
                 elif filter_fact['operation'] == '>':
-                    sql_string1 +=      "attribute_id = '%s' AND numeric_value > %s" % (filter_fact['attribute_id'], filter_fact['value'])
+                    sql_string1 +=            "attribute_id = '%s' AND numeric_value > %s AND valid_time_start < %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
                 elif filter_fact['operation'] == '<':
-                    sql_string1 +=      "attribute_id = '%s' AND numeric_value < %s" % (filter_fact['attribute_id'], filter_fact['value'])
+                    sql_string1 +=            "attribute_id = '%s' AND numeric_value < %s AND valid_time_start < %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
                 elif filter_fact['operation'] == 'in':
                     values = ['"%s"' % value for value in filter_fact['value']]
-                    sql_string1 +=      "attribute_id = '%s' AND string_value IN (%s)" % (filter_fact['attribute_id'], ', '.join(values))
+                    sql_string1 +=            "attribute_id = '%s' AND string_value IN (%s) AND valid_time_start < %s AND valid_time_end > %s " % (filter_fact['attribute_id'], ', '.join(values), str(condition_holding_period_end), str(condition_holding_period_start))
 
-            print('1.1')
+            
+
+            if y0_columns is not None:
+                attribute_ids = [col.split('attr')[1] for col in y0_columns if 'obj' + str(object_number) + 'attr' in col]
+                for attribute_id in attribute_ids:
+                    sql_string1    += '''INTERSECT
+                                            SELECT DISTINCT object_id
+                                            FROM collection_data_point
+                                            WHERE attribute_id = '%s'
+                                              AND valid_time_start < %s
+                                              AND valid_time_end > %s
+                                        INTERSECT
+                                            SELECT DISTINCT object_id
+                                            FROM collection_data_point
+                                            WHERE attribute_id = '%s'
+                                              AND valid_time_start < %s
+                                              AND valid_time_end > %s
+                ''' % (attribute_id, str(condition_holding_period_end), str(condition_holding_period_start), attribute_id, str(valid_time_end), str(condition_holding_period_end))
+                
+            print('1.1')    
             cursor.execute(sql_string1)
 
 
