@@ -30,7 +30,6 @@ docutils==0.15.2
 entrypoints==0.3
 frozendict==1.2
 future==0.16.0
-gettsim==0.2.1
 graphviz==0.11
 hellowebapp-deploy==1.0.2
 idna==2.7
