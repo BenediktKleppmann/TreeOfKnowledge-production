@@ -2027,7 +2027,7 @@ def test_page1(request):
 
 def test_page2(request):
     import boto3
-    sqs = boto3.client('sqs')
+    sqs = boto3.client('sqs', region_name='eu-central-1')
     queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/awseb-e-8ps6q6m3je-stack-AWSEBWorkerQueue-1RIUDLVL1OCH2'
     response = sqs.send_message(
                         QueueUrl=queue_url,
