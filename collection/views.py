@@ -2029,11 +2029,11 @@ def test_page2(request):
     sqs = boto3.client('sqs', region_name='eu-central-1')
 
     # queue = sqs.get_queue_by_name(QueueName='awseb-e-8ps6q6m3je-stack-AWSEBWorkerQueue-1RIUDLVL1OCH2')
-    queue_url = sqs.get_queue_url(QueueName='Treeofknowledge-queue')
+    # queue_url = sqs.get_queue_url(QueueName='Treeofknowledge-queue')
 
-    # queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/awseb-e-8ps6q6m3je-stack-AWSEBWorkerQueue-1RIUDLVL1OCH2'
-    # response = queue.send_message(MessageBody='world')
-    responses = sqs.send_message(QueueUrl= queue_url, MessageBody='Test')
+    queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/awseb-e-8ps6q6m3je-stack-AWSEBWorkerQueue-1RIUDLVL1OCH2'
+    response = queue.send_message(MessageBody='world')
+    # responses = sqs.send_message(QueueUrl= queue_url, MessageBody='Test')
 
     # sns_conn = sns.connect_to_region('eu-central-1')
     # sns_conn.publish('arn:aws:sqs:eu-central-1:662304246363:awseb-e-8ps6q6m3je-stack-AWSEBWorkerQueue-1RIUDLVL1OCH2', '{"some test json":[3,4,5], "etc.":[1,2,3]}', "Test test test")
