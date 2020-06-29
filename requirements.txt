@@ -18,6 +18,7 @@ conda==4.0.3
 conda-package-handling==1.6.0
 cryptography==2.4.2
 cycler==0.10.0
+Cython==0.29.14
 DateTime==4.3
 decorator==4.4.0
 defusedxml==0.6.0
