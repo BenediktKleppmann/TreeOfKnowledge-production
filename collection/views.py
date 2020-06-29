@@ -37,7 +37,6 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 import pdb
 from boto import sns
-import boto3
 
 
 
@@ -2053,9 +2052,13 @@ def test_page2(request):
                     )
 
     print(response['MessageId'])
-    # sns_conn = sns.connect_to_region('eu-central-1')
-    # sns_conn.publish('some topic', '{"some test json":[3,4,5], "etc.":[1,2,3]}', "Test test test")
-    return HttpResponse('success')
+
+
+
+    sns_conn = sns.connect_to_region('eu-central-1')
+    sns_conn.publish('arn:aws:sqs:eu-central-1:662304246363:awseb-e-8ps6q6m3je-stack-AWSEBWorkerQueue-1RIUDLVL1OCH2', '{"some test json":[3,4,5], "etc.":[1,2,3]}', "Test test test")
+
+    return HttpResponse('success' + str(response['MessageId']))
 
     
 
