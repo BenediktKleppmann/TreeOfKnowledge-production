@@ -37,6 +37,7 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 import pdb
 from boto import sns
+import boto3
 
 
 
