@@ -17,11 +17,8 @@ from operator import itemgetter
 import random
 import random
 from scipy.stats import rv_histogram
-import matplotlib.pyplot as plt
-import seaborn as sns
 import math
 from copy import deepcopy
-from colour import Color
 import re
 import traceback
 import pdb
