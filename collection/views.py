@@ -2025,8 +2025,35 @@ def test_page1(request):
 
 
 def test_page2(request):
-    sns_conn = sns.connect_to_region('eu-central-1')
-    sns_conn.publish('some topic', '{"some test json":[3,4,5], "etc.":[1,2,3]}', "Test test test")
+    import boto3
+    sqs = boto3.client('sqs')
+    queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/awseb-e-8ps6q6m3je-stack-AWSEBWorkerQueue-1RIUDLVL1OCH2'
+    response = sqs.send_message(
+                        QueueUrl=queue_url,
+                        DelaySeconds=10,
+                        MessageAttributes={
+                            'Title': {
+                                'DataType': 'String',
+                                'StringValue': 'The Whistler'
+                            },
+                            'Author': {
+                                'DataType': 'String',
+                                'StringValue': 'John Grisham'
+                            },
+                            'WeeksOn': {
+                                'DataType': 'Number',
+                                'StringValue': '6'
+                            }
+                        },
+                        MessageBody=(
+                            'Information about current NY Times fiction bestseller for '
+                            'week of 12/11/2016.'
+                        )
+                    )
+
+    print(response['MessageId'])
+    # sns_conn = sns.connect_to_region('eu-central-1')
+    # sns_conn.publish('some topic', '{"some test json":[3,4,5], "etc.":[1,2,3]}', "Test test test")
     return HttpResponse('success')
 
     
