@@ -1994,22 +1994,25 @@ def upload_file(request):
 # TEST PAGES
 # ==================
 def test_page1(request):
-    from django.db import connection
-    with connection.cursor() as cursor:
-        # cursor.execute('''SELECT Count(*) AS count
-        #                     FROM collection_data_point
-        #                     WHERE value_as_string in ('null', 'NaN', 'None');
-        #                         ''')
-        cursor.execute('''SELECT * 
-                    FROM collection_likelihood_fuction
-                    WHERE simulation_id = 416
-                     AND object_number = 1
-                      AND parameter_id = 60;
-                        ''')
+    import psycopg2
+    connection = psycopg2.connect(host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com",
+                                  port="5432",
+                                  database="postgres_db")
+    cursor = connection.cursor()
+    cursor.execute('''SELECT * 
+                FROM collection_likelihood_fuction
+                WHERE simulation_id = 416
+                 AND object_number = 1
+                  AND parameter_id = 60;
+                    ''')
 
-
-        bla = cursor.fetchall()
-        print(str(bla))
+    mobile_records = cursor.fetchall() 
+   
+    print("Print each row and it's columns values")
+    for row in mobile_records:
+        print("Id = ", row[0], )
+        print("Model = ", row[1])
+        print("Price  = ", row[2], "\n")
 
 
         # postgresql
@@ -2034,6 +2037,14 @@ def test_page2(request):
 
     queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/Treeofknowledge-queue'
     response = sqs.send_message(QueueUrl= queue_url, MessageBody='{"sample json": "test"}')
+
+    queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/awseb-e-8ps6q6m3je-stack-AWSEBWorkerQueue-1RIUDLVL1OCH2'
+    response = sqs.send_message(QueueUrl= queue_url, MessageBody='Test2')
+
+    queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/awseb-e-qwnyj2drkn-stack-NewSignupQueue-1VKLS1VF5RHQF'
+    response = sqs.send_message(QueueUrl= queue_url, MessageBody='Test3')
+
+
 
     # sns_conn = sns.connect_to_region('eu-central-1')
     # sns_conn.publish('arn:aws:sqs:eu-central-1:662304246363:awseb-e-8ps6q6m3je-stack-AWSEBWorkerQueue-1RIUDLVL1OCH2', '{"some test json":[3,4,5], "etc.":[1,2,3]}', "Test test test")
