@@ -2019,7 +2019,7 @@ def test_page1(request):
 
 
 
-        return HttpResponse(str(bla))
+        return HttpResponse(str(mobile_records))
 
 
 
