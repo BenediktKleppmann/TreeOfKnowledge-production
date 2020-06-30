@@ -1999,7 +1999,7 @@ def test_page1(request):
     cursor = connection.cursor()
     cursor.execute('''SELECT * 
                       FROM information_schema.tables
-                      WHERE table_schema NOT IN ("pg_catalog", "information_schema");
+                      OFFSET 150;
                     ''')
 
     mobile_records = cursor.fetchall() 
