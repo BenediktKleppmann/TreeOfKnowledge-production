@@ -2038,9 +2038,6 @@ def test_page2(request):
     queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/Treeofknowledge-queue'
     response = sqs.send_message(QueueUrl= queue_url, MessageBody='{"sample json": "test"}')
 
-    queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/awseb-e-8ps6q6m3je-stack-AWSEBWorkerQueue-1RIUDLVL1OCH2'
-    response = sqs.send_message(QueueUrl= queue_url, MessageBody='Test2')
-
     queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/awseb-e-qwnyj2drkn-stack-NewSignupQueue-1VKLS1VF5RHQF'
     response = sqs.send_message(QueueUrl= queue_url, MessageBody='Test3')
 
