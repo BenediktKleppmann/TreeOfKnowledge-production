@@ -1995,7 +1995,7 @@ def upload_file(request):
 # ==================
 def test_page1(request):
     import psycopg2
-    connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
+    connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa12t5um9jcjdkz.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
     cursor = connection.cursor()
     cursor.execute('''SELECT * 
                       FROM information_schema.tables
