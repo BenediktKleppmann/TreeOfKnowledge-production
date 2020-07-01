@@ -1998,17 +1998,19 @@ def test_page1(request):
     
     connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
     cursor = connection.cursor()
+    cursor.execute('''DROP TABLE tested_simulation_parameters;''') 
+
     cursor.execute('''
                     CREATE TABLE tested_simulation_parameters ( 
                         simulation_id       integer NOT NULL,
-                        run                 integer NOT NULL,
-                        parameter_value     real NOT NULL,
-                        is_valid            boolean NOT NULL);
+                        simulation_run_nb   integer NOT NULL,
+                        priors_dict         text NOT NULL,
+                        simulation_results  text NOT NULL);
                     ''')
 
 
 
-    cursor.execute('''INSERT INTO  tested_simulation_parameters (simulation_id, run, parameter_value, is_valid) VALUES (140, 1, 0.2848569, 'true');''')
+    cursor.execute('''INSERT INTO  tested_simulation_parameters (simulation_id, simulation_run_nb, priors_dict, simulation_results) VALUES (140, 1, "test1", "test1");''')
 
     connection.commit()
 

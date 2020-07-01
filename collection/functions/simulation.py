@@ -22,6 +22,7 @@ from copy import deepcopy
 import re
 import traceback
 import pdb
+import boto3
 
 # called from edit_model.html
 class Simulator:
@@ -65,6 +66,7 @@ class Simulator:
         self.max_df_size = 1000
         self.error_threshold = 0.2
         limit_to_populated_y0_columns = True
+        self.run_locally = False
         # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         
 
@@ -415,24 +417,29 @@ class Simulator:
 
 
         if len(all_priors_df) > 0:
-            # =================  Simulation Loop  ==========================
-            for batch_number in range(self.nb_of_tested_parameters):
-                print('learn_likelihoods (%s/%s)' % (batch_number+1, self.nb_of_tested_parameters))
+            if self.run_locally:
+                # =================  Simulation Loop  ==========================
+                for batch_number in range(self.nb_of_tested_parameters):
+                    print('learn_likelihoods (%s/%s)' % (batch_number+1, self.nb_of_tested_parameters))
 
 
-                priors_dict = all_priors_df.loc[batch_number,:].to_dict()
-                y0_values_in_simulation = self.likelihood_learning_simulator(self.df, self.rules, priors_dict, batch_size)
-                errors_dict = self.n_dimensional_distance(y0_values_in_simulation, self.y0_values) 
-                for rule in self.rules:
-                    if rule['learn_posterior']:
-                        all_priors_df.loc[batch_number, 'nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] = errors_dict[rule['id']]['nb_of_sim_in_which_rule_was_used']
-                        all_priors_df.loc[batch_number,'error_rule' + str(rule['id'])] = errors_dict[rule['id']]['error'] 
+                    priors_dict = all_priors_df.loc[batch_number,:].to_dict()
 
-            self.currently_running_learn_likelihoods = False
-            # ==============================================================
+                    y0_values_in_simulation = self.likelihood_learning_simulator(self.df, self.rules, priors_dict, batch_size)
+                    errors_dict = self.n_dimensional_distance(y0_values_in_simulation, self.y0_values) 
+                    for rule in self.rules:
+                        if rule['learn_posterior']:
+                            all_priors_df.loc[batch_number, 'nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] = errors_dict[rule['id']]['nb_of_sim_in_which_rule_was_used']
+                            all_priors_df.loc[batch_number,'error_rule' + str(rule['id'])] = errors_dict[rule['id']]['error'] 
 
-            all_priors_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-25/all_priors_df.csv', index=False)
-
+                self.currently_running_learn_likelihoods = False
+                # ==============================================================
+            else:
+                for batch_number in range(self.nb_of_tested_parameters):
+                    simulation_parameters = {'simulation_id':  self.simulation_id, 'simulation_run_nb': 0, 'df': self.df.to_dict('records'), 'rules': self.rules , 'priors_dict':  all_priors_df.loc[batch_number,:].to_dict(), 'batch_size': batch_size , 'y0_values':  self.y0_values, 'is_timeseries_analysis': self.is_timeseries_analysis, 'times': self.times, 'timestep_size':  self.timestep_size, 'y0_columns': self.y0_columns, 'parameter_columns':  self.parameter_columns, 'y0_column_dt':  self.y0_column_dt, 'error_threshold':  self.error_threshold}
+                    sqs = boto3.client('sqs', region_name='eu-central-1')
+                    queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/Treeofknowledge-queue'
+                    response = sqs.send_message(QueueUrl= queue_url, MessageBody=json.dumps(simulation_parameters))
 
 
             # PART 2 - Post Processing
@@ -1011,9 +1018,6 @@ class Simulator:
         u_df = u_df.fillna(np.nan)
         v_df = v_df.fillna(np.nan)
 
-        # ==== Testing =============================================================
-        test_total_df = pd.DataFrame()
-        # ==========================================================================
 
         total_error = np.zeros(shape=len(u))
         dimensionality = np.zeros(shape=len(u))
@@ -1064,33 +1068,11 @@ class Simulator:
 
                     dimensionality += 1 - null_value_places.astype('int')
                     total_error += error 
-                    # ==== Testing =============================================================
-                    test_df = pd.DataFrame({'simulated_data': list(u_df[period_column]), 'true_data': list(v_df[period_column]), 'residuals': residuals, 
-                        'error_in_error_range': error_in_error_range, 'error_in_error_range_non_null':error_in_error_range_non_null, 'true_change_factor':true_change_factor, 
-                        'true_change_factor_per_period':true_change_factor_per_period, 'simulated_change_factor':simulated_change_factor, 'simulated_change_factor_per_period':simulated_change_factor_per_period, 
-                        'error_of_value_change':error_of_value_change, 'error_of_value_change_non_null':error_of_value_change_non_null, 'error':error}, index=range(len(u_df)))
-                    test_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-25/' +period_column+ '.csv', index=False)
-                    test_total_df['error' + period_column] = error
-                    # ==========================================================================
 
         non_validated_rows = dimensionality == 0
         dimensionality = np.maximum(dimensionality, [1]*len(u))
         error = total_error/dimensionality
         error[non_validated_rows] = 1
-
-        # ==== Testing =============================================================
-        if 'rule_used_in_simulation_48' in u_df.columns:
-            self.number_of_batches += 1
-            test_total_df['dimensionality'] = dimensionality
-            test_total_df['total_error'] = error
-            test_total_df['rule_used_in_simulation'] = u_df['rule_used_in_simulation_48'] 
-            test_total_df['error_less_than_threshold'] = np.array(error < self.error_threshold)
-            test_total_df['posterior_value_rows'] = np.array(error < self.error_threshold)  &  u_df['rule_used_in_simulation_48']
-            test_total_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-25/total_error.csv', index=False)
-            all_errors_df = pd.read_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-25/all_errors.csv')
-            all_errors_df['errors_run' + str(self.number_of_batches)] = error
-            all_errors_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-25/all_errors.csv', index=False)
-        # ==========================================================================
 
 
         errors_dict = {'all_errors':error}
