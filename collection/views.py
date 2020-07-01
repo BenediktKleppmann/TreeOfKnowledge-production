@@ -2011,6 +2011,7 @@ def test_page1(request):
 
     cursor.execute('''INSERT INTO  simulations."tested_simulation_parameters" (simulation_id, run, parameter_value, is_valid) VALUES (140, 1, 0.2848569, 'true');''')
 
+    conn.commit()
     cursor.execute('''select * from information_schema.tables;
                     ''')
 
