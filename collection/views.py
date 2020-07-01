@@ -2010,7 +2010,7 @@ def test_page1(request):
 
 
 
-    cursor.execute('''INSERT INTO  tested_simulation_parameters (simulation_id, simulation_run_nb, priors_dict, simulation_results) VALUES (140, 1, 'test1', 'test1');''')
+    # cursor.execute('''INSERT INTO  tested_simulation_parameters (simulation_id, simulation_run_nb, priors_dict, simulation_results) VALUES (140, 1, 'test1', 'test1');''')
 
     connection.commit()
     return HttpResponse('success')
@@ -2051,6 +2051,7 @@ def test_page2(request):
 
 def test_page3(request):
     from django.db import connection
+    
     with connection.cursor() as cursor:
         cursor.execute('''SELECT DISTINCT upload_id FROM collection_data_point''')
 
