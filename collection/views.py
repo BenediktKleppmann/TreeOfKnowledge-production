@@ -2010,7 +2010,7 @@ def test_page1(request):
 
 
 
-    cursor.execute('''INSERT INTO  tested_simulation_parameters (simulation_id, simulation_run_nb, priors_dict, simulation_results) VALUES (140, 1, "test1", "test1");''')
+    cursor.execute('''INSERT INTO  tested_simulation_parameters (simulation_id, simulation_run_nb, priors_dict, simulation_results) VALUES (140, 1, 'test1', 'test1');''')
 
     connection.commit()
 
