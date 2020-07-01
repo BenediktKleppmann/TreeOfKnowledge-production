@@ -2012,12 +2012,8 @@ def test_page1(request):
     cursor.execute('''INSERT INTO  simulations."tested_simulation_parameters" (simulation_id, run, parameter_value, is_valid) VALUES (140, 1, 0.2848569, 'true');''')
 
     conn.commit()
-    cursor.execute('''select * from information_schema.tables;
-                    ''')
-
-    exists_query = cursor.fetchall() 
-    return HttpResponse('success: ' + str(exists_query))
-
+ 
+    return HttpResponse('success ')
 
 
     # connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
