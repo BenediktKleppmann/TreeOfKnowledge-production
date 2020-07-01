@@ -2008,7 +2008,7 @@ def test_page1(request):
 
     cursor.execute('''INSERT INTO  public."tested_simulation_parameters" (simulation_id, run, parameter_value, is_valid) VALUES (140, 1, 0.2848569, 'true');''')
 
-
+    cursor = connection.cursor()
     cursor.execute('''SELECT EXISTS (
                         SELECT * 
                         FROM  public."tested_simulation_parameters"
@@ -2025,25 +2025,25 @@ def test_page1(request):
 
 
 def test_page2(request):
-    import boto3
-    sqs = boto3.client('sqs', region_name='eu-central-1')
+    cursor = connection.cursor()
+    cursor.execute('''select * from information_schema.tables where table_schema NOT IN (‘pg_catalog’, ‘information_schema’)
+                    ''')
 
-    # queue = sqs.get_queue_by_name(QueueName='awseb-e-8ps6q6m3je-stack-AWSEBWorkerQueue-1RIUDLVL1OCH2')
-    # queue_url = sqs.get_queue_url(QueueName='Treeofknowledge-queue')
-    # response = queue.send_message(MessageBody='world')
-
-    queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/Treeofknowledge-queue'
-    response = sqs.send_message(QueueUrl= queue_url, MessageBody='{"sample json": "test"}')
-
-    queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/awseb-e-qwnyj2drkn-stack-NewSignupQueue-1VKLS1VF5RHQF'
-    response = sqs.send_message(QueueUrl= queue_url, MessageBody='Test3')
+    exists_query = cursor.fetchall() 
+    return HttpResponse('success: ' + str(exists_query))
 
 
 
-    # sns_conn = sns.connect_to_region('eu-central-1')
-    # sns_conn.publish('arn:aws:sqs:eu-central-1:662304246363:awseb-e-8ps6q6m3je-stack-AWSEBWorkerQueue-1RIUDLVL1OCH2', '{"some test json":[3,4,5], "etc.":[1,2,3]}', "Test test test")
+    # KEEP THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # import boto3
+    # sqs = boto3.client('sqs', region_name='eu-central-1')
 
-    return HttpResponse('success' + str(response))
+    # queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/Treeofknowledge-queue'
+    # response = sqs.send_message(QueueUrl= queue_url, MessageBody='{"sample json": "test"}')
+
+    # queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/awseb-e-qwnyj2drkn-stack-NewSignupQueue-1VKLS1VF5RHQF'
+    # response = sqs.send_message(QueueUrl= queue_url, MessageBody='Test3')
+    # return HttpResponse('success' + str(response))
 
     
 
@@ -2051,38 +2051,18 @@ def test_page2(request):
 def test_page3(request):
 
 
-    import psycopg2
-    connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
+    # import psycopg2
     cursor = connection.cursor()
-    # cursor.execute('''SELECT * 
-    #                   FROM tested_simulation_parameters;
-    #                 ''')
-
-    # mobile_records = cursor.fetchall() 
-   
-    # print("Print each row and it's columns values")
-    # for row in mobile_records:
-    #     print("simulation_id = ", row[0], )
-    #     print("run = ", row[1])
-    #     print("parameter_value = ", row[2])
-    #     print("is_valid  = ", row[3], "\n")
-
     cursor.execute('''SELECT EXISTS (
                         SELECT * 
-                        FROM public."tested_simulation_parameters"
+                        FROM  public."tested_simulation_parameters"
                        );
                     ''')
 
     exists_query = cursor.fetchall() 
 
-        # postgresql
-        # SELECT id 
-        # INTO unfiltered_object_ids_x
-        # FROM unfiltered_object_ids_x;
 
-
-
-    return HttpResponse(str(exists_query))
+    return HttpResponse('success: ' + str(exists_query))
     # return render(request, 'tool/test_page3.html')
 
 
