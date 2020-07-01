@@ -2013,7 +2013,6 @@ def test_page1(request):
     cursor.execute('''INSERT INTO  tested_simulation_parameters (simulation_id, simulation_run_nb, priors_dict, simulation_results) VALUES (140, 1, 'test1', 'test1');''')
 
     connection.commit()
-
     return HttpResponse('success')
 
 
@@ -2051,15 +2050,13 @@ def test_page2(request):
 
 
 def test_page3(request):
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute('''SELECT DISTINCT upload_id FROM collection_data_point''')
 
 
-    connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
-    cursor = connection.cursor()
-    cursor.execute('''select * from tested_simulation_parameters;
-                    ''')
-
-    select_all_query = cursor.fetchall() 
-    return HttpResponse('success: ' + str(select_all_query))
+        select_all_query = cursor.fetchall() 
+        return HttpResponse('success: ' + str(select_all_query))
 
     # return render(request, 'tool/test_page3.html')
 
