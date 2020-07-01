@@ -2006,7 +2006,7 @@ def test_page1(request):
 
 
 
-    return HttpResponse(str(mobile_records))
+    return HttpResponse('success')
 
 
 
@@ -2062,7 +2062,7 @@ def test_page3(request):
 
 
 
-    return HttpResponse(json.dumps(execution_order))
+    return HttpResponse(str(mobile_records))
     # return render(request, 'tool/test_page3.html')
 
 
