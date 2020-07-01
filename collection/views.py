@@ -2039,7 +2039,7 @@ def test_page2(request):
     sqs = boto3.client('sqs', region_name='eu-central-1')
 
     queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/Treeofknowledge-queue'
-    response = sqs.send_message(QueueUrl= queue_url, MessageBody='{"sample json": "test"}')
+    response = sqs.send_message(QueueUrl= queue_url, MessageBody='{"simulation_id":143, "run":2, "parameter_value":0.24785, "is_valid":false}')
 
     queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/awseb-e-qwnyj2drkn-stack-NewSignupQueue-1VKLS1VF5RHQF'
     response = sqs.send_message(QueueUrl= queue_url, MessageBody='Test3')
