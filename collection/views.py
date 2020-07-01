@@ -2054,19 +2054,26 @@ def test_page3(request):
     import psycopg2
     connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
     cursor = connection.cursor()
-    cursor.execute('''SELECT * 
-                      FROM tested_simulation_parameters;
+    # cursor.execute('''SELECT * 
+    #                   FROM tested_simulation_parameters;
+    #                 ''')
+
+    # mobile_records = cursor.fetchall() 
+   
+    # print("Print each row and it's columns values")
+    # for row in mobile_records:
+    #     print("simulation_id = ", row[0], )
+    #     print("run = ", row[1])
+    #     print("parameter_value = ", row[2])
+    #     print("is_valid  = ", row[3], "\n")
+
+    cursor.execute('''SELECT EXISTS (
+                        SELECT * 
+                        FROM tested_simulation_parameters
+                       );
                     ''')
 
-    mobile_records = cursor.fetchall() 
-   
-    print("Print each row and it's columns values")
-    for row in mobile_records:
-        print("simulation_id = ", row[0], )
-        print("run = ", row[1])
-        print("parameter_value = ", row[2])
-        print("is_valid  = ", row[3], "\n")
-
+    exists_query = cursor.fetchall() 
 
         # postgresql
         # SELECT id 
@@ -2075,7 +2082,7 @@ def test_page3(request):
 
 
 
-    return HttpResponse(str(mobile_records))
+    return HttpResponse(str(exists_query))
     # return render(request, 'tool/test_page3.html')
 
 
