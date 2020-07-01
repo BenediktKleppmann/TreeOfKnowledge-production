@@ -2005,14 +2005,8 @@ def test_page1(request):
                     ''')
 
 
-        # postgresql
-        # SELECT id 
-        # INTO unfiltered_object_ids_x
-        # FROM unfiltered_object_ids_x;
 
-
-
-        return HttpResponse(str(mobile_records))
+    return HttpResponse(str(mobile_records))
 
 
 
