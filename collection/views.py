@@ -2006,7 +2006,20 @@ def test_page1(request):
 
 
 
-    return HttpResponse('success')
+    cursor.execute('''INSERT INTO tested_simulation_parameters (simulation_id, run, parameter_value, is_valid) VALUES (140, 1, 0.2848569, 'true');''')
+
+
+    cursor.execute('''SELECT EXISTS (
+                        SELECT * 
+                        FROM tested_simulation_parameters
+                       );
+                    ''')
+
+    exists_query = cursor.fetchall() 
+   
+
+
+    return HttpResponse('success: ' + str(exists_query))
 
 
 
