@@ -1996,40 +1996,303 @@ def upload_file(request):
 # ==================
 def test_page1(request):
     
-    connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
-    cursor = connection.cursor()
-    cursor.execute('''DROP TABLE tested_simulation_parameters;''') 
-
-    cursor.execute('''
-                    CREATE TABLE tested_simulation_parameters ( 
-                        simulation_id       integer NOT NULL,
-                        simulation_run_nb   integer NOT NULL,
-                        priors_dict         text NOT NULL,
-                        simulation_results  text NOT NULL);
-                    ''')
-
-
-
-    # cursor.execute('''INSERT INTO  tested_simulation_parameters (simulation_id, simulation_run_nb, priors_dict, simulation_results) VALUES (140, 1, 'test1', 'test1');''')
-
-    connection.commit()
-    return HttpResponse('success')
-
-
-
     # connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
     # cursor = connection.cursor()
-    # cursor.execute('''SELECT EXISTS (
-    #                     SELECT * 
-    #                     FROM  public."tested_simulation_parameters"
-    #                    );
+    # cursor.execute('''DROP TABLE tested_simulation_parameters;''') 
+
+    # cursor.execute('''
+    #                 CREATE TABLE tested_simulation_parameters ( 
+    #                     simulation_id       integer NOT NULL,
+    #                     simulation_run_nb   integer NOT NULL,
+    #                     priors_dict         text NOT NULL,
+    #                     simulation_results  text NOT NULL);
     #                 ''')
+    # connection.commit()
+    # return HttpResponse('success')
+    from django.db import connection
+    import itertools
+    result_string = ''
+    with connection.cursor() as cursor:
+        try:
+            with open('collection/static/webservice files/db_backup/object_hierachy_tree_history.json', 'r') as file:
+                json_string = file.read().replace('\n', '')
+            list_of_data_dicts = json.loads(json_string)
+            keys = list(list_of_data_dicts[0]['fields'].keys())
+            list_of_records = []
+            for data_dict in list_of_data_dicts:
+                values = [data_dict['pk']]+ [data_dict['fields'][key] for key in keys]
+                list_of_records.append(values)
+                
+            column_names = ['id'] + keys
+            percent_s_string =  '(' + ','.join(['%s']*len(column_names)) + ')'
+            number_of_entities = len(list_of_records)
+            number_of_chunks =  math.ceil(number_of_entities / 50)
 
-    # exists_query = cursor.fetchall() 
-   
+            for chunk_index in range(number_of_chunks):
+                rows_to_insert = list_of_records[chunk_index*50: chunk_index*50 + 50]
+                insert_statement = '''
+                    INSERT INTO collection_attribute (%s) 
+                    VALUES ''' % (', '.join(column_names))
+                insert_statement += ','.join([percent_s_string]*len(rows_to_insert))
+                cursor.fast_executemany = True 
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+                result_string += 'SUCCESS with object_hierachy_tree_history; '
+        except:
+            result_string += 'FAILURE with object_hierachy_tree_history; '
+
+        try:
+            with open('collection/static/webservice files/db_backup/object_types.json', 'r') as file:
+                json_string = file.read().replace('\n', '')
+            list_of_data_dicts = json.loads(json_string)
+            keys = list(list_of_data_dicts[0]['fields'].keys())
+            list_of_records = []
+            for data_dict in list_of_data_dicts:
+                values = [data_dict['pk']]+ [data_dict['fields'][key] for key in keys]
+                list_of_records.append(values)
+                
+            column_names = ['id'] + keys
+            percent_s_string =  '(' + ','.join(['%s']*len(column_names)) + ')'
+            number_of_entities = len(list_of_records)
+            number_of_chunks =  math.ceil(number_of_entities / 50)
+
+            for chunk_index in range(number_of_chunks):
+                rows_to_insert = list_of_records[chunk_index*50: chunk_index*50 + 50]
+                insert_statement = '''
+                    INSERT INTO collection_attribute (%s) 
+                    VALUES ''' % (', '.join(column_names))
+                insert_statement += ','.join([percent_s_string]*len(rows_to_insert))
+                cursor.fast_executemany = True 
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+                result_string += 'SUCCESS with object_types; '
+        except:
+            result_string += 'FAILURE with object_types; '
 
 
-    # return HttpResponse('success: ' + str(exists_query))
+        try:
+            with open('collection/static/webservice files/db_backup/object.json', 'r') as file:
+                json_string = file.read().replace('\n', '')
+            list_of_data_dicts = json.loads(json_string)
+            keys = list(list_of_data_dicts[0]['fields'].keys())
+            list_of_records = []
+            for data_dict in list_of_data_dicts:
+                values = [data_dict['pk']]+ [data_dict['fields'][key] for key in keys]
+                list_of_records.append(values)
+                
+            column_names = ['id'] + keys
+            percent_s_string =  '(' + ','.join(['%s']*len(column_names)) + ')'
+            number_of_entities = len(list_of_records)
+            number_of_chunks =  math.ceil(number_of_entities / 50)
+
+            for chunk_index in range(number_of_chunks):
+                rows_to_insert = list_of_records[chunk_index*50: chunk_index*50 + 50]
+                insert_statement = '''
+                    INSERT INTO collection_attribute (%s) 
+                    VALUES ''' % (', '.join(column_names))
+                insert_statement += ','.join([percent_s_string]*len(rows_to_insert))
+                cursor.fast_executemany = True 
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+                result_string += 'SUCCESS with object; '
+        except:
+            result_string += 'FAILURE with object; '
+
+
+        try:
+            with open('collection/static/webservice files/db_backup/attribute.json', 'r') as file:
+                json_string = file.read().replace('\n', '')
+            list_of_data_dicts = json.loads(json_string)
+            keys = list(list_of_data_dicts[0]['fields'].keys())
+            list_of_records = []
+            for data_dict in list_of_data_dicts:
+                values = [data_dict['pk']]+ [data_dict['fields'][key] for key in keys]
+                list_of_records.append(values)
+                
+            column_names = ['id'] + keys
+            percent_s_string =  '(' + ','.join(['%s']*len(column_names)) + ')'
+            number_of_entities = len(list_of_records)
+            number_of_chunks =  math.ceil(number_of_entities / 50)
+
+            for chunk_index in range(number_of_chunks):
+                rows_to_insert = list_of_records[chunk_index*50: chunk_index*50 + 50]
+                insert_statement = '''
+                    INSERT INTO collection_attribute (%s) 
+                    VALUES ''' % (', '.join(column_names))
+                insert_statement += ','.join([percent_s_string]*len(rows_to_insert))
+                cursor.fast_executemany = True 
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+                result_string += 'SUCCESS with attribute; '
+        except:
+            result_string += 'FAILURE with attribute; '
+
+
+        try:
+            with open('collection/static/webservice files/db_backup/simulation_model.json', 'r') as file:
+                json_string = file.read().replace('\n', '')
+            list_of_data_dicts = json.loads(json_string)
+            keys = list(list_of_data_dicts[0]['fields'].keys())
+            list_of_records = []
+            for data_dict in list_of_data_dicts:
+                values = [data_dict['pk']]+ [data_dict['fields'][key] for key in keys]
+                list_of_records.append(values)
+                
+            column_names = ['id'] + keys
+            percent_s_string =  '(' + ','.join(['%s']*len(column_names)) + ')'
+            number_of_entities = len(list_of_records)
+            number_of_chunks =  math.ceil(number_of_entities / 50)
+
+            for chunk_index in range(number_of_chunks):
+                rows_to_insert = list_of_records[chunk_index*50: chunk_index*50 + 50]
+                insert_statement = '''
+                    INSERT INTO collection_attribute (%s) 
+                    VALUES ''' % (', '.join(column_names))
+                insert_statement += ','.join([percent_s_string]*len(rows_to_insert))
+                cursor.fast_executemany = True 
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+                result_string += 'SUCCESS with simulation_model; '
+        except:
+            result_string += 'FAILURE with simulation_model; '
+
+
+        try:
+            with open('collection/static/webservice files/db_backup/rule.json', 'r') as file:
+                json_string = file.read().replace('\n', '')
+            list_of_data_dicts = json.loads(json_string)
+            keys = list(list_of_data_dicts[0]['fields'].keys())
+            list_of_records = []
+            for data_dict in list_of_data_dicts:
+                values = [data_dict['pk']]+ [data_dict['fields'][key] for key in keys]
+                list_of_records.append(values)
+                
+            column_names = ['id'] + keys
+            percent_s_string =  '(' + ','.join(['%s']*len(column_names)) + ')'
+            number_of_entities = len(list_of_records)
+            number_of_chunks =  math.ceil(number_of_entities / 50)
+
+            for chunk_index in range(number_of_chunks):
+                rows_to_insert = list_of_records[chunk_index*50: chunk_index*50 + 50]
+                insert_statement = '''
+                    INSERT INTO collection_attribute (%s) 
+                    VALUES ''' % (', '.join(column_names))
+                insert_statement += ','.join([percent_s_string]*len(rows_to_insert))
+                cursor.fast_executemany = True 
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+                result_string += 'SUCCESS with rule; '
+        except:
+            result_string += 'FAILURE with rule; '
+
+
+        try:
+            with open('collection/static/webservice files/db_backup/execution_order.json', 'r') as file:
+                json_string = file.read().replace('\n', '')
+            list_of_data_dicts = json.loads(json_string)
+            keys = list(list_of_data_dicts[0]['fields'].keys())
+            list_of_records = []
+            for data_dict in list_of_data_dicts:
+                values = [data_dict['pk']]+ [data_dict['fields'][key] for key in keys]
+                list_of_records.append(values)
+                
+            column_names = ['id'] + keys
+            percent_s_string =  '(' + ','.join(['%s']*len(column_names)) + ')'
+            number_of_entities = len(list_of_records)
+            number_of_chunks =  math.ceil(number_of_entities / 50)
+
+            for chunk_index in range(number_of_chunks):
+                rows_to_insert = list_of_records[chunk_index*50: chunk_index*50 + 50]
+                insert_statement = '''
+                    INSERT INTO collection_attribute (%s) 
+                    VALUES ''' % (', '.join(column_names))
+                insert_statement += ','.join([percent_s_string]*len(rows_to_insert))
+                cursor.fast_executemany = True 
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+                result_string += 'SUCCESS with execution_order; '
+        except:
+            result_string += 'FAILURE with execution_order; '
+
+
+        try:
+            with open('collection/static/webservice files/db_backup/likelihood_fuction.json', 'r') as file:
+                json_string = file.read().replace('\n', '')
+            list_of_data_dicts = json.loads(json_string)
+            keys = list(list_of_data_dicts[0]['fields'].keys())
+            list_of_records = []
+            for data_dict in list_of_data_dicts:
+                values = [data_dict['pk']]+ [data_dict['fields'][key] for key in keys]
+                list_of_records.append(values)
+                
+            column_names = ['id'] + keys
+            percent_s_string =  '(' + ','.join(['%s']*len(column_names)) + ')'
+            number_of_entities = len(list_of_records)
+            number_of_chunks =  math.ceil(number_of_entities / 50)
+
+            for chunk_index in range(number_of_chunks):
+                rows_to_insert = list_of_records[chunk_index*50: chunk_index*50 + 50]
+                insert_statement = '''
+                    INSERT INTO collection_attribute (%s) 
+                    VALUES ''' % (', '.join(column_names))
+                insert_statement += ','.join([percent_s_string]*len(rows_to_insert))
+                cursor.fast_executemany = True 
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+                result_string += 'SUCCESS with likelihood_fuction; '
+        except:
+            result_string += 'FAILURE with likelihood_fuction; '
+
+
+        try:
+            with open('collection/static/webservice files/db_backup/rule_parameter.json', 'r') as file:
+                json_string = file.read().replace('\n', '')
+            list_of_data_dicts = json.loads(json_string)
+            keys = list(list_of_data_dicts[0]['fields'].keys())
+            list_of_records = []
+            for data_dict in list_of_data_dicts:
+                values = [data_dict['pk']]+ [data_dict['fields'][key] for key in keys]
+                list_of_records.append(values)
+                
+            column_names = ['id'] + keys
+            percent_s_string =  '(' + ','.join(['%s']*len(column_names)) + ')'
+            number_of_entities = len(list_of_records)
+            number_of_chunks =  math.ceil(number_of_entities / 50)
+
+            for chunk_index in range(number_of_chunks):
+                rows_to_insert = list_of_records[chunk_index*50: chunk_index*50 + 50]
+                insert_statement = '''
+                    INSERT INTO collection_attribute (%s) 
+                    VALUES ''' % (', '.join(column_names))
+                insert_statement += ','.join([percent_s_string]*len(rows_to_insert))
+                cursor.fast_executemany = True 
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+                result_string += 'SUCCESS with rule_parameter; '
+        except:
+            result_string += 'FAILURE with rule_parameter; '
+
+
+        try:
+            with open('collection/static/webservice files/db_backup/data_point.json', 'r') as file:
+                json_string = file.read().replace('\n', '')
+            list_of_data_dicts = json.loads(json_string)
+            keys = list(list_of_data_dicts[0]['fields'].keys())
+            list_of_records = []
+            for data_dict in list_of_data_dicts:
+                values = [data_dict['pk']]+ [data_dict['fields'][key] for key in keys]
+                list_of_records.append(values)
+                
+            column_names = ['id'] + keys
+            percent_s_string =  '(' + ','.join(['%s']*len(column_names)) + ')'
+            number_of_entities = len(list_of_records)
+            number_of_chunks =  math.ceil(number_of_entities / 50)
+
+            for chunk_index in range(number_of_chunks):
+                rows_to_insert = list_of_records[chunk_index*50: chunk_index*50 + 50]
+                insert_statement = '''
+                    INSERT INTO collection_attribute (%s) 
+                    VALUES ''' % (', '.join(column_names))
+                insert_statement += ','.join([percent_s_string]*len(rows_to_insert))
+                cursor.fast_executemany = True 
+                cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
+                result_string += 'SUCCESS with data_point; '
+        except:
+            result_string += 'FAILURE with data_point; '
+
+
+    return HttpResponse(result_string)
 
 
 
