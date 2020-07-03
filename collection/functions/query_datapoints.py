@@ -554,10 +554,10 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
 
         for object_number in object_numbers: 
             # populate node_sizes    
-            if sqlite_database:
-                cursor.execute("SELECT COUNT(obj%sattrobject_id) AS approximate_row_count FROM object_%s;" % (object_number, object_number))
-            else:
-                cursor.execute("SELECT reltuples AS approximate_row_count FROM pg_class WHERE relname = 'object_%s';")
+            # if sqlite_database:
+            cursor.execute("SELECT COUNT(obj%sattrobject_id) AS approximate_row_count FROM object_%s;" % (object_number, object_number))
+            # else:
+            #     cursor.execute("SELECT reltuples AS approximate_row_count FROM pg_class WHERE relname = 'object_%s';")
             print('cursor.fetchall(): ' + str(cursor.fetchall()))
             node_sizes[object_number] = cursor.fetchall()[0][0]
 
