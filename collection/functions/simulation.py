@@ -25,7 +25,6 @@ import pdb
 import boto3
 import psycopg2
 import time
-import asyncio
 
 # called from edit_model.html
 class Simulator:
@@ -453,7 +452,7 @@ class Simulator:
                 all_simulation_results = []
                 while (time.time() - result_checking_start_time < 60):
 
-                    await asyncio.sleep(1)
+                    time.sleep(1)
                     cursor.execute('''select simulation_id, run_number, priors_dict, simulation_results from tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
                     all_simulation_results = cursor.fetchall() 
                     if len(all_simulation_results) >= (self.nb_of_tested_parameters-2):
