@@ -679,11 +679,11 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                 sql_string5 = '''
                             SELECT 
                                 
-                                object_id, 
-                                concat('obj%sattr', attribute_id, 'period', period) AS column_name,
-                                --attribute_id, 
-                                value_as_string,
-                                period
+                                inner_query.object_id, 
+                                concat('obj%sattr', inner_query.attribute_id, 'period', inner_query.period) AS column_name,
+                                --inner_query.attribute_id, 
+                                inner_query.value_as_string,
+                                inner_query.period
                             FROM (
                                     SELECT  object_id, 
                                             attribute_id, 
@@ -698,8 +698,8 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                                         )
                                       AND valid_time_start > %s
                                       AND valid_time_end < %s 
-                                )
-                            WHERE rank = 1
+                                ) as inner_query
+                            WHERE inner_query.rank = 1
                         ''' % (object_number, valid_time_start, timestep_size, valid_time_start, timestep_size, object_number, valid_time_start, valid_time_end)
 
             long_table_df = pd.read_sql_query(sql_string5, connection)
