@@ -441,7 +441,8 @@ class Simulator:
                 # ==============================================================
             else:
                 for batch_number in range(self.nb_of_tested_parameters):
-                    simulation_parameters = {'simulation_id':  self.simulation_id, 'run_number':  self.run_number, 'simulation_run_nb': 0, 'df': self.df.to_dict('records'), 'rules': self.rules , 'priors_dict':  all_priors_df.loc[batch_number,:].to_dict(), 'batch_size': batch_size , 'y0_values':  self.y0_values, 'is_timeseries_analysis': self.is_timeseries_analysis, 'times': self.times, 'timestep_size':  self.timestep_size, 'y0_columns': self.y0_columns, 'parameter_columns':  self.parameter_columns, 'y0_column_dt':  self.y0_column_dt, 'error_threshold':  self.error_threshold}
+                    print('posting batch %s : %s' % (batch_number, str(all_priors_df.loc[batch_number,:].to_dict())))
+                    simulation_parameters = {'simulation_id':  self.simulation_id, 'run_number':  self.run_number, 'batch_number': batch_number, 'df': self.df.to_dict('records'), 'rules': self.rules , 'priors_dict':  all_priors_df.loc[batch_number,:].to_dict(), 'batch_size': batch_size , 'y0_values':  self.y0_values, 'is_timeseries_analysis': self.is_timeseries_analysis, 'times': self.times, 'timestep_size':  self.timestep_size, 'y0_columns': self.y0_columns, 'parameter_columns':  self.parameter_columns, 'y0_column_dt':  self.y0_column_dt, 'error_threshold':  self.error_threshold}
                     sqs = boto3.client('sqs', region_name='eu-central-1')
                     queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/Treeofknowledge-queue'
                     response = sqs.send_message(QueueUrl= queue_url, MessageBody=json.dumps(simulation_parameters))
@@ -455,6 +456,7 @@ class Simulator:
                     time.sleep(1)
                     cursor.execute('''select simulation_id, run_number, priors_dict, simulation_results from tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
                     all_simulation_results = cursor.fetchall() 
+                    print('checking results - found %s/%s' % (len(all_simulation_results), self.nb_of_tested_parameters))
                     if len(all_simulation_results) >= (self.nb_of_tested_parameters-2):
                         break
 
