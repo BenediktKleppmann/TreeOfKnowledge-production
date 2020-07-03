@@ -558,7 +558,6 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             cursor.execute("SELECT COUNT(obj%sattrobject_id) AS approximate_row_count FROM object_%s;" % (object_number, object_number))
             # else:
             #     cursor.execute("SELECT reltuples AS approximate_row_count FROM pg_class WHERE relname = 'object_%s';")
-            print('cursor.fetchall(): ' + str(cursor.fetchall()))
             node_sizes[object_number] = cursor.fetchall()[0][0]
 
             # add nodes and edges (the edge-weight is an id used for storing additional edge_info)
