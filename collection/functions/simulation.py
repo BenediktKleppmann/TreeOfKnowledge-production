@@ -23,6 +23,9 @@ import re
 import traceback
 import pdb
 import boto3
+import psycopg2
+import time
+import asyncio
 
 # called from edit_model.html
 class Simulator:
@@ -73,9 +76,10 @@ class Simulator:
 
 
         self.simulation_id = simulation_id
+
         simulation_model_record = Simulation_model.objects.get(id=simulation_id)
 
-
+        self.run_number = simulation_model_record.run_number + 1
         self.objects_dict = json.loads(simulation_model_record.objects_dict)
         self.execution_order_id = simulation_model_record.execution_order_id
         self.environment_start_time = simulation_model_record.environment_start_time
@@ -140,7 +144,9 @@ class Simulator:
                                 'df': self.df.to_dict(orient='list'),
                                 'y0_values':self.y0_values}
             simulation_model_record.validation_data = json.dumps(validation_data)
-            simulation_model_record.save()
+        
+        simulation_model_record.run_number = self.run_number
+        simulation_model_record.save()
         self.y0_values_df = pd.DataFrame(self.y0_values)
         self.easy_to_fulfill_simulations = np.zeros(len(self.df))
 
@@ -436,10 +442,30 @@ class Simulator:
                 # ==============================================================
             else:
                 for batch_number in range(self.nb_of_tested_parameters):
-                    simulation_parameters = {'simulation_id':  self.simulation_id, 'simulation_run_nb': 0, 'df': self.df.to_dict('records'), 'rules': self.rules , 'priors_dict':  all_priors_df.loc[batch_number,:].to_dict(), 'batch_size': batch_size , 'y0_values':  self.y0_values, 'is_timeseries_analysis': self.is_timeseries_analysis, 'times': self.times, 'timestep_size':  self.timestep_size, 'y0_columns': self.y0_columns, 'parameter_columns':  self.parameter_columns, 'y0_column_dt':  self.y0_column_dt, 'error_threshold':  self.error_threshold}
+                    simulation_parameters = {'simulation_id':  self.simulation_id, 'run_number':  self.run_number, 'simulation_run_nb': 0, 'df': self.df.to_dict('records'), 'rules': self.rules , 'priors_dict':  all_priors_df.loc[batch_number,:].to_dict(), 'batch_size': batch_size , 'y0_values':  self.y0_values, 'is_timeseries_analysis': self.is_timeseries_analysis, 'times': self.times, 'timestep_size':  self.timestep_size, 'y0_columns': self.y0_columns, 'parameter_columns':  self.parameter_columns, 'y0_column_dt':  self.y0_column_dt, 'error_threshold':  self.error_threshold}
                     sqs = boto3.client('sqs', region_name='eu-central-1')
                     queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/Treeofknowledge-queue'
                     response = sqs.send_message(QueueUrl= queue_url, MessageBody=json.dumps(simulation_parameters))
+
+                result_checking_start_time = time.time()
+                connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
+                cursor = connection.cursor()
+                all_simulation_results = []
+                while (time.time() - result_checking_start_time < 60):
+
+                    await asyncio.sleep(1)
+                    cursor.execute('''select simulation_id, run_number, priors_dict, simulation_results from tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
+                    all_simulation_results = cursor.fetchall() 
+                    if len(all_simulation_results) >= (self.nb_of_tested_parameters-2):
+                        break
+
+                all_simulation_results_df = pd.DataFrame(all_simulation_results, columns=['simulation_id', 'run_number', 'priors_dict', 'simulation_results'])
+                for index, row in all_simulation_results_df.iterrows():
+                    simulation_results = json.loads(row['simulation_results'])
+                    for rule in rules:
+                        if rule['learn_posterior']:
+                            all_priors_df.loc[row['batch_number'], 'nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] = simulation_results['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] 
+                            all_priors_df.loc[row['batch_number'],'error_rule' + str(rule['id'])] = simulation_results['error_rule' + str(rule['id'])]
 
 
             # PART 2 - Post Processing

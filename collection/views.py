@@ -1656,7 +1656,8 @@ def download_file2_csv(request):
 
 @login_required
 def edit_simulation_new(request):    
-    simulation_model = Simulation_model(user=request.user, 
+    simulation_model = Simulation_model(run_number=0,
+										user=request.user, 
                                         is_timeseries_analysis=True,
                                         objects_dict=json.dumps({}), 
                                         y_value_attributes=json.dumps([]), 
@@ -2003,7 +2004,8 @@ def test_page1(request):
     cursor.execute('''
                     CREATE TABLE tested_simulation_parameters ( 
                         simulation_id       integer NOT NULL,
-                        simulation_run_nb   integer NOT NULL,
+                        run_number          integer NOT NULL,
+                        batch_number        integer NOT NULL,
                         priors_dict         text NOT NULL,
                         simulation_results  text NOT NULL);
                     ''')

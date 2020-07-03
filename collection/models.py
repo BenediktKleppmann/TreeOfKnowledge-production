@@ -166,6 +166,7 @@ class Attribute(models.Model):
 
 
 class Simulation_model(models.Model):
+    run_number = models.IntegerField()
     is_timeseries_analysis = models.BooleanField()
     objects_dict = models.TextField()
     y_value_attributes = models.TextField()
