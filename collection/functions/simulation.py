@@ -451,7 +451,7 @@ class Simulator:
                 connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
                 cursor = connection.cursor()
                 all_simulation_results = []
-                while (time.time() - result_checking_start_time < 120):
+                while (time.time() - result_checking_start_time < 150):
 
                     time.sleep(1)
                     cursor.execute('''SELECT simulation_id, run_number, priors_dict, simulation_results FROM tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
@@ -471,7 +471,7 @@ class Simulator:
                 all_simulation_results_df = pd.DataFrame(all_simulation_results, columns=['simulation_id', 'run_number', 'priors_dict', 'simulation_results'])
                 for index, row in all_simulation_results_df.iterrows():
                     simulation_results = json.loads(row['simulation_results'])
-                    for rule in rules:
+                    for rule in self.rules:
                         if rule['learn_posterior']:
                             all_priors_df.loc[row['batch_number'], 'nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] = simulation_results['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] 
                             all_priors_df.loc[row['batch_number'],'error_rule' + str(rule['id'])] = simulation_results['error_rule' + str(rule['id'])]
