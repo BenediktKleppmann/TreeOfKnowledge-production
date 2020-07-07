@@ -451,14 +451,22 @@ class Simulator:
                 connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
                 cursor = connection.cursor()
                 all_simulation_results = []
-                while (time.time() - result_checking_start_time < 60):
+                while (time.time() - result_checking_start_time < 120):
 
                     time.sleep(1)
-                    cursor.execute('''select simulation_id, run_number, priors_dict, simulation_results from tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
+                    cursor.execute('''SELECT simulation_id, run_number, priors_dict, simulation_results FROM tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
                     all_simulation_results = cursor.fetchall() 
                     print('checking results - found %s/%s' % (len(all_simulation_results), self.nb_of_tested_parameters))
-                    if len(all_simulation_results) >= (self.nb_of_tested_parameters-2):
+
+                    with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
+                        progress_dict_string = json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df), "nb_of_accepted_simulations_current": len(all_simulation_results) * len(self.df),  "learning__post_processing": "" , "running_monte_carlo": False })
+                        progress_tracking_file.write(progress_dict_string)
+
+                    if len(all_simulation_results) >= (self.nb_of_tested_parameters-1):
+                        cursor.execute('''DELETE FROM tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
                         break
+
+
 
                 all_simulation_results_df = pd.DataFrame(all_simulation_results, columns=['simulation_id', 'run_number', 'priors_dict', 'simulation_results'])
                 for index, row in all_simulation_results_df.iterrows():
