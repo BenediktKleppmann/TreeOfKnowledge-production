@@ -436,8 +436,6 @@ class Simulator:
                         if rule['learn_posterior']:
                             all_priors_df.loc[batch_number, 'nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] = errors_dict[rule['id']]['nb_of_sim_in_which_rule_was_used']
                             all_priors_df.loc[batch_number,'error_rule' + str(rule['id'])] = errors_dict[rule['id']]['error'] 
-
-                self.currently_running_learn_likelihoods = False
                 # ==============================================================
             else:
                 for batch_number in range(self.nb_of_tested_parameters):
@@ -477,6 +475,7 @@ class Simulator:
                             all_priors_df.loc[row['batch_number'],'error_rule' + str(rule['id'])] = simulation_results['error_rule' + str(rule['id'])]
 
 
+            self.currently_running_learn_likelihoods = False
             # PART 2 - Post Processing
             for rule_number, rule in enumerate(self.rules):
 
