@@ -1002,8 +1002,8 @@
 			$('.datetimepicker').datetimepicker('hide');
 			
 			// initialize the datetimepickers
-			var start_date = new Date(simulation_start_time*1000);
-			var end_date = new Date(simulation_end_time*1000);
+			var start_date = new Date(environment_start_time*1000);
+			var end_date = new Date(environment_end_time*1000);
 			var start_date_string = start_date.toISOString().replace('T', ' ').substring(0,16);
 			var end_date_string = end_date.toISOString().replace('T', ' ').substring(0,16);
 			$("#simulation-start-time").val(start_date_string);

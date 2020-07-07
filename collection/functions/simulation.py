@@ -68,7 +68,7 @@ class Simulator:
         self.max_df_size = 1000
         self.error_threshold = 0.2
         limit_to_populated_y0_columns = True
-        self.run_locally = False
+        self.run_locally = True
         # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         
 

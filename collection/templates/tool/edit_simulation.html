@@ -574,13 +574,13 @@
 		$("#environment-start-time").datetimepicker().on('changeDate', function(ev){
 			//link the start- and end- datetimepickers
 			$("#environment-end-time").datetimepicker("setStartDate", '"' + ev.date.toISOString().substring(0,10) + '"');
-			environment_start_time = Math.round(ev.date.getTime() / 1000);
+			environment_start_time = Math.round(ev.date.getTime() / 1000) - (ev.date.getTimezoneOffset()*60);
 			get_new_object_data = true;
 		});
 		
 		$("#environment-end-time").datetimepicker().on('changeDate', function(ev){
 			$("#environment-start-time").datetimepicker("setEndDate", '"' + ev.date.toISOString().substring(0,10) + '"');
-			environment_end_time = Math.round(ev.date.getTime() / 1000);
+			environment_end_time = Math.round(ev.date.getTime() / 1000) - (ev.date.getTimezoneOffset()*60);
 			get_new_object_data = true;
 		});
 		
