@@ -350,11 +350,13 @@ def get_data_from_random_related_object(simulation_id, objects_dict, environment
     if len(merged_object_data_tables) > 0:
 
         # Sort Columns - top = biggest_number_of_non_nulls - attribute_id
+        print('sorting columns 1')
         non_object_id_columns = [column for column in list(merged_object_data_tables.columns) if (len(column.split('attr'))>1) and (column.split('attr')[1] not in ['object_id','time'])]
         columns_df = merged_object_data_tables[non_object_id_columns].notnull().sum()
         attribute_ids = [int(column.split('attr')[1]) for column in non_object_id_columns]
         columns_df = columns_df - pd.Series(attribute_ids, index=non_object_id_columns)
 
+        print('sorting columns 2')
         sorted_column_names = columns_df.sort_values(ascending=False).index
         sorted_attribute_ids = [column.split('attr')[1] for column in sorted_column_names]
         sorted_attribute_ids = list(dict.fromkeys(sorted_attribute_ids))  # remove duplicate attribute_ids
@@ -363,6 +365,7 @@ def get_data_from_random_related_object(simulation_id, objects_dict, environment
         
 
         # Sort Rows -  the best-populated entities to the top
+        print('sorting rows')
         merged_object_data_tables = merged_object_data_tables.loc[merged_object_data_tables.isnull().sum(1).sort_values().index]
         merged_object_data_tables.index = range(len(merged_object_data_tables))    
         chosen_row = 0 # chose top row
@@ -370,6 +373,7 @@ def get_data_from_random_related_object(simulation_id, objects_dict, environment
     
 
         # prepare return values (all_attribute_values)
+        print('preparing return values')
         all_attribute_values = {}
         for object_number in object_numbers:
             all_attribute_values[object_number] = { 'object_id': int(merged_object_data_tables.loc[chosen_row, 'obj' + str(object_number) + 'attrobject_id']),
@@ -392,7 +396,7 @@ def get_data_from_random_related_object(simulation_id, objects_dict, environment
         objects_data['sorted_attribute_ids'] = []
         objects_data['all_attribute_values'] = {object_number:{'object_attributes':{}} for object_number in object_numbers}
         
-
+    print('-- end get_data_from_random_related_object --')
     return objects_data
 
 
@@ -969,6 +973,7 @@ def get_data_from_related_objects(objects_dict, specified_start_time, specified_
 
 
     # data_querying_info
+    print('data querying info')
     if (simulation_id is not None):
         simulation_model = Simulation_model.objects.get(id=saving_details_for_data_querying_info['simulation_id'])
         data_querying_info = json.loads(simulation_model.data_querying_info)

@@ -795,8 +795,10 @@ def get_data_from_random_related_object(request):
 
     objects_data = query_datapoints.get_data_from_random_related_object(simulation_id, objects_dict, environment_start_time, environment_end_time)
     data_querying_info = Simulation_model.objects.get(id=simulation_id).data_querying_info
+    print('preparing response')
     response = {'objects_data': objects_data, 
-                'data_querying_info': data_querying_info}               
+                'data_querying_info': data_querying_info}    
+    print('sending response')           
     return HttpResponse(json.dumps(response))
 
 
