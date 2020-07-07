@@ -454,7 +454,7 @@ class Simulator:
                 while (time.time() - result_checking_start_time < 150):
 
                     time.sleep(1)
-                    cursor.execute('''SELECT simulation_id, run_number, priors_dict, simulation_results FROM tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
+                    cursor.execute('''SELECT simulation_id, run_number, batch_number, priors_dict, simulation_results FROM tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
                     all_simulation_results = cursor.fetchall() 
                     print('checking results - found %s/%s' % (len(all_simulation_results), self.nb_of_tested_parameters))
 
