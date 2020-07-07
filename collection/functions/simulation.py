@@ -468,7 +468,7 @@ class Simulator:
 
 
 
-                all_simulation_results_df = pd.DataFrame(all_simulation_results, columns=['simulation_id', 'run_number', 'priors_dict', 'simulation_results'])
+                all_simulation_results_df = pd.DataFrame(all_simulation_results, columns=['simulation_id', 'run_number', 'batch_number', 'priors_dict', 'simulation_results'])
                 for index, row in all_simulation_results_df.iterrows():
                     simulation_results = json.loads(row['simulation_results'])
                     for rule in self.rules:
