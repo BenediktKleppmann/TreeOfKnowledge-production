@@ -403,7 +403,7 @@ class Simulator:
         batch_size = len(self.df)
 
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-            progress_dict_string = json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_tested_parameters, "nb_of_accepted_simulations_current": 0,  "learning__post_processing": "" , "running_monte_carlo": False })
+            progress_dict_string = json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df), "nb_of_accepted_simulations_current": 0,  "learning__post_processing": "" , "running_monte_carlo": False })
             progress_tracking_file.write(progress_dict_string)
 
 
@@ -427,6 +427,9 @@ class Simulator:
                 for batch_number in range(self.nb_of_tested_parameters):
                     print('learn_likelihoods (%s/%s)' % (batch_number+1, self.nb_of_tested_parameters))
 
+                    with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
+                        progress_dict_string = json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df), "nb_of_accepted_simulations_current": batch_number * len(self.df),  "learning__post_processing": "" , "running_monte_carlo": False })
+                        progress_tracking_file.write(progress_dict_string)
 
                     priors_dict = all_priors_df.loc[batch_number,:].to_dict()
 
@@ -578,7 +581,7 @@ class Simulator:
 
         print('process_data_1')
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-            progress_tracking_file.write(json.dumps({"learning_likelihoods": True , "nb_of_accepted_simulations_total": self.nb_of_tested_parameters , "nb_of_accepted_simulations_current": 10 , "learning__post_processing": "" , "running_monte_carlo": True, "monte_carlo__simulation_number": number_of_simulations, "monte_carlo__number_of_simulations":  number_of_simulations, "monte_carlo__post_processing":"Post-processing:  listing triggered rules"}))
+            progress_tracking_file.write(json.dumps({"learning_likelihoods": True , "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df) , "nb_of_accepted_simulations_current": self.nb_of_tested_parameters * len(self.df) , "learning__post_processing": "" , "running_monte_carlo": True, "monte_carlo__simulation_number": number_of_simulations, "monte_carlo__number_of_simulations":  number_of_simulations, "monte_carlo__post_processing":"Post-processing:  listing triggered rules"}))
 
 
         # rule_infos
@@ -618,7 +621,7 @@ class Simulator:
         # simulation_data
         print('process_data_4')
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-            progress_tracking_file.write(json.dumps({"learning_likelihoods": True , "nb_of_accepted_simulations_total": self.nb_of_tested_parameters, "nb_of_accepted_simulations_current": 10 , "learning__post_processing": "" , "running_monte_carlo": "true", "monte_carlo__simulation_number": number_of_simulations, "monte_carlo__number_of_simulations":  number_of_simulations, "monte_carlo__post_processing":"Post-processing:  formatting simulated values"}))
+            progress_tracking_file.write(json.dumps({"learning_likelihoods": True , "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df), "nb_of_accepted_simulations_current": self.nb_of_tested_parameters * len(self.df) , "learning__post_processing": "" , "running_monte_carlo": "true", "monte_carlo__simulation_number": number_of_simulations, "monte_carlo__number_of_simulations":  number_of_simulations, "monte_carlo__post_processing":"Post-processing:  formatting simulated values"}))
 
         simulation_data = {}
         attribute_ids = [attr_id for attr_id in simulation_data_df.columns if attr_id not in ['batch_number','initial_state_id','attribute_id','period', 'randomNumber', 'cross_join_column']]
@@ -644,7 +647,7 @@ class Simulator:
         # errors
         print('process_data_5')
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-            progress_tracking_file.write(json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_tested_parameters, "nb_of_accepted_simulations_current": 10, "learning__post_processing": "" , "running_monte_carlo": True, "monte_carlo__simulation_number": number_of_simulations, "monte_carlo__number_of_simulations":  number_of_simulations, "monte_carlo__post_processing":"Post-processing:  calculating the simulated values' errors"}))
+            progress_tracking_file.write(json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df), "nb_of_accepted_simulations_current": self.nb_of_tested_parameters * len(self.df), "learning__post_processing": "" , "running_monte_carlo": True, "monte_carlo__simulation_number": number_of_simulations, "monte_carlo__number_of_simulations":  number_of_simulations, "monte_carlo__post_processing":"Post-processing:  calculating the simulated values' errors"}))
 
 
         errors = {}
@@ -700,9 +703,6 @@ class Simulator:
         print('---- likelihood_learning_simulator ----')
         df = df_original.copy()
 
-        with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-            progress_dict_string = json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_tested_parameters, "nb_of_accepted_simulations_current": 10 , "learning__post_processing": "" , "running_monte_carlo": False })
-            progress_tracking_file.write(progress_dict_string)
 
         for rule_nb in range(len(rules)):
             rules[rule_nb]['rule_was_used_in_simulation'] = [False]*batch_size
@@ -844,6 +844,11 @@ class Simulator:
 
         number_of_batches = math.ceil(nb_of_simulations/batch_size)
         for batch_number in range(number_of_batches):
+
+
+            with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
+                progress_tracking_file.write(json.dumps({"learning_likelihoods": True , "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df) , "nb_of_accepted_simulations_current": self.nb_of_tested_parameters * len(self.df) , "learning__post_processing": "" , "running_monte_carlo": True, "monte_carlo__simulation_number": batch_number*batch_size , "monte_carlo__number_of_simulations":  nb_of_simulations, "monte_carlo__post_processing":"Running Monte-Carlo simulations"}))
+
 
 
             df = self.df.copy()

@@ -13,7 +13,6 @@
 # (at your option) any later version - see http://www.gnu.org/licenses/.
 #####################################################################
 -->
-
 <style>
 
 	/* --------------------------------------------------------------------------*/
@@ -115,16 +114,58 @@
 	  }
 	}
 	
+	/* Object Header ----------------------------------------------------------*/
+	.object-header-object-icon {
+		display: inline-block;
+		margin-top: 5px;
+		margin-left: 70px;
+		margin-bottom: 8px;
+		height: 38px;
+		width: 38px;
+		border: 1px solid rgb(193, 193, 193);
+		border-radius: 3px;
+		padding-top: 1px;
+		padding-left: 1px;
+		padding-right: 1px;
+		background: rgb(230, 230, 230);
+	}
+	
+	.object-header-object-name {
+		display: inline-block;
+		font-size: 18px;
+		margin-left: 12px;
+		margin-bottom: 11px;
+		vertical-align: bottom;
+	}
+	
+	#object-attribute-search-field {
+	    margin-left: 2px;
+		height: 35px;
+		margin-bottom: 1px;
+		width: 182px;
+		margin-top: 4px;
+	}
+	
+	
 	
 	/* Object Body ----------------------------------------------------------*/
 	#right-sidebar-body {
-		height: calc(100vh - 145px);
+		height: calc(100vh - 152px);
 		overflow:auto;
 	}
 	
 	#object-attributes-table {
 		border-collapse: collapse;
 	}
+	
+	
+	#object-attributes-table .list-group-item{
+		padding: 0px;
+		border: 0px;
+		border-top: 1px solid rgb(221, 221, 221);
+	}
+	
+	
 	
 	.attribute-name.active {
 		background: -moz-linear-gradient(
@@ -158,14 +199,21 @@
 			inset 0px 0px 3px rgba(255,255,255,0.9);
 			
 		color: black;
+		display: inline-block;
+		min-height: 36px;
 	}
 	
 
+	.attribute-name .attribute-name-paragraph {
+		transform: translate(0, 7px);
+	}
 
 	.attribute-value-box {
 		border: 1px solid rgb(202, 202, 202);
-		width: 109px;
+		width: 98px;
 		padding: 0px;
+		display: inline-block;
+		vertical-align: bottom;
 	}
 	
 	.attribute-value {
@@ -178,19 +226,29 @@
 		border: 1px solid rgb(202, 202, 202);
 		width: 109px;
 		background: white;
+		display: inline-block;
+		vertical-align: bottom;
 	}
 	
 	.attribute-rule-button {
 		border: 1px solid rgb(202, 202, 202);
-		margin-left: 3px;
 		color: rgb(85, 85, 85);
 		padding: 4px 7px;
-		margin: 3px 2px;
+		margin: 2px 2px;
 		width: 105px;
 	}
 	
 	
+	
+	
+	#create-new-attribute-button {
+		margin-left: 126px;
+		margin-top: 17px;
+	}
+	
+	
 	/* Object Footer ----------------------------------------------------------	
+	
 	#object-footer {
 		background: rgb(226, 226, 226);
 		box-shadow: 0  -3px 6px 0 rgba(0, 0, 0, 0.20);
@@ -512,9 +570,19 @@
 		width:98%; 
 		margin-left:1%;
 	}
+	
+	/*-- create attribute modal -----------*/
+	
+	.modal-dialog {
+		left: 0px;
+	}
+	
 
 	
 </style>
+
+
+	{% include "tool/includes/create_attribute_modal.html" %} 
 
 	<!-- Choose Rule Modal -->
 	<!-- 
@@ -635,7 +703,7 @@
 					var all_timestamps = [];
 					for (var i = 0; i < object_numbers.length ; i++) {
 						timestamps = Object.keys(data_querying_info['timestamps'][object_numbers[i]]);
-						for (var j = 0; j < object_numbers.length ; j++) {
+						for (var j = 0; j < timestamps.length ; j++) {
 							var total_number_of_entities = data_querying_info['table_sizes'][object_numbers[i]]['number_of_objects'];
 							if (data_querying_info['timestamps'][object_numbers[i]][timestamps[j]] > 0.1*total_number_of_entities ) {
 								all_timestamps.push(timestamps[j]);
@@ -934,8 +1002,8 @@
 			$('.datetimepicker').datetimepicker('hide');
 			
 			// initialize the datetimepickers
-			var start_date = new Date(simulation_start_time*1000);
-			var end_date = new Date(simulation_end_time*1000);
+			var start_date = new Date(environment_start_time*1000);
+			var end_date = new Date(environment_end_time*1000);
 			var start_date_string = start_date.toISOString().replace('T', ' ').substring(0,16);
 			var end_date_string = end_date.toISOString().replace('T', ' ').substring(0,16);
 			$("#simulation-start-time").val(start_date_string);
@@ -1003,11 +1071,11 @@
 		object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length ; i++) {
 			object_number = object_numbers[i];
-			object_rules = Object.keys(objects_dict[object_number]['object_rules']);
-			for (var j = 0; j < object_rules.length ; j++) {
-				used_rules = Object.keys(objects_dict[object_number]['object_rules'][object_rules[j]]['used_rules']);
-				for (var k = 0; k < used_rules.length ; k++) {
-					if (objects_dict[object_number]['object_rules'][object_rules[j]]['used_rules'][used_rules[k]]['learn_posterior']) {
+			attribute_ids = Object.keys(objects_dict[object_number]['object_rules']);
+			for (var j = 0; j < attribute_ids.length ; j++) {
+				rule_ids = Object.keys(objects_dict[object_number]['object_rules'][attribute_ids[j]]);
+				for (var k = 0; k < rule_ids.length ; k++) {
+					if (objects_dict[object_number]['object_rules'][attribute_ids[j]][rule_ids[k]]['learn_posterior']) {
 						number_of_rules_to_learn += 1;
 					}
 				}
@@ -1193,6 +1261,7 @@
 			'object_type_counts': object_type_counts,
 			'total_object_count': total_object_count,
 			'number_of_additional_object_facts': number_of_additional_object_facts,
+			'execution_order_id':execution_order_id,
 			'environment_start_time': environment_start_time,
 			'environment_end_time': environment_end_time,
 			'simulation_start_time': simulation_start_time,
@@ -1205,11 +1274,54 @@
 		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send(JSON.stringify(request_body));	
+		
+		
+		//save Execution_order	
+		//var execution_order_name = $('#execution-order-name').val();
+		//var execution_order_description = $('#execution-order-description').val();
+		var execution_order_name = 'test_name';
+		var execution_order_description = 'test_description';
+		
+		request_body = {
+			'id': execution_order_id,
+			'name': execution_order_name,
+			'description': execution_order_description,
+			'execution_order': execution_order
+		}
+		
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.open("POST", "/tool/save_execution_order/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));	
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	//========================================================================
 	//================   RIGHT SIDEBAR	======================================
 	//========================================================================
+	
+	
+	
+	
+	
 	
 	// Draw Right Sidebar ==============================================================		
 	function drawObjectAttributeTable(object_number) {
@@ -1232,30 +1344,93 @@
 				//var object_type_name = objects_dict[object_number]['object_type_name'];
 				//var object_name = objects_dict[object_number]['object_name'];
 				
-			} else {		
-				object_attributes_string = '<table id="object-attributes-table">';
+			} else {	
+				//object-header
+				object_header_string = 	'<div>' +
+											'<div class="object-header-object-icon">' +
+												'<img src="/static/images/object_icons/' + objects_dict[object_number]['object_icon'] + '.svg">' +
+											'</div>' + 
+											'<div class="object-header-object-name">' + objects_dict[object_number]['object_name'] + '</div>' +
+										'</div>' + 
+										'<input type="hidden" id="object-name-field" value=' + objects_dict[object_number]['object_name'] + '>' + 
+										'<input type="hidden" id="object-number-field" value=' + object_number + '>' + 
+										'<input type="text" class="search" id="object-attribute-search-field" onkeyup="filterObjectAttributes();" placeholder=" Search">';
+				$('#object-header').html(object_header_string);
+
+				//right-sidebar-body
+				object_attributes_string = '<ul id="object-attributes-table" class="list-group">';
 				for (var i = 0; i < object_sorted_attribute_ids.length ; i++) {
 					var attribute_id = object_sorted_attribute_ids[i];
 
-					object_attributes_string += '<tr>' +
-													'<td id="optimisation-attribute-button-' + object_number + '-' + attribute_id + '" class="attribute-name" onclick="selectOptimisationAttribute(' + object_number + ', ' + attribute_id + ')">' + object_attributes[attribute_id]['attribute_name'] + '</td>' +
-													'<td class="attribute-value-box"><input class="form-control attribute-value" type="text" value="' + object_attributes[attribute_id]['attribute_value'] + '" onchange="attributeValueChange(' + object_number + ',' + attribute_id + ', this.value)"></td>' +
+					object_attributes_string += '<li class="list-group-item">' +
+													'<div id="optimisation-attribute-button-' + object_number + '-' + attribute_id + '" class="attribute-name" onclick="selectOptimisationAttribute(' + object_number + ', ' + attribute_id + ')">' + 
+														'<p class="attribute-name-paragraph">' + object_attributes[attribute_id]['attribute_name'] + '</p>' + 
+													'</div>' +
+													'<div class="attribute-value-box"><input class="form-control attribute-value" type="text" value="' + object_attributes[attribute_id]['attribute_value'] + '" onchange="attributeValueChange(' + object_number + ',' + attribute_id + ', this.value)"></div>' +
 													'<button type="button" id="format_violation' + 1 + '" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid value" style="display:none;" data-content="">!</button>' + 
-													'<td class="attribute-rule-box">' + 
+													'<div class="attribute-rule-box">' + 
 														'<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="openEditObjectBehaviourModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\', null)">edit behaviour</button>'
-													'</td>' +
-												'</tr>';
+													'</div>' +
+												'</li>';
 				}
-				object_attributes_string += '</table>';
+				object_attributes_string += 	'<li class="list-group-item">' +
+													'<button id="create-new-attribute-button" class="btn btn-success" type="button" data-toggle="modal" data-target="#createAttributeModal">Create New Attribute</button>' +
+													//'<button id="create-attribute-button" type="button" class="btn btn-success" onclick="openEditObjectBehaviourModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\', null)">Create Attribute</button>'
+												'</li>' + 
+											'</ul>';
 				$("#right-sidebar-body").html(object_attributes_string);
 				
 				// press the active Optimisation-attribute-buttons
 				for (var i = 0; i < y_value_attributes.length; i++) {
 					$('#optimisation-attribute-button-' + y_value_attributes[i]['object_number'] + '-' + y_value_attributes[i]['attribute_id'] ).addClass('active');
 				}
+				
+				
+				// in the 'Create New Attribute' Modal, populate the first_applicable_object_type options
+				loadListOfParentObjects(objects_dict[object_number]['object_type_id']);
 			}	
 		}
 	}	
+	
+	// this gets triggered when someone creates and saves a new attribute
+	function redrawAttributeSelections() {
+		get_new_object_data = true;
+		getObjectData();
+		
+		// the previous step only adds the attribute to object_attributes (in the objects_dict), here we also add it to object_rules 
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			var object_number = object_numbers[i];
+			var attribute_ids = Object.keys(objects_dict[object_number]['object_attributes']);
+			for (var j = 0; j < attribute_ids.length; j++) {
+			var attribute_id = parseInt(attribute_ids[j]);
+				if (!(attribute_id in objects_dict[object_number]['object_rules'])) {
+					objects_dict[object_number]['object_rules'][attribute_id] = {}
+				}
+			}
+		}
+	}
+	
+	
+	
+	function filterObjectAttributes() {	
+		var current_query = $('#object-attribute-search-field').val().toLowerCase();
+		if (current_query !== "") {
+			$("#object-attributes-table li").hide();
+			$("#object-attributes-table li").each(function(){
+				var current_keyword = $(this).text().toLowerCase();
+				if (current_keyword.indexOf(current_query) >=0) {
+					$(this).show();    	 	
+				};
+			});    	
+		} else {
+			$("#object-attributes-table li").show();
+		};
+	}
+
+	
+	
+	
 	
 	function attributeValueChange(object_number, attribute_id , attribute_value) {
 		objects_dict[object_number]['object_attributes'][attribute_id]['attribute_value'] = attribute_value;
