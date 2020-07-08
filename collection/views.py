@@ -667,6 +667,10 @@ def get_execution_order(request):
     execution_order_id = int(request.GET.get('execution_order_id', '1'))
     print('test')
     execution_order = json.loads(Execution_order.objects.get(id=execution_order_id).execution_order)
+    if 'attribute_execution_order' not in execution_order.keys():
+        execution_order['attribute_execution_order'] = {}
+    if 'rule_execution_order' not in execution_order.keys():
+        execution_order['rule_execution_order'] = {}
     # CORRECT TO CURRENT objects, attributes and rules
 
     # PART 1A: extend with missing objects, attributes 
@@ -748,6 +752,12 @@ def get_execution_order(request):
         if len(no_longer_existing_rule_ids)>0:
             new_not_used_rule_ids = [rule_id for rule_id in not_used_rule_ids if rule_id not in no_longer_existing_rule_ids]
             execution_order['rule_execution_order'][attribute_id]['not_used_rule_ids'] = new_not_used_rule_ids
+
+    # PART 3: update the database
+    execution_order_record = Execution_order.objects.get(id=execution_order_id)
+    execution_order_record.execution_order = json.dumps(execution_order)
+    execution_order_record.save()
+
     return HttpResponse(json.dumps(execution_order))
 
 
@@ -2056,14 +2066,14 @@ def test_page2(request):
 
 def test_page3(request):
 
+    return redirect('analyse_simulation', simulation_id=420)
+    # connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
+    # cursor = connection.cursor()
+    # cursor.execute('''select * from tested_simulation_parameters;
+    #                 ''')
 
-    connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
-    cursor = connection.cursor()
-    cursor.execute('''select * from tested_simulation_parameters;
-                    ''')
-
-    select_all_query = cursor.fetchall() 
-    return HttpResponse('success: ' + str(select_all_query))
+    # select_all_query = cursor.fetchall() 
+    # return HttpResponse('success: ' + str(select_all_query))
 
     # return render(request, 'tool/test_page3.html')
 

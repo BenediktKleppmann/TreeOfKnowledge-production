@@ -64,7 +64,7 @@ class Simulator:
     def __init__(self, simulation_id):
 
         # IMPORTANT SETTINGS  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-        self.nb_of_tested_parameters = 80
+        self.nb_of_tested_parameters = 3
         self.max_df_size = 1000
         self.error_threshold = 0.2
         limit_to_populated_y0_columns = True
@@ -98,7 +98,7 @@ class Simulator:
         # logging
         self.progress_tracking_file_name = 'collection/static/webservice files/runtime_data/simulation_progress_' + str(self.simulation_id) + '.txt'
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-            progress_tracking_file.write(json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations": "", "nb_of_accepted_simulations_current": "" , "learning__post_processing": "Initializing: retrieving validation data from the knowledge base."  , "running_monte_carlo": True, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "", "monte_carlo__post_processing":"Initializing: retrieving validation data from the knowledge base."}))
+            progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 1, "total_number": 6}))
 
 
 
@@ -312,6 +312,9 @@ class Simulator:
                                                                         'effect_text':rule['effect_text'], 
                                                                         'reason':str(traceback.format_exc())}
 
+        with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
+            progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 6, "total_number": 6}))
+
 
 
 
@@ -320,10 +323,13 @@ class Simulator:
 
     def get_new_df_and_y0_values(self, is_timeseries_analysis, objects_dict, simulation_start_time, simulation_end_time, timestep_size, limit_to_populated_y0_columns, times, y0_columns, max_df_size):
 
+        with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
+            progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 2, "total_number": 6}))
+
         if limit_to_populated_y0_columns:
-            all_periods_df = query_datapoints.get_data_from_related_objects__multiple_timesteps(objects_dict, simulation_start_time, simulation_end_time, timestep_size, y0_columns=y0_columns)
+            all_periods_df = query_datapoints.get_data_from_related_objects__multiple_timesteps(objects_dict, simulation_start_time, simulation_end_time, timestep_size, self.progress_tracking_file_name, y0_columns=y0_columns)
         else: 
-            all_periods_df = query_datapoints.get_data_from_related_objects__multiple_timesteps(objects_dict, simulation_start_time, simulation_end_time, timestep_size)
+            all_periods_df = query_datapoints.get_data_from_related_objects__multiple_timesteps(objects_dict, simulation_start_time, simulation_end_time, timestep_size, self.progress_tracking_file_name)
 
         y0_values = []
         if is_timeseries_analysis:
@@ -428,8 +434,7 @@ class Simulator:
                     print('learn_likelihoods (%s/%s)' % (batch_number+1, self.nb_of_tested_parameters))
 
                     with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-                        progress_dict_string = json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df), "nb_of_accepted_simulations_current": batch_number * len(self.df),  "learning__post_processing": "" , "running_monte_carlo": False })
-                        progress_tracking_file.write(progress_dict_string)
+                        progress_tracking_file.write(json.dumps({"text": 'Learning parameters - simulation: ', "current_number": batch_number * len(self.df), "total_number": self.nb_of_tested_parameters * len(self.df)}))
 
                     priors_dict = all_priors_df.loc[batch_number,:].to_dict()
 
@@ -460,8 +465,8 @@ class Simulator:
                     print('checking results - found %s/%s' % (len(all_simulation_results), self.nb_of_tested_parameters))
 
                     with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-                        progress_dict_string = json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df), "nb_of_accepted_simulations_current": len(all_simulation_results) * len(self.df),  "learning__post_processing": "" , "running_monte_carlo": False })
-                        progress_tracking_file.write(progress_dict_string)
+                        progress_tracking_file.write(json.dumps({"text": 'Learning parameters - simulation: ', "current_number": len(all_simulation_results) * len(self.df), "total_number": self.nb_of_tested_parameters * len(self.df)}))
+
 
                     if len(all_simulation_results) >= (self.nb_of_tested_parameters-1):
                         cursor.execute('''DELETE FROM tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
@@ -478,8 +483,12 @@ class Simulator:
                             all_priors_df.loc[row['batch_number'],'error_rule' + str(rule['id'])] = simulation_results['error_rule' + str(rule['id'])]
 
 
-            self.currently_running_learn_likelihoods = False
+            
             # PART 2 - Post Processing
+            self.currently_running_learn_likelihoods = False
+            with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
+                progress_tracking_file.write(json.dumps({"text": 'Learning parameters - post-processing: ', "current_number": self.nb_of_tested_parameters * len(self.df), "total_number": self.nb_of_tested_parameters * len(self.df)}))
+
             for rule_number, rule in enumerate(self.rules):
 
                 # histogram
@@ -581,7 +590,7 @@ class Simulator:
 
         print('process_data_1')
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-            progress_tracking_file.write(json.dumps({"learning_likelihoods": True , "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df) , "nb_of_accepted_simulations_current": self.nb_of_tested_parameters * len(self.df) , "learning__post_processing": "" , "running_monte_carlo": True, "monte_carlo__simulation_number": number_of_simulations, "monte_carlo__number_of_simulations":  number_of_simulations, "monte_carlo__post_processing":"Post-processing:  listing triggered rules"}))
+            progress_tracking_file.write(json.dumps({"text": 'Preparing results - step: ', "current_number": 1, "total_number": 3}))
 
 
         # rule_infos
@@ -621,7 +630,7 @@ class Simulator:
         # simulation_data
         print('process_data_4')
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-            progress_tracking_file.write(json.dumps({"learning_likelihoods": True , "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df), "nb_of_accepted_simulations_current": self.nb_of_tested_parameters * len(self.df) , "learning__post_processing": "" , "running_monte_carlo": "true", "monte_carlo__simulation_number": number_of_simulations, "monte_carlo__number_of_simulations":  number_of_simulations, "monte_carlo__post_processing":"Post-processing:  formatting simulated values"}))
+            progress_tracking_file.write(json.dumps({"text": 'Preparing results - step: ', "current_number": 2, "total_number": 3}))
 
         simulation_data = {}
         attribute_ids = [attr_id for attr_id in simulation_data_df.columns if attr_id not in ['batch_number','initial_state_id','attribute_id','period', 'randomNumber', 'cross_join_column']]
@@ -647,8 +656,7 @@ class Simulator:
         # errors
         print('process_data_5')
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-            progress_tracking_file.write(json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df), "nb_of_accepted_simulations_current": self.nb_of_tested_parameters * len(self.df), "learning__post_processing": "" , "running_monte_carlo": True, "monte_carlo__simulation_number": number_of_simulations, "monte_carlo__number_of_simulations":  number_of_simulations, "monte_carlo__post_processing":"Post-processing:  calculating the simulated values' errors"}))
-
+            progress_tracking_file.write(json.dumps({"text": 'Preparing results - step: ', "current_number": 3, "total_number": 3}))
 
         errors = {}
         errors['score'] = 1 - errors_df['error'].mean()
@@ -847,8 +855,7 @@ class Simulator:
 
 
             with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-                progress_tracking_file.write(json.dumps({"learning_likelihoods": True , "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df) , "nb_of_accepted_simulations_current": self.nb_of_tested_parameters * len(self.df) , "learning__post_processing": "" , "running_monte_carlo": True, "monte_carlo__simulation_number": batch_number*batch_size , "monte_carlo__number_of_simulations":  nb_of_simulations, "monte_carlo__post_processing":"Running Monte-Carlo simulations"}))
-
+                progress_tracking_file.write(json.dumps({"text": 'Making predictions - simulation: ', "current_number": batch_number*batch_size, "total_number": nb_of_simulations}))
 
 
             df = self.df.copy()

@@ -405,7 +405,7 @@ def get_data_from_random_related_object(simulation_id, objects_dict, environment
 
 
 
-def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_start, valid_time_end, timestep_size, number_of_instances=None, y0_columns=None):
+def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_start, valid_time_end, timestep_size, progress_tracking_file_name, number_of_instances=None, y0_columns=None):
     print('~~~~~~~~~~~~~~~~~  get_data_from_related_objects__multiple_timesteps  ~~~~~~~~~~~~~~~~~')
     print('valid_time_start:' + str(valid_time_start))
     print('valid_time_end:' + str(valid_time_end))
@@ -549,6 +549,9 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
     # ==================================================================================================
     # PART 2: join the object-tables
     # ==================================================================================================   
+        with open(progress_tracking_file_name, "w") as progress_tracking_file:
+            progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 3, "total_number": 6}))
+
         print('part2')
         # 2.1 prepare directed graph 
         G = nx.MultiDiGraph()
@@ -647,6 +650,9 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
     # ==================================================================================================
     # PART 3: get the remaining data
     # ==================================================================================================  
+        with open(progress_tracking_file_name, "w") as progress_tracking_file:
+            progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 4, "total_number": 6}))
+
         print('part3')
         for object_number in object_numbers: 
 
@@ -726,6 +732,8 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
     # ==================================================================================================
     # PART 4: convert to correct datatype
     # ================================================================================================== 
+    with open(progress_tracking_file_name, "w") as progress_tracking_file:
+        progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 5, "total_number": 6}))
     print('part4')
     attribute_data_types_dict = {attribute.id: attribute.data_type for attribute in list(Attribute.objects.all())}
     for column_name in object_ids_df.columns:
