@@ -2068,12 +2068,13 @@ def test_page3(request):
 
 
     # return redirect('analyse_simulation', simulation_id=420)
-    # connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="collection")
-    # cursor = connection.cursor()
-    # cursor.execute('''select validation_data from collection_simulation_model;
-    #                 ''')
+    database_settings = settings.DATABASES['default']
+    connection = psycopg2.connect(user=database_settings['USER'], password=database_settings['PASSWORD'], host=database_settings['HOST'], port=database_settings['PORT'], database=database_settings['NAME'])
+    cursor = connection.cursor()
+    cursor.execute('''select validation_data from collection_simulation_model;
+                    ''')
 
-    # validation_data_json = cursor.fetchall() 
+    validation_data_json = cursor.fetchall() 
     return HttpResponse('success: ' + str(settings.DATABASES))
 
     # return render(request, 'tool/test_page3.html')
