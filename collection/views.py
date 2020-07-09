@@ -2071,7 +2071,7 @@ def test_page3(request):
     database_settings = settings.DATABASES['default']
     connection = psycopg2.connect(user=database_settings['USER'], password=database_settings['PASSWORD'], host=database_settings['HOST'], port=database_settings['PORT'], database=database_settings['NAME'])
     cursor = connection.cursor()
-    cursor.execute('''select validation_data from collection_simulation_model;
+    cursor.execute('''select validation_data from collection_simulation_model WHERE id =433;
                     ''')
 
     validation_data_json = cursor.fetchall() 
