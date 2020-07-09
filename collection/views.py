@@ -2066,20 +2066,6 @@ def test_page2(request):
 
 def test_page3(request):
 
-    DATABASES = {}
-    if 'RDS_HOSTNAME' in os.environ:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.mysql',
-                'NAME': os.environ['RDS_DB_NAME'],
-                'USER': os.environ['RDS_USERNAME'],
-                'PASSWORD': os.environ['RDS_PASSWORD'],
-                'HOST': os.environ['RDS_HOSTNAME'],
-                'PORT': os.environ['RDS_PORT'],
-            }
-        }
-    else:
-        DATABASES['default'] = dj_database_url.config()
 
     # return redirect('analyse_simulation', simulation_id=420)
     # connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="collection")
@@ -2088,7 +2074,7 @@ def test_page3(request):
     #                 ''')
 
     # validation_data_json = cursor.fetchall() 
-    return HttpResponse('success: ' + str(DATABASES))
+    return HttpResponse('success: ' + str(settings.DATABASES))
 
     # return render(request, 'tool/test_page3.html')
 
