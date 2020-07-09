@@ -454,7 +454,7 @@ class Simulator:
                     response = sqs.send_message(QueueUrl= queue_url, MessageBody=json.dumps(simulation_parameters))
 
                 result_checking_start_time = time.time()
-                connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
+                connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="ebdb")
                 cursor = connection.cursor()
                 all_simulation_results = []
                 while (time.time() - result_checking_start_time < 150):
