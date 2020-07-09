@@ -2075,7 +2075,7 @@ def test_page3(request):
                     ''')
 
     validation_data_json = cursor.fetchall() 
-    return HttpResponse('success: ' + str(settings.DATABASES))
+    return HttpResponse('success: ' + str(validation_data_json))
 
     # return render(request, 'tool/test_page3.html')
 
