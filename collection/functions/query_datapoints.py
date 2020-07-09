@@ -344,7 +344,8 @@ def get_data_from_random_related_object(simulation_id, objects_dict, environment
 
     print('~~~~~~~~~~~~~~~  get_data_from_random_related_object  ~~~~~~~~~~~~~~~~~~~~~~')
     object_numbers = list(objects_dict.keys())
-    merged_object_data_tables = get_data_from_related_objects(objects_dict, environment_start_time, environment_end_time, simulation_id)
+    # merged_object_data_tables = get_data_from_related_objects(objects_dict, environment_start_time, environment_end_time, simulation_id)
+    merged_object_data_tables = get_data_from_related_objects__single_timestep(objects_dict, environment_start_time, environment_end_time, simulation_id)
     print('len(merged_object_data_tables): ' + str(len(merged_object_data_tables)))
 
     if len(merged_object_data_tables) > 0:
@@ -384,6 +385,8 @@ def get_data_from_random_related_object(simulation_id, objects_dict, environment
                 attribute_id = object_column.split('attr')[1]
                 attribute_record = Attribute.objects.get(id=attribute_id)
                 attribute_value = merged_object_data_tables['obj' + str(object_number) + 'attr' + str(attribute_id)].iloc[chosen_row]
+                if isinstance(attribute_value, float) and np.isnan(attribute_value):
+                    attribute_value = None
                 if attribute_record.data_type in ['int', 'relation'] and attribute_value is not None:
                     attribute_value = int(attribute_value)
                 all_attribute_values[object_number]['object_attributes'][attribute_id] = {  'attribute_value': attribute_value, 
@@ -406,7 +409,7 @@ def get_data_from_random_related_object(simulation_id, objects_dict, environment
 
 
 
-def get_data_from_related_objects__single_timestep(objects_dict, valid_time_start, valid_time_end,  y0_columns=None):
+def get_data_from_related_objects__single_timestep(objects_dict, valid_time_start, valid_time_end, simulation_id, y0_columns=None):
     print('~~~~~~~~~~~~~~~~~  get_data_from_related_objects__single_timestep  ~~~~~~~~~~~~~~~~~')
     print('valid_time_start:' + str(valid_time_start))
     print('valid_time_end:' + str(valid_time_end))
@@ -640,7 +643,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
             cursor.execute('ALTER TABLE object_%s RENAME TO object_ids_table;' % G.nodes()[0])
 
 
-        # 2.4 get the object_ids_table and add the periods
+        # 2.4 get the object_ids_table
         object_ids_df = pd.read_sql_query("SELECT *, 1 as cross_join_column FROM object_ids_table", connection)
 
 
@@ -659,63 +662,57 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
             cursor.execute(query_string)
             object_ids = [entry[0] for entry in cursor.fetchall()]
 
-            if sqlite_database:
-                sql_string5 = '''
-                            SELECT 
-                                'obj%sattr' || CAST(attribute_id AS TEXT) || 'period' || CAST(period AS TEXT) AS column_name,
-                                object_id, 
-                                value_as_string,
-                                period
-                            FROM (
-                                    SELECT  object_id, 
-                                            attribute_id, 
-                                            value_as_string, 
-                                            valid_time_start, 
-                                            ROW_NUMBER() OVER(PARTITION BY object_id, attribute_id ORDER BY valid_time_start ASC, data_quality DESC) AS rank
-                                    FROM collection_data_point
-                                    WHERE object_id IN (
-                                                          SELECT DISTINCT obj%sattrobject_id 
-                                                          FROM object_ids_table
-                                                        )
-                                      AND valid_time_start > %s
-                                      AND valid_time_end < %s 
-                                )  as inner_query
-                            WHERE inner_query.rank = 1
-                        ''' % (object_number, object_number, valid_time_start, valid_time_end)
-            else:
-                sql_string5 = '''
-                            SELECT 
-                                
-                                inner_query.object_id, 
-                                concat('obj%sattr', inner_query.attribute_id, 'period', inner_query.period) AS column_name,
-                                --inner_query.attribute_id, 
-                                inner_query.value_as_string,
-                                inner_query.period
-                            FROM (
-                                    SELECT  object_id, 
-                                            attribute_id, 
-                                            value_as_string, 
-                                            valid_time_start, 
-                                            FLOOR((valid_time_start-%s)/%s) AS period,
-                                            ROW_NUMBER() OVER(PARTITION BY object_id, attribute_id, FLOOR((valid_time_start-%s)/%s) ORDER BY data_quality,upload_id DESC) AS rank
-                                    FROM collection_data_point
-                                    WHERE object_id IN (
-                                                          SELECT DISTINCT obj%sattrobject_id 
-                                                          FROM object_ids_table
-                                                        )
-                                      AND valid_time_start > %s
-                                      AND valid_time_end < %s 
-                                ) as inner_query
-                            WHERE inner_query.rank = 1
-                        ''' % (object_number, valid_time_start, timestep_size, valid_time_start, timestep_size, object_number, valid_time_start, valid_time_end)
 
+            sql_string5 = '''
+                        SELECT 
+                            'obj%sattr' || CAST(inner_query.attribute_id AS TEXT) AS column_name,
+                            inner_query.object_id, 
+                            inner_query.value_as_string,
+                            inner_query.valid_time_start
+                        FROM (
+                                SELECT  object_id, 
+                                        attribute_id, 
+                                        value_as_string, 
+                                        valid_time_start, 
+                                        ROW_NUMBER() OVER(PARTITION BY object_id, attribute_id ORDER BY valid_time_start ASC, data_quality DESC) AS rank
+                                FROM collection_data_point
+                                WHERE object_id IN (
+                                                      SELECT DISTINCT obj%sattrobject_id 
+                                                      FROM object_ids_table
+                                                    )
+                                  AND valid_time_start > %s
+                                  AND valid_time_end < %s 
+                            )  as inner_query
+                        WHERE inner_query.rank = 1
+                    ''' % (object_number, object_number, valid_time_start, valid_time_end)
             long_table_df = pd.read_sql_query(sql_string5, connection)
 
-            long_table_df.set_index(['object_id','column_name','period'],inplace=True)
-            broad_table_df = long_table_df.unstack(level=['column_name', 'period'])
-            # long_table_df.set_index(['object_id','column_name','period', 'attribute_id'],inplace=True)
-            # long_table_df.unstack(level=['column_name', 'period', 'attribute_id'])
+
+            # get data_querying_info['timestamps']
+            data_timestamps_df = long_table_df.groupby('valid_time_start').aggregate({'valid_time_start':'first','object_id':pd.Series.nunique})
+            data_timestamps_df.reset_index(inplace=True, drop=True)
+            data_timestamps_df = data_timestamps_df.sort_values('valid_time_start')
+            data_timestamps_df.index = data_timestamps_df['valid_time_start']
+            data_timestamps_dict = data_timestamps_df['object_id'].to_dict()
+            data_querying_info['timestamps'][object_number] = data_timestamps_dict
+
+
+            # get broad_table_df
+            long_table_df = long_table_df[['object_id', 'column_name', 'value_as_string']]
+            long_table_df.set_index(['object_id','column_name'],inplace=True)
+            broad_table_df = long_table_df.unstack(level=['column_name'])
             broad_table_df.columns = [col[1] for col in list(broad_table_df.columns)]
+
+            # insert missing columns
+            object_type_id = objects_dict[object_number]['object_type_id']
+            list_of_parent_object_types = [el['id'] for el in get_from_db.get_list_of_parent_objects(object_type_id)]
+            all_attribute_ids = Attribute.objects.filter(first_applicable_object_type__in = list_of_parent_object_types).values_list('id', flat=True)
+            all_columns = ['obj%sattr%s' % (object_number, attribute_id) for attribute_id in all_attribute_ids]
+            existing_columns = list(broad_table_df.columns)
+            for column_name in all_columns:
+                if column_name not in existing_columns:
+                    broad_table_df[column_name] = None
+
 
             object_ids_df = pd.merge(object_ids_df, broad_table_df, left_on='obj%sattrobject_id' % object_number, right_on='object_id', how='inner')
 
@@ -723,19 +720,24 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
     # ==================================================================================================
     # PART 4: convert to correct datatype
     # ================================================================================================== 
-    with open(progress_tracking_file_name, "w") as progress_tracking_file:
-        progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 5, "total_number": 6}))
     print('part4')
     attribute_data_types_dict = {attribute.id: attribute.data_type for attribute in list(Attribute.objects.all())}
     for column_name in object_ids_df.columns:
-        if 'period' in column_name:
-            col_attribute_id = int(column_name.split('attr')[1].split('period')[0])
+        if 'attr' in column_name and 'object_id' not in column_name:
+            col_attribute_id = int(column_name.split('attr')[1])
             col_data_type = attribute_data_types_dict[col_attribute_id]
 
             if col_data_type in ['relation','int','real']:
                 object_ids_df[column_name] = object_ids_df[column_name].astype(float)
             elif col_data_type in ['boolean','bool']:
                 object_ids_df[column_name] = object_ids_df[column_name].replace({'True':True,'False':False})
+
+
+    # save data_querying_info
+    if (simulation_id is not None):
+        simulation_model = Simulation_model.objects.get(id=simulation_id)
+        simulation_model.data_querying_info = json.dumps(data_querying_info)
+        simulation_model.save()
 
 
     return object_ids_df
@@ -1016,7 +1018,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                             value_as_string, 
                                             valid_time_start, 
                                             CAST((valid_time_start-%s)/%s AS INT) AS period,
-                                            ROW_NUMBER() OVER(PARTITION BY object_id, attribute_id, CAST((valid_time_start-%s)/%s AS INT) ORDER BY data_quality,upload_id DESC) AS rank
+                                            ROW_NUMBER() OVER(PARTITION BY object_id, attribute_id, CAST((valid_time_start-%s)/%s AS INT) ORDER BY data_quality DESC,upload_id DESC) AS rank
                                     FROM collection_data_point
                                     WHERE object_id IN (
                                                           SELECT DISTINCT obj%sattrobject_id 
@@ -1042,7 +1044,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                             value_as_string, 
                                             valid_time_start, 
                                             FLOOR((valid_time_start-%s)/%s) AS period,
-                                            ROW_NUMBER() OVER(PARTITION BY object_id, attribute_id, FLOOR((valid_time_start-%s)/%s) ORDER BY data_quality,upload_id DESC) AS rank
+                                            ROW_NUMBER() OVER(PARTITION BY object_id, attribute_id, FLOOR((valid_time_start-%s)/%s) ORDER BY data_quality DESC,upload_id DESC) AS rank
                                     FROM collection_data_point
                                     WHERE object_id IN (
                                                           SELECT DISTINCT obj%sattrobject_id 
