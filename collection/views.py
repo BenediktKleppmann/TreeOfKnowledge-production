@@ -2011,7 +2011,7 @@ def test_page1(request):
     
     connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="ebdb")
     cursor = connection.cursor()
-    cursor.execute('''DROP TABLE tested_simulation_parameters;''') 
+    cursor.execute('''DROP TABLE IF EXISTS tested_simulation_parameters;''') 
 
     cursor.execute('''
                     CREATE TABLE tested_simulation_parameters ( 
