@@ -663,7 +663,6 @@
 						<img id="simulation-explanation-image-div" src="{% static 'images/simulation_explanation.png'%}">
 						<br><br>
 					</div>
-					<button id="display-results-button" type="button" class="btn" onclick="displayResultsInNewWindow();" >Show Results in new Window</button>
 				</div>
 			</div>
 		</div>
@@ -1186,16 +1185,9 @@
 		run_simulation_post_request.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200 && simulation_running) {
 			
-				//$('#simulation-progress-modal-text').html()
-				$('#display-results-button').click()
-				/*	console.log('!!!!!!!!!!!!  completed simulation  !!!!!!!!!!!!!!!!!');
-					simulation_running = false;
-					var w = window.open("/tool/edit_simulation/" + simulation_id + "/");
-					w.document.open();
-					w.document.write(this.response);
-					w.document.close();
-					$('#simulationProgressModal').modal('hide');
-				*/
+				$('#simulation-progress-modal-text').html('<button id="display-results-button" type="button" class="btn" onclick="displayResultsInNewWindow();" >Show Results in new Window</button>')
+
+
 
 				
 			}
