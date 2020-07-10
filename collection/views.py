@@ -1114,6 +1114,10 @@ def save_changed_simulation(request):
             model_record.simulation_start_time = request_body['simulation_start_time']
             model_record.simulation_end_time = request_body['simulation_end_time']
             model_record.timestep_size = request_body['timestep_size']
+            model_record.nb_of_tested_parameters = request_body['nb_of_tested_parameters']
+            model_record.max_df_size = request_body['max_df_size']
+            model_record.error_threshold = request_body['error_threshold']
+            model_record.run_locally = request_body['run_locally']
             # model_record.selected_attribute = request_body['selected_attribute']
             model_record.save()
 
@@ -1684,6 +1688,10 @@ def edit_simulation_new(request):
                                         simulation_start_time=946684800, 
                                         simulation_end_time=1577836800, 
                                         timestep_size=31622400,
+										nb_of_tested_parameters=120,
+										max_df_size=1000,
+										error_threshold=0.2,
+										run_locally=False,
 										validation_data='{}',
 										data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
     simulation_model.save()

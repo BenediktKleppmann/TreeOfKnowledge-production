@@ -73,6 +73,11 @@
 		padding-left: 1px;
 	}
 	
+	
+	#advanced-settings-button {
+		border: 1px solid rgb(204, 204, 204);
+	}
+	
 	#run-button {
 		margin-top: 12px;
 		border-radius: 6px;
@@ -813,25 +818,55 @@
 														'<option ' + cross_section_option + '>Analyse Dependencies at a Moment in Time</option>' +
 													'</select>' +
 													'<div id="analysis-details-box"></div>' + 
+													'<p>' +
+														'<button id="advanced-settings-button" class="btn" type="button" onclick="collapseAdvancedButton()">' +
+															'Advanced' +
+														'</button>' +
+													'</p>' +
+													'<div id="advanced-settings-form" style="display:none">' +
+														'<div class="form-group row">' +
+															'<label for="nb_of_tested_parameters" class="col-sm-8">#(Tested Parameter Values)</label>' +
+															'<div class="col-sm-4">' +
+																'<input type="text" id="nb_of_tested_parameters" class="form-control" value="120">' +
+															'</div>' +
+														'</div>' +
+														'<div class="form-group row">' +
+															'<label for="max_df_size" class="col-sm-8">Max number of Simulations per Parameter</label>' +
+															'<div class="col-sm-4">' +
+																'<input type="text" id="max_df_size" class="form-control" value="1000">' +
+															'</div>' +
+														'</div>' +
+														'<div class="form-group row">' +
+															'<label for="error_threshold" class="col-sm-8">Error Threshold</label>' +
+															'<div class="col-sm-4">' +
+																'<input type="text" id="error_threshold" class="form-control" value="0.2">' +
+															'</div>' +
+														'</div>' +
+														'<div class="form-group row">' +
+															'<label for="run_locally" class="col-sm-8">Run Locally</label>' +
+															'<div class="col-sm-4">' +
+																	'<select id="run_locally" class="form-control">' +
+																		'<option value="True">True</option>' +
+																		'<option value="False">False</option>' +
+																	'</select>' +
+															'</div>' +
+														'</div>' +
+													'</div>' +
 													'<button id="run-button" class="btn btn-success" type="button" onclick="run()">Run</button>' +
 												'</div>' +
 											'</div>' +
 										'</div>' +
 									'</div>' +
 								'</div>';
-		/*						
-		left_panel__simulate = 	'<div class="left-panel-title">Simulation</div>' +
-								'<div class="form left-panel-body">' +
-									'<label for="analysis_type" style="margin-left:5px;">Analysis Type:</label><br>' +
-									'<select id="analysis_type" class="form-control" onchange="changeAnalysisType()">' +
-										'<option ' + timeseries_option + '>Simulate changes over time</option>' +
-										'<option ' + cross_section_option + '>Analyse Dependencies at a Moment in Time</option>' +
-									'</select>' +
-									'<div id="analysis-details-box"></div>' + 
-									'<button id="run-button" class="btn btn-success pull-right" type="button" onclick="run()">Run</button>' +
-								'</div>';
-		*/
+
 		$("#left-panel").html(left_panel__simulate);	
+		
+		
+		$("#nb_of_tested_parameters").val(nb_of_tested_parameters);
+		$("#max_df_size").val(max_df_size);
+		$("#error_threshold").val(error_threshold);
+		$('#run_locally').find('option[value="' + run_locally + '"]').attr("selected",true);
+		
 		
 		changeAnalysisType();
 		
@@ -845,6 +880,9 @@
 				content_element.addClass('in')
 			}
 		});
+		
+
+		
 	}		
 	
 	
@@ -958,19 +996,19 @@
 		if (analysis_type == 'Simulate changes over time'){
 			is_timeseries_analysis = true;
 			analysis_details_html_string = 	'<div class="form-group row">' +
-												'<label for="max" class="col-sm-5">Start Time</label>' +
+												'<label for="simulation-start-time" class="col-sm-5">Start Time</label>' +
 												'<div class="col-sm-7">' +
 													'<input id="simulation-start-time" class="datetimepicker form-control" value="">' +
 												'</div>' +
 											'</div>' +
 											'<div class="form-group row">' +
-												'<label for="max" class="col-sm-5">End Time</label>' +
+												'<label for="simulation-end-time" class="col-sm-5">End Time</label>' +
 												'<div class="col-sm-7">' +
 													'<input id="simulation-end-time" class="datetimepicker form-control" value="">' +
 												'</div>' +
 											'</div>' +
 											'<div class="form-group row">' +
-												'<label for="max" class="col-sm-5">Timestep (&Delta;t)</label>' +
+												'<label for="timestep_size" class="col-sm-5">Timestep (&Delta;t)</label>' +
 												'<div class="col-sm-3">' +
 													'<input type="text" class="form-control" id="timestep_size" name="timestep_size">' +
 												'</div>' +
@@ -1034,6 +1072,18 @@
 		} else if (analysis_type == 'Analyse Dependencies at a Single Moment in Time'){
 			is_timeseries_analysis = false;
 			$('#analysis-details-box').html('');
+		}
+	}
+	
+	
+	
+	
+	// Advanced     =============================================================================	
+	function collapseAdvancedButton() {
+		if ($("#advanced-settings-form").css('display') != 'none') {
+			$('#advanced-settings-form').css('display','none');	
+		} else {
+			$('#advanced-settings-form').css('display','block');
 		}
 	}
 	
@@ -1171,10 +1221,16 @@
 	
 	
 	function saveSimulation() {
-		// get simulation_id
+		// get simulation_id & some settings
 		var url_components = window.location.href.split("/");
 		var simulation_id = url_components[url_components.length - 2];
 		var is_timeseries_analysis = ($('#analysis_type').find(":selected").text() == 'Simulate changes over time');
+		var nb_of_tested_parameters = parseInt($('#nb_of_tested_parameters').val());
+		var max_df_size = parseInt($('#max_df_size').val());
+		var error_threshold = parseFloat($('#error_threshold').val());
+		var run_locally = $('#run_locally').children("option:selected").val();
+		var run_locally__bool = run_locally =='True';
+		
 			
 		
 		//update the object positions in objects_dict
@@ -1211,7 +1267,11 @@
 			'environment_end_time': environment_end_time,
 			'simulation_start_time': simulation_start_time,
 			'simulation_end_time': simulation_end_time,
-			'timestep_size': timestep_size
+			'timestep_size': timestep_size,
+			'nb_of_tested_parameters': nb_of_tested_parameters,
+			'max_df_size': max_df_size,
+			'error_threshold': error_threshold,
+			'run_locally': run_locally__bool
 		}
 		
 		var xmlhttp = new XMLHttpRequest();       

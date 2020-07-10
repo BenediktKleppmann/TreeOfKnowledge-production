@@ -363,6 +363,10 @@ def perform_uploading(uploaded_dataset, request):
                                             simulation_start_time=946684800, 
                                             simulation_end_time=1577836800, 
                                             timestep_size=31536000,
+											nb_of_tested_parameters=120,
+											max_df_size=1000,
+											error_threshold=0.2,
+											run_locally=False,
 											validation_data='{}',
                                             data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
@@ -618,6 +622,10 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
                                             simulation_start_time=946684800, 
                                             simulation_end_time=1577836800, 
                                             timestep_size=31536000,
+											nb_of_tested_parameters=120,
+											max_df_size=1000,
+											error_threshold=0.2,
+											run_locally=False,
 											validation_data='{}',
                                             data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
@@ -809,7 +817,11 @@ def perform_uploading_for_timeseries__old(uploaded_dataset, request):
 
     simulation_model = Simulation_model(run_number=0,
 										user=request.user,
-                                        is_timeseries_analysis=True,
+                                        is_timeseries_analysis=True, 
+										nb_of_tested_parameters=120,
+										max_df_size=1000,
+										error_threshold=0.2,
+										run_locally=False,
                                         name="", description="", meta_data_facts=uploaded_dataset.meta_data_facts)
     simulation_model.save()
     new_model_id = simulation_model.id
@@ -1036,6 +1048,10 @@ def perform_uploading__old(uploaded_dataset, request):
                                             simulation_start_time=946684800, 
                                             simulation_end_time=1577836800, 
                                             timestep_size=31536000,
+											nb_of_tested_parameters=120,
+											max_df_size=1000,
+											error_threshold=0.2,
+											run_locally=False,
 											validation_data='{}',
                                             data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
@@ -1149,6 +1165,10 @@ def perform_uploading_OLD(uploaded_dataset, request):
                                         simulation_start_time=946684800, 
                                         simulation_end_time=1577836800, 
                                         timestep_size=31536000,
+										nb_of_tested_parameters=120,
+										max_df_size=1000,
+										error_threshold=0.2,
+										run_locally=False,
 										validation_data='{}',
 										data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
