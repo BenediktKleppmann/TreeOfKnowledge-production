@@ -79,7 +79,7 @@
 	}
 	
 	#run-button {
-		margin-top: 12px;
+		margin-top: 2px;
 		border-radius: 6px;
 		padding: 7px 15px;
 	}
@@ -653,14 +653,17 @@
 						</div>
 						<button id="cancel-simulation-button" type="button" class="btn btn-outline-danger" onclick="abort_simulation();" >Cancel<br>Simulations</button>
 					</div>
-					<div id="simulation-explanation">
+					<div id="simulation-progress-modal-text">
+						<div id="simulation-explanation">
+						</div>
+						<b>How the simulations work</b><br>
+						At every timestep all of the objects' attributes are updated according to the rules for those attributes e.g. in the image below the attribute 'walking direction' is being updated.<br>
+						For the updating, the all the rules whose conditions are met are executed (whereby probabilistic rules are only executed with a certain probability), starting from the top. Lower rules can therefore potentially overwrite higher ones. It is therefore recommended to sort the rules according to their importance, with the most important at the bottom.<br>
+						<br>
+						<img id="simulation-explanation-image-div" src="{% static 'images/simulation_explanation.png'%}">
+						<br><br>
 					</div>
-				    <b>How the simulations work</b><br>
-					At every timestep all of the objects' attributes are updated according to the rules for those attributes e.g. in the image below the attribute 'walking direction' is being updated.<br>
-					For the updating, the all the rules whose conditions are met are executed (whereby probabilistic rules are only executed with a certain probability), starting from the top. Lower rules can therefore potentially overwrite higher ones. It is therefore recommended to sort the rules according to their importance, with the most important at the bottom.<br>
-					<br>
-					<img id="simulation-explanation-image-div" src="{% static 'images/simulation_explanation.png'%}">
-					<br><br>
+					<button id="display-results-button" type="button" class="btn" onclick="displayResultsInNewWindow();" >Show Results in new Window</button>
 				</div>
 			</div>
 		</div>
@@ -1182,13 +1185,10 @@
 		
 		run_simulation_post_request.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200 && simulation_running) {
-				console.log('!!!!!!!!!!!!  completed simulation  !!!!!!!!!!!!!!!!!');
-				simulation_running = false;
-				var w = window.open("/tool/edit_simulation/" + simulation_id + "/");
-				w.document.open();
-				w.document.write(this.response);
-				w.document.close();
-				$('#simulationProgressModal').modal('hide');
+			
+				//$('#simulation-progress-modal-text').html()
+				$('#display-results-button').click()
+
 				
 			}
 		};
@@ -1215,6 +1215,16 @@
 	
 	
 	
+	
+	function displayResultsInNewWindow() {
+		console.log('!!!!!!!!!!!!  completed simulation  !!!!!!!!!!!!!!!!!');
+		simulation_running = false;
+		var w = window.open("/tool/edit_simulation/" + simulation_id + "/");
+		w.document.open();
+		w.document.write(this.response);
+		w.document.close();
+		$('#simulationProgressModal').modal('hide');
+	}
 	
 	
 	
