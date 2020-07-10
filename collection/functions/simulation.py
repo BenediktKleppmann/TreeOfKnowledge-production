@@ -1005,9 +1005,11 @@ class Simulator:
 
 
             errors_dict = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), self.y0_values)
-
+            print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
+            print(str(errors_dict.keys()))
+            print(len([str(index) + '-' + str(batch_nb) for index, batch_nb in zip(df.index, [batch_number]*len(df))]))
+            print(len(errors_dict['all_errors']))
             error_df = pd.DataFrame({  'simulation_number': [str(index) + '-' + str(batch_nb) for index, batch_nb in zip(df.index, [batch_number]*len(df))],
-                                        # 'simulation_number': [str(index) + '-' + str(batch_number) for index in df.index],
                                         'error': errors_dict['all_errors']})
             errors_df = errors_df.append(error_df)
 
