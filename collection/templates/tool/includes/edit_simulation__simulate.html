@@ -1188,6 +1188,14 @@
 			
 				//$('#simulation-progress-modal-text').html()
 				$('#display-results-button').click()
+				/*	console.log('!!!!!!!!!!!!  completed simulation  !!!!!!!!!!!!!!!!!');
+					simulation_running = false;
+					var w = window.open("/tool/edit_simulation/" + simulation_id + "/");
+					w.document.open();
+					w.document.write(this.response);
+					w.document.close();
+					$('#simulationProgressModal').modal('hide');
+				*/
 
 				
 			}
@@ -1219,10 +1227,12 @@
 	function displayResultsInNewWindow() {
 		console.log('!!!!!!!!!!!!  completed simulation  !!!!!!!!!!!!!!!!!');
 		simulation_running = false;
-		var w = window.open("/tool/edit_simulation/" + simulation_id + "/");
-		w.document.open();
-		w.document.write(this.response);
-		w.document.close();
+		var url_components = window.location.href.split("/");
+		var simulation_id = url_components[url_components.length - 2];
+		var w = window.open("/tool/analyse_simulation/" + simulation_id + "/");
+		//w.document.open();
+		//w.document.write(this.response);
+		//w.document.close();
 		$('#simulationProgressModal').modal('hide');
 	}
 	
