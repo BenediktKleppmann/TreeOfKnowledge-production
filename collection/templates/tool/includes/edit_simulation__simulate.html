@@ -577,6 +577,12 @@
 		margin-left:1%;
 	}
 	
+	#display-results-button {
+		margin-left: 522px;
+		margin-top: 10px;
+		margin-bottom: 38px;
+	}
+	
 	/*-- create attribute modal -----------*/
 	
 	.modal-dialog {
@@ -1184,7 +1190,7 @@
 		
 		run_simulation_post_request.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200 && simulation_running) {
-			
+				$('#progress-bar-description').html('Completed!');				
 				$('#simulation-progress-modal-text').html('<button id="display-results-button" type="button" class="btn" onclick="displayResultsInNewWindow();" >Show Results in new Window</button>')
 
 
