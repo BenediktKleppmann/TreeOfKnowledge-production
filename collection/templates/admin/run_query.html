@@ -172,6 +172,10 @@
 
 				
 			}
+			
+			if (this.readyState == 4 && this.status == 500) {
+				$("#response-table").html(this.responseText);
+			}
 		};
 		xmlhttp.open("POST", "/admin/get_query_results/");
 		xmlhttp.setRequestHeader("Content-Type", "text/html;charset=UTF-8");
