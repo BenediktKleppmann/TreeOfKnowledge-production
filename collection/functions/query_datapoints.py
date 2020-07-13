@@ -686,7 +686,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                         WHERE inner_query.rank = 1
                     ''' % (object_number, object_number, valid_time_start, valid_time_end)
             long_table_df = pd.read_sql_query(sql_string5, connection)
-            data_querying_info['debug_info'] = {'number_of_object_ids_searched_for_in_query_5': len(object_ids),   'number_of_object_ids_found_in_query_5': len(long_table_df['object_id'].unique()), 'object_ids_searched_for_in_query_5': json.dumps(list([int(object_id) for object_id in object_ids])), 'object_ids_found_in_query_5': json.dumps([int(object_id) for object_id in list(long_table_df['object_id'].unique())])}
+            data_querying_info['debug_info'] = {'valid_time_start':valid_time_start, 'valid_time_end':valid_time_end, 'number_of_object_ids_searched_for_in_query_5': len(object_ids),   'number_of_object_ids_found_in_query_5': len(long_table_df['object_id'].unique()), 'object_ids_searched_for_in_query_5': json.dumps(list([int(object_id) for object_id in object_ids])), 'object_ids_found_in_query_5': json.dumps([int(object_id) for object_id in list(long_table_df['object_id'].unique())])}
 
 
             # get data_querying_info['timestamps']
