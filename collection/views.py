@@ -1855,6 +1855,27 @@ def get_uploaded_dataset(request):
 
     return HttpResponse(json.dumps(uploaded_dataset_dict))
 
+
+
+@staff_member_required
+def run_query(request):
+    return render(request, 'admin/run_query.html')
+
+
+@staff_member_required
+def get_query_results(request):
+    from django.db import connection
+    if request.method == 'POST':
+        query = request.body.decode('utf-8')
+        print('-------------------------------')
+        print(query)
+        print('-------------------------------')
+        query_result_df = pd.read_sql_query(query, connection)
+        return_dict = { 'table_headers':list(query_result_df.columns), 
+                        'table_data': query_result_df.values.tolist()}
+
+    return HttpResponse(json.dumps(return_dict))
+
 # ==================
 # SHOW
 # ==================

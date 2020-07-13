@@ -166,6 +166,8 @@ urlpatterns = [
     url(r'^admin/inspect_upload/$', views.inspect_upload, {'upload_id': ''}, name='inspect_upload_empty'),
     url(r'^admin/inspect_upload/(?P<upload_id>[-\d]+)/$', views.inspect_upload, name='inspect_upload'),
     url(r'^admin/get_uploaded_dataset/$', views.get_uploaded_dataset, name='get_uploaded_dataset'),
+    url(r'^admin/run_query/$', views.run_query, name='run_query'),
+    url(r'^admin/get_query_results/$', views.get_query_results, name='get_query_results'),
     # show
     url(r'^admin/show_attributes/$', views.show_attributes, name='show_attributes'),
     url(r'^admin/show_object_types/$', views.show_object_types, name='show_object_types'),
