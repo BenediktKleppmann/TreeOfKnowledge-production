@@ -64,6 +64,7 @@ class Simulator:
     def __init__(self, simulation_id):
 
         # IMPORTANT SETTINGS  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+        self.nb_of_parameters_to_keep = 200
         limit_to_populated_y0_columns = True
         # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         
@@ -494,8 +495,7 @@ class Simulator:
                 # histogram
                 if rule['learn_posterior']:
                     all_priors_df = all_priors_df.sort_values('error_rule' + str(rule['id']))
-                    nb_of_parameters_to_keep = int(np.floor(self.nb_of_tested_parameters/3))
-                    priors_to_keep_df = all_priors_df[:nb_of_parameters_to_keep]
+                    priors_to_keep_df = all_priors_df[:self.nb_of_parameters_to_keep]
 
                     if not rule['has_probability_1']:
                         print('==== post-processing rule'+ str(rule['id']) + '  ===================================================')
