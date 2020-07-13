@@ -577,7 +577,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
         for object_number in object_numbers: 
             # populate node_sizes    
             # if sqlite_database:
-            cursor.execute("SELECT COUNT(obj%sattrobject_id) AS approximate_row_count FROM object_%s;" % (object_number, object_number))
+            cursor.execute("SELECT COUNT(DISTINCT obj%sattrobject_id) AS approximate_row_count FROM object_%s;" % (object_number, object_number))
             # else:
             #     cursor.execute("SELECT reltuples AS approximate_row_count FROM pg_class WHERE relname = 'object_%s';")
             objects_table_length = cursor.fetchall()[0][0]
@@ -686,10 +686,12 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                         WHERE inner_query.rank = 1
                     ''' % (object_number, object_number, valid_time_start, valid_time_end)
             long_table_df = pd.read_sql_query(sql_string5, connection)
+            data_querying_info['debug_info'] = {'number_of_object_id_found_in_query_5': len(long_table_df['object_id'].unique())}
 
 
             # get data_querying_info['timestamps']
-            data_timestamps_df = long_table_df.groupby('valid_time_start').aggregate({'valid_time_start':'first','object_id':pd.Series.nunique})
+            data_timestamps_df = long_table_df.groupby('object_id').aggregate({'object_id':'first','valid_time_start':'min'})
+            data_timestamps_df = data_timestamps_df.groupby('valid_time_start').aggregate({'valid_time_start':'first','object_id':pd.Series.nunique})
             data_timestamps_df.reset_index(inplace=True, drop=True)
             data_timestamps_df = data_timestamps_df.sort_values('valid_time_start')
             data_timestamps_df.index = data_timestamps_df['valid_time_start']
