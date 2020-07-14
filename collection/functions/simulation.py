@@ -496,6 +496,7 @@ class Simulator:
             for rule_number, rule in enumerate(self.rules):
 
                 # histogram
+                print('rule%s.learn_posterior = %s; rule%s.has_probability_1 = %s;' % (rule['id'], rule['learn_posterior'], rule['id'], rule['has_probability_1']))
                 if rule['learn_posterior']:
                     all_priors_df = all_priors_df.sort_values('error_rule' + str(rule['id']))
                     priors_to_keep_df = all_priors_df[:self.nb_of_parameters_to_keep]

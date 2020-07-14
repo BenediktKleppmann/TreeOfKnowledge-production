@@ -1173,9 +1173,11 @@
 				
 				var progress_dict = JSON.parse(this.responseText);
 				//progess-bar
-				$('#progress-bar').attr('style','width:' + String(100 * progress_dict['current_number']/progress_dict['total_number']) + '%')
-				$('#progress-bar-description').html(progress_dict['text'] +  String(progress_dict['current_number']) + '/' + String(progress_dict['total_number']));				
-						
+				if ('current_number' in progress_dict){
+					$('#progress-bar').attr('style','width:' + String(100 * progress_dict['current_number']/progress_dict['total_number']) + '%')
+					$('#progress-bar-description').html(progress_dict['text'] +  String(progress_dict['current_number']) + '/' + String(progress_dict['total_number']));				
+				}
+				
 				if (run_simulation_post_request.readyState < 4 && simulation_running) {
 					window.setTimeout(() => { update_the_progress_bar();}, 1000);
 				}
