@@ -1683,7 +1683,8 @@ def download_file2_csv(request):
 
 @login_required
 def edit_simulation_new(request):    
-    simulation_model = Simulation_model(run_number=0,
+    simulation_model = Simulation_model(aborted=False,
+										run_number=0,
 										user=request.user, 
                                         is_timeseries_analysis=True,
                                         objects_dict=json.dumps({}), 

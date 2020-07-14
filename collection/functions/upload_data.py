@@ -349,7 +349,8 @@ def perform_uploading(uploaded_dataset, request):
                             'position':{'x':100, 'y':100},
                             'get_new_object_data': True};
 
-        simulation_model = Simulation_model(run_number=0, 
+        simulation_model = Simulation_model(aborted=False,
+											run_number=0, 
 											user=request.user, 
                                             is_timeseries_analysis=False,
                                             objects_dict=json.dumps(objects_dict),
@@ -609,7 +610,8 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
                             'position':{'x':100, 'y':100},
                             'get_new_object_data': True};
 
-        simulation_model = Simulation_model(run_number=0,
+        simulation_model = Simulation_model(aborted=False,
+											run_number=0,
 											user=request.user, 
                                             is_timeseries_analysis=False,
                                             objects_dict=json.dumps(objects_dict),
@@ -817,7 +819,8 @@ def perform_uploading_for_timeseries__old(uploaded_dataset, request):
                 number_of_datapoints_saved += 1
 
 
-    simulation_model = Simulation_model(run_number=0,
+    simulation_model = Simulation_model(aborted=False,
+										run_number=0,
 										user=request.user,
                                         is_timeseries_analysis=True, 
 										nb_of_tested_parameters=20000,
@@ -1037,7 +1040,8 @@ def perform_uploading__old(uploaded_dataset, request):
                             'position':{'x':100, 'y':100},
                             'get_new_object_data': True};
 
-        simulation_model = Simulation_model(run_number=0,
+        simulation_model = Simulation_model(aborted=False,
+											run_number=0,
 											user=request.user, 
                                             is_timeseries_analysis=False,
                                             objects_dict=json.dumps(objects_dict),
@@ -1156,7 +1160,8 @@ def perform_uploading_OLD(uploaded_dataset, request):
                         'position':{'x':100, 'y':100},
                         'get_new_object_data': True};
 
-    simulation_model = Simulation_model(run_number=0,
+    simulation_model = Simulation_model(aborted=False,
+										run_number=0,
 										user=request.user, 
                                         objects_dict=json.dumps(objects_dict),
                                         object_type_counts=json.dumps({object_type_id:1}),
