@@ -1101,6 +1101,7 @@ def save_changed_simulation(request):
         try:
             request_body = json.loads(request.body)
             model_record = Simulation_model.objects.get(id=request_body['simulation_id'])
+            model_record.aborted = False
             model_record.is_timeseries_analysis = request_body['is_timeseries_analysis']
             model_record.objects_dict = json.dumps(request_body['objects_dict'])
             model_record.y_value_attributes = json.dumps(request_body['y_value_attributes'])
@@ -1128,6 +1129,15 @@ def save_changed_simulation(request):
             return HttpResponse(str(error))
     else:
         return HttpResponse("This must be a POST request.")
+
+
+@login_required
+def abort_simulation(request):
+    simulation_id = int(request.GET.get('simulation_id', ''))
+    model_record = Simulation_model.objects.get(id=simulation_id)
+    model_record.aborted = True
+    model_record.save()
+    return HttpResponse("success")
 
 
 

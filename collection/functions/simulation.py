@@ -149,6 +149,8 @@ class Simulator:
             simulation_model_record.validation_data = json.dumps(validation_data)
         
         simulation_model_record.run_number = self.run_number
+        simulation_model_record.aborted = False
+
         simulation_model_record.save()
         self.y0_values_df = pd.DataFrame(self.y0_values)
         self.easy_to_fulfill_simulations = np.zeros(len(self.df))
@@ -471,6 +473,8 @@ class Simulator:
                     with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
                         progress_tracking_file.write(json.dumps({"text": 'Learning parameters - simulation: ', "current_number": len(all_simulation_results) * len(self.df), "total_number": self.nb_of_tested_parameters * len(self.df)}))
 
+                    if Simulation_model.objects.get(id=self.simulation_id).aborted:
+                        break;
 
                     if len(all_simulation_results) >= (self.nb_of_tested_parameters-1):
                         cursor.execute('''DELETE FROM tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
