@@ -136,6 +136,7 @@ class Simulator:
         for object_number in self.objects_dict.keys():
             reduced_objects_dict[object_number] = {'object_filter_facts':self.objects_dict[object_number]['object_filter_facts'], 'object_relations':self.objects_dict[object_number]['object_relations'] }
         new_simulation_state_code = str(self.is_timeseries_analysis) + str(reduced_objects_dict) + str(self.simulation_start_time) + str(self.simulation_end_time) + str(self.timestep_size) + str(self.y0_columns) + str(self.max_df_size)
+        print('NEW QUERY?  %s == %s'  % (validation_data['simulation_state_code'], new_simulation_state_code))
         if 'simulation_state_code' in validation_data.keys() and validation_data['simulation_state_code'] == new_simulation_state_code:
             self.df = pd.DataFrame.from_dict(validation_data['df'])
             self.y0_values = validation_data['y0_values']
@@ -459,7 +460,7 @@ class Simulator:
                 connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="ebdb")
                 cursor = connection.cursor()
                 all_simulation_results = []
-                while (time.time() - result_checking_start_time < 150):
+                while (time.time() - result_checking_start_time < 3600):
 
                     time.sleep(1)
                     cursor.execute('''SELECT simulation_id, run_number, batch_number, priors_dict, simulation_results FROM tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
