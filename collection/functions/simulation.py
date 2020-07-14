@@ -1186,22 +1186,4 @@ class Simulator:
 
 
 
-    # ==========================================================================================
-    #  Getter-Functions
-    # =======================================================================================
 
-
-
-
-   
-
-
-
-
-# def get_nb_of_accepted_simulations_current(simulation_class):
-#     # ELFI's Progressbar shows the number of completed batches vs. the number of expected batches
-#     # i.e.: simulation_class.elfi_sampler.state['n_batches']  vs.  simulation_class.elfi_sampler._objective_n_batches
-#     if simulation_class.elfi_sampler.state['samples'] is not None:
-#         return len(simulation_class.elfi_sampler.state['samples'].keys())
-#     else:
-#         return 0
