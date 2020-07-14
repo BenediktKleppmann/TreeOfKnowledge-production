@@ -120,6 +120,7 @@ class Simulator:
             column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
             self.y0_columns.append(column_name)
             self.y0_column_dt[column_name] = Attribute.objects.get(id=y_value_attribute['attribute_id']).data_type
+        self.y0_columns = list(set(self.y0_columns))
 
 
         #  --- times ---
