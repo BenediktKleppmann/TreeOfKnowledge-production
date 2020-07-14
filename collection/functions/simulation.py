@@ -932,7 +932,6 @@ class Simulator:
 
                     # --------  THEN  --------
                     if rule['effect_is_calculation']:
-                        print(rule['effect_exec'])
                         all_new_values = pd.eval(rule['effect_exec'])
                         if rule['changed_var_data_type'] in ['relation','int']:
                             nan_rows = all_new_values.isnull()
