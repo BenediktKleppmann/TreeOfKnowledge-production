@@ -1203,6 +1203,7 @@
 		run_simulation_post_request.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200 && simulation_running) {
 				$('#progress-bar-description').html('Completed!');				
+				$('#progress-bar').attr('style','width:100%')
 				$('#show-results-button-frame').html('<button id="display-results-button" type="button" class="btn" onclick="displayResultsInNewWindow();" >Show Results in new Window</button>')
 				$('#simulation-progress-modal-text').css('display','none');
 

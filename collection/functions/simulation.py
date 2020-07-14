@@ -499,7 +499,9 @@ class Simulator:
                 print('rule%s.learn_posterior = %s; rule%s.has_probability_1 = %s;' % (rule['id'], rule['learn_posterior'], rule['id'], rule['has_probability_1']))
                 if rule['learn_posterior']:
                     all_priors_df = all_priors_df.sort_values('error_rule' + str(rule['id']))
+                    all_priors_df.index = range(len(all_priors_df))
                     priors_to_keep_df = all_priors_df[:self.nb_of_parameters_to_keep]
+                    print('nb_of_parameters_to_keep: %s ; len(priors_to_keep_df): %s' % (self.nb_of_parameters_to_keep, len(priors_to_keep_df)))
 
                     if not rule['has_probability_1']:
                         print('==== post-processing rule'+ str(rule['id']) + '  ===================================================')

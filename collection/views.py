@@ -1115,6 +1115,7 @@ def save_changed_simulation(request):
             model_record.simulation_end_time = request_body['simulation_end_time']
             model_record.timestep_size = request_body['timestep_size']
             model_record.nb_of_tested_parameters = request_body['nb_of_tested_parameters']
+            model_record.nb_of_parameters_to_keep = request_body['nb_of_parameters_to_keep']
             model_record.max_df_size = request_body['max_df_size']
             model_record.error_threshold = request_body['error_threshold']
             model_record.run_locally = request_body['run_locally']
