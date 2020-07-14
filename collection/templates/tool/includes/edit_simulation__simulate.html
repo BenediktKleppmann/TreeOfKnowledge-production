@@ -1229,6 +1229,12 @@
 			run_simulation_post_request.abort();
 		}
 		
+		var url_components = window.location.href.split("/");
+		var simulation_id = url_components[url_components.length - 2];
+		var xhttp = new XMLHttpRequest();       
+		xhttp.open('GET', '/tool/abort_simulation?simulation_id=' + simulation_id , true);
+		xhttp.send();
+		
 		$('#simulationProgressModal').modal('hide');	
 	}
 	
