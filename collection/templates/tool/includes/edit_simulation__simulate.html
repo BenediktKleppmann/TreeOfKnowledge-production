@@ -659,7 +659,16 @@
 						</div>
 						<button id="cancel-simulation-button" type="button" class="btn btn-outline-danger" onclick="abort_simulation();" >Cancel<br>Simulations</button>
 					</div>
+					<div id="show-results-button-frame"></div>
 					<div id="simulation-progress-modal-text">
+						<div id="simulation-explanation">
+						</div>
+						<b>How the simulations work</b><br>
+						At every timestep all of the objects' attributes are updated according to the rules for those attributes e.g. in the image below the attribute 'walking direction' is being updated.<br>
+						For the updating, the all the rules whose conditions are met are executed (whereby probabilistic rules are only executed with a certain probability), starting from the top. Lower rules can therefore potentially overwrite higher ones. It is therefore recommended to sort the rules according to their importance, with the most important at the bottom.<br>
+						<br>
+						<img id="simulation-explanation-image-div" src="{% static 'images/simulation_explanation.png'%}">
+						<br><br>
 					</div>
 				</div>
 			</div>
@@ -1139,34 +1148,18 @@
 		
 		// write text
 		if (number_of_rules_to_learn > 0) {
-			simulation_progress_modal_text = 	'<div id="simulation-explanation">' +
-													'There are two steps to the current simulations: ' + 
-													'<ul>' + 
-													'    <li>First: the probability of ' + String(number_of_rules_to_learn) + ' rules are being learned by running 1 000 - 5 000 simulations</li>' + 
-													'    <li>Second: 300 simulations are run using the learned rule probabilities. Due to their probabilistic nature the individual simulations vary, with the 300 simulations you can however get an idea of the overall probabilities for different outcomes. </li>' + 
-													'</ul><br>'+
-												'</div>' +
-												'<b>How the simulations work</b><br>' +
-												'At every timestep all of the objects\' attributes are updated according to the rules for those attributes e.g. in the image below the attribute \'walking direction\' is being updated.<br>' +
-												'For the updating, the all the rules whose conditions are met are executed (whereby probabilistic rules are only executed with a certain probability), starting from the top. Lower rules can therefore potentially overwrite higher ones. It is therefore recommended to sort the rules according to their importance, with the most important at the bottom.<br>' +
-												'<br>' +
-												'<img id="simulation-explanation-image-div" src="{% static \'images/simulation_explanation.png\'%}">' +
-												'<br><br>' ;
-						
-			$('#simulation-progress-modal-text').html(simulation_progress_modal_text);
+			simulation_explanation = 	'There are two steps to the current simulations: ' + 
+					'<ul>' + 
+					'    <li>First: the probability of ' + String(number_of_rules_to_learn) + ' rules are being learned by running 1 000 - 5 000 simulations</li>' + 
+					'    <li>Second: 300 simulations are run using the learned rule probabilities. Due to their probabilistic nature the individual simulations vary, with the 300 simulations you can however get an idea of the overall probabilities for different outcomes. </li>' + 
+					'</ul><br>';
+			$('#simulation-explanation').html(simulation_explanation);
 		} else {
-			simulation_progress_modal_text = 	'<div id="simulation-explanation">' +
-													'The simulation is currently being run 300 times. Due to its probabilistic nature the individual simulations have varying outcomes, with the 300 simulations you can however get an idea of the overall probabilities for the different outcomes.<br><br>' +
-												'</div>' +
-												'<b>How the simulations work</b><br>' +
-												'At every timestep all of the objects\' attributes are updated according to the rules for those attributes e.g. in the image below the attribute \'walking direction\' is being updated.<br>' +
-												'For the updating, the all the rules whose conditions are met are executed (whereby probabilistic rules are only executed with a certain probability), starting from the top. Lower rules can therefore potentially overwrite higher ones. It is therefore recommended to sort the rules according to their importance, with the most important at the bottom.<br>' +
-												'<br>' +
-												'<img id="simulation-explanation-image-div" src="{% static \'images/simulation_explanation.png\'%}">' +
-												'<br><br>' ;
-						
-			$('#simulation-progress-modal-text').html(simulation_progress_modal_text);
+			simulation_explanation = 	'The simulation is currently being run 300 times. Due to its probabilistic nature the individual simulations have varying outcomes, with the 300 simulations you can however get an idea of the overall probabilities for the different outcomes.<br><br>';
+			$('#simulation-explanation').html(simulation_explanation);
 		}
+		$('#show-results-button-frame').html('');
+		$('#simulation-progress-modal-text').css('display','block');
 	}
 	
 	
@@ -1208,7 +1201,8 @@
 		run_simulation_post_request.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200 && simulation_running) {
 				$('#progress-bar-description').html('Completed!');				
-				$('#simulation-progress-modal-text').html('<button id="display-results-button" type="button" class="btn" onclick="displayResultsInNewWindow();" >Show Results in new Window</button>')
+				$('#show-results-button-frame').html('<button id="display-results-button" type="button" class="btn" onclick="displayResultsInNewWindow();" >Show Results in new Window</button>')
+				$('#simulation-progress-modal-text').css('display','none');
 
 
 
