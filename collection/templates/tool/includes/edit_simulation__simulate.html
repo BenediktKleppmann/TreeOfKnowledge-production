@@ -835,13 +835,19 @@
 														'<div class="form-group row">' +
 															'<label for="nb_of_tested_parameters" class="col-sm-8">#(Tested Parameter Values)</label>' +
 															'<div class="col-sm-4">' +
-																'<input type="text" id="nb_of_tested_parameters" class="form-control" value="120">' +
+																'<input type="text" id="nb_of_tested_parameters" class="form-control" value="20000">' +
+															'</div>' +
+														'</div>' +
+														'<div class="form-group row">' +
+															'<label for="nb_of_parameters_to_keep" class="col-sm-8">#(Parameters to Keep)</label>' +
+															'<div class="col-sm-4">' +
+																'<input type="text" id="nb_of_parameters_to_keep" class="form-control" value="100">' +
 															'</div>' +
 														'</div>' +
 														'<div class="form-group row">' +
 															'<label for="max_df_size" class="col-sm-8">Max number of Simulations per Parameter</label>' +
 															'<div class="col-sm-4">' +
-																'<input type="text" id="max_df_size" class="form-control" value="1000">' +
+																'<input type="text" id="max_df_size" class="form-control" value="2000">' +
 															'</div>' +
 														'</div>' +
 														'<div class="form-group row">' +
@@ -871,6 +877,7 @@
 		
 		
 		$("#nb_of_tested_parameters").val(nb_of_tested_parameters);
+		$("#nb_of_parameters_to_keep").val(nb_of_parameters_to_keep);
 		$("#max_df_size").val(max_df_size);
 		$("#error_threshold").val(error_threshold);
 		$('#run_locally').find('option[value="' + run_locally + '"]').attr("selected",true);
@@ -1244,6 +1251,7 @@
 		var simulation_id = url_components[url_components.length - 2];
 		var is_timeseries_analysis = ($('#analysis_type').find(":selected").text() == 'Simulate changes over time');
 		var nb_of_tested_parameters = parseInt($('#nb_of_tested_parameters').val());
+		var nb_of_parameters_to_keep = parseInt($('#nb_of_parameters_to_keep').val());
 		var max_df_size = parseInt($('#max_df_size').val());
 		var error_threshold = parseFloat($('#error_threshold').val());
 		var run_locally = $('#run_locally').children("option:selected").val();
@@ -1287,6 +1295,7 @@
 			'simulation_end_time': simulation_end_time,
 			'timestep_size': timestep_size,
 			'nb_of_tested_parameters': nb_of_tested_parameters,
+			'nb_of_parameters_to_keep': nb_of_parameters_to_keep,
 			'max_df_size': max_df_size,
 			'error_threshold': error_threshold,
 			'run_locally': run_locally__bool
