@@ -64,7 +64,7 @@ class Simulator:
     def __init__(self, simulation_id):
 
         # IMPORTANT SETTINGS  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-        self.nb_of_parameters_to_keep = 200
+        
         limit_to_populated_y0_columns = True
         # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         
@@ -85,6 +85,7 @@ class Simulator:
         self.timestep_size = simulation_model_record.timestep_size  
         self.is_timeseries_analysis = simulation_model_record.is_timeseries_analysis
         self.nb_of_tested_parameters = simulation_model_record.nb_of_tested_parameters
+        self.nb_of_parameters_to_keep = simulation_model_record.nb_of_parameters_to_keep
         self.max_df_size = simulation_model_record.max_df_size
         self.error_threshold = simulation_model_record.error_threshold
         self.run_locally = simulation_model_record.run_locally

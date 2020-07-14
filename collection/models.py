@@ -182,6 +182,7 @@ class Simulation_model(models.Model):
     simulation_end_time = models.BigIntegerField()
     timestep_size = models.IntegerField(null=True)
     nb_of_tested_parameters = models.IntegerField()
+    nb_of_parameters_to_keep = models.IntegerField()
     max_df_size = models.IntegerField()
     error_threshold = models.FloatField()
     run_locally = models.BooleanField(default=False)
