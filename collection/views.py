@@ -690,7 +690,7 @@ def get_execution_order(request):
             if len(listed_attribute_ids) < len(all_attribute_ids):
                 missing_attribute_ids = list(all_attribute_ids - listed_attribute_ids)
                 missing_attributes = [attribute for attribute in all_attributes if attribute['id'] in missing_attribute_ids]
-                execution_order['attribute_execution_order'][object_type_id]['used_attributes'] += missing_attribute_ids
+                execution_order['attribute_execution_order'][object_type_id]['used_attributes'] += missing_attributes
 
     # PART 1B: extend with missing attributes, rules
     all_attribute_ids = [el[0] for el in list(Attribute.objects.all().values_list('id'))]
@@ -801,9 +801,10 @@ def get_data_from_random_related_object(request):
     objects_dict = request_body['objects_dict']
     environment_start_time = request_body['environment_start_time']
     environment_end_time = request_body['environment_end_time']
+    max_number_of_instances = request_body['max_number_of_instances']
 
 
-    objects_data = query_datapoints.get_data_from_random_related_object(simulation_id, objects_dict, environment_start_time, environment_end_time)
+    objects_data = query_datapoints.get_data_from_random_related_object(simulation_id, objects_dict, environment_start_time, environment_end_time, max_number_of_instances)
     data_querying_info = Simulation_model.objects.get(id=simulation_id).data_querying_info
     print('preparing response')
     response = {'objects_data': objects_data, 
@@ -1117,7 +1118,7 @@ def save_changed_simulation(request):
             model_record.timestep_size = request_body['timestep_size']
             model_record.nb_of_tested_parameters = request_body['nb_of_tested_parameters']
             model_record.nb_of_parameters_to_keep = request_body['nb_of_parameters_to_keep']
-            model_record.max_df_size = request_body['max_df_size']
+            model_record.max_number_of_instances = request_body['max_number_of_instances']
             model_record.error_threshold = request_body['error_threshold']
             model_record.run_locally = request_body['run_locally']
             # model_record.selected_attribute = request_body['selected_attribute']
@@ -1684,7 +1685,7 @@ def download_file2_csv(request):
 @login_required
 def edit_simulation_new(request):    
     simulation_model = Simulation_model(aborted=False,
-										run_number=0,
+                                        run_number=0,
 										user=request.user, 
                                         is_timeseries_analysis=True,
                                         objects_dict=json.dumps({}), 
@@ -1702,7 +1703,7 @@ def edit_simulation_new(request):
                                         timestep_size=31622400,
 										nb_of_tested_parameters=20000,
 										nb_of_parameters_to_keep=100,
-										max_df_size=2000,
+										max_number_of_instances=2000,
 										error_threshold=0.2,
 										run_locally=False,
 										validation_data='{}',

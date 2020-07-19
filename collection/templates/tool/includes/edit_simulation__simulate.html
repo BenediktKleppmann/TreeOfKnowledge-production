@@ -705,6 +705,7 @@
 			request_body['objects_dict']  = objects_dict;
 			request_body['environment_start_time'] = environment_start_time;
 			request_body['environment_end_time'] = environment_end_time;
+			request_body['max_number_of_instances'] = max_number_of_instances;
 			got_object_data = false;
 			
 			var xmlhttp = new XMLHttpRequest();       
@@ -846,12 +847,6 @@
 															'</div>' +
 														'</div>' +
 														'<div class="form-group row">' +
-															'<label for="max_df_size" class="col-sm-8">Max number of Simulations per Parameter</label>' +
-															'<div class="col-sm-4">' +
-																'<input type="text" id="max_df_size" class="form-control" value="2000">' +
-															'</div>' +
-														'</div>' +
-														'<div class="form-group row">' +
 															'<label for="error_threshold" class="col-sm-8">Error Threshold</label>' +
 															'<div class="col-sm-4">' +
 																'<input type="text" id="error_threshold" class="form-control" value="0.2">' +
@@ -879,7 +874,6 @@
 		
 		$("#nb_of_tested_parameters").val(nb_of_tested_parameters);
 		$("#nb_of_parameters_to_keep").val(nb_of_parameters_to_keep);
-		$("#max_df_size").val(max_df_size);
 		$("#error_threshold").val(error_threshold);
 		$('#run_locally').find('option[value="' + run_locally + '"]').attr("selected",true);
 		
@@ -1265,7 +1259,6 @@
 		var is_timeseries_analysis = ($('#analysis_type').find(":selected").text() == 'Simulate changes over time');
 		var nb_of_tested_parameters = parseInt($('#nb_of_tested_parameters').val());
 		var nb_of_parameters_to_keep = parseInt($('#nb_of_parameters_to_keep').val());
-		var max_df_size = parseInt($('#max_df_size').val());
 		var error_threshold = parseFloat($('#error_threshold').val());
 		var run_locally = $('#run_locally').children("option:selected").val();
 		var run_locally__bool = run_locally =='True';
@@ -1309,7 +1302,7 @@
 			'timestep_size': timestep_size,
 			'nb_of_tested_parameters': nb_of_tested_parameters,
 			'nb_of_parameters_to_keep': nb_of_parameters_to_keep,
-			'max_df_size': max_df_size,
+			'max_number_of_instances': max_number_of_instances,
 			'error_threshold': error_threshold,
 			'run_locally': run_locally__bool
 		}

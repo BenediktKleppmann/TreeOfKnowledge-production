@@ -86,7 +86,7 @@ class Simulator:
         self.is_timeseries_analysis = simulation_model_record.is_timeseries_analysis
         self.nb_of_tested_parameters = simulation_model_record.nb_of_tested_parameters
         self.nb_of_parameters_to_keep = simulation_model_record.nb_of_parameters_to_keep
-        self.max_df_size = simulation_model_record.max_df_size
+        self.max_number_of_instances = simulation_model_record.max_number_of_instances
         self.error_threshold = simulation_model_record.error_threshold
         self.run_locally = simulation_model_record.run_locally
         execution_order = json.loads(Execution_order.objects.get(id=self.execution_order_id).execution_order)
@@ -136,14 +136,14 @@ class Simulator:
         reduced_objects_dict = {}
         for object_number in self.objects_dict.keys():
             reduced_objects_dict[object_number] = {'object_filter_facts':self.objects_dict[object_number]['object_filter_facts'], 'object_relations':self.objects_dict[object_number]['object_relations'] }
-        new_simulation_state_code = str(self.is_timeseries_analysis) + str(reduced_objects_dict) + str(self.simulation_start_time) + str(self.simulation_end_time) + str(self.timestep_size) + str(self.y0_columns) + str(self.max_df_size)
+        new_simulation_state_code = str(self.is_timeseries_analysis) + str(reduced_objects_dict) + str(self.simulation_start_time) + str(self.simulation_end_time) + str(self.timestep_size) + str(self.y0_columns) + str(self.max_number_of_instances)
         if 'simulation_state_code' in validation_data.keys():
             print('NEW QUERY?  %s == %s'  % (validation_data['simulation_state_code'], new_simulation_state_code))
         if 'simulation_state_code' in validation_data.keys() and validation_data['simulation_state_code'] == new_simulation_state_code:
             self.df = pd.DataFrame.from_dict(validation_data['df'])
             self.y0_values = validation_data['y0_values']
         else:
-            (self.df, self.y0_values) = self.get_new_df_and_y0_values(self.is_timeseries_analysis, self.objects_dict, self.simulation_start_time, self.simulation_end_time, self.timestep_size, limit_to_populated_y0_columns, self.times, self.y0_columns, self.max_df_size)
+            (self.df, self.y0_values) = self.get_new_df_and_y0_values(self.is_timeseries_analysis, self.objects_dict, self.simulation_start_time, self.simulation_end_time, self.timestep_size, limit_to_populated_y0_columns, self.times, self.y0_columns, self.max_number_of_instances)
             validation_data = {'simulation_state_code': new_simulation_state_code,
                                 'df': self.df.to_dict(orient='list'),
                                 'y0_values':self.y0_values}
@@ -328,7 +328,7 @@ class Simulator:
 
 
 
-    def get_new_df_and_y0_values(self, is_timeseries_analysis, objects_dict, simulation_start_time, simulation_end_time, timestep_size, limit_to_populated_y0_columns, times, y0_columns, max_df_size):
+    def get_new_df_and_y0_values(self, is_timeseries_analysis, objects_dict, simulation_start_time, simulation_end_time, timestep_size, limit_to_populated_y0_columns, times, y0_columns, max_number_of_instances):
 
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 2, "total_number": 6}))
@@ -341,7 +341,7 @@ class Simulator:
         y0_values = []
         if is_timeseries_analysis:
             
-            all_periods_df = self.reduce_number_of_rows(all_periods_df, max_df_size)
+            all_periods_df = self.reduce_number_of_rows(all_periods_df, max_number_of_instances)
             all_periods_df.index = range(len(all_periods_df))
 
             # coalesce the first periods into the starting values (i.e. self.df)
@@ -370,7 +370,7 @@ class Simulator:
         else:
             df = all_periods_df
             df.columns = [col.split('period')[0] for col in df.columns]
-            df = self.reduce_number_of_rows(df, max_df_size)
+            df = self.reduce_number_of_rows(df, max_number_of_instances)
             df_copy = pd.DataFrame(df[y0_columns].copy())
             df_copy.columns = [col + 'period0' for col in df_copy.columns]
             df_copy = df_copy[[col for col in df_copy.columns if col.split('period')[0] in y0_columns]]

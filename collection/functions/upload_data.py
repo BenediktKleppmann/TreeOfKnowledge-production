@@ -366,7 +366,7 @@ def perform_uploading(uploaded_dataset, request):
                                             timestep_size=31536000,
 											nb_of_tested_parameters=20000,
 											nb_of_parameters_to_keep=100,
-											max_df_size=2000,
+											max_number_of_instances=2000,
 											error_threshold=0.2,
 											run_locally=False,
 											validation_data='{}',
@@ -416,11 +416,12 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
         meta_data_facts = json.loads(uploaded_dataset.meta_data_facts)
         list_of_matches = json.loads(uploaded_dataset.list_of_matches)
         upload_only_matched_entities = uploaded_dataset.upload_only_matched_entities
+        object_identifiers = json.loads(uploaded_dataset.object_identifiers)
+
         data_table_json = json.loads(uploaded_dataset.data_table_json)
         data_table_df = pd.DataFrame(data_table_json['table_body'])
-
-        object_identifiers = json.loads(uploaded_dataset.object_identifiers)
         columns = list(data_table_df.columns)
+
         idenifying_columns = None
         if object_identifiers is not None:
             idenifying_columns = list(compress(columns, object_identifiers))
@@ -436,26 +437,24 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
             data_table_df[next_data_table_column_number] = [meta_data_fact['value']] * len(data_table_df)
 
 
-        # PART 1b: valid_time_start and next_time_step
+        # PART 1b: valid_time_start 
         valid_time_start_column = []
         for date_string in datetime_column:
             date_time = dateutil.parser.parse(date_string)
-            valid_time_start_column.append(int(time.mktime(date_time.timetuple())))
+            diff = date_time - datetime.datetime(1970, 1, 1)
+            unix_timestamp = int(diff.days * 24 * 3600 + diff.seconds)
+            # unix_timestamp = int(time.mktime(date_time.timetuple()))  <- this only works for dates before 1970
+            valid_time_start_column.append(unix_timestamp)
         data_table_df['valid_time_start'] = valid_time_start_column
-        data_table_df = data_table_df.sort_values(idenifying_columns + ['valid_time_start'])
 
-        if idenifying_columns is not None:
-            data_table_df['next_time_step'] = list(data_table_df[1:]['valid_time_start']) + [9999999999999]
-            last_line_of_each_object = data_table_df.reset_index().groupby(idenifying_columns).index.last()
-            data_table_df.loc[last_line_of_each_object,'next_time_step'] = 9999999999999
+
         
 
 
 
 
-        # PART 2: Create missing objects/ Remove not-matched rows
+        # PART 2a: Create missing objects/ Remove not-matched rows
         if upload_only_matched_entities == 'True':
-             
             table_df = pd.DataFrame(data_table_json['table_body']) # making new table_df so that it is in the right order
             aggregation_dict = {column:'first' for column in columns}
             object_ids_df = table_df.groupby(idenifying_columns).aggregate(aggregation_dict)
@@ -476,12 +475,13 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
                 maximum_object_id = Object.objects.all().order_by('-id').first().id
                 new_object_ids = range(maximum_object_id + 1, maximum_object_id + len(not_matched_indexes) + 1)
                 object_ids_df.loc[not_matched_indexes, 'object_id'] = new_object_ids
-                object_ids_df.index = range(len(object_ids_df))
-                data_table_df.index = range(len(data_table_df))
-                data_table_df = pd.merge(data_table_df, object_ids_df, on=idenifying_columns, how='inner', suffixes=['', '_remnant_from_merge'])
+            object_ids_df.index = range(len(object_ids_df))
+            data_table_df.index = range(len(data_table_df))
+            data_table_df = pd.merge(data_table_df, object_ids_df, on=idenifying_columns, how='inner', suffixes=['', '_remnant_from_merge'])
 
 
-                # create new object records      
+                # create new object records 
+            if len(not_matched_indexes) > 0:     
                 table_rows = list(map(list, zip(*[new_object_ids, [object_type_id] * len(not_matched_indexes)])))
                 number_of_chunks =  math.ceil(len(not_matched_indexes) / 100)
                 for chunk_index in range(number_of_chunks):
@@ -500,14 +500,20 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 
 
 
-
         with open(progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write('5')
 
 
-        # PART 3: save object_id_column
+        # PART 2b: save object_id_column
         uploaded_dataset.object_id_column = json.dumps(list(data_table_df['object_id']))
         uploaded_dataset.save()
+
+        # PART 3: next_time_step <- prepara
+        data_table_df = data_table_df.sort_values(idenifying_columns + ['valid_time_start'])
+        if idenifying_columns is not None:
+            data_table_df['next_time_step'] = list(data_table_df[1:]['valid_time_start']) + [9999999999999]
+            last_line_of_each_object = data_table_df.reset_index().groupby(idenifying_columns).index.last()
+            data_table_df.loc[last_line_of_each_object,'next_time_step'] = 9999999999999
 
 
         # PART 4: Insert into DataPoints
@@ -627,7 +633,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
                                             timestep_size=31536000,
 											nb_of_tested_parameters=20000,
 											nb_of_parameters_to_keep=100,
-											max_df_size=2000,
+											max_number_of_instances=2000,
 											error_threshold=0.2,
 											run_locally=False,
 											validation_data='{}',
@@ -825,7 +831,7 @@ def perform_uploading_for_timeseries__old(uploaded_dataset, request):
                                         is_timeseries_analysis=True, 
 										nb_of_tested_parameters=20000,
 										nb_of_parameters_to_keep=100,
-										max_df_size=2000,
+										max_number_of_instances=2000,
 										error_threshold=0.2,
 										run_locally=False,
                                         name="", description="", meta_data_facts=uploaded_dataset.meta_data_facts)
@@ -1057,7 +1063,7 @@ def perform_uploading__old(uploaded_dataset, request):
                                             timestep_size=31536000,
 											nb_of_tested_parameters=20000,
 											nb_of_parameters_to_keep=100,
-											max_df_size=2000,
+											max_number_of_instances=2000,
 											error_threshold=0.2,
 											run_locally=False,
 											validation_data='{}',
@@ -1176,7 +1182,7 @@ def perform_uploading_OLD(uploaded_dataset, request):
                                         timestep_size=31536000,
 										nb_of_tested_parameters=20000,
 										nb_of_parameters_to_keep=100,
-										max_df_size=2000,
+										max_number_of_instances=2000,
 										error_threshold=0.2,
 										run_locally=False,
 										validation_data='{}',

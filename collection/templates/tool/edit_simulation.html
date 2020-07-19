@@ -459,7 +459,7 @@
 	var timestep_size = {{ simulation_model.timestep_size|safe }};
 	var nb_of_tested_parameters = {{ simulation_model.nb_of_tested_parameters|safe }};
 	var nb_of_parameters_to_keep = {{ simulation_model.nb_of_parameters_to_keep|safe }};
-	var max_df_size = {{ simulation_model.max_df_size|safe }};
+	var max_number_of_instances = {{ simulation_model.max_number_of_instances|safe }};
 	var error_threshold = {{ simulation_model.error_threshold|safe }};
 	var run_locally = "{{ simulation_model.run_locally|safe }}";
 	var data_querying_info = {{ simulation_model.data_querying_info|safe }};
@@ -503,6 +503,12 @@
 														'<input id="environment-end-time" class="datetimepicker form-control" value="">' +
 													'</div>' +
 												'</div>' +
+													'<div class="form-group row">' +
+														'<label for="max_number_of_instances" class="col-sm-5">Max number of instances</label>' +
+														'<div class="col-sm-7">' +
+															'<input type="text" id="max_number_of_instances" class="form-control" value="2000">' +
+														'</div>' +
+													'</div>' +
 											'</div>' +
 										'</div>' +
 									'</div>' +
@@ -553,8 +559,14 @@
 	
 		$("#left-panel").html(left_panel__design);	
 		
+		$("#max_number_of_instances").val(max_number_of_instances);
+		$("#max_number_of_instances").focusout(function(){
+			max_number_of_instances = $("#max_number_of_instances").val()
+		});
 		
-		//make the datetimepickers
+		
+		
+		//make the datetimepickers ---------------------------------
 		$('.datetimepicker').datetimepicker({
 			startView:'decade',
 			minView:'hour',
