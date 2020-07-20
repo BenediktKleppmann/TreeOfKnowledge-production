@@ -712,43 +712,59 @@
 			xmlhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
 					var response = JSON.parse(this.responseText);
-					//data_querying_info
-					data_querying_info = JSON.parse(response['data_querying_info']);
-					object_numbers = Object.keys(data_querying_info['timestamps']);
-					var all_timestamps = [];
-					for (var i = 0; i < object_numbers.length ; i++) {
-						timestamps = Object.keys(data_querying_info['timestamps'][object_numbers[i]]);
-						for (var j = 0; j < timestamps.length ; j++) {
-							var total_number_of_entities = data_querying_info['table_sizes'][object_numbers[i]]['number_of_objects'];
-							if (data_querying_info['timestamps'][object_numbers[i]][timestamps[j]] > 0.1*total_number_of_entities ) {
-								all_timestamps.push(timestamps[j]);
+					
+					if (response["objects_data"]["sorted_attribute_ids"].length == 0) {					
+						sorted_attribute_ids = []
+						object_numbers = Object.keys(objects_dict);
+						for (var i = 0; i < object_numbers.length ; i++) {
+							object_number = parseInt(object_numbers[i]);
+							objects_dict[object_number]['object_id'] = null;	
+							objects_dict[object_number]['object_attributes'] = {};
+						}
+						
+						got_object_data = true;
+						var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">No combination of objects found that satisfy the restrictions.</div>';
+						$("#right-sidebar-body").html(no_results_string);
+						
+					} else {
+						//data_querying_info
+						data_querying_info = JSON.parse(response['data_querying_info']);
+						object_numbers = Object.keys(data_querying_info['timestamps']);
+						var all_timestamps = [];
+						for (var i = 0; i < object_numbers.length ; i++) {
+							timestamps = Object.keys(data_querying_info['timestamps'][object_numbers[i]]);
+							for (var j = 0; j < timestamps.length ; j++) {
+								var total_number_of_entities = data_querying_info['table_sizes'][object_numbers[i]]['number_of_objects'];
+								if (data_querying_info['timestamps'][object_numbers[i]][timestamps[j]] > 0.1*total_number_of_entities ) {
+									all_timestamps.push(timestamps[j]);
+								}
 							}
 						}
-					}
-					new_simulation_start_time = all_timestamps.sort()[0];
-					var new_simulation_start_date = new Date(new_simulation_start_time*1000);
-					var new_simulation_start_date_string = new_simulation_start_date.toISOString().replace('T', ' ').substring(0,16);
-					$("#simulation-start-time").val(new_simulation_start_date_string);
-					simulation_start_time = parseInt(new_simulation_start_time);
-					
-					
-					//objects_data
-					var objects_data = response['objects_data'];
-					var all_attribute_values = objects_data['all_attribute_values'];
-					sorted_attribute_ids = objects_data['sorted_attribute_ids'];
+						new_simulation_start_time = all_timestamps.sort()[0];
+						var new_simulation_start_date = new Date(new_simulation_start_time*1000);
+						var new_simulation_start_date_string = new_simulation_start_date.toISOString().replace('T', ' ').substring(0,16);
+						$("#simulation-start-time").val(new_simulation_start_date_string);
+						simulation_start_time = parseInt(new_simulation_start_time);
+						
+						
+						//objects_data
+						var objects_data = response['objects_data'];
+						var all_attribute_values = objects_data['all_attribute_values'];
+						sorted_attribute_ids = objects_data['sorted_attribute_ids'];
 
-					object_numbers = Object.keys(all_attribute_values);
-					for (var i = 0; i < object_numbers.length ; i++) {
-						object_number = parseInt(object_numbers[i]);
-						objects_dict[object_number]['object_id'] = all_attribute_values[object_number]['object_id'];	
-						objects_dict[object_number]['object_attributes'] = all_attribute_values[object_number]['object_attributes'];
-					}	
-					got_object_data = true;	
-					var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Got the data.<br>Please click on the object again.</div>';
-					$("#right-sidebar-body").html(no_results_string);
-					get_new_object_data = false;
-					
-					saveSimulation();
+						object_numbers = Object.keys(all_attribute_values);
+						for (var i = 0; i < object_numbers.length ; i++) {
+							object_number = parseInt(object_numbers[i]);
+							objects_dict[object_number]['object_id'] = all_attribute_values[object_number]['object_id'];	
+							objects_dict[object_number]['object_attributes'] = all_attribute_values[object_number]['object_attributes'];
+						}	
+						got_object_data = true;	
+						var no_results_string = '<br><br><br><br><div style="width:100%;text-align:center;">Got the data.<br>Please click on the object again.</div>';
+						$("#right-sidebar-body").html(no_results_string);
+						get_new_object_data = false;
+						
+						saveSimulation();
+					}
 				}
 			};
 
