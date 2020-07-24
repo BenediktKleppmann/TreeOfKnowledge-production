@@ -1269,6 +1269,28 @@
 	
 	
 	function saveSimulation() {
+	
+			
+		//var execution_order_name = $('#execution-order-name').val();
+		//var execution_order_description = $('#execution-order-description').val();
+		var execution_order_name = 'test_name';
+		var execution_order_description = 'test_description';
+		
+		request_body = {
+			'id': execution_order_id,
+			'name': execution_order_name,
+			'description': execution_order_description,
+			'execution_order': execution_order
+		}
+		
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.open("POST", "/tool/save_execution_order/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send(JSON.stringify(request_body));	
+		
+		
+		//save Simulation
 		// get simulation_id & some settings
 		var url_components = window.location.href.split("/");
 		var simulation_id = url_components[url_components.length - 2];
@@ -1330,24 +1352,7 @@
 		xmlhttp.send(JSON.stringify(request_body));	
 		
 		
-		//save Execution_order	
-		//var execution_order_name = $('#execution-order-name').val();
-		//var execution_order_description = $('#execution-order-description').val();
-		var execution_order_name = 'test_name';
-		var execution_order_description = 'test_description';
-		
-		request_body = {
-			'id': execution_order_id,
-			'name': execution_order_name,
-			'description': execution_order_description,
-			'execution_order': execution_order
-		}
-		
-		var xmlhttp = new XMLHttpRequest();       
-		xmlhttp.open("POST", "/tool/save_execution_order/");
-		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
-		xmlhttp.send(JSON.stringify(request_body));	
+
 	}
 	
 	
@@ -1450,6 +1455,16 @@
 	function redrawAttributeSelections() {
 		get_new_object_data = true;
 		getObjectData();
+		
+		//load execution order
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				execution_order = JSON.parse(this.responseText);
+			}
+		};
+		xhttp.open('GET', '/tool/get_execution_order?execution_order_id=' + execution_order_id , true);
+		xhttp.send();
 		
 		// the previous step only adds the attribute to object_attributes (in the objects_dict), here we also add it to object_rules 
 		var object_numbers = Object.keys(objects_dict);

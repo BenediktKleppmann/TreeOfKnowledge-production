@@ -197,7 +197,7 @@
 	/* ----------------------------------------------------------*/
 	
 	#editObjectBehaviourModal #rule-info-top {
-		height: 334px;
+		height: 373px;
 	}
 	
 	#editObjectBehaviourModal #rule-info {
@@ -205,56 +205,122 @@
 		float: right;
 	}
 	
-	#editObjectBehaviourModal #rule-info-top-left {
+	
+	#editObjectBehaviourModal #rule-info-top-left-outer-box {
+		position: relative;
+		width: 518px;
+		height: 342px;
 		display: inline-block;
 		float: left;
+	}
+	
+	#editObjectBehaviourModal #rule-info-top-left {
 	    width: 491px;
-		margin-right: 26px;
+		position: absolute;
+		bottom: 0;
+		left: 0;
 	}
-	
-	#rule-info-top-left label {
-	    margin-bottom: 1px;
-	}
-	
-	#rule-info-top-left .form-group, #rule-info-bottom .form-group {
-		margin-top: 24px;
-	}
-	
-	#editObjectBehaviourModal .parameter-form-group {
-		margin-top: 8px;
-	}
-	
-	#editObjectBehaviourModal .uncertainty-form-group {
-		margin-top: 34px;
-	}
-	
-	#editObjectBehaviourModal #has-if-condition-field {
-		width: 200px;
-		margin-top: 45px;
-	}
-	
-	#editObjectBehaviourModal .if-then-text {
-		color: rgb(7, 16, 143);
-		font-size: 17px;
-		text-align: left;
-	}
-	
-	#editObjectBehaviourModal .hwt-container, #editObjectBehaviourModal #rule-condition-text, #editObjectBehaviourModal #rule-effect-text
-	{
-		width: 100%
-	}
-	
-	
-	#editObjectBehaviourModal #then-text2 {
-		font-weight: 500;
-		margin-left: 7px;
-	}
-	
 	
 	#editObjectBehaviourModal #rule-info-top-left .form-control {
 		border-radius: 5px;
 	}
 	
+	
+	#rule-info-top-left label {
+	    margin-bottom: 1px;
+	}
+	
+
+	
+	#editObjectBehaviourModal .uncertainty-form-group {
+		margin-top: 25px;
+	}
+	
+
+	
+	
+
+	
+
+	
+	/* IF-THEN Condition ---------------*/
+
+	#editObjectBehaviourModal #if-textarea {
+		margin-left: 16px;
+	}
+
+	#editObjectBehaviourModal #then-textarea {
+		margin-top: 21px;
+	}
+
+	#editObjectBehaviourModal #has-if-condition-field {
+		width: 200px;
+		margin-top: 1px;
+	}
+	
+	
+	#editObjectBehaviourModal #then-text2 {
+		font-family: Garamond;
+		color: rgb(7, 16, 143);
+		font-size: 20px;
+		text-align: left;
+		font-weight: 700;
+	}
+	
+	#editObjectBehaviourModal #rule-effect-text
+	{
+		border-color: rgb(7, 16, 143);
+	}
+	
+	#editObjectBehaviourModal .hwt-container, #editObjectBehaviourModal #rule-condition-text, #editObjectBehaviourModal #rule-effect-text
+	{
+		width: 100%;
+	}
+	
+	#if-then-text {
+		border-color: rgb(7, 16, 143);
+	}
+	
+	
+
+	/* Aggregation ---------------*/
+	
+	#editObjectBehaviourModal #aggregation-field {
+		margin-top: 22px;
+	}
+
+	
+	#editObjectBehaviourModal #aggregation-details {
+		margin-left: 16px;
+		margin-top: -4px;
+	}
+	
+	
+	#editObjectBehaviourModal .aggregation-text {
+		display: inline-block;
+	}
+	
+	#editObjectBehaviourModal #aggregation_text {
+		display: inline-block;
+		width: 300px;
+		margin-left: 5px;
+		margin-right: 2px;
+	}
+	
+	
+	#editObjectBehaviourModal .aggregation-button {
+		background-color: white;
+		border-color: rgb(180,180,180);
+		padding: 2px 6px;
+		color: rgb(180,180,180);
+	}
+	
+	#editObjectBehaviourModal #aggregation-button-sum {
+		margin-right: 5px;
+	}
+
+
+	/* Cancel/Save Buttons ---------------*/
 	
 	#editObjectBehaviourModal #save-cancel-rule-buttons {
 		margin-top: 29px;
@@ -265,13 +331,10 @@
 	}
 	
 	
-	
 	/* ----------------------------------------------------------*/
 	/* AVAILABLE VARIABLES --------------------------------------*/
 	/* ----------------------------------------------------------*/
-	
-
-	
+		
 	
 	#editObjectBehaviourModal #available-variables-outer-block {
 		display: inline-block;
@@ -295,7 +358,7 @@
 	
 	#editObjectBehaviourModal .available-variable-frame {
 		width: 219px;
-		height: 263px;
+		height: 323px;
 	}
 	
 	#editObjectBehaviourModal #available-relation-variables-block {
@@ -366,8 +429,10 @@
 	/* PARAMETERS PDF -------------------------------------------------*/
 	/* ----------------------------------------------------------*/
 
+
 	#parameter-details {
-		width: 736px;
+		margin-left: 16px;
+		width: 723px;
 	}
 	
 	#parameter-button-group {
@@ -427,8 +492,8 @@
 	
 	/* Parameter Settings -------------------*/
 	#parameter-settings {
-		width: 254px;
-		padding: 11px;
+		width: 250px;
+		padding: 6px 3px 11px 15px
 		display: inline-block;
 	}
 	
@@ -502,12 +567,14 @@
 	
 	.rule-pdf-description-title {
 		font-weight: 700;
+		margin-left: 16px;
 	}
 
 	.rule-pdf-description-main {
 		margin-top: 1px;
-		width: 272px;
+		width: 248px;
 		padding-right: 12px;
+		margin-left: 16px;
 	}
 	
 	
@@ -604,7 +671,9 @@
 					</div>
 					<div id="rule-info">
 						<div id="rule-info-top">
-							<div id="rule-info-top-left"></div>
+							<div id="rule-info-top-left-outer-box">
+								<div id="rule-info-top-left"></div>
+							</div>
 							<div id="available-variables-outer-block">
 								<div id="available-variables-error-message"></div>
 								<div id="available-variables-main-block">
@@ -636,7 +705,7 @@
 <script>
 
 //GLOBAL VARIABLES
-var new_rule_cursor_position = {};
+var new_rule_cursor_position = {'text_area_id':'rule-effect-text'};
 var parameter_info = {};
 	
 	
@@ -762,6 +831,10 @@ var parameter_info = {};
 		// populate not-used-rules-list -------------------------------------------------------------
 		
 		not_used_rules_list_html_string = ""
+		if (Object.keys(execution_order['rule_execution_order']).indexOf(String(rules_attribute_id)) == -1) {
+			execution_order['rule_execution_order'][String(rules_attribute_id)] = {'used_rule_ids': [], 'not_used_rule_ids': []}
+		}
+		
 		var not_used_rule_ids = execution_order['rule_execution_order'][String(rules_attribute_id)]['not_used_rule_ids'];
 		for (var i = 0; i < not_used_rule_ids.length ; i++) {
 			var rule_id = not_used_rule_ids[i];
@@ -849,44 +922,42 @@ var parameter_info = {};
 		// Rule Details ------------------------------------------------------------
 		rule = objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id];
 		
-		is_probabilitic_rule_checked_string = rule['has_probability_1'] ? '': 'checked';
+		has_if_condition_string = rule['is_conditionless'] ? '': 'checked';
+		condition_text = rule['is_conditionless'] ? '': rule['condition_text'] ;
+		has_aggregation_checked_string = rule['aggregation_text'].length > 0 ? 'checked': '';
 		has_parameters_checked_string = rule['used_parameter_ids'].length > 0 ? 'checked': '';
+		is_probabilitic_rule_checked_string = rule['has_probability_1'] ? '': 'checked';		
 		
-		if (rule['is_conditionless']) {	
-
-			rule_info_top_left_html = '<div id="has-if-condition-field">' +
-									'<input type="checkbox" class="form-check-input" id="has_if_condition" onchange="changeIfConditionCheckbox(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\')">' +
-									'<label class="form-check-label" for="has_if_condition">&nbsp;IF Condition</label>' +
-								'</div>' +
-								'<div id="rule-textareas">' + 
-									'<div class="form-group">' + 
-										'<label for="rule-effect-text"><div id="then-text2">[' + rules_attribute_name + '] = </div> </label>' +
-										'<textarea cols="20" rows="7" class="form-control" id="rule-effect-text" onclick="rememberCursorPostion(\'rule-effect-text\')">' + rule['effect_text'] + '</textarea>' +
+		
+		rule_info_top_left_html = 	'<div id="has-if-condition-field">' +
+										'<input type="checkbox" class="form-check-input" id="has_if_condition" onchange="changeIfConditionCheckbox(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\', ' + rule_id + ')" ' + has_if_condition_string + '>' +
+										'<label class="form-check-label" for="has_if_condition">&nbsp;IF Condition</label>' +
 									'</div>' +
-								'</div>';
-			$('#rule-info-top-left').html(rule_info_top_left_html);
-				
-			
-		} else {
-
-			rule_info_top_left_html = 	'<div id="has-if-condition-field">' +
-											'<input type="checkbox" class="form-check-input" id="has_if_condition" onchange="changeIfConditionCheckbox(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\')" checked>' +
-											'<label class="form-check-label" for="has_if_condition">&nbsp;IF Condition</label>' +
+									'<div id="if-textarea">' +
+										'<textarea cols="20" rows="2" class="form-control" id="rule-condition-text" onclick="rememberCursorPostion(\'rule-condition-text\')">' + condition_text + '</textarea>' +
+									'</div>' +
+									'<div id="aggregation-field">' +
+										'<input type="checkbox" class="form-check-input" id="is_aggregation" onchange="changeAggregateCheckbox()" ' + has_aggregation_checked_string + '>' +
+										'<label class="form-check-label" for="is_aggregation">&nbsp;Aggregation</label>' +
+									'</div>' +
+									'<div id="aggregation-details"  style="display: none;">' +
+										'<div class="aggregation-text" data-toggle="tooltip" title="∀x∈objects s.th. ">For all objects x where</div>' +
+										'<textarea cols="20" rows="1" class="form-control" id="aggregation_text" onclick="rememberCursorPostion(\'aggregation_text\')">' + rule['aggregation_text'] + '</textarea>' +
+										//'<input type="text" id="aggregation_text" class="form-control" value="' + rule['aggregation_text'] + '">' +
+										'<div class="aggregation-text"> :</div>' +
+										'<div id="aggregation-buttons">' + 
+											'<button id="aggregation-button-sum" class="btn aggregation-button" type="button" onclick="pressAggregateButton(\'sum\')">SUM</button>' +
+											'<button id="aggregation-button-count" class="btn aggregation-button" type="button" onclick="pressAggregateButton(\'count\')">COUNT</button>' +
 										'</div>' +
-										'<div id="rule-textareas">' + 
-											'<div>' + 
-												'<label class="if-then-text" for="rule-condition-text">IF</label>' +
-												'<textarea cols="20" rows="3" class="form-control" id="rule-condition-text" onclick="rememberCursorPostion(\'rule-condition-text\')">' + rule['condition_text'] + '</textarea>' +
-											'</div>' +
-											'<div class="form-group">' + 
-												'<label for="rule-effect-text"><div class="if-then-text">THEN</div><div id="then-text2">[' + rules_attribute_name + '] = </div></label>' +
-												'<textarea cols="20" rows="3" class="form-control" id="rule-effect-text" onclick="rememberCursorPostion(\'rule-effect-text\')">' + rule['effect_text'] + '</textarea>' +
-											'</div>' +
-										'</div>';
-			$('#rule-info-top-left').html(rule_info_top_left_html);
-			
-		}
-							
+									'</div>' +
+									'<div id="then-textarea" class="form-group">' + 
+										'<label for="rule-effect-text">' + 
+											//'<div id="then-text" class="if-then-text" style="display:none;">THEN</div>' +
+											'<div id="then-text2">[' + rules_attribute_name + '] = </div> </label>' +
+										'<textarea cols="20" rows="5" class="form-control" id="rule-effect-text" onclick="rememberCursorPostion(\'rule-effect-text\')">' + rule['effect_text'] + '</textarea>' +
+									'</div>';
+		$('#rule-info-top-left').html(rule_info_top_left_html);
+	
 		
 		
 		var parameter_ids = objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id]['used_parameter_ids'];
@@ -894,7 +965,7 @@ var parameter_info = {};
 									'<input type="checkbox" class="form-check-input" id="has_parameters" onchange="changeParameterCheckbox()" ' + has_parameters_checked_string + '>' +
 									'<label class="form-check-label" for="has_parameters">&nbsp;Parameters</label>' +
 								'</div>' +
-								'<div id="parameter-details">' +
+								'<div id="parameter-details" style="display:none;">' +
 									'<div id="parameter-button-group" class="btn-group" data-toggle="buttons">';
 		
 		for (var i = 0; i < parameter_ids.length ; i++) {
@@ -963,6 +1034,10 @@ var parameter_info = {};
 		} else {
 			$("#is_probabilitic_rule").prop("checked", true);
 		}	
+		
+		changeIfConditionCheckbox(object_number, rules_attribute_id, rules_attribute_name, rule_id);
+		changeAggregateCheckbox();
+		changeParameterCheckbox();
 		changeProbabilisticCheckbox(object_number, rule_id);
 
 	
@@ -977,18 +1052,35 @@ var parameter_info = {};
 
 		// Populate the Modal
 		//#rule-info-top-left
+		
 		rule_info_top_left_html = 	'<div id="has-if-condition-field">' +
-										'<input type="checkbox" class="form-check-input" id="has_if_condition" onchange="changeIfConditionCheckbox(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\')">' +
+										'<input type="checkbox" class="form-check-input" id="has_if_condition" onchange="changeIfConditionCheckbox(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\', ' + rule_id + ')">' +
 										'<label class="form-check-label" for="has_if_condition">&nbsp;IF Condition</label>' +
 									'</div>' +
-									'<div id="rule-textareas">' + 
-										'<div class="form-group">' + 
-											'<label for="rule-effect-text"><div id="then-text2">[' + rules_attribute_name + '] = </div> </label>' +
-											'<textarea cols="20" rows="7" class="form-control" id="rule-effect-text" onclick="rememberCursorPostion(\'rule-effect-text\')"></textarea>' +
+									'<div id="if-textarea" style="display:none;">' +
+										'<textarea cols="20" rows="2" class="form-control" id="rule-condition-text" onclick="rememberCursorPostion(\'rule-condition-text\')"></textarea>' +
+									'</div>' +
+									'<div id="aggregation-field">' +
+										'<input type="checkbox" class="form-check-input" id="is_aggregation" onchange="changeAggregateCheckbox()">' +
+										'<label class="form-check-label" for="is_aggregation">&nbsp;Aggregation</label>' +
+									'</div>' +
+									'<div id="aggregation-details"  style="display: none;">' +
+										'<div class="aggregation-text" data-toggle="tooltip" title="∀x∈objects s.th. ">For all objects x where</div>' +
+										'<textarea cols="20" rows="1" class="form-control" id="aggregation_text" onclick="rememberCursorPostion(\'aggregation_text\')"></textarea>' +
+										'<div class="aggregation-text"> :</div>' +
+										'<div id="aggregation-buttons">' + 
+											'<button id="aggregation-button-sum" class="btn aggregation-button" type="button" onclick="pressAggregateButton(\'sum\')">SUM</button>' +
+											'<button id="aggregation-button-count" class="btn aggregation-button" type="button" onclick="pressAggregateButton(\'count\')">COUNT</button>' +
 										'</div>' +
+									'</div>' +
+									'<div id="then-textarea" class="form-group">' + 
+										'<label for="rule-effect-text"><div id="then-text" class="if-then-text" style="display:none;">THEN</div><div id="then-text2">[' + rules_attribute_name + '] = </div></label>' +
+										'<textarea cols="20" rows="5" class="form-control" id="rule-effect-text" onclick="rememberCursorPostion(\'rule-effect-text\')"></textarea>' +
 									'</div>';
 		$('#rule-info-top-left').html(rule_info_top_left_html);
-		changeIfConditionCheckbox(object_number, rules_attribute_id, rules_attribute_name);
+		
+		
+		changeIfConditionCheckbox(object_number, rules_attribute_id, rules_attribute_name, null);
 		
 		
 		//#available-variables-block
@@ -1428,46 +1520,42 @@ var parameter_info = {};
 	
 	
 	
-	function changeIfConditionCheckbox(object_number, attribute_id, attribute_name) {
+	function changeIfConditionCheckbox(object_number, attribute_id, attribute_name, rule_id) {
 		var has_if_condition = $('#has_if_condition').is(':checked');
 		
-		if (has_if_condition){
 		
-			var object_filter_facts = objects_dict[object_number]['object_filter_facts'] 
-			var rule_initial_condition = '';
-			for (var i = 0; i < object_filter_facts.length ; i++) {
-				rule_initial_condition += '[' + object_filter_facts[i]['attribute'] + '] ' +  object_filter_facts[i]['operation'] + ' ' + object_filter_facts[i]['value'] + ' and '
+		if (has_if_condition){
+			
+			var condition_text = '';
+			if (Object.keys(objects_dict[object_number]["object_rules"][attribute_id]).includes(String(rule_id))) {
+				condition_text = objects_dict[object_number]["object_rules"][attribute_id][rule_id]['condition_text']
 			}
-			var object_relations = objects_dict[object_number]['object_relations'] 
-			for (var i = 0; i < object_relations.length ; i++) {
-				var relation_filter_facts = objects_dict[object_relations[i]['target_object_number']]['object_filter_facts'] 
-				for (var i = 0; i < relation_filter_facts.length ; i++) {
-					rule_initial_condition += '[' + object_relations[i]['relation_name'] + '].[' + relation_filter_facts[i]['attribute'] + '] ' +  relation_filter_facts[i]['operation'] + ' ' + relation_filter_facts[i]['value'] + ' and '
+			
+			if (condition_text == '') {
+				var object_filter_facts = objects_dict[object_number]['object_filter_facts'] 
+				for (var i = 0; i < object_filter_facts.length ; i++) {
+					condition_text += '[' + object_filter_facts[i]['attribute'] + '] ' +  object_filter_facts[i]['operation'] + ' ' + object_filter_facts[i]['value'] + ' and '
+				}
+				var object_relations = objects_dict[object_number]['object_relations'] 
+				for (var i = 0; i < object_relations.length ; i++) {
+					var relation_filter_facts = objects_dict[object_relations[i]['target_object_number']]['object_filter_facts'] 
+					for (var i = 0; i < relation_filter_facts.length ; i++) {
+						condition_text += '[' + object_relations[i]['relation_name'] + '].[' + relation_filter_facts[i]['attribute'] + '] ' +  relation_filter_facts[i]['operation'] + ' ' + relation_filter_facts[i]['value'] + ' and '
+					}
 				}
 			}
 			
 			
-			rule_details_main_html = '<div>' + 
-										'<label class="if-then-text" for="rule-condition-text">IF</label>' +
-										'<textarea cols="20" rows="3" class="form-control" id="rule-condition-text" onclick="rememberCursorPostion(\'rule-condition-text\')">' + rule_initial_condition + '</textarea>' +
-									'</div>' +
-									'<div class="form-group">' + 
-										'<label for="rule-effect-text"><div class="if-then-text">THEN</div><div id="then-text2">[' + attribute_name + '] = </div></label>' +
-										'<textarea cols="20" rows="3" class="form-control" id="rule-effect-text" onclick="rememberCursorPostion(\'rule-effect-text\')"></textarea>' +
-									'</div>';
-								
 
-			$('#rule-textareas').html(rule_details_main_html);
+			$('#rule-condition-text').html(condition_text);
+			$('#if-textarea').css('display','block');
+			$('#then-text').css('display','block');
 
-		} else {
-			rule_details_main_html = 	'<div class="form-group">' + 
-											'<label for="rule-effect-text"><div id="then-text2">[' + attribute_name + '] = </div> </label>' +
-											'<textarea cols="20" rows="7" class="form-control" id="rule-effect-text" onclick="rememberCursorPostion(\'rule-effect-text\')"></textarea>' +
-										'</div>';
-										
-			$('#rule-textareas').html(rule_details_main_html);
-				
-			
+
+		} else {	
+			$('#rule-condition-text').html('');
+			$('#if-textarea').css('display','none');
+			$('#then-text').css('display','none');
 		}
 	}
 	
@@ -1488,7 +1576,7 @@ var parameter_info = {};
 			}
 			var rule_probability_html_string = '<div class="rule-pdf-description">' +
 													'<div class="rule-pdf-description-title">Rule Probability p:</div>' +
-													'<div class="rule-pdf-description-main">' + pdf_description + ' this uncertain rule executes with the probability p (a value between 0% and 100%). On the right is the probability distribution of p, you can identify the most likely p as well as the uncertainty around this value.</div>' +
+													'<div class="rule-pdf-description-main">' + pdf_description + ' this uncertain rule executes with the probability p. On the right is the probability distribution of p.</div>' +
 												'</div>' +
 												'<div class="pdf-this-simulation">' +
 													'<div class="outer-pdf-graph-container">' +
@@ -1599,9 +1687,14 @@ var parameter_info = {};
 		} else {
 			$('#parameter-details').css('display', 'none');
 		}
-		
-		
+	}
 	
+	function changeAggregateCheckbox() {
+		if ($('#is_aggregation').is(':checked')) {
+			$('#aggregation-details').css('display', 'block');
+		} else {
+			$('#aggregation-details').css('display', 'none');
+		}
 	}
 	
 	/*========================================================================*/
@@ -1617,26 +1710,42 @@ var parameter_info = {};
 	}
 	
 	
-	
+
 	function rememberCursorPostion(text_area_id) {
-		var myElement = document.getElementById(text_area_id);
-		var startPosition = myElement.selectionStart;
-		var endPosition = myElement.selectionEnd;
-		
-		new_rule_cursor_position = {'text_area_id':text_area_id, 'startPosition':startPosition, 'endPosition':endPosition};	
+		new_rule_cursor_position = {'text_area_id':text_area_id};	
 	}
 	
 	
+	function pressAggregateButton(button_string) {
+	
+		var string_to_insert = ""
+		if (button_string == 'sum') {
+			string_to_insert = 'SUM(x. )'
+		} else if (button_string == 'count') {
+			string_to_insert = 'COUNT(x)'
+		}
+		
+		var myElement = document.getElementById('rule-effect-text');
+		var startPosition = myElement.selectionStart;
+		var endPosition = myElement.selectionEnd;
+		var rule_effect_text = document.getElementById('rule-effect-text').value;
+		var new_rule_effect_text = rule_effect_text.substring(0, startPosition) + string_to_insert + rule_effect_text.substring(endPosition, rule_text.length);
+		document.getElementById('rule-effect-text').value = new_rule_effect_text;
+	}
 	
 	function selectAvailableVariable(object_number, attribute_name) {
+		var myElement = document.getElementById(new_rule_cursor_position['text_area_id']);
+		var startPosition = myElement.selectionStart;
+		var endPosition = myElement.selectionEnd;
+	
 		$('#available-variables-error-message').html('');
 		var rule_text = document.getElementById(new_rule_cursor_position['text_area_id']).value;
-		var new_rule_text = rule_text.substring(0, new_rule_cursor_position['startPosition']) + '[' + attribute_name + ']' + rule_text.substring(new_rule_cursor_position['endPosition'], rule_text.length);
+		var new_rule_text = rule_text.substring(0, startPosition) + '[' + attribute_name + ']' + rule_text.substring(endPosition, rule_text.length);
 		document.getElementById(new_rule_cursor_position['text_area_id']).value = new_rule_text;
-		document.getElementById(new_rule_cursor_position['text_area_id']).selectionStart = new_rule_cursor_position['endPosition'] + attribute_name.length + 2;
-		document.getElementById(new_rule_cursor_position['text_area_id']).selectionEnd = new_rule_cursor_position['endPosition'] + attribute_name.length + 2;
-		new_rule_cursor_position['startPosition'] = new_rule_cursor_position['endPosition'] + attribute_name.length + 2;
-		new_rule_cursor_position['endPosition'] =  new_rule_cursor_position['endPosition'] + attribute_name.length + 2;
+		document.getElementById(new_rule_cursor_position['text_area_id']).selectionStart = endPosition + attribute_name.length + 2;
+		document.getElementById(new_rule_cursor_position['text_area_id']).selectionEnd = endPosition + attribute_name.length + 2;
+		startPosition = endPosition + attribute_name.length + 2;
+		endPosition =  endPosition + attribute_name.length + 2;
 		
 		if 	($('#available-relation-variables-block').css('width') == '219px') {
 			$('#available-relation-variables-block').animate({width: '0px'}, 300, 'linear');
@@ -1779,27 +1888,34 @@ var parameter_info = {};
 		for (var i = 0; i < available_attribute_ids.length; i++) {
 			var search_value = '[' + available_attribute_names[i] + ']';
 			if (executable.indexOf(search_value)>=0){
+			
+				//add the attribute to used_attribute_ids if it's an attribute of the first object (and not of a related object)
+				if ((' ' + executable).search(new RegExp('[^.]\[' + available_attribute_names[i] + '\]')) >=0) {
+					used_attribute_ids.push(available_attribute_ids[i]);
+				}
+				
 				var data_type = available_attribute_datatypes[i];
 				if (data_type == 'relation'){
 					// first replace the ones with dot before, then set the replacement for the replacing without dot (necessary for multiple relations)
+					executable = executable.split('x.' + search_value).join('x_df.rel' + String(available_attribute_ids[i]));
 					executable = executable.split('.' + search_value).join('.rel' + String(available_attribute_ids[i]));
 					executable = executable.split(search_value).join('df.rel' + String(available_attribute_ids[i]));
 				} else if (['string', 'date'].includes(data_type)){
+					executable = executable.split('x.' + search_value).join('x_df.attr' + String(available_attribute_ids[i]) + '"');
 					executable = executable.split('.' + search_value).join('.attr' + String(available_attribute_ids[i]) + '"');
 					executable = executable.split(search_value).join('df.attr' + String(available_attribute_ids[i]) + '"');
 				} else {
+					executable = executable.split('x.' + search_value).join('x_df.attr' + String(available_attribute_ids[i]));
 					executable = executable.split('.' + search_value).join('.attr' + String(available_attribute_ids[i]));
 					executable = executable.split(search_value).join('df.attr' + String(available_attribute_ids[i]));
 				}
 
 				stripped_rule_text = stripped_rule_text.split(search_value).join(' ');
-				
-				used_attribute_ids.push(available_attribute_ids[i])
 			}	
 		}
 		
 		//match unmatched " 
-		var regex = /["a-zA-Z0-9\.]*"/g;
+		var regex = /["a-zA-Z0-9\._]*"/g;
 		var words_ending_on_quote = executable.match(regex);
 		if (words_ending_on_quote){
 			for (var i = 0; i < words_ending_on_quote.length; i++) {
@@ -1821,7 +1937,14 @@ var parameter_info = {};
 		for (var i = 0; i < permitted_substrings.length; i++) {
 			stripped_rule_text = stripped_rule_text.replace(new RegExp(permitted_substrings[i], 'g'), '');
 		}
-		//removing empyt spaces
+		
+		//removing aggregation expressions
+		var permitted_substrings = ['SUM','COUNT','x.']
+		for (var i = 0; i < permitted_substrings.length; i++) {
+			stripped_rule_text = stripped_rule_text.replace(new RegExp(permitted_substrings[i], 'g'), '');
+		}
+		
+		//removing empty spaces
 		stripped_rule__remaining_words = stripped_rule_text.split(" ");
 		for (var i =0; i < stripped_rule__remaining_words.length; i++){
 			if (stripped_rule__remaining_words[i] == ''){
@@ -1867,14 +1990,14 @@ var parameter_info = {};
 		var has_if_condition = $('#has_if_condition').is(':checked');
 		if (has_if_condition){
 			var condition_text = $('#rule-condition-text').val();
-			executable_dict = make_executable(condition_text, object_number, attribute_id, rule_id);
-			if (executable_dict['has_error']) {
-				alert('Error with IF: ' + executable_dict['error_message']);
+			condition_executable_dict = make_executable(condition_text, object_number, attribute_id, rule_id);
+			if (condition_executable_dict['has_error']) {
+				alert('Error with IF: ' + condition_executable_dict['error_message']);
 				return;
 			}
-			used_attribute_ids = executable_dict['used_attribute_ids'];
+			used_attribute_ids = condition_executable_dict['used_attribute_ids'];
 			rule_dict['condition_text'] = condition_text;
-			rule_dict['condition_exec'] = executable_dict['executable'];
+			rule_dict['condition_exec'] = condition_executable_dict['executable'];
 			rule_dict['is_conditionless'] = false;
 	
 		} else {	
@@ -1883,27 +2006,45 @@ var parameter_info = {};
 			rule_dict['is_conditionless'] = true;
 		}
 		
+		// setting: aggregation_text, aggregation_exec
+		var aggregation_text = $('#aggregation_text').val().trim();
+		if (aggregation_text.length > 0) {
+			aggregation_executable_dict = make_executable(aggregation_text, object_number, attribute_id, rule_id);
+			if (aggregation_executable_dict['has_error']) {
+				alert('Error with Aggregation: ' + aggregation_executable_dict['error_message']);
+				return;
+			}
+			rule_dict['aggregation_text'] = aggregation_text;
+			rule_dict['aggregation_exec'] = aggregation_executable_dict['executable'];
+			$.each(aggregation_executable_dict['used_attribute_ids'], function(i, el){    // append the new used_attribute_ids, if not found already in the list
+				if($.inArray(el, used_attribute_ids) === -1) used_attribute_ids.push(el);
+			});
+		} else {
+			rule_dict['aggregation_text'] = '';
+			rule_dict['aggregation_exec'] = '';
+		}
+		
+		
 		
 		// setting: effect_text, effect_exec
 		var effect_text = $('#rule-effect-text').val().trim();
-		executable_dict = make_executable(effect_text, object_number, attribute_id, rule_id);
-		if (executable_dict['has_error']) {
-			alert('Error with THEN: ' + executable_dict['error_message']);
+		effect_executable_dict = make_executable(effect_text, object_number, attribute_id, rule_id);
+		if (effect_executable_dict['has_error']) {
+			alert('Error with THEN: ' + effect_executable_dict['error_message']);
 			return;
 		}
 		rule_dict['effect_text'] = effect_text;
-		rule_dict['effect_exec'] = executable_dict['executable'];
-		
-		
-		// setting: used_attribute_ids
-		$.each(executable_dict['used_attribute_ids'], function(i, el){   // append the new used_attribute_ids, if not found already in the list
+		rule_dict['effect_exec'] = effect_executable_dict['executable'];
+		$.each(effect_executable_dict['used_attribute_ids'], function(i, el){    // append the new used_attribute_ids, if not found already in the list
 			if($.inArray(el, used_attribute_ids) === -1) used_attribute_ids.push(el);
 		});
+		
+		
 		rule_dict['used_attribute_ids'] = used_attribute_ids;
 		
 
 		// setting: effect_is_calculation
-		if (executable_dict['executable'].indexOf('df.') >=0) {
+		if (effect_executable_dict['executable'].indexOf('df.') >=0) {
 			rule_dict['effect_is_calculation'] = true;
 		} else {
 			rule_dict['effect_is_calculation'] = false;
@@ -1948,10 +2089,11 @@ var parameter_info = {};
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				objects_dict[object_number]['object_rules'] = JSON.parse(this.responseText);
+				response = JSON.parse(this.responseText);
+				objects_dict[response['object_number']]['object_rules'] = response['object_rules'];
 			}
 		};
-		xhttp.open('GET', '/tool/get_object_rules?object_type_id=' + objects_dict[object_number]['object_type_id'] , true);
+		xhttp.open('GET', '/tool/get_object_rules?object_number=' + String(object_number) + '&object_type_id=' + objects_dict[object_number]['object_type_id'] , true);
 		xhttp.send();
 		
 		
@@ -2053,7 +2195,9 @@ var parameter_info = {};
 						execution_order['rule_execution_order'][String(attribute_id)]['not_used_rule_ids'].splice(new_index,0,rule_id);
 						
 						//uncheck learn_probabilities checkbox
-						document.getElementById("learn-probabililty--rule" + rule_id).checked = false;
+						if ( $("#learn-probabililty--rule" + rule_id).length ) {
+							document.getElementById("learn-probabililty--rule" + rule_id).checked = false;
+						}
 					}
 					
 					// move from not-used-rules-list to rules-list

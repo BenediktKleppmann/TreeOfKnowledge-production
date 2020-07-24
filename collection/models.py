@@ -209,8 +209,11 @@ class Simulation_model(models.Model):
 class Rule(models.Model):
     changed_var_attribute_id = models.IntegerField()
     changed_var_data_type = models.TextField()
-    condition_text = models.TextField(null=True)
-    condition_exec = models.TextField(null=True)
+    aggregation_condition = models.TextField()
+    condition_text = models.TextField()
+    condition_exec = models.TextField()
+    aggregation_text = models.TextField()
+    aggregation_exec = models.TextField()
     effect_text = models.TextField()
     effect_exec = models.TextField()
     effect_is_calculation = models.NullBooleanField() # if False, then the effect is just a value and if the rule is triggered, then the column_to_change will be set to this value

@@ -527,17 +527,18 @@ def get_object_hierachy_tree(request):
 @login_required
 def get_object_rules(request):
     print('----------- get_object_rules -------------')
+    object_number = request.GET.get('object_number', '')
     object_type_id = request.GET.get('object_type_id', '')
 
-    response = {}
+    response = {'object_number': int(object_number), 'object_rules':{}}
+    print(object_type_id)
     list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
     parent_object_type_ids = [obj['id'] for obj in list_of_parent_objects]
-    print('parent_object_type_ids: ' + str(parent_object_type_ids))
     attributes = Attribute.objects.filter(first_applicable_object_type__in=parent_object_type_ids).values()
     
-    print('attributes: ' + str(attributes))
+    print('attribute_ids: ' + str([attribute['id'] for attribute in list(attributes)]))
     for attribute in attributes:
-        response[attribute['id']] = {}
+        response['object_rules'][attribute['id']] = {}
         rules_list = list(Rule.objects.filter(changed_var_attribute_id=attribute['id']).values())
         for rule in rules_list:
             rule['used_attribute_ids'] = json.loads(rule['used_attribute_ids'])
@@ -554,7 +555,7 @@ def get_object_rules(request):
             if not rule['has_probability_1'] and rule['probability'] is None:
                 rule['learn_posterior'] = True
 
-            response[attribute['id']][rule['id']] = rule
+            response['object_rules'][attribute['id']][rule['id']] = rule
     return HttpResponse(json.dumps(response)) 
 
 
@@ -1045,6 +1046,8 @@ def save_rule(request):
                 rule_record.changed_var_data_type = request_body['changed_var_data_type']
                 rule_record.condition_text = request_body['condition_text']
                 rule_record.condition_exec = request_body['condition_exec']
+                rule_record.aggregation_text = request_body['aggregation_text']
+                rule_record.aggregation_exec = request_body['aggregation_exec']
                 rule_record.effect_text = request_body['effect_text']
                 rule_record.effect_exec = request_body['effect_exec']
                 rule_record.effect_is_calculation = request_body['effect_is_calculation']
@@ -1073,6 +1076,8 @@ def save_rule(request):
                                 changed_var_data_type= request_body['changed_var_data_type'],
                                 condition_text= request_body['condition_text'],
                                 condition_exec= request_body['condition_exec'],
+								aggregation_text= request_body['aggregation_text'],
+                                aggregation_exec= request_body['aggregation_exec'],
                                 effect_text= request_body['effect_text'],
                                 effect_exec= request_body['effect_exec'],
                                 effect_is_calculation= request_body['effect_is_calculation'],

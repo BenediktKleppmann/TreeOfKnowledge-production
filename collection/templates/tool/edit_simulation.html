@@ -486,7 +486,7 @@
 		left_panel__design = '<div class="accordion md-accordion" id="accordion-left" role="tablist" aria-multiselectable="true">' +	
 								'<div class="card">' +
 									'<div class="card-header" role="tab" id="accordion-left-header-1">' +
-										'<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-1" aria-expanded="false" aria-controls="accordion-left-content-1">Environment</button>' +
+										'<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-1" aria-expanded="false" aria-controls="accordion-left-content-1">Settings</button>' +
 									'</div>' +
 									'<div id="accordion-left-content-1" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-1" data-parent="#accordion-left">' +
 										'<div class="card-body">' +
@@ -954,10 +954,11 @@
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				objects_dict[object_number]['object_rules'] = JSON.parse(this.responseText);
+				response = JSON.parse(this.responseText);
+				objects_dict[response['object_number']]['object_rules'] = response['object_rules'];
 			}
 		};
-		xhttp.open('GET', '/tool/get_object_rules?object_type_id=' + object_type_id , true);
+		xhttp.open('GET', '/tool/get_object_rules?object_number=' + String(object_number) + '&object_type_id=' + object_type_id , true);
 		xhttp.send();
 		
 	}
@@ -1469,6 +1470,7 @@
 		xhttp.send();
 		
 		
+		
 		//add objects to Paper
 		var object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length; i++) {
@@ -1481,6 +1483,19 @@
 			var object_type_name = objects_dict[object_number]['object_type_name'];
 			var object_name = objects_dict[object_number]['object_name'];
 			addObjectToPaper(x_coordinate, y_coordinate, object_icon, object_type_id, object_type_name, object_number, object_name);
+			
+			
+			//get the Object Rules (in case any new ones have been defined)
+			var xhttp = new XMLHttpRequest();       
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					response = JSON.parse(this.responseText);
+					objects_dict[response['object_number']]['object_rules'] = response['object_rules'];
+				}
+			};
+			xhttp.open('GET', '/tool/get_object_rules?object_number=' + String(object_number) + '&object_type_id=' + object_type_id , true);
+			xhttp.send();
+		
 		}
 		
 		//draw links

@@ -494,7 +494,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
 
 
 
-            if len(filter_facts)>0 or y0_columns is not None:
+            if len(filter_facts)>0:
                 if len(relation_ids) > 0:
                     sql_string1    += ''' INNER JOIN ( '''
                 else: 
@@ -823,7 +823,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
 
 
 
-def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_start, valid_time_end, timestep_size, progress_tracking_file_name, max_number_of_instances=None, y0_columns=None):
+def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_start, valid_time_end, timestep_size, progress_tracking_file_name, max_number_of_instances, y0_columns=None):
     print('~~~~~~~~~~~~~~~~~  get_data_from_related_objects__multiple_timesteps  ~~~~~~~~~~~~~~~~~')
     print('valid_time_start:' + str(valid_time_start))
     print('valid_time_end:' + str(valid_time_end))
@@ -907,7 +907,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                 """ % (str(object_number), str(object_number), str(relation_ids[0]), str(relation_ids[0]), str(condition_holding_period_end), str(condition_holding_period_start), child_object_types_string)
 
 
-            if len(filter_facts)>0 or y0_columns is not None:
+            if len(filter_facts)>0:
                 if len(relation_ids) > 0:
                     sql_string1    += ''' INNER JOIN ( '''
                 else: 
