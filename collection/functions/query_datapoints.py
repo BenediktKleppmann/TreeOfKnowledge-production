@@ -440,7 +440,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
 
             if len(relation_ids) == 0:                
                 sql_string1 = """CREATE TEMPORARY TABLE object_%s AS
-                                    SELECT * 
+                                    SELECT inner_query.* 
                                     FROM (
                                         SELECT DISTINCT object_id AS obj%sattrobject_id
                                         FROM collection_data_point
@@ -455,7 +455,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
 
             elif len(relation_ids) == 1:
                 sql_string1 = """CREATE TEMPORARY TABLE object_%s AS
-                                    SELECT * 
+                                    SELECT inner_query.* 
                                     FROM (
                                         SELECT related_objects.object_id AS obj%sattrobject_id, related_objects.numeric_value AS object_%s_relation_%s
                                         FROM (
@@ -475,7 +475,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
             else: 
                 cursor.execute('DROP TABLE IF EXISTS object_%s__with_missing_relations' % str(object_number))
                 sql_string1 = """CREATE TEMPORARY TABLE object_%s_object_ids__with_missing_relations AS
-                                    SELECT * 
+                                    SELECT inner_query.* 
                                     FROM (
                                         SELECT related_objects.object_id, related_objects.numeric_value AS object_%s_relation_%s
                                         FROM (
@@ -546,7 +546,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
 
                 
             print('1.1')    
-            sql_string1    += ''' ) as inner
+            sql_string1    += ''' ) as inner_query
                                 ORDER BY RANDOM()
                                 LIMIT %s;''' % max_number_of_instances
             cursor.execute(sql_string1)
@@ -854,7 +854,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
 
             if len(relation_ids) == 0:                
                 sql_string1 = """CREATE TEMPORARY TABLE object_%s AS
-                                    SELECT *
+                                    SELECT inner_query.*
                                     FROM (
                                         SELECT DISTINCT object_id AS obj%sattrobject_id
                                         FROM collection_data_point
@@ -869,7 +869,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
 
             elif len(relation_ids) == 1:
                                 sql_string1 = """CREATE TEMPORARY TABLE object_%s AS
-                                    SELECT *
+                                    SELECT inner_query.*
                                     FROM (
                                         SELECT related_objects.object_id AS obj%sattrobject_id, related_objects.numeric_value AS object_%s_relation_%s
                                         FROM (
@@ -889,7 +889,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             else: 
                 cursor.execute('DROP TABLE IF EXISTS object_%s__with_missing_relations' % str(object_number))
                 sql_string1 = """CREATE TEMPORARY TABLE object_%s_object_ids__with_missing_relations AS
-                                    SELECT *
+                                    SELECT inner_query.*
                                     FROM (
                                         SELECT related_objects.object_id, related_objects.numeric_value AS object_%s_relation_%s
                                         FROM (
@@ -958,7 +958,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
 
                 
             print('1.1')    
-            sql_string1    += '''  ) as inner
+            sql_string1    += '''  ) as inner_query
                                 ORDER BY RANDOM()
                                 LIMIT %s;''' % max_number_of_instances
             pdb.set_trace()
