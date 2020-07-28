@@ -880,10 +880,7 @@ class Simulator:
 
                 # df.loc[satisfying_rows,rule['column_to_change']] = new_values 
                 satisfying_rows[satisfying_rows.isna()] = False
-                try:
-                    new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
-                except:
-                    pdb.set_trace()
+                new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
                 df[rule['column_to_change']] = new_values
 
 
