@@ -461,7 +461,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                                         FROM (
                                             SELECT DISTINCT object_id, numeric_value 
                                             FROM collection_data_point
-                                            WHERE attribute_id = %s
+                                            WHERE attribute_id = '%s'
                                               AND valid_time_start < %s
                                               AND valid_time_end > %s
                                               AND object_id IN (
@@ -481,7 +481,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                                         FROM (
                                             SELECT DISTINCT object_id, numeric_value 
                                             FROM collection_data_point
-                                            WHERE attribute_id = %s
+                                            WHERE attribute_id = '%s'
                                               AND valid_time_start < %s
                                               AND valid_time_end > %s
                                               AND object_id IN (
@@ -570,7 +570,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                     sql_string2 += """INNER JOIN (
                                             SELECT DISTINCT object_id, numeric_value AS object_%s_relation_%s
                                             FROM collection_data_point
-                                            WHERE attribute_id = %s
+                                            WHERE attribute_id = '%s'
                                               AND valid_time_start > %s
                                               AND valid_time_end > %s
                                               AND object_id IN (SELECT DISTINCT object_id FROM object_%s_object_ids__with_missing_relations)
@@ -876,7 +876,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                         FROM (
                                             SELECT DISTINCT object_id, numeric_value 
                                             FROM collection_data_point
-                                            WHERE attribute_id = %s
+                                            WHERE attribute_id = '%s'
                                               AND valid_time_start < %s
                                               AND valid_time_end > %s
                                               AND object_id IN (
@@ -896,7 +896,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                         FROM (
                                             SELECT DISTINCT object_id, numeric_value 
                                             FROM collection_data_point
-                                            WHERE attribute_id = %s
+                                            WHERE attribute_id = '%s'
                                               AND valid_time_start < %s
                                               AND valid_time_end > %s
                                               AND object_id IN (
@@ -982,7 +982,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                     sql_string2 += """INNER JOIN (
                                             SELECT DISTINCT object_id, numeric_value AS object_%s_relation_%s
                                             FROM collection_data_point
-                                            WHERE attribute_id = %s
+                                            WHERE attribute_id = '%s'
                                               AND valid_time_start > %s
                                               AND valid_time_end > %s
                                               AND object_id IN (SELECT DISTINCT object_id FROM object_%s_object_ids__with_missing_relations)
