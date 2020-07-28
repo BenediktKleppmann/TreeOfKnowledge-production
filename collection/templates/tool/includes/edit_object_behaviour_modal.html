@@ -952,7 +952,6 @@ var parameter_info = {};
 									'</div>' +
 									'<div id="then-textarea" class="form-group">' + 
 										'<label for="rule-effect-text">' + 
-											//'<div id="then-text" class="if-then-text" style="display:none;">THEN</div>' +
 											'<div id="then-text2">[' + rules_attribute_name + '] = </div> </label>' +
 										'<textarea cols="20" rows="5" class="form-control" id="rule-effect-text" onclick="rememberCursorPostion(\'rule-effect-text\')">' + rule['effect_text'] + '</textarea>' +
 									'</div>';
@@ -1074,7 +1073,7 @@ var parameter_info = {};
 										'</div>' +
 									'</div>' +
 									'<div id="then-textarea" class="form-group">' + 
-										'<label for="rule-effect-text"><div id="then-text" class="if-then-text" style="display:none;">THEN</div><div id="then-text2">[' + rules_attribute_name + '] = </div></label>' +
+										'<label for="rule-effect-text"><div id="then-text2">[' + rules_attribute_name + '] = </div></label>' +
 										'<textarea cols="20" rows="5" class="form-control" id="rule-effect-text" onclick="rememberCursorPostion(\'rule-effect-text\')"></textarea>' +
 									'</div>';
 		$('#rule-info-top-left').html(rule_info_top_left_html);
@@ -1549,13 +1548,11 @@ var parameter_info = {};
 
 			$('#rule-condition-text').html(condition_text);
 			$('#if-textarea').css('display','block');
-			$('#then-text').css('display','block');
 
 
 		} else {	
 			$('#rule-condition-text').html('');
 			$('#if-textarea').css('display','none');
-			$('#then-text').css('display','none');
 		}
 	}
 	
@@ -1890,7 +1887,7 @@ var parameter_info = {};
 			if (executable.indexOf(search_value)>=0){
 			
 				//add the attribute to used_attribute_ids if it's an attribute of the first object (and not of a related object)
-				if ((' ' + executable).search(new RegExp('[^.]\[' + available_attribute_names[i] + '\]')) >=0) {
+				if ((' ' + executable).search(new RegExp('[^.]\[' + available_attribute_names[i].replace(/[.*+?^${}()|[\]\\-]/g, '\\$&') + '\]')) >=0) {
 					used_attribute_ids.push(available_attribute_ids[i]);
 				}
 				
