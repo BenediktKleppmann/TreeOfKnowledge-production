@@ -828,8 +828,8 @@
 			$("#object-icon-button").attr('data-content',popover_content);
 			
 			// write the Object Name  
-			document.getElementById('object-header-object-icon').value = '<img src="/static/images/object_icons/' + objects_dict[object_number]['object_icon'] + '.svg">';
-			document.getElementById('object-header-object-name').value = objects_dict[object_number]['object_name'];
+			document.getElementById('object-header-object-icon').html('<img src="/static/images/object_icons/' + objects_dict[object_number]['object_icon'] + '.svg">');
+			document.getElementById('object-header-object-name').html(objects_dict[object_number]['object_name']);
 			document.getElementById('object-name-field').value = objects_dict[object_number]['object_name'];
 			document.getElementById('object-number-field').value = object_number;
 			$("#object-name-field").attr('onchange', 'changeObjectName(' + object_number + ')');
