@@ -32,7 +32,7 @@ import time
 def walk_dict(d,depth=0):
     if isinstance(d,list): 
         for el in d:
-            walk_dict(d,depth+1)
+            walk_dict(el,depth+1)
     else:
         for k,v in sorted(d.items(),key=lambda x: x[0]):
             if isinstance(v, dict):
