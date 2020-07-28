@@ -120,7 +120,7 @@
 	}
 	
 	/* Object Header ----------------------------------------------------------*/
-	.object-header-object-icon {
+	#object-header-object-icon {
 		display: inline-block;
 		margin-top: 5px;
 		margin-left: 70px;
@@ -135,7 +135,7 @@
 		background: rgb(230, 230, 230);
 	}
 	
-	.object-header-object-name {
+	#object-header-object-name {
 		display: inline-block;
 		font-size: 18px;
 		margin-left: 12px;
@@ -1406,10 +1406,10 @@
 			} else {	
 				//object-header
 				object_header_string = 	'<div>' +
-											'<div class="object-header-object-icon">' +
+											'<div id="object-header-object-icon">' +
 												'<img src="/static/images/object_icons/' + objects_dict[object_number]['object_icon'] + '.svg">' +
 											'</div>' + 
-											'<div class="object-header-object-name">' + objects_dict[object_number]['object_name'] + '</div>' +
+											'<div id="object-header-object-name">' + objects_dict[object_number]['object_name'] + '</div>' +
 										'</div>' + 
 										'<input type="hidden" id="object-name-field" value=' + objects_dict[object_number]['object_name'] + '>' + 
 										'<input type="hidden" id="object-number-field" value=' + object_number + '>' + 

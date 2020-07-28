@@ -510,6 +510,20 @@ class Simulator:
                 for batch_number in range(self.nb_of_tested_parameters):
                     print('posting batch %s : %s' % (batch_number, str(all_priors_df.loc[batch_number,:].to_dict())))
                     simulation_parameters = {'simulation_id':  self.simulation_id, 'run_number':  self.run_number, 'batch_number': batch_number, 'rules': self.rules , 'priors_dict':  all_priors_df.loc[batch_number,:].to_dict(), 'batch_size': batch_size , 'is_timeseries_analysis': self.is_timeseries_analysis, 'times': self.times, 'timestep_size':  self.timestep_size, 'y0_columns': self.y0_columns, 'parameter_columns':  self.parameter_columns, 'y0_column_dt':  self.y0_column_dt, 'error_threshold':  self.error_threshold}
+                    print(type(self.simulation_id))
+                    print(type(self.run_number))
+                    print(type(batch_number))
+                    print(type(self.rules))
+                    print(type(all_priors_df.loc[batch_number,:].to_dict()))
+                    print(type(batch_size))
+                    print(type(self.is_timeseries_analysis))
+                    print(type(self.times))
+                    print(type(self.timestep_size))
+                    print(type(self.y0_columns))
+                    print(type(self.parameter_columns))
+                    print(type(self.y0_column_dt))
+                    print(type(self.error_threshold))
+
                     sqs = boto3.client('sqs', region_name='eu-central-1')
                     queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/Treeofknowledge-queue'
                     response = sqs.send_message(QueueUrl= queue_url, MessageBody=json.dumps(simulation_parameters))
