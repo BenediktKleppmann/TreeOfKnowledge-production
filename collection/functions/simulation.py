@@ -36,13 +36,17 @@ def walk_dict(d,depth=0):
                 walk_dict(el,depth+1)
             else:
                 print('%s (%s)' % (el, type(el)))
+                bla = json.dumps(el)
     else:
         for k,v in sorted(d.items(),key=lambda x: x[0]):
             if isinstance(v, dict):
                 print("%s:" % k)
+                bla = json.dumps(k)
                 walk_dict(v,depth+1)
             else:
                 print("%s: %s (%s)" % (k, v, str(type(v))))
+                bla = json.dumps(k)
+                bla = json.dumps(v)
 
 
 
@@ -529,25 +533,25 @@ class Simulator:
                 for batch_number in range(self.nb_of_tested_parameters):
                     print('posting batch %s : %s' % (batch_number, str(all_priors_df.loc[batch_number,:].to_dict())))
                     simulation_parameters = {'simulation_id':  self.simulation_id, 'run_number':  self.run_number, 'batch_number': batch_number, 'rules': self.rules , 'priors_dict':  all_priors_df.loc[batch_number,:].to_dict(), 'batch_size': batch_size , 'is_timeseries_analysis': self.is_timeseries_analysis, 'times': self.times, 'timestep_size':  self.timestep_size, 'y0_columns': self.y0_columns, 'parameter_columns':  self.parameter_columns, 'y0_column_dt':  self.y0_column_dt, 'error_threshold':  self.error_threshold}
-                    a = json.dumps(self.simulation_id)
-                    a = json.dumps(self.run_number)
-                    a = json.dumps(batch_number)
-                    a = json.dumps(self.rules)
-                    a = json.dumps(all_priors_df.loc[batch_number,:].to_dict())
-                    a = json.dumps(batch_size)
-                    a = json.dumps(self.is_timeseries_analysis)
-                    a = json.dumps(self.times)
-                    a = json.dumps(self.timestep_size)
-                    a = json.dumps(self.y0_columns)
-                    a = json.dumps(self.parameter_columns)
-                    a = json.dumps(self.y0_column_dt)
-                    a = json.dumps(self.error_threshold)
-                    # print(type(self.simulation_id))
+                    # a = json.dumps(self.simulation_id)
+                    # a = json.dumps(self.run_number)
+                    # a = json.dumps(batch_number)
+                    # a = json.dumps(self.rules)
+                    # a = json.dumps(all_priors_df.loc[batch_number,:].to_dict())
+                    # a = json.dumps(batch_size)
+                    # a = json.dumps(self.is_timeseries_analysis)
+                    # a = json.dumps(self.times)
+                    # a = json.dumps(self.timestep_size)
+                    # a = json.dumps(self.y0_columns)
+                    # a = json.dumps(self.parameter_columns)
+                    # a = json.dumps(self.y0_column_dt)
+                    # a = json.dumps(self.error_threshold)
+                    # # print(type(self.simulation_id))
                     # print(type(self.run_number))
                     # print(type(batch_number))
                     # print('rules--------------')
                     # print(type(self.rules))
-                    # walk_dict(self.rules)
+                    walk_dict(self.rules)
                     # print('-------------')
                     # print(type(all_priors_df.loc[batch_number,:].to_dict()))
                     # print(type(batch_size))
