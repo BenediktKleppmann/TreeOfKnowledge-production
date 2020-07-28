@@ -396,8 +396,8 @@ def get_data_from_random_related_object(simulation_id, objects_dict, environment
         objects_data['all_attribute_values'] = all_attribute_values
 
     else: 
-        objects_data['sorted_attribute_ids'] = []
         objects_data['all_attribute_values'] = {object_number:{'object_attributes':{}} for object_number in object_numbers}
+        objects_data['sorted_attribute_ids'] = []
         
     print('-- end get_data_from_random_related_object --')
     return objects_data

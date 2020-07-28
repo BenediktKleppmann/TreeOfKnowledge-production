@@ -714,7 +714,6 @@
 					var response = JSON.parse(this.responseText);
 					
 					if (response["objects_data"]["sorted_attribute_ids"].length == 0) {					
-						sorted_attribute_ids = []
 						object_numbers = Object.keys(objects_dict);
 						for (var i = 0; i < object_numbers.length ; i++) {
 							object_number = parseInt(object_numbers[i]);
@@ -1385,10 +1384,14 @@
 	// Draw Right Sidebar ==============================================================		
 	function drawObjectAttributeTable(object_number) {
 		var object_attributes = objects_dict[object_number]['object_attributes'];
-		var object_attribute_ids = Object.keys(object_attributes);
-		var object_sorted_attribute_ids = sorted_attribute_ids.filter(function(item) {
-		  return object_attribute_ids.includes(item); 
-		})
+		var object_sorted_attributes = execution_order['attribute_execution_order'][objects_dict[object_number]['object_type_id']]['used_attributes'];
+		var object_sorted_attribute_ids = [];
+		for (var i = 0; i < object_sorted_attributes.length ; i++) {
+			object_sorted_attribute_ids.push(String(object_sorted_attributes[i]['id']));
+		}
+		//var object_sorted_attribute_ids = sorted_attribute_ids.filter(function(item) {
+		//  return object_attribute_ids.includes(item); 
+		//})
 
 		
 		if (!got_object_data){
