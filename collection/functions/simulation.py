@@ -26,6 +26,19 @@ import boto3
 import psycopg2
 import time
 
+
+
+
+def walk_dict(d,depth=0):
+    for k,v in sorted(d.items(),key=lambda x: x[0]):
+        if isinstance(v, dict):
+            print ("  ")*depth + ("%s:" % k)
+            walk_dict(v,depth+1)
+        else:
+            print ("  ")*depth + "%s: %s (%s)" % (k, v, str(type(v))) 
+
+
+
 # called from edit_model.html
 class Simulator:
     """This class gets initialized with values specified in edit_simulation.html.
@@ -513,15 +526,25 @@ class Simulator:
                     print(type(self.simulation_id))
                     print(type(self.run_number))
                     print(type(batch_number))
+                    print('rules--------------')
                     print(type(self.rules))
+                    walk_dict(self.rules)
+                    print('-------------')
                     print(type(all_priors_df.loc[batch_number,:].to_dict()))
                     print(type(batch_size))
                     print(type(self.is_timeseries_analysis))
                     print(type(self.times))
                     print(type(self.timestep_size))
+                    print('y0_columns--------------')
                     print(type(self.y0_columns))
+                    print('-------------')
+                    print('parameter_columns--------------')
                     print(type(self.parameter_columns))
+                    walk_dict(self.parameter_columns)
+                    print('-------------')
+                    print('parameter_columns--------------')
                     print(type(self.y0_column_dt))
+                    print('-------------')
                     print(type(self.error_threshold))
 
                     sqs = boto3.client('sqs', region_name='eu-central-1')
