@@ -304,7 +304,7 @@ class Simulator:
                             histogram, mean, standard_dev, nb_of_values_in_posterior, message= get_from_db.get_single_pdf(simulation_id, object_number, rule_id, True)
                             if histogram is None:
                                 histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations = get_from_db.get_rules_pdf(rule_id, True)
-                            rule['histogram'] = histogram
+                            rule['histogram'] = (list(histogram[0]), list(histogram[1]))
 
                         # parameter
                         if not rule['learn_posterior']:
@@ -317,7 +317,7 @@ class Simulator:
                                 min_value = rule['parameters'][used_parameter_id]['min_value']
                                 max_value = rule['parameters'][used_parameter_id]['max_value']
                                 histogram = (histogram[0], np.linspace(min_value,max_value,31))
-                                rule['parameters'][used_parameter_id]['histogram'] = histogram
+                                rule['parameters'][used_parameter_id]['histogram'] = (list(histogram[0]), list(histogram[1]))
 
 
                         # used_columns
