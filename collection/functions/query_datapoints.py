@@ -549,6 +549,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
             sql_string1    += ''' ) as inner_query
                                 ORDER BY RANDOM()
                                 LIMIT %s;''' % max_number_of_instances
+            print(sql_string1)
             cursor.execute(sql_string1)
 
 
@@ -961,7 +962,6 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             sql_string1    += '''  ) as inner_query
                                 ORDER BY RANDOM()
                                 LIMIT %s;''' % max_number_of_instances
-            pdb.set_trace()
             cursor.execute(sql_string1)
 
 
