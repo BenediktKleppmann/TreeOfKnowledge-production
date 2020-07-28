@@ -494,7 +494,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
 
 
 
-            if len(filter_facts)>0:
+            if len(filter_facts)>0 or y0_columns is not None:
                 if len(relation_ids) > 0:
                     sql_string1    += ''' INNER JOIN ( '''
                 else: 
@@ -961,6 +961,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             sql_string1    += '''  ) as inner
                                 ORDER BY RANDOM()
                                 LIMIT %s;''' % max_number_of_instances
+            pdb.set_trace()
             cursor.execute(sql_string1)
 
 
@@ -1014,6 +1015,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             objects_table_length = 0
             objects_table_length = cursor.fetchall()[0][0]
             node_sizes[object_number] = objects_table_length
+            print('len(table' + str(object_number) + ') = ' + str(objects_table_length))
 
             # add nodes and edges (the edge-weight is an id used for storing additional edge_info)
             G.add_node(object_number)
@@ -1071,6 +1073,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             new_origin_table_length = cursor.fetchall()[0][0]
             node_sizes[str(origin_object_nb)] = new_origin_table_length
             del node_sizes[str(target_object_nb)] 
+            print('collapsing - table length = ' + str(new_origin_table_length))
 
 
 
@@ -1117,7 +1120,6 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             query_string = "SELECT DISTINCT obj%sattrobject_id FROM object_ids_table" % (object_number)
             cursor.execute(query_string)
             object_ids = [entry[0] for entry in cursor.fetchall()]
-
             if sqlite_database:
                 sql_string5 = '''
                             SELECT 
@@ -1185,8 +1187,9 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             # ------------------------------------------------------------
 
             object_ids_df = pd.merge(object_ids_df, broad_table_df, left_on='obj%sattrobject_id' % object_number, right_on='object_id', how='inner')
+            print('joining remaining data obj %s (%s rows) - table length = %s' %  (object_number, len(broad_table_df), len(object_ids_df)))
 
-
+    
     # ==================================================================================================
     # PART 4: convert to correct datatype
     # ================================================================================================== 
@@ -1204,7 +1207,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             elif col_data_type in ['boolean','bool']:
                 object_ids_df[column_name] = object_ids_df[column_name].replace({'True':True,'False':False})
 
-
+    print('converted datatypes - table length = ' + str(len(object_ids_df)))
     return object_ids_df
 
 

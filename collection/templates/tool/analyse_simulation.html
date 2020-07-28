@@ -712,10 +712,11 @@
 		for (var i = 0; i < object_numbers.length; i++) {
 			var object_number = object_numbers[i];
 			
-			var column_names = Object.keys(simulation_data['0-1']);
+			var first_simulation_key = Object.keys(simulation_data)[0]
+			var column_names = Object.keys(simulation_data[first_simulation_key]);
 			for (var j = 0; j < column_names.length; j++) {
 				var column_name = column_names[j];
-				if (!column_name.includes('object_id') && !column_name.includes('param') && column_name!='delta_t') {
+				if (column_name.includes('obj' + String(object_number) + 'attr') && !column_name.includes('object_id')) {
 					var attribute_id = parseInt(column_name.split('attr')[1]);
 					
 					for (var period_number = 0; period_number < number_of_periods; period_number++) {

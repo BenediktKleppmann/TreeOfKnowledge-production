@@ -1054,7 +1054,7 @@ var parameter_info = {};
 		//#rule-info-top-left
 		
 		rule_info_top_left_html = 	'<div id="has-if-condition-field">' +
-										'<input type="checkbox" class="form-check-input" id="has_if_condition" onchange="changeIfConditionCheckbox(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\', ' + rule_id + ')">' +
+										'<input type="checkbox" class="form-check-input" id="has_if_condition" onchange="changeIfConditionCheckbox(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\', null)">' +
 										'<label class="form-check-label" for="has_if_condition">&nbsp;IF Condition</label>' +
 									'</div>' +
 									'<div id="if-textarea" style="display:none;">' +
@@ -1527,7 +1527,7 @@ var parameter_info = {};
 		if (has_if_condition){
 			
 			var condition_text = '';
-			if (Object.keys(objects_dict[object_number]["object_rules"][attribute_id]).includes(String(rule_id))) {
+			if ((rule_id != null) && (Object.keys(objects_dict[object_number]["object_rules"][attribute_id]).includes(String(rule_id)))) {
 				condition_text = objects_dict[object_number]["object_rules"][attribute_id][rule_id]['condition_text']
 			}
 			

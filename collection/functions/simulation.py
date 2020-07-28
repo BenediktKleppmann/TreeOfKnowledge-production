@@ -65,7 +65,7 @@ class Simulator:
 
         # IMPORTANT SETTINGS  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         
-        limit_to_populated_y0_columns = True
+        limit_to_populated_y0_columns = False
         # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         
 
@@ -132,14 +132,15 @@ class Simulator:
         reduced_objects_dict = {}
         for object_number in self.objects_dict.keys():
             reduced_objects_dict[object_number] = {'object_filter_facts':self.objects_dict[object_number]['object_filter_facts'], 'object_relations':self.objects_dict[object_number]['object_relations'] }
-        new_simulation_state_code = str(self.is_timeseries_analysis) + str(reduced_objects_dict) + str(self.simulation_start_time) + str(self.simulation_end_time) + str(self.timestep_size) + str(self.y0_columns) + str(self.max_number_of_instances) + str(execution_order['attribute_execution_order'])
+        new_simulation_state_code = str(self.is_timeseries_analysis) + '|' + str(self.simulation_start_time) + '|' + str(self.simulation_end_time) + '|' + str(self.timestep_size) + '|' + str(self.y0_columns) + '|' + str(self.max_number_of_instances) + '|' + str(reduced_objects_dict) + '|' + str(execution_order['attribute_execution_order'])
         if 'simulation_state_code' in validation_data.keys():
-            print('NEW QUERY?  %s == %s'  % (validation_data['simulation_state_code'], new_simulation_state_code))
+            print(str(validation_data['simulation_state_code'] == new_simulation_state_code))
+            print('checking ' + validation_data['simulation_state_code'][:100] + '                              ==                       ' + new_simulation_state_code[:100])
         if 'simulation_state_code' in validation_data.keys() and validation_data['simulation_state_code'] == new_simulation_state_code:
             self.df = pd.DataFrame.from_dict(validation_data['df'])
             self.y0_values = validation_data['y0_values']
         else:
-            (self.df, self.y0_values) = self.get_new_df_and_y0_values(self.is_timeseries_analysis, self.objects_dict, self.simulation_start_time, self.simulation_end_time, self.timestep_size, limit_to_populated_y0_columns, self.times, self.y0_columns, self.max_number_of_instances, execution_order['attribute_execution_order'])
+            (self.df, self.y0_values) = self.get_new_df_and_y0_values(self.is_timeseries_analysis, self.simulation_start_time, self.simulation_end_time, self.timestep_size, limit_to_populated_y0_columns, self.times, self.y0_columns, self.max_number_of_instances, self.objects_dict, execution_order['attribute_execution_order'])
             validation_data = {'simulation_state_code': new_simulation_state_code,
                                 'df': self.df.to_dict(orient='list'),
                                 'y0_values':self.y0_values}
@@ -213,7 +214,7 @@ class Simulator:
 
                         # adapt 2: aggregation_exec
                         if len(rule['aggregation_exec']) > 0:
-                            rule['aggregation_exec'] = self.collapse_relations(rule['effect_exec'], relation_dict, object_number)
+                            rule['aggregation_exec'] = self.collapse_relations(rule['aggregation_exec'], relation_dict, object_number)
                             used_objects = []
                             for agg_object_number in object_numbers:
                                 required_object_columns = ['obj' + str(agg_object_number) + 'attr' + str(attribute_id) for attribute_id in rule['used_attribute_ids']]
@@ -231,7 +232,7 @@ class Simulator:
                                 sum_occurences = re.findall(r'SUM\(.*\)', rule['effect_exec'])
                                 for sum_occurence in sum_occurences:
                                     sum_term = sum_occurence[4:-1]
-                                    object_sum_terms = [sum_term.replace('x_df.', object_condition + ' * df.') for object_condition in object_conditions]
+                                    object_sum_terms = [sum_term.replace('x_df.', object_condition + ' * df.obj' + used_object) for used_object, object_condition in zip(used_objects,object_conditions)]
                                     sum_replacement_str = '(%s)' % (' + '.join(object_sum_terms))
                                     rule['effect_exec'] = rule['effect_exec'].replace(sum_occurence, sum_replacement_str)
                             else:
@@ -302,11 +303,12 @@ class Simulator:
                         rule['condition_exec'] = rule['condition_exec'].replace('df.', 'populated_df.')
 
                         # check if all the mentioned columns appear in df
-                        mentioned_columns = re.findall(r'df\.[a-zA-Z0-9_]+', rule['condition_exec'] + ' ' + rule['aggregation_exec'] + ' ' + rule['effect_exec'])
+                        mentioned_columns = re.findall(r'df\.[a-zA-Z0-9_]+', rule['condition_exec'] + ' ' + rule['effect_exec'])
                         mentioned_columns = [col for col in mentioned_columns if col[:8] != 'df.param']
                         mentioned_columns += ['df.' + rule['column_to_change']]
                         df_columns = ['df.'+col for col in self.df.columns]
                         if (set(mentioned_columns) <= set(df_columns + ['df.delta_t', 'df.randomNumber'])):
+                            print('rule' + str(rule['id']) + ': IF ' + rule['condition_exec'] + '  THEN ' + rule['effect_exec'])
                             self.rules.append(rule)
                         else: 
                             raise Exception("The following columns are missing: " + str(list(set(mentioned_columns) - set(df_columns + ['df.delta_t']))))
@@ -315,7 +317,7 @@ class Simulator:
                         self.not_used_rules[object_number][rule_id] = {'condition_text':rule['condition_text'], 
                                                                         'effect_text':rule['effect_text'], 
                                                                         'reason':str(traceback.format_exc())}
-
+                                         
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 6, "total_number": 6}))
 
@@ -357,7 +359,7 @@ class Simulator:
 
 
 
-    def get_new_df_and_y0_values(self, is_timeseries_analysis, objects_dict, simulation_start_time, simulation_end_time, timestep_size, limit_to_populated_y0_columns, times, y0_columns, max_number_of_instances, attribute_execution_order):
+    def get_new_df_and_y0_values(self, is_timeseries_analysis, simulation_start_time, simulation_end_time, timestep_size, limit_to_populated_y0_columns, times, y0_columns, max_number_of_instances, objects_dict, attribute_execution_order):
 
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 2, "total_number": 6}))
@@ -878,7 +880,10 @@ class Simulator:
 
                 # df.loc[satisfying_rows,rule['column_to_change']] = new_values 
                 satisfying_rows[satisfying_rows.isna()] = False
-                new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
+                try:
+                    new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
+                except:
+                    pdb.set_trace()
                 df[rule['column_to_change']] = new_values
 
 
@@ -906,7 +911,12 @@ class Simulator:
     #  Monte-Carlo  ---------------------------------------------------------------------------------
     def __run_monte_carlo_simulation(self, nb_of_simulations=300):
         print('¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬  __run_monte_carlo_simulation   ¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬')
-        y0 = np.asarray(self.df[self.y0_columns].copy())
+        # if df is longer than nb_of_simulations, shorten it (saves unnecessary computation)
+        df_short = self.df[:nb_of_simulations]
+        y0_values_df_short = self.y0_values_df[:nb_of_simulations]
+        y0_values_short = self.y0_values[:nb_of_simulations]
+
+        y0 = np.asarray(df_short[self.y0_columns].copy())
         batch_size = len(y0)
 
 
@@ -915,13 +925,14 @@ class Simulator:
 
         number_of_batches = math.ceil(nb_of_simulations/batch_size)
         for batch_number in range(number_of_batches):
+            print('batch_number: ' + str(batch_number) + '/' + str(number_of_batches))
 
 
             with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
                 progress_tracking_file.write(json.dumps({"text": 'Making predictions - simulation: ', "current_number": batch_number*batch_size, "total_number": nb_of_simulations}))
 
 
-            df = self.df.copy()
+            df = df_short.copy()
 
             simulation_data_df = df.copy()
             simulation_data_df['initial_state_id'] = df.index
@@ -952,6 +963,7 @@ class Simulator:
 
             y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
             for period in range(len(self.times[1:])):
+                print('period: ' + str(period) + '/' + str(len(self.times[1:])))
                 df['randomNumber'] = np.random.random(batch_size)
                 for rule in self.rules:
                     populated_df_rows = pd.Series([True] * len(df))
@@ -1023,8 +1035,8 @@ class Simulator:
                     errors = np.zeros(len(calculated_values))
                     correct_value = ['unknown'] * len(calculated_values)
                     if rule['column_to_change'] in self.y0_columns:
-                        errors = self.error_of_single_values(np.array(calculated_values), rule['column_to_change'], period+1)
-                        correct_value = list(self.y0_values_df[rule['column_to_change'] + 'period' + str(period+1)])
+                        errors = self.error_of_single_values(df_short, y0_values_df_short, np.array(calculated_values), rule['column_to_change'], period+1)
+                        correct_value = list(y0_values_df_short[rule['column_to_change'] + 'period' + str(period+1)])
 
 
                     triggered_rule_infos_df = pd.DataFrame({'condition_satisfied': condition_satisfying_rows,
@@ -1066,7 +1078,7 @@ class Simulator:
                 y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
 
 
-            errors_dict = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), self.y0_values)
+            errors_dict = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), y0_values_short)
             print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
             print(str(errors_dict.keys()))
             print(len([str(index) + '-' + str(batch_nb) for index, batch_nb in zip(df.index, [batch_number]*len(df))]))
@@ -1162,7 +1174,6 @@ class Simulator:
                     error_in_error_range_non_null = np.nan_to_num(error_in_error_range, nan=0)  
                     error_in_error_range_non_null = np.minimum(error_in_error_range_non_null, 1)
 
-                    pdb.set_trace()
                     true_change_factor = (np.array(v_df[period_column])/np.array(v_df[period_column.split('period')[0]]))
                     true_change_factor_per_period = np.power(true_change_factor, (1/period_number))
                     simulated_change_factor = (np.array(u_df[period_column])/np.array(v_df[period_column.split('period')[0]]))
@@ -1196,9 +1207,9 @@ class Simulator:
 
 
 
-    def error_of_single_values(self, calculated_values, column_name, period):      
-        initial_values = np.array(self.df[column_name])
-        correct_values = np.array(self.y0_values_df[column_name + 'period' + str(period)])
+    def error_of_single_values(self, df, y0_values_df, calculated_values, column_name, period):      
+        initial_values = np.array(df[column_name])
+        correct_values = np.array(y0_values_df[column_name + 'period' + str(period)])
 
 
         if self.y0_column_dt[column_name] in ['string','bool','relation']:
