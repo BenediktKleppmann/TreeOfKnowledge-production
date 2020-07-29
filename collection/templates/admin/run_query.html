@@ -142,31 +142,37 @@
 					table_headers = response_dict["table_headers"];
 					
 
-				
-					table_html_string ='<div class="table-section">' +	
-											'<table class="table table-sm table-condensed data-table" style="width:' + (150*table_headers.length + 20) + 'px;">' +
-												'<thead>' +
-													'<tr>';
-
-					for (var j = 0; j < table_headers.length; j++) {
-						table_html_string +=  			'<th scope="col">' + table_headers[j] + '</th>';
-					}
+					if (table_data.length > 2000) {
+						table_html_string = 'The result has ' + String(table_data.length) + ' rows. Maximally 2000 can be displayed.'
 					
-					table_html_string +=  			'</tr>' +
-												'</thead>' +
-												'<tbody>';
+					} else {
+						table_html_string ='<div class="table-section">' +	
+												'<table class="table table-sm table-condensed data-table" style="width:' + (150*table_headers.length + 20) + 'px;">' +
+													'<thead>' +
+														'<tr>';
 
-					for (var j = 0; j < table_data.length; j++) {
-						table_html_string +=  		'<tr>';
-						for (var k = 0; k < table_data[j].length; k++) {
-							table_html_string +=  		'<td>' + table_data[j][k] + '</td>';
+						for (var j = 0; j < table_headers.length; j++) {
+							table_html_string +=  			'<th scope="col">' + table_headers[j] + '</th>';
 						}
-													'</tr>';
-					}
+						
+						table_html_string +=  			'</tr>' +
+													'</thead>' +
+													'<tbody>';
 
-					table_html_string += 		'</tbody>' +
-											'</table>';
-					$("#response-table").html(table_html_string);		
+						for (var j = 0; j < table_data.length; j++) {
+							table_html_string +=  		'<tr>';
+							for (var k = 0; k < table_data[j].length; k++) {
+								table_html_string +=  		'<td>' + table_data[j][k] + '</td>';
+							}
+														'</tr>';
+						}
+
+						table_html_string += 		'</tbody>' +
+												'</table>';
+						$("#response-table").html(table_html_string);		
+					}
+				} else {
+					$("#response-table").html(this.responseText);
 				}
 
 			}

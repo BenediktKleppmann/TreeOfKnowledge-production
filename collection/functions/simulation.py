@@ -111,7 +111,7 @@ class Simulator:
 
 
         #  ================  GET DATA  ===========================================
-
+        print('self.run_number: ' + str(self.run_number))
 
 
         #  --- y0_columns & y0_column_dt ---
