@@ -29,26 +29,6 @@ import time
 
 
 
-# def walk_dict(d,depth=0):
-#     if isinstance(d,list): 
-#         for el in d:
-#             if isinstance(el, dict) or isinstance(el, list):
-#                 walk_dict(el,depth+1)
-#             else:
-#                 print('%s (%s)' % (el, type(el)))
-#                 bla = json.dumps(el)
-#     else:
-#         for k,v in sorted(d.items(),key=lambda x: x[0]):
-#             if isinstance(v, dict):
-#                 print("%s:" % k)
-#                 bla = json.dumps(k)
-#                 walk_dict(v,depth+1)
-#             else:
-#                 print("%s: %s (%s)" % (k, v, str(type(v))))
-#                 bla = json.dumps(k)
-#                 bla = json.dumps(v)
-
-
 
 # called from edit_model.html
 class Simulator:
@@ -509,7 +489,6 @@ class Simulator:
                 for used_parameter_id in rule['used_parameter_ids']:
                     all_priors_df['param' + str(used_parameter_id)] = np.random.uniform(rule['parameters'][used_parameter_id]['min_value'], rule['parameters'][used_parameter_id]['max_value'], self.nb_of_tested_parameters)
         
-
 
         if len(all_priors_df) > 0:
             if self.run_locally:

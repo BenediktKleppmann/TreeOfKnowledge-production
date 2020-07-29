@@ -2022,6 +2022,14 @@ def backup_database(request):
 
 
 @staff_member_required
+def close_db_connections(request):
+    from django import db
+    db.connections.close_all()
+    return HttpResponse('success')
+
+
+
+@staff_member_required
 def clear_database(request):
     admin_fuctions.clear_object_types()
     admin_fuctions.clear_attributes()

@@ -140,6 +140,14 @@
 			</div>
 		</div>
 		<br>
+		<div class="form-group row">
+			<div id="script-description" class="col-sm-2">Close all DB Connections</div>
+			<div class="col-sm-8">
+				<button id="start-script-button" type="button" class="btn btn-success" onclick="close_db_connections()">Run</button>
+				<div id="response-close-db-connections"></div>
+			</div>
+		</div>
+		<br>
 		<button id="show-dangerous-scripts-button" type="button" class="btn btn-danger" onclick="show_dangerous_scripts()">Dangerous Scripts</button>
 		<div id="dangerous-scripts"></div>
 		
@@ -268,6 +276,22 @@
 		};
 
 		xmlhttp.open("POST", "/admin/backup_database/");
+		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		xmlhttp.send();	
+	}
+	
+	
+	//===  Close all DB Connections  =============================================================================	
+    function close_db_connections() {
+		var xmlhttp = new XMLHttpRequest();       
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				$('#response-close-db-connections').html(this.responseText);
+			}
+		};
+
+		xmlhttp.open("POST", "/admin/close_db_connections/");
 		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send();	

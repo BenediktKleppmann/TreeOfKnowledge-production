@@ -186,6 +186,7 @@ urlpatterns = [
     url(r'^admin/remove_null_datapoints/$', views.remove_null_datapoints, name='remove_null_datapoints'),
     url(r'^admin/remove_duplicate_datapoints/$', views.remove_duplicate_datapoints, name='remove_duplicate_datapoints'),
     url(r'^admin/backup_database/$', views.backup_database, name='backup_database'),
+    url(r'^admin/close_db_connections/$', views.close_db_connections, name='close_db_connections'),
     url(r'^admin/clear_database/$', views.clear_database, name='clear_database'),
     url(r'^admin/populate_database/$', views.populate_database, name='populate_database'),
 
