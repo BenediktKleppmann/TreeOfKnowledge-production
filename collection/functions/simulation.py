@@ -474,9 +474,11 @@ class Simulator:
         self.currently_running_learn_likelihoods = True
         batch_size = len(self.df)
 
+
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-            progress_dict_string = json.dumps({"learning_likelihoods": True, "nb_of_accepted_simulations_total": self.nb_of_tested_parameters * len(self.df), "nb_of_accepted_simulations_current": 0,  "learning__post_processing": "" , "running_monte_carlo": False })
-            progress_tracking_file.write(progress_dict_string)
+            progress_tracking_file.write(json.dumps({"text": 'Learning parameters - simulation:', "current_number": 0, "total_number": self.nb_of_tested_parameters * len(self.df)}))
+
+
 
         all_priors_df = pd.DataFrame()
         self.nb_of_sim_in_which_rule_was_used = 0
