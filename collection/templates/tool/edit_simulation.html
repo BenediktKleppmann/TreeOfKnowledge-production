@@ -123,7 +123,40 @@
 		background-color: rgb(244, 244, 244);
 	}
 	
+	/* Accorion0: Main */
+	#accordion-left-content-0 .form-group.row {
+		margin-bottom: 3px;
+	}
 	
+	#accordion-left-content-0 .left-panel-body {
+		padding: 23px 12px 9px 5px;
+	}
+	
+	#open-execution-modal-button {
+		border: 1px solid #ccc;
+		background: white;
+		width: 154px;
+	}
+	
+	#copy-save-simulation-buttons {
+		margin-top: 19px;
+	}
+	
+	#copy-simulation-button {
+		display: inline-block;
+	}
+	
+	#save-simulation-button {
+		display: inline-block;
+		margin-left: 5px;
+	}
+	
+	#open-copy-button {
+		margin-top: 5px;
+		border: 1px solid #ccc;
+	}
+
+	/* Accorion2: Objects */
 	.object-icon {
 		height: 55px;
 		width: 55px;
@@ -442,6 +475,7 @@
 	var available_object_types = {{ available_object_types|safe }};
 	var object_icons = {{ object_icons|safe }};
 	var available_relations = {{ available_relations|safe }};
+	var available_execution_orders = {{ available_execution_orders|safe }};
 	var objects_dict = {{ simulation_model.objects_dict|safe }};
 	var object_type_counts = {{ simulation_model.object_type_counts|safe }};
 	var total_object_count = {{ simulation_model.total_object_count|safe }};          
@@ -464,6 +498,7 @@
 	var run_locally = "{{ simulation_model.run_locally|safe }}";
 	var data_querying_info = {{ simulation_model.data_querying_info|safe }};
 	var is_timeseries_analysis = {{ simulation_model.is_timeseries_analysis|yesno:"true,false"  }};
+	var simulation_name = '{{ simulation_model.simulation_name }}';
 	var execution_order_id = {{ simulation_model.execution_order_id }};
 	var execution_order_description = '';
 	var execution_order = {};
@@ -482,11 +517,40 @@
 	 
 	 // Draw the Left Panel (For the Design/Scenario-State)    =============================================================================
 	function drawLeftPanel__design() {
+		
 	
 		left_panel__design = '<div class="accordion md-accordion" id="accordion-left" role="tablist" aria-multiselectable="true">' +	
 								'<div class="card">' +
+									'<div class="card-header" role="tab" id="accordion-left-header-0">' +
+										'<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-0" aria-expanded="false" aria-controls="accordion-left-content-0">Main</button>' +
+									'</div>' +
+									'<div id="accordion-left-content-0" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-0" data-parent="#accordion-left">' +
+										'<div class="card-body">' +
+											'<div class="form left-panel-body">' +
+												'<div class="form-group row">' +
+													'<label for="max" class="col-sm-5">Simulation Name</label>' +
+													'<div class="col-sm-7">' +
+														'<input id="simulation-name" class="form-control" value="">' +
+													'</div>' +
+												'</div>' +
+												'<div class="form-group row">' +
+													'<label for="max" class="col-sm-5">Execution Order</label>' +
+													'<div class="col-sm-7">' +
+														'<button id="open-execution-modal-button" class="btn btn-secondary" type="button" onclick="openSelectExecutionOrderModal()">' + available_execution_orders[execution_order_id]['name'] + '</button>' +
+													'</div>' +
+												'</div>' +
+												'<div id="copy-save-simulation-buttons">' +
+													'<button id="copy-simulation-button" class="btn btn-warning" type="button" onclick="copySimulation()">Copy Simulation</button>' +
+													'<button id="save-simulation-button" class="btn btn-primary" type="button" onclick="saveSimulation()">Save Simulation</button>' +
+												'</div>' +
+												'<div id="open-copy-button-frame"></div>' +
+											'</div>' +
+										'</div>' +
+									'</div>' +
+								'</div>' +
+								'<div class="card">' +
 									'<div class="card-header" role="tab" id="accordion-left-header-1">' +
-										'<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-1" aria-expanded="false" aria-controls="accordion-left-content-1">Settings</button>' +
+										'<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-1" aria-expanded="false" aria-controls="accordion-left-content-1">Environment</button>' +
 									'</div>' +
 									'<div id="accordion-left-content-1" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-1" data-parent="#accordion-left">' +
 										'<div class="card-body">' +
@@ -559,6 +623,23 @@
 	
 		$("#left-panel").html(left_panel__design);	
 		
+		// initialize simulation-name
+		$("#simulation-name").val(simulation_name);
+		$("#simulation-name").focusout(function(){
+			simulation_name = $("#simulation-name").val()
+		});
+		
+		// initialize execution-order
+		$("#execution-order").val(execution_order_id);
+		$("#execution-order").change(function(){		
+		if (execution_order_id == ''){
+		
+		} else {
+			execution_order_id = $("#execution-order").val()
+		}
+		});
+		
+		// initialize max_number_of_instances
 		$("#max_number_of_instances").val(max_number_of_instances);
 		$("#max_number_of_instances").focusout(function(){
 			max_number_of_instances = $("#max_number_of_instances").val()
@@ -1535,6 +1616,8 @@
 
 {% include "tool/includes/edit_object_behaviour_modal.html" %} 
 {% include "tool/includes/edit_object_type_behaviour_modal.html" %} 
+{% include "tool/includes/select_execution_order_modal.html" %} 
+
 	
 
 	

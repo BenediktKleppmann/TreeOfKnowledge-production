@@ -8,7 +8,7 @@
 # (at your option) any later version - see http://www.gnu.org/licenses/.
 #####################################################################
 
-from collection.models import Uploaded_dataset, Object_types, Attribute, Object, Likelihood_fuction
+from collection.models import Uploaded_dataset, Object_types, Attribute, Object, Likelihood_fuction, Execution_order
 from django.db.models import Count
 import json
 import numpy as np
@@ -184,19 +184,22 @@ def get_most_commonly_used_object_types():
         object_type_id = object_type.pop('id')
         result[object_type_id] = object_type
 
-    print("===================================================")
-    print("===================================================")
-    print("===================================================")
-    print(top_object_groups)
-    print("---------------------------------------------------")
-    print(top_object_type_ids)
-    print("---------------------------------------------------")
-    print(top_object_types)
-    print("===================================================")
-    print("===================================================")
-    print("===================================================")
+    return result
+
+
+
+# used in edit_model.html
+# TODO: CHANGE THIS LATER TO: sort execution orders after popularity
+def get_available_execution_orders():
+    execution_orders = Execution_order.objects.all().values('id', 'name','description')
+
+    result = {}
+    for execution_order in execution_orders:
+        execution_order_id = execution_order.pop('id')
+        result[execution_order_id] = execution_order
 
     return result
+
 
 
 # used in edit_model.html

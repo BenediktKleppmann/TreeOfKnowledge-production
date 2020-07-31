@@ -1283,24 +1283,15 @@
 		}
 		
 		var xmlhttp = new XMLHttpRequest();       
-		xmlhttp.open("POST", "/tool/save_execution_order/");
+		xmlhttp.open("POST", "/tool/save_changed_execution_order/");
 		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		xmlhttp.send(JSON.stringify(request_body));	
 		
 		
-		//save Simulation
-		// get simulation_id & some settings
+		//save Simulation --------------------------
 		var url_components = window.location.href.split("/");
 		var simulation_id = url_components[url_components.length - 2];
-		var is_timeseries_analysis = ($('#analysis_type').find(":selected").text() == 'Simulate changes over time');
-		var nb_of_tested_parameters = parseInt($('#nb_of_tested_parameters').val());
-		var nb_of_parameters_to_keep = parseInt($('#nb_of_parameters_to_keep').val());
-		var error_threshold = parseFloat($('#error_threshold').val());
-		var run_locally = $('#run_locally').children("option:selected").val();
-		var run_locally__bool = run_locally =='True';
-		
-			
 		
 		//update the object positions in objects_dict
 		var object_numbers = Object.keys(objects_dict);
@@ -1311,38 +1302,45 @@
 			objects_dict[object_number]['position']['y'] = cell['attributes']['position']['y'];	
 		}
 
-	
-		if($('#timestep_size').length){
-			var number_of_timestep_units = document.getElementById('timestep_size').value;	
-			if (isNaN(number_of_timestep_units)) {
-				alert("Please enter a number as Timestep (Δt)");
-				return
-			}
-			var number_of_timestep_units = parseInt(number_of_timestep_units, 10) || null;
-			timestep_size = number_of_timestep_units * document.getElementById('timestep_unit').value;
-		}
-		
+
 		request_body = {
 			'simulation_id': simulation_id,
-			'is_timeseries_analysis': is_timeseries_analysis,
 			'objects_dict': objects_dict,
 			'y_value_attributes': y_value_attributes,
 			'sorted_attribute_ids': sorted_attribute_ids,
 			'object_type_counts': object_type_counts,
 			'total_object_count': total_object_count,
 			'number_of_additional_object_facts': number_of_additional_object_facts,
+			'simulation_name': simulation_name,
 			'execution_order_id':execution_order_id,
 			'environment_start_time': environment_start_time,
 			'environment_end_time': environment_end_time,
 			'simulation_start_time': simulation_start_time,
 			'simulation_end_time': simulation_end_time,
-			'timestep_size': timestep_size,
-			'nb_of_tested_parameters': nb_of_tested_parameters,
-			'nb_of_parameters_to_keep': nb_of_parameters_to_keep,
 			'max_number_of_instances': max_number_of_instances,
-			'error_threshold': error_threshold,
-			'run_locally': run_locally__bool
 		}
+		
+		// if in simulate-view: get some additional facts
+		if (window_state=='simulate') {
+			request_body['is_timeseries_analysis'] = ($('#analysis_type').find(":selected").text() == 'Simulate changes over time');
+			request_body['nb_of_tested_parameters'] = parseInt($('#nb_of_tested_parameters').val());
+			request_body['nb_of_parameters_to_keep'] = parseInt($('#nb_of_parameters_to_keep').val());
+			request_body['error_threshold'] = parseFloat($('#error_threshold').val());
+			run_locally_string = $('#run_locally').children("option:selected").val();
+			request_body['run_locally'] = run_locally_string =='True';
+			
+			
+			if($('#timestep_size').length){
+				var number_of_timestep_units = document.getElementById('timestep_size').value;	
+				if (isNaN(number_of_timestep_units)) {
+					alert("Please enter a number as Timestep (Δt)");
+					return
+				}
+				var number_of_timestep_units = parseInt(number_of_timestep_units, 10) || null;
+				request_body['timestep_size'] = number_of_timestep_units * document.getElementById('timestep_unit').value;
+			}
+		}
+		
 		
 		var xmlhttp = new XMLHttpRequest();       
 		xmlhttp.open("POST", "/tool/save_changed_simulation/");
@@ -1358,9 +1356,25 @@
 	
 	
 	
+	function copySimulation() {
+
+		var url_components = window.location.href.split("/");
+		var simulation_id = url_components[url_components.length - 2];
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				id_of_new_simulation_record = parseInt(this.responseText);
+				$('#open-copy-button-frame').html('<button id="open-copy-button" type="button" class="btn" onclick="openCopyInNewWindow(' + id_of_new_simulation_record + ');" >Open Copy in new Window</button>');
+			}
+		};
+		xhttp.open('GET', '/tool/copy_simulation?simulation_id=' + simulation_id , true);
+		xhttp.send();
+	}
 	
-	
-	
+	function openCopyInNewWindow(new_simulation_id) {
+		var w = window.open("/tool/edit_simulation/" + new_simulation_id + "/");
+		$('#open-copy-button-frame').html('');
+	}
 	
 	
 	

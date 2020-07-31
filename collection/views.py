@@ -1107,26 +1107,35 @@ def save_changed_simulation(request):
         try:
             request_body = json.loads(request.body)
             model_record = Simulation_model.objects.get(id=request_body['simulation_id'])
+
             model_record.aborted = False
-            model_record.is_timeseries_analysis = request_body['is_timeseries_analysis']
+            
             model_record.objects_dict = json.dumps(request_body['objects_dict'])
             model_record.y_value_attributes = json.dumps(request_body['y_value_attributes'])
             model_record.sorted_attribute_ids = json.dumps(request_body['sorted_attribute_ids'])
             model_record.object_type_counts = json.dumps(request_body['object_type_counts'])
             model_record.total_object_count = request_body['total_object_count']
             model_record.number_of_additional_object_facts = request_body['number_of_additional_object_facts']
+            model_record.simulation_name = request_body['simulation_name']
             model_record.execution_order_id = request_body['execution_order_id']
             model_record.environment_start_time = request_body['environment_start_time']
             model_record.environment_end_time = request_body['environment_end_time']
             model_record.simulation_start_time = request_body['simulation_start_time']
             model_record.simulation_end_time = request_body['simulation_end_time']
-            model_record.timestep_size = request_body['timestep_size']
-            model_record.nb_of_tested_parameters = request_body['nb_of_tested_parameters']
-            model_record.nb_of_parameters_to_keep = request_body['nb_of_parameters_to_keep']
             model_record.max_number_of_instances = request_body['max_number_of_instances']
-            model_record.error_threshold = request_body['error_threshold']
-            model_record.run_locally = request_body['run_locally']
+
             # model_record.selected_attribute = request_body['selected_attribute']
+            if 'is_timeseries_analysis' in request_body:
+                model_record.is_timeseries_analysis = request_body['is_timeseries_analysis']
+                model_record.nb_of_tested_parameters = request_body['nb_of_tested_parameters']
+                model_record.nb_of_parameters_to_keep = request_body['nb_of_parameters_to_keep']
+                model_record.error_threshold = request_body['error_threshold']
+                model_record.run_locally = request_body['run_locally']
+
+            if 'timestep_size' in request_body:
+                model_record.timestep_size = request_body['timestep_size']
+
+
             model_record.save()
 
             return HttpResponse("success")
@@ -1137,13 +1146,11 @@ def save_changed_simulation(request):
         return HttpResponse("This must be a POST request.")
 
 
-@login_required
-def abort_simulation(request):
-    simulation_id = int(request.GET.get('simulation_id', ''))
-    model_record = Simulation_model.objects.get(id=simulation_id)
-    model_record.aborted = True
-    model_record.save()
-    return HttpResponse("success")
+
+
+
+
+
 
 
 
@@ -1274,10 +1281,10 @@ def save_likelihood_function(request):
 
 
 
-# used in: edit_simulation__simulate (the saveSimulation function)
+# used in: edit_simulation__simulate (the saveSimulation function) and select_execution_order_modal.html
 @login_required
-def save_execution_order(request):
-    print('-------  save_execution_order  -----------')
+def save_changed_execution_order(request):
+    print('-------  save_changed_execution_order  -----------')
     if request.method == 'POST':
         try:
             request_body = json.loads(request.body)
@@ -1285,7 +1292,8 @@ def save_execution_order(request):
                 execution_order_record = Execution_order.objects.get(id=request_body['id'])
                 execution_order_record.name = request_body['name']
                 execution_order_record.description = request_body['description']
-                execution_order_record.execution_order = json.dumps(request_body['execution_order'])
+                if ('execution_order' in request_body):
+                    execution_order_record.execution_order = json.dumps(request_body['execution_order'])
                 execution_order_record.save()
                 return HttpResponse(str(execution_order_record.id))
             else:
@@ -1299,14 +1307,29 @@ def save_execution_order(request):
         return HttpResponse("This must be a POST request.")
 
 
+# used in: select_execution_order_modal.html
+@login_required
+def save_new_execution_order(request):
+    id_to_copy = int(request.GET.get('simulation_id', ''))
+    name = request.GET.get('simulation_id', '')
+    description = request.GET.get('simulation_id', '')
 
+    copied_execution_order = Execution_order.objects.get(id=id_to_copy).execution_order
+
+    new_execution_order_record = Simulation_model(name=name,
+                                        description=description,
+                                        execution_order=copied_execution_order)
+
+    new_execution_order_record.save()
+    new_execution_order_id = new_execution_order_record.id
+    new_execution_order_dict = {'id':new_execution_order_id, 'name':name, 'description':description}
+    return HttpResponse(json.dumps(new_execution_order_dict))
 
 
 
 # ==================
 # DELETE
 # ==================
-
 
 # used in: upload_data3 (the create-object-type modal)
 @login_required
@@ -1396,6 +1419,24 @@ def delete_parameter(request):
             return HttpResponse(str(error))
     else:
         return HttpResponse("This must be a POST request.")
+
+
+
+@login_required
+def delete_execution_order(request):
+    if request.method == 'POST':
+        try:
+            execution_order_id = int(request.body)
+            parameter = Execution_order.objects.get(id=execution_order_id)
+            parameter.delete()
+            return HttpResponse("success")
+            
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
+
 
 # ==================
 # PROCESS
@@ -1699,6 +1740,7 @@ def edit_simulation_new(request):
                                         object_type_counts=json.dumps({}),
                                         total_object_count=0,
                                         number_of_additional_object_facts=2,
+										simulation_name='New Simulation',
                                         execution_order_id=1,
                                         not_used_rules='{}',
                                         environment_start_time=946684800, 
@@ -1737,7 +1779,20 @@ def edit_simulation(request, simulation_id):
     available_object_types = get_from_db.get_most_commonly_used_object_types()
     object_icons = [icon_name[:-4] for icon_name in os.listdir("collection/static/images/object_icons/")]
     available_relations = get_from_db.get_available_relations()
-    return render(request, 'tool/edit_simulation.html', {'simulation_model':simulation_model, 'available_object_types': available_object_types, 'object_icons': object_icons, 'available_relations':available_relations})
+    available_execution_orders = get_from_db.get_available_execution_orders()
+    return render(request, 'tool/edit_simulation.html', {'simulation_model':simulation_model, 'available_object_types': available_object_types, 'object_icons': object_icons, 'available_relations':available_relations, 'available_execution_orders':available_execution_orders})
+
+
+
+
+@login_required
+def copy_simulation(request):
+    simulation_id = int(request.GET.get('simulation_id', ''))
+    simulation_record = Simulation_model.objects.get(id=simulation_id)
+    simulation_record.id = None
+    simulation_record.save()
+    id_of_new_simulation_record = simulation_record.id
+    return HttpResponse(str(id_of_new_simulation_record))
 
 
 
@@ -1771,7 +1826,13 @@ def analyse_simulation(request, simulation_id):
     return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model})
 
 
-
+@login_required
+def abort_simulation(request):
+    simulation_id = int(request.GET.get('simulation_id', ''))
+    model_record = Simulation_model.objects.get(id=simulation_id)
+    model_record.aborted = True
+    model_record.save()
+    return HttpResponse("success")
 
 # @login_required
 # def setup_rule_learning(request, simulation_id):

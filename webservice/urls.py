@@ -123,12 +123,14 @@ urlpatterns = [
     url(r'^tool/save_changed_object_type_icon/$', views.save_changed_object_type_icon, name='save_changed_object_type_icon'),
     url(r'^tool/save_rule_parmeter/$', views.save_rule_parmeter, name='save_rule_parmeter'),
     url(r'^tool/save_likelihood_function/$', views.save_likelihood_function, name='save_likelihood_function'),
-    url(r'^tool/save_execution_order/$', views.save_execution_order, name='save_execution_order'),
+    url(r'^tool/save_changed_execution_order/$', views.save_changed_execution_order, name='save_changed_execution_order'),
+    url(r'^tool/save_new_execution_order/$', views.save_new_execution_order, name='save_new_execution_order'),
     # delete
     url(r'^tool/delete_object_type/$', views.delete_object_type, name='delete_object_type'),
     url(r'^tool/delete_attribute/$', views.delete_attribute, name='delete_attribute'),
     url(r'^tool/delete_rule/$', views.delete_rule, name='delete_rule'),
     url(r'^tool/delete_parameter/$', views.delete_parameter, name='delete_parameter'),
+    url(r'^tool/delete_execution_order/$', views.delete_execution_order, name='delete_execution_order'),
     # process
     url(r'^tool/edit_column/$', views.edit_column, name='edit_column'),
     # url(r'^tool/learn_rule_from_factors/$', views.learn_rule_from_factors, name='learn_rule_from_factors'),
@@ -147,8 +149,10 @@ urlpatterns = [
 	# Simulation  -------------------------------------------------------------------------    
     url(r'^tool/edit_simulation/$', views.edit_simulation_new, name='edit_simulation_new'),
     url(r'^tool/edit_simulation/(?P<simulation_id>[-\d]+)/$', views.edit_simulation, name='edit_simulation'),
+    url(r'^tool/copy_simulation/$', views.copy_simulation, name='copy_simulation'),
     url(r'^tool/get_simulation_progress/$', views.get_simulation_progress, name='get_simulation_progress'),
     url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/$', views.analyse_simulation, name='analyse_simulation'),
+    url(r'^tool/abort_simulation/$', views.abort_simulation, name='abort_simulation'),
     # url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/setup_rule_learning/$', views.setup_rule_learning, name='setup_rule_learning'),
     # url(r'^tool/learn_rule/(?P<learned_rule_id>[-\d]+)/$', views.learn_rule, name='learn_rule'),
     

@@ -175,6 +175,7 @@ class Simulation_model(models.Model):
     object_type_counts = models.TextField()
     total_object_count = models.IntegerField()
     number_of_additional_object_facts = models.IntegerField()
+    simulation_name = models.TextField()
     execution_order_id = models.IntegerField()
     not_used_rules = models.TextField()
     environment_start_time = models.BigIntegerField()
