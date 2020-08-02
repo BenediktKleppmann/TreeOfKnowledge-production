@@ -165,6 +165,8 @@ class Simulator:
 
 
         #  ================  PREPARE RULES  ===========================================
+        with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
+            progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 6, "total_number": 6}))
 
         # preparation: put relations into a dictionary for easier access
         relation_dict = {}
@@ -194,7 +196,7 @@ class Simulator:
             for attribute_id in attribute_ids:
 
                 rule_ids = execution_order['rule_execution_order'][str(attribute_id)]['used_rule_ids']
-                for rule_id in set(rule_ids):
+                for rule_id in rule_ids:
                     print(str(object_number) + ', ' + str(attribute_id) + ', ' + str(rule_id))
 
                     try:
@@ -219,9 +221,11 @@ class Simulator:
                         # adapt 2: aggregation_exec
                         if len(rule['aggregation_exec']) > 0:
                             rule['aggregation_exec'] = self.collapse_relations(rule['aggregation_exec'], relation_dict, object_number)
+                            agg_cond_used_attributes = re.findall(r'x_df\.attr\d*', rule['aggregation_exec'])
+                            agg_cond_used_attribute_ids = list(set([int(attr[9:]) for attr in agg_cond_used_attributes]))
                             used_objects = []
                             for agg_object_number in object_numbers:
-                                required_object_columns = ['obj' + str(agg_object_number) + 'attr' + str(attribute_id) for attribute_id in rule['used_attribute_ids']]
+                                required_object_columns = ['obj' + str(agg_object_number) + 'attr' + str(attribute_id) for attribute_id in agg_cond_used_attribute_ids]
                                 if (set(required_object_columns) <= set(list(self.df.columns)  + ['df.delta_t', 'df.randomNumber'])):
                                     used_objects.append(agg_object_number)
 
@@ -234,11 +238,15 @@ class Simulator:
                                     count_x_replacement_str = '(%s)' % (' + '.join(object_conditions))
                                     rule['effect_exec'] = rule['effect_exec'].replace(count_x_occurence, count_x_replacement_str)
                                 sum_occurences = re.findall(r'SUM\(.*\)', rule['effect_exec'])
-                                for sum_occurence in sum_occurences:
-                                    sum_term = sum_occurence[4:-1]
-                                    object_sum_terms = [sum_term.replace('x_df.', object_condition + ' * df.obj' + used_object) for used_object, object_condition in zip(used_objects,object_conditions)]
-                                    sum_replacement_str = '(%s)' % (' + '.join(object_sum_terms))
-                                    rule['effect_exec'] = rule['effect_exec'].replace(sum_occurence, sum_replacement_str)
+                                if len(sum_occurences) > 0:
+                                    rule['sums'] = {}
+                                for sum_number, sum_occurence in enumerate(sum_occurences):
+                                    sum_term = sum_occurence[3:]
+                                    object_sum_terms = [object_condition + ' * ' + sum_term.replace('x_df.', 'df.obj' + used_object) for used_object, object_condition in zip(used_objects,object_conditions)]
+                                    object_sum_terms = [self.collapse_relations(sum_term, relation_dict, object_number) for sum_term in object_sum_terms]
+                                    object_sum_terms = [sum_term.replace('df.attr', 'df.obj' + str(object_number) + 'attr') for sum_term in object_sum_terms]
+                                    rule['sums'][sum_number] = object_sum_terms
+                                    rule['effect_exec'] = rule['effect_exec'].replace(sum_occurence, ' (df.sum%s) ' % sum_number)
                             else:
                                 raise Exception("None of the objects have all the columns required by this rule, which are: "  + str(rule['used_attribute_ids']))
 
@@ -307,12 +315,16 @@ class Simulator:
                         rule['condition_exec'] = rule['condition_exec'].replace('df.', 'populated_df.')
 
                         # check if all the mentioned columns appear in df
-                        mentioned_columns = re.findall(r'df\.[a-zA-Z0-9_]+', rule['condition_exec'] + ' ' + rule['effect_exec'])
-                        mentioned_columns = [col for col in mentioned_columns if col[:8] != 'df.param']
+                        mentioned_columns = re.findall(r'df\.[a-zA-Z0-9_]+', rule['condition_exec'] + ' ' + str(rule['effect_exec']))
+                        if 'sums' in rule:
+                            for sum_number in rule['sums'].keys():
+                                for sum_term in rule['sums'][sum_number]:
+                                    mentioned_columns += re.findall(r'df\.[a-zA-Z0-9_]+', sum_term)
+                        mentioned_columns = [col for col in mentioned_columns if col[:8] != 'df.param' and col[:6] != 'df.sum']
                         mentioned_columns += ['df.' + rule['column_to_change']]
                         df_columns = ['df.'+col for col in self.df.columns]
                         if (set(mentioned_columns) <= set(df_columns + ['df.delta_t', 'df.randomNumber'])):
-                            print('rule' + str(rule['id']) + ': IF ' + rule['condition_exec'] + '  THEN ' + rule['effect_exec'])
+                            print('rule' + str(rule['id']) + ': IF ' + rule['condition_exec'] + '  THEN ' + str(rule['effect_exec']))
                             self.rules.append(rule)
                         else: 
                             raise Exception("The following columns are missing: " + str(list(set(mentioned_columns) - set(df_columns + ['df.delta_t']))))
@@ -321,9 +333,10 @@ class Simulator:
                         self.not_used_rules[object_number][rule_id] = {'condition_text':rule['condition_text'], 
                                                                         'effect_text':rule['effect_text'], 
                                                                         'reason':str(traceback.format_exc())}
-                                         
+                                       
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 6, "total_number": 6}))
+
 
 
 
@@ -865,6 +878,12 @@ class Simulator:
 
                 # --------  THEN  --------
                 if rule['effect_is_calculation']: 
+                    if 'sums' in rule:
+                        for sum_number in rule['sums'].keys():
+                            df['sum' + str(sum_number)] = 0
+                            for sum_term in rule['sums'][sum_number]:
+                                df['sum' + str(sum_number)] += pd.eval(sum_term).fillna(0)
+
                     new_values = pd.eval(rule['effect_exec'])
                     if rule['changed_var_data_type'] in ['relation','int']:
                         nan_rows = new_values.isnull()
@@ -881,12 +900,13 @@ class Simulator:
 
                 else:
                     # new_values = rule['effect_exec']
-                    new_values = pd.Series(json.loads(rule['effect_exec']) * batch_size)
+                    new_values = pd.Series([rule['effect_exec']] * batch_size)
 
 
                 # df.loc[satisfying_rows,rule['column_to_change']] = new_values 
                 satisfying_rows[satisfying_rows.isna()] = False
                 new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
+                new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
                 df[rule['column_to_change']] = new_values
 
 
@@ -931,10 +951,6 @@ class Simulator:
             print('batch_number: ' + str(batch_number) + '/' + str(number_of_batches))
 
 
-            with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-                progress_tracking_file.write(json.dumps({"text": 'Making predictions - simulation: ', "current_number": batch_number*batch_size, "total_number": nb_of_simulations}))
-
-
             df = df_short.copy()
 
             simulation_data_df = df.copy()
@@ -966,6 +982,12 @@ class Simulator:
 
             y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
             for period in range(len(self.times[1:])):
+
+                with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
+                    progress_tracking_file.write(json.dumps({"text": 'Making predictions - simulation: ', "current_number": batch_number*batch_size + int(batch_size * (period/len(self.times[1:]))), "total_number": nb_of_simulations}))
+
+
+
                 print('period: ' + str(period) + '/' + str(len(self.times[1:])))
                 df['randomNumber'] = np.random.random(batch_size)
                 for rule in self.rules:
@@ -1008,6 +1030,12 @@ class Simulator:
 
                     # --------  THEN  --------
                     if rule['effect_is_calculation']:
+                        if 'sums' in rule:
+                            for sum_number in rule['sums'].keys():
+                                df['sum' + str(sum_number)] = 0
+                                for sum_term in rule['sums'][sum_number]:
+                                    df['sum' + str(sum_number)] += pd.eval(sum_term).fillna(0)
+
                         all_new_values = pd.eval(rule['effect_exec'])
                         if rule['changed_var_data_type'] in ['relation','int']:
                             nan_rows = all_new_values.isnull()
@@ -1031,6 +1059,7 @@ class Simulator:
                     # df.loc[satisfying_rows,rule['column_to_change']] = new_values
                     new_values = all_new_values
                     new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
+                    new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
                     df[rule['column_to_change']] = new_values
 
 
