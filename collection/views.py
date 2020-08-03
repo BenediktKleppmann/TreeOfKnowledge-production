@@ -1951,7 +1951,7 @@ def get_query_results(request):
         print(query)
         print('-------------------------------')
         if 'select' in query.lower():
-            query_result_df = pd.read_sql_query(query, connection)
+            query_result_df = pd.read_sql_query(query, connection).fillna(None)
             return_dict = { 'table_headers':list(query_result_df.columns), 
                             'table_data': query_result_df.values.tolist()}
             return HttpResponse(json.dumps(return_dict))
