@@ -1401,7 +1401,10 @@
 		var object_sorted_attributes = execution_order['attribute_execution_order'][objects_dict[object_number]['object_type_id']]['used_attributes'];
 		var object_sorted_attribute_ids = [];
 		for (var i = 0; i < object_sorted_attributes.length ; i++) {
-			object_sorted_attribute_ids.push(String(object_sorted_attributes[i]['id']));
+			var object_sorted_attribute_id = object_sorted_attributes[i]['id']
+			if (Object.keys(objects_dict[1]['object_attributes']).includes(String(object_sorted_attribute_id))) {
+				object_sorted_attribute_ids.push(String());
+			}
 		}
 		//var object_sorted_attribute_ids = sorted_attribute_ids.filter(function(item) {
 		//  return object_attribute_ids.includes(item); 
