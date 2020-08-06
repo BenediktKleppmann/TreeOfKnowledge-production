@@ -622,6 +622,8 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 											user=request.user, 
                                             is_timeseries_analysis=False,
                                             objects_dict=json.dumps(objects_dict),
+                                            y_value_attributes=json.dumps([]), 
+                                            sorted_attribute_ids=json.dumps([]), 
                                             object_type_counts=json.dumps({object_type_id:1}),
                                             total_object_count=0,
                                             number_of_additional_object_facts=2,
