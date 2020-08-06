@@ -2051,6 +2051,23 @@ def delete_objects(request):
     return HttpResponse('Objects deleted!')
 
 
+
+# ----
+@staff_member_required
+def delete_upload_page(request):
+    return render(request, 'admin/delete_upload.html')
+
+
+@staff_member_required
+def delete_upload(request):
+    upload_id = int(request.GET.get('upload_id', ''))
+    print('+++++++++++++++++++++++')
+    print(str(upload_id))
+    Uploaded_dataset.objects.get(id=upload_id).delete()
+    Data_point.objects.filter(upload_id=upload_id).delete()
+    return HttpResponse('Upload deleted!')
+
+
 # ==================
 # VARIOUS SCRIPTS
 # ==================

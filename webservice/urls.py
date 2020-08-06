@@ -185,6 +185,8 @@ urlpatterns = [
     url(r'^admin/get_possibly_duplicate_objects_with_keys/$', views.get_possibly_duplicate_objects_with_keys, name='get_possibly_duplicate_objects_with_keys'),
     url(r'^admin/delete_objects_page/$', views.delete_objects_page, name='delete_objects_page'),
     url(r'^admin/delete_objects/$', views.delete_objects, name='delete_objects'),
+    url(r'^admin/delete_upload_page/$', views.delete_upload_page, name='delete_upload_page'),
+    url(r'^admin/delete_upload/$', views.delete_upload, name='delete_upload'),
     # various scripts
     url(r'^admin/various_scripts/$', views.various_scripts, name='various_scripts'),
     url(r'^admin/remove_null_datapoints/$', views.remove_null_datapoints, name='remove_null_datapoints'),
