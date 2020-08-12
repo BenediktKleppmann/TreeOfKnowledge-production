@@ -400,7 +400,7 @@
 	
 	
 	<!-- Edit Column Modal -->
-	<div class="modal fade" id="editColumn" tabindex="-1" role="dialog" aria-labelledby="chooseAttributeTitle" aria-hidden="true">
+	<div class="modal fade" id="editColumnModal" tabindex="-1" role="dialog" aria-labelledby="editAttributeTitle" aria-hidden="true">
 	  <div class="modal-dialog" role="document">
 		<div class="modal-content">
 		  <div class="modal-header row">
@@ -577,7 +577,7 @@
 		var column_transformation_html_string = '';
 									
 		for (var i = 0; i < table_headers.length; i++) {
-			column_transformation_html_string += '<button type="button" class="btn btn-default edit-column" data-toggle="modal" data-target="#editColumn" data-attributenumber="' + i + '">Edit Column</button>';
+			column_transformation_html_string += '<button type="button" class="btn btn-default edit-column" onclick="openEditColumnModal(' + i + ')">Edit Column</button>';
 														
 		}	
 		
@@ -589,7 +589,7 @@
 	function next() {
 		
 		{% if user.profile.verbose %}
-			var ok_given = confirm("The following will be removed:\n•   not specified columns\n•   values with missmatching format");
+			var ok_given = confirm("The following will be removed:\n•   not specified columns\n•   values with mismatching format");
 			if (ok_given == false){return;}
 		{% else %}{% endif %}
 		
@@ -730,7 +730,7 @@
 					
 					var number_of_format_violations = truly_violating_rows.length;
 					if (number_of_format_violations > 0){
-						$("#violation-summary" + attributenumber).html(truly_violating_rows.length.toString() + " format missmatches");
+						$("#violation-summary" + attributenumber).html(truly_violating_rows.length.toString() + " format mismatches");
 					} else {
 						$("#violation-summary" + attributenumber).html(" &nbsp; ");
 					}
@@ -1186,6 +1186,22 @@
 	//====  Edit Column Modal  ===========================================================================
 	//====================================================================================================
 	
+	function openEditColumnModal(attributenumber) {
+		
+		$("#editColumnModal").modal('show');
+		$("#edited-column-name").html(table_headers[attributenumber]);
+		edited_column = table_body[attributenumber]
+		//console.log(edited_column);
+		drawEditedColumnValues();
+		$("#subset-specification-div").attr("style","display:none;");
+		$("#subset_specification").val("");
+		document.getElementById("use-subset").checked = false;
+	}
+		
+		
+		
+	
+	
 	String.prototype.replaceAll = function(search, replacement) {
 		var target = this;
 		return target.replace(new RegExp(search, 'g'), replacement);
@@ -1485,37 +1501,7 @@
 	
 
 	
-		/*====  WHEN CLICKED, LOAD the EditColumn Modal    ======================================= */
-		var ATTRIBUTES = ['attributenumber'];
-	  	$('[class="btn btn-default edit-column"]').on('click', function (e) {
-		  
-		  
-			//PART 1: copy the value from the data-attributenumber-attribute on the button to the innerHTML of <span id="edit-column-attributenumber"></span> in the modal
-			var $target = $(e.target); // convert target (e.g. the button) to jquery object
-			var modalSelector = $target.data('target'); // modal targeted by the button
-			  
-			// iterate over each possible data-* attribute
-			ATTRIBUTES.forEach(function (attributeName) {
-			// retrieve the dom element corresponding to current attribute
-				var $modalAttribute = $(modalSelector + ' #edit-column-' + attributeName);
-				var dataValue = $target.data(attributeName);
-				
-				// if the attribute value is empty, $target.data() will return undefined. In JS boolean expressions return operands and are not coerced into booleans. That way is dataValue is undefined, the left part of the following Boolean expression evaluate to false and the empty string will be returned
-				$modalAttribute.text(dataValue);
-			});
-		
-		
-				
-		var attributenumber = $("#edit-column-attributenumber").html();
-		
-		$("#edited-column-name").html(table_headers[attributenumber]);
-		edited_column = table_body[attributenumber]
-		//console.log(edited_column);
-		drawEditedColumnValues();
-		$("#subset-specification-div").attr("style","display:none;");
-		$("#subset_specification").val("");
-		document.getElementById("use-subset").checked = false;
-		});
+
 	};
 </script>
 

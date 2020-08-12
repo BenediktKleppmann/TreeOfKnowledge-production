@@ -1,5 +1,6 @@
+{% extends 'layouts/base_landing_pages.html' %}'
 {% load staticfiles %}
-<!doctype html>
+
 <!-- 
 ####################################################################
 # This file is part of the Tree of Knowledge project.
@@ -12,43 +13,14 @@
 #####################################################################
 -->
 
-<html lang="en">
-<head>
-
-	<!-- Global site tag (gtag.js) - Google Analytics -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151938988-1"></script>
-	<script>   window.dataLayer = window.dataLayer || [];   function gtag(){dataLayer.push(arguments);}   gtag('js', new Date());    gtag('config', 'UA-151938988-1'); </script>
+{% block title %}
+	Tree of Knowledge
+{% endblock %}
 
 
-	<!--<base href="webservice-production.herokuapp.com">-->
-	<!--<base href="treeofknowledge.ai">-->
-	<meta charset="utf-8">
-	<meta name="HandheldFriendly" content="true" />
-	<meta name="author" content="Benedikt Kleppmann">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Tree of Knowledge</title>
-	
 
-	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
-
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-	<link rel="stylesheet" href="{% static 'css/landing_page.css' %}" />
-	
-
-	<!--
-	<link rel="stylesheet" href="{% static 'css/main.css' %}" />
-	<link rel="stylesheet" href="{% static 'css/subscriber_page.css' %}" />-->
-	
-	
-	<link rel="shortcut icon" href="{% static 'images/logo_with_background.png'%}">
-
-		
-		<!-- added for submenu -->
-
+{% block additionalcss %}
 	<style>
-	
 		/* carousel ------------------------------------------------------ */
 		.carousel-container {
 			width:100%;
@@ -174,39 +146,15 @@
 			color: rgb(31, 31, 28);
 			margin-bottom: 24px;
 		}
-		
-		
 	</style>
+{% endblock %}	
 
-</head>
-<body>
 
-    <nav class="navbar navbar-default navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <!--<span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>-->
-          </button>
-          <a class="navbar-brand" href="{% url 'landing_page' %}"></a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li class="active"><a href="{% url 'landing_page' %}">Home</a></li>
-            <li><a href="{% url 'about' %}">About</a></li>
-			<li><a href="{% url 'subscribe' %}">Community</a></li>
-            <li><a href="{% url 'contact' %}">Contact</a></li>
-          </ul>
-          <div class="nav navbar-right">
-			<span class="signup-text"><a id="sign-up-button" href="{% url 'registration_register' %}">Sign up</a> &nbsp;&nbsp;or&nbsp;&nbsp;&nbsp;</span>
-            <a href="{% url 'auth_login' %}" class="btn btn-default pull-right">Log in</a>
-          </div>
-        </div>
-      </div>
-    </nav>
-	
+
+
+
+
+{% block content %}
 	<div id="myCarousel" class="carousel slide" data-ride="carousel"><!--  data-interval="false" -->
 		<!-- Indicators -->
 		<ol class="carousel-indicators">
@@ -544,151 +492,8 @@
 		<br>
 	</div>
 	<br>
-
-
-<!--
-  	<section id="resources">
-		<div class="container">
-			<div class="box">
-				<div class="center">
-					<br><h1 class="yellowish">Resources</h1><br>
-				</div>
-				<div class="row">
-					<div class="col-md-4">
-						<div class="center">
-							<a href="https://github.com/BenediktKleppmann/TreeOfKnowledge" target="_blank">
-								<i class="fab fa-github icon-md icon-color2"></i>
-							</a>
-							<h4>GitHub repository</h4>
-							<p>The official GitHub repository for this open source project.</p>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="center">
-							<a href="https://www.youtube.com" target="_blank">
-								<i class="fab fa-youtube icon-md icon-color1"></i>
-							</a>
-							<h4>Video tutorials</h4>
-							<p>None exist yet.</p>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="center">
-							<a href="{% url 'contact' %}" target="_blank">
-							
-								<i class="icon-md icon-color3"><img src="{% static 'images/email_icon.png'%}" style="height:28px;width:28px; margin-bottom:4px"></i>
-								
-							</a>
-							<h4>Contact</h4>
-							<p>Contact details and impressum.</p>
-						</div>
-					</div>
-				</div>
-				<br><br><br>
-			</div>
-		</div>
-	</section>
-	-->
+{% endblock %}
 
 
 
-	
-	<!--
-	<div class="container-fluid" style="background:rgb(39, 40, 34)">
-		<br><br>
-		<h1 class="yellowish">Key Components</h1><br>
-		<div class="row key-components">
-			<div class="col-md-6">
-				<div>
-					<span class="icon-frame yellowish" style="float:left;";>
-						<img src="{% static 'images/data_integration_icon.png'%}" style="height:36px;width:36px; margin-bottom:3px">
-					</span>
-					<h2 class="yellowish">Integrated data repository</h2>
-				</div>
-				Data from any source that is uploaded to this online platform and is mapped to the holistic data model. The holistic data model contains all the data and meta-data to exactly specify any data value. <br>
-				<br>
-			</div>
-			<div class="col-md-6">
-				<div>
-					<span class="icon-frame yellowish" style="float:left;padding-top:3px;";>
-						<i class="fas fa-cogs" aria-hidden="true"></i>
-					</span>
-					<h2 class="yellowish">Simulation models</h2>
-				</div>
-				For modelling real-world processes, simulation models are more accurate and insightful than all models from machine learning, statistics, traditional AI and other sciences. Especially when paired with the automatic model evaluation.<br>
-				<br>
-			</div>
-		</div>
-		<div class="row key-components">
-			<div class="col-md-6">
-				<div>
-					<span class="icon-frame yellowish" style="float:left; padding-top:2px; padding-left:8px;";>
-						<i class="fas fa-check"></i>
-					</span>
-					<h2 class="yellowish">Automated model evaluation</h2>
-				</div>
-				As the simulations use the same objects, attributes and scenario descriptions (meta-data) as the integrated data repository. This enables the automatic cross-validation and scoring of models.<br>
-				<br>
-			</div>
-			<div class="col-md-6">
-				<div>
-					<span class="icon-frame yellowish" style="float:left;padding-top:3px;";>
-						<i class="fas fa-handshake"></i>
-					</span>
-					<h2 class="yellowish">Collaborative model building</h2>
-				</div>
-				The automated model evaluation allows for collaborative model building. People can work together to build the most accurate models.<br>
-				<br>
-			</div>
-		</div>
-		<div class="row key-components">
-			<div class="col-md-6">
-				<div>
-					<span class="icon-frame yellowish" style="float:left; padding-top:2px;";>
-						<i class="fas fa-signal" style="margin-left:-2px"></i>
-					</span>
-					<h2 class="yellowish">Compounding Simulations</h2>
-				</div>
-				Model building is facilitated not only by the possibility to modify existing models, there platform also automatically suggests behavior rules for the objects in your simulation.<br>
-				The different behavior-rules from objects are collected from across different simulations. The accuracy of these behaviours are automatically evaluated with the data from all the real-world systems that contain these objects.<br>
-				<br>
-			</div>
-			<div class="col-md-6">
-				<div>
-					<span class="icon-frame yellowish" style="float:left; font-size: 38px; padding-left:5px";>
-						<i class="far fa-chart-bar"></i>
-					</span>
-					<h2 class="yellowish">Powerful analysis environment</h2>
-				</div>
-				The analysis environment allows users to 
-				<ul>
-					<li>ask What-if questions by modifying initial conditions</li>
-					<li>optimize simulation parameters to e.g. maximize KPIs</li>
-					<li>gain an intuitive understanding through the powerful visualization functionality</li>
-				</li><br>
-				<br>
-			</div>
-		</div>
-		<br>
-		<br>
-	</div>
-	-->
-	
 
-	<!--
-	<footer id="footer">
-		<div class="container">
-			<div class="row center">
-				<div class="col-sm-12">
-					The software is licensed under a <a href="https://en.wikipedia.org/wiki/Affero_General_Public_License">AGPL Licence</a> 
-				</div>
-			</div>
-		</div>
-	</footer>
-	-->
-  
-	
-	
-
-</body>
-</html>

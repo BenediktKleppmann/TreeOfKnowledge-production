@@ -57,6 +57,18 @@ def landing_page(request):
 def about(request):
     return render(request, 'about.html')
 
+def tutorial_overview(request):
+    return render(request, 'tutorial_overview.html')
+
+def tutorial1(request):
+    return render(request, 'tutorial1.html')
+
+def tutorial2(request):
+    return render(request, 'tutorial2.html')
+
+def tutorial3(request):
+    return render(request, 'tutorial3.html')
+
 def subscribe(request):
     if request.method == 'POST':
         form_class = Subscriber_registrationForm
@@ -1446,6 +1458,7 @@ def delete_execution_order(request):
 @login_required
 def edit_column(request): 
     request_body = json.loads(request.body)
+    pdb.set_trace()
 
     transformation = request_body['transformation']
     transformation = transformation.replace('"','')

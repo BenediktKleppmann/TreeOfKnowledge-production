@@ -1,3 +1,4 @@
+
 @import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700);
 
 
@@ -14,7 +15,6 @@
 
 body {
   	font-family: Calibri, Candara, Segoe, Segoe UI, Optima, Arial, sans-serif;
-  /*background: #e5e5e5;*/
   background:rgb(40, 41,35);
   color: rgb(65,65,65);
 }
@@ -51,9 +51,6 @@ span.title{
 	text-align: right;
 }
 
-/*#introduction  .lead{
-	line-height: 180%;
-}*/
 
 .img-thumbnail {
 	background-color:rgb(39, 40, 34);
@@ -145,6 +142,7 @@ a:focus {
   border-radius: 4px;
   z-index: 5;
 }
+
 #main-slider .prev:hover,
 #main-slider .next:hover {
   background-color: rgba(0, 0, 0, 0.5);
@@ -193,6 +191,7 @@ a:focus {
 /* Start: Recommended Isotope styles */
 
 /**** Isotope CSS3 transitions ****/
+
 .isotope {
   -webkit-transition-duration: 0.8s;
   -moz-transition-duration: 0.8s;
@@ -228,8 +227,10 @@ a:focus {
   -webkit-box-shadow: 0 1px 3px 0 rgba(0,0,0,.2);
   -moz-box-shadow: 0 1px 3px 0 rgba(0,0,0,.2);
   box-shadow: 0 1px 3px 0 rgba(0,0,0,.2);
-  overflow: hidden;
+ /* overflow: hidden;*/
 }
+
+
 .navbar-default .first a {
   border-radius: 0 0 0 5px;
 }
@@ -241,6 +242,7 @@ a:focus {
   background: url(../images/logo_only_background.png) no-repeat 0 50%;
   background-size: 75%;
 }
+
 .navbar-default .navbar-nav > li {
   margin-left: 1px;
 }

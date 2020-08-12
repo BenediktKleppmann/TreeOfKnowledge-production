@@ -1,5 +1,6 @@
+{% extends 'layouts/base_landing_pages.html' %}'
 {% load staticfiles %}
-<!doctype html>
+
 <!-- 
 ####################################################################
 # This file is part of the Tree of Knowledge project.
@@ -12,114 +13,64 @@
 #####################################################################
 -->
 
-<html lang="en">
-<head>
+{% block title %}
+	Tree of Knowledge - About
+{% endblock %}
 
-
-	<!-- Global site tag (gtag.js) - Google Analytics -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151938988-1"></script>
-	<script>   window.dataLayer = window.dataLayer || [];   function gtag(){dataLayer.push(arguments);}   gtag('js', new Date());    gtag('config', 'UA-151938988-1'); </script>
-
-
-
-	<!--<base href="webservice-production.herokuapp.com">-->
-	<!--<base href="treeofknowledge.ai">-->
-	<meta charset="utf-8">
-	<meta name="HandheldFriendly" content="true" />
-	<meta name="author" content="Benedikt Kleppmann">
-	<title>Tree of Knowledge</title>
-	
-
-	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
-	<!--<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />-->
-	
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-	<link rel="stylesheet" href="{% static 'css/main.css' %}" />
-	<link rel="stylesheet" href="{% static 'css/landing_page.css' %}" />
-	
-	
-	<link rel="shortcut icon" href="{% static 'images/logo.png'%}">
+{% block additionalcss %}
 	<style>
-	.box {
-		background-color:rgb(39, 40, 34);
-	}
+		.box {
+			background-color:rgb(39, 40, 34);
+		}
 
 
-	.box.first {
-		margin-top: -20px;
-	}
-	
-	.container {
-		width: 75% !important;
-		padding-left: 35px;
-	}
-	
-	h2 {
-		padding-left: 0px;
-	}
-
-	h1 {
-		margin-top: 52px;
-		margin-bottom: 32px;
-	}
-	
-	.col-md-3 {
-		padding-left: 4%;
-		padding-right: 4%;
-	}
-	
-	/* Bottom  ------------------------------------------------------ */
-	
-	#bottom-logo {
-		height: 200px;
-	}
-	
-	
-	.bottom-slogan {
-		font-size: 25px;
-		margin-left: 13px;
-		font-family: Garamond, Baskerville, Baskerville Old Face, Hoefler Text, Times New Roman, serif;
-		font-weight: 700;
-		margin-top: 18px;
-		color: rgb(31, 31, 28);
-		margin-bottom: 24px;
-	}
-	</style>
+		.box.first {
+			margin-top: -20px;
+		}
 		
+		.container {
+			width: 75% !important;
+			padding-left: 35px;
+		}
+		
+		h2 {
+			padding-left: 0px;
+		}
+
+		h1 {
+			margin-top: 52px;
+			margin-bottom: 32px;
+		}
+		
+		.col-md-3 {
+			padding-left: 4%;
+			padding-right: 4%;
+		}
+		
+		/* Bottom  ------------------------------------------------------ */
+		
+		#bottom-logo {
+			height: 200px;
+		}
+		
+		
+		.bottom-slogan {
+			font-size: 25px;
+			margin-left: 13px;
+			font-family: Garamond, Baskerville, Baskerville Old Face, Hoefler Text, Times New Roman, serif;
+			font-weight: 700;
+			margin-top: 18px;
+			color: rgb(31, 31, 28);
+			margin-bottom: 24px;
+		}
+	</style>
+{% endblock %}	
 
 
-</head>
 
 
-<body data-spy="scroll" data-target="#navbar" data-offset="0">
 
-
-    <nav class="navbar navbar-default navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-
-          </button>
-          <a class="navbar-brand" href="{% url 'landing_page' %}"></a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li><a href="{% url 'landing_page' %}">Home</a></li>
-            <li class="active"><a href="{% url 'about' %}">About</a></li>
-			<li><a href="{% url 'subscribe' %}">Community</a></li>
-            <li><a href="{% url 'contact' %}">Contact</a></li>
-          </ul>
-          <div class="nav navbar-right">
-			<span class="signup-text"><a id="sign-up-button" href="{% url 'registration_register' %}">Sign up</a> &nbsp;&nbsp;or&nbsp;&nbsp;&nbsp;</span>
-            <a href="{% url 'auth_login' %}" class="btn btn-default pull-right">Log in</a>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-	
-	
+{% block content %}
 	<section id="background-picture-outer" class="carousel">
 		<div id="background-picture-inner" style="height:453px">
 			<div style="background-image: url(../static/images/old_tree_dark-min-min.png);
@@ -246,218 +197,14 @@
 		<br>
 	</div>
 	<br>
+{% endblock %}
 
-	
-	
-	
-	<!--
-	<section id="about_simulation_based_modelling">
-		<div class="container">
-			<p class="lead left-aligned" >	
-				We are in the age of machine learning. Machine learning models are changing the world. 
-				Their accurate predictions allow for the automation of many new tasks. <br><br>
-				You don't however want to automate decision making. Instead you’d want 
-				to inform decision making with insights gained from data. Due to their 
-				black-box nature, it is not possible to gain insight with machine learning models. 
-				Statistical models and traditional-AI models are also not ideal. <br><br>
-				Simulation models on the other hand are ideally suited for gaining insights from data. 
-				The goal here is to create a virtual twin of any real system. I.e. you create a simulation 
-				which behaves in the exact same way as the real world. These models are therefore very intuitive. 
-				You can watch the behavior of the system, understand the mechanisms and identify key components. 
-				You can also investigate what-if questions by re-running the simulation with some detail changed.
-			</p>
 
-		</div>
-	</section>
-	
-	
-	
-	<section id="introduction">
-		<div class="container">
-			<div class="box first">
-				<div class="lead left-aligned">
-					<br><p style="color:black; font-weight: 500; text-align:center">Tree of Knowledge is an open source project which started in November 2018. <br>This page describes the aspired future state of the project.</p><br><br>
-					<p>Do you want to gain insights from data? <br></p>
-					<ul>
-						<li>Test theories about your system </li>
-						<li>See the system unfold in real time, understand the mechanisms and driving forces</li>
-						<li>Evaluate what-if scenarios</li>
-					</ul><br>
-					<p>Use the most accurate and powerful data analysis tool in the world!<br></p>
-					<ul>
-						<li>Build upon a vast range of existing, proven models</li>
-						<li>Models are automatically evaluated and optimized with millions of data points from a custom data portal</li>
-						<li>Collaborate with other people</li>
-					</ul>
-			  </div>
-			</div>
-		</div>
-	</section>
 
-	
-	<section id="about_simulation_based_modelling">
-		<div class="container">
-			<div class="box">
-				<div class="center">
-					<h2>About simulation-based modelling</h2>
-				</div>
-				<div class="row" style="display:flex; align-items:center;">
-					<div class="col-md-9">
-						<p class="lead left-aligned">	
-							We are in the age of machine learning. Machine learning models are changing the world. 
-							Their accurate predictions allow for the automation of many new tasks. <br><br>
-							You don't however want to automate decision making. Instead you’d want 
-							to inform decision making with insights gained from data. Due to their 
-							black-box nature, it is not possible to gain insight with machine learning models. 
-							Statistical models and traditional-AI models are also not ideal. <br><br>
-							Simulation models on the other hand are ideally suited for gaining insights from data. 
-							The goal here is to create a virtual twin of any real system. I.e. you create a simulation 
-							which behaves in the exact same way as the real world. These models are therefore very intuitive. 
-							You can watch the behavior of the system, understand the mechanisms and identify key components. 
-							You can also investigate what-if questions by re-running the simulation with some detail changed.
-						</p>
-					</div>
-					<div class="col-md-3">
-						<a href="{% static 'images/simio.png'%}"><img src="{% static 'images/simio.png'%}" class="img-responsive mr-3 img-thumbnail"></a>
-						<a href="{% static 'images/sim_city.jpg'%}"><img src="{% static 'images/sim_city.jpg'%}" class="img-responsive mr-3 img-thumbnail"></a>
-						<div style="margin-left:10px">top: Simio<br>bottom: Simcity</div>
-					</div>
-				</div>
-			  </div>
-			</div>
-		</div>
-	</section>
 
-	
+
+
 		
-	
-	<section id="about_tree_of_knowledge">
-		<div class="container h-100">
-			<div class="box">
-				<div class="center">
-					<h2 align="center">About Tree of Knowledge</h2><br>
-				</div>
-				<div class="row" style="display:flex; align-items:center;">
-					<div class="col-md-3">
-							<img src="{% static 'images/tree_of_knowledge_schematic.png'%}" class="img-responsive mr-2 img-thumbnail">
-							<div style="margin-left:10px; margin-right:10px">Uploaded data is integrated into a global schema and is used for model training & evaluation. The simulation models can build uppon each other.</div>
-					</div>
-					<div class="col-md-9">
-						<div class="lead left-aligned">
-							There already exist a range of simulation modelling tools (
-								<a href="https://www.anylogic.com/" target="_blank">Anylogic</a>, 
-								<a href="https://www.simio.com/index.php" target="_blank">Simio</a>, 
-								<a href="https://en.wikipedia.org/wiki/List_of_computer_simulation_software" target="_blank">etc.</a>). 
-							They are commonly used for optimizing processes in a range of fields such as manufacturing plants, 
-							hospitals, etc. They haven’t however caught on in many other fields, I believe there are two reasons for this: <br>
-							<ul>
-								<li>the correctness of the models is not guaranteed, as they are often not thoroughly evaluated</li>
-								<li>it takes a long time to create a model</li>
-							</ul><br>
-							Tree of Knowledge solves these problems. In fact, Tree of Knowledge’s ability to solve these problems increases over time….
-							<ul>
-								<li>data which is uploaded with a free account is added to an integrated data repository. This well 
-									documented data is then used to automatically evaluate simulation models, guaranteeing its correctness.</li>
-								<li>Objects’ behaviours that have been proven to apply in some model are remembered and tested in future models. 
-									Making it possible to only describe the objects in the system and having the objects’ behaviours automatically 
-									inferred, thereby drastically reducing the development time.</li>
-							</ul><br>
-							This is all possible due to the nature of Tree of Knowledge, which is not only a simulation tool, but also a universal 
-							knowledge repository. Over time it builds up a complete understanding of the objects in this world, their relations, 
-							behaviours and their states at different times in the past.<br><br>
-							Additionally, Tree of Knowledge allows for the easy use of fairly advanced functionality, such as: 
-							<ul>
-								<li>Optimizing systems to maximize KPIs</li>
-								<li>Learning model parameters with Bayesian inference</li>
-								<li>Flexible and powerful simulation visualization</li>
-								<li>Collaborative model creation</li>
-							</ul>
-						</div>
-					</div>
-			</div>
-		</div>
-	</section>
+
 
 	
-	
-	
-	
-	<section id="our_philosophy">
-		<div class="container">
-			<div class="box last">
-				<div class="center">
-					<h2>Our Philiosophy</h2>
-					<p class="lead left-aligned">
-						As mentioned, by being used, Tree of Knowledge automatically builds up an increasing knowledge of the objects in the world, 
-						their behavior and their past states. The long-term goal of Tree of Knowledge is to become a repository of the worlds’ knowledge. 
-						Making the knowledge accessible in a computer-readable and highly useable form. <br>
-						There will always be free public APIs for accessing its data and simulation rules.<br><br>
-						Tree of Knowledge is non-profit and is dedicated to improving the world as much as possible -  NGOs and well-meaning 
-						governments will always have free access. The access for harmful companies is restricted.
-						<br><br><br>
-					</p>
-			  </div>
-			</div>
-		</div>
-	</section>
--->
-	
-	
-	
-	<!--
-  	<section id="resources">
-		<div class="container">
-			<div class="box">
-				<div class="center">
-					<br><h1 class="yellowish">Resources</h1><br>
-				</div>
-				<div class="row">
-					<div class="col-md-4">
-						<div class="center">
-							<a href="https://github.com/BenediktKleppmann/TreeOfKnowledge" target="_blank">
-								<i class="fab fa-github icon-md icon-color2"></i>
-							</a>
-							<h4>GitHub repository</h4>
-							<p>The official GitHub repository for this open source project.</p>
-						</div>
-					</div>					
-					<div class="col-md-4">
-						<div class="center">
-							<a href="https://www.youtube.com" target="_blank">
-								<i class="fab fa-youtube icon-md icon-color1"></i>
-							</a>
-							<h4>Video tutorials</h4>
-							<p>None exist yet.</p>
-						</div>
-					</div>				
-					<div class="col-md-4">
-						<div class="center">
-							<a href="{% url 'contact' %}" target="_blank">
-							
-								<i class="icon-md icon-color3"><img src="{% static 'images/email_icon.png'%}" style="height:28px;width:28px; margin-bottom:4px"></i>
-								
-							</a>
-							<h4>Contact</h4>
-							<p>Contact details and impressum.</p>
-						</div>
-					</div>
-				</div>
-				<br><br><br>
-			</div>
-		</div>
-
-	</section>
-	-->
-	
-		
-	<script src="{% static 'js/jquery.js' %}"></script>
-	<script src="{% static 'js/bootstrap.min.js' %}"></script>
-	 <script>
-	  $('.carousel').carousel({
-	   interval: 3000
-	  });
-	 </script>  
-	 
-
-</body>
-</html>

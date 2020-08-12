@@ -1,5 +1,6 @@
+{% extends 'layouts/base_landing_pages.html' %}'
 {% load staticfiles %}
-<!doctype html>
+
 <!-- 
 ####################################################################
 # This file is part of the Tree of Knowledge project.
@@ -12,68 +13,14 @@
 #####################################################################
 -->
 
-<html lang="en">
-<head>
+{% block title %}
+	Tree of Knowledge - Contact
+{% endblock %}
 
-	<!-- Global site tag (gtag.js) - Google Analytics -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151938988-1"></script>
-	<script>   window.dataLayer = window.dataLayer || [];   function gtag(){dataLayer.push(arguments);}   gtag('js', new Date());    gtag('config', 'UA-151938988-1'); </script>
+{% block additionalcss %}
+{% endblock %}	
 
-
-	<!--<base href="webservice-production.herokuapp.com">-->
-	<!--<base href="treeofknowledge.ai">-->
-	<meta charset="utf-8">
-	<meta name="HandheldFriendly" content="true" />
-	<meta name="author" content="Benedikt Kleppmann">
-	<title>Tree of Knowledge - Contact</title>
-	
-
-	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
-	<!--<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />-->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-	<link rel="stylesheet" href="{% static 'css/main.css' %}" />
-	<link rel="stylesheet" href="{% static 'css/landing_page.css' %}" />
-
-	<link rel="shortcut icon" href="{% static 'images/logo.png'%}">
-	<style>
-	.box {
-		background-color:rgb(66, 67, 62);
-	}
-	</style>
-
-
-</head>
-
-<body data-spy="scroll" data-target="#navbar" data-offset="0">
-
-
-
-    <nav class="navbar navbar-default navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <!--<span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>-->
-          </button>
-          <a class="navbar-brand" href="{% url 'landing_page' %}"></a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li><a href="{% url 'landing_page' %}">Home</a></li>
-            <li><a href="{% url 'about' %}">About</a></li>
-			<li><a href="{% url 'subscribe' %}">Community</a></li>
-            <li class="active"><a href="{% url 'contact' %}">Contact</a></li>
-          </ul>
-          <div class="nav navbar-right">
-			<span class="signup-text"><a id="sign-up-button" href="{% url 'registration_register' %}">Sign up</a> &nbsp;&nbsp;or&nbsp;&nbsp;&nbsp;</span>
-            <a href="{% url 'auth_login' %}" class="btn btn-default pull-right">Log in</a>
-          </div>
-        </div>
-      </div>
-    </nav>
-	
+{% block content %}
 	
 	<section id="background picture" class="carousel">
 		<div style="background-image: url(../static/images/deer_large-min.jpg);
@@ -85,25 +32,7 @@
 					margin-top:54px;">
 		</div>
 	</section>
-	<!--
-	<header id="header"> 
-		<div class="container">
-			<div id="navbar" class="navbar navbar-default">
-				<div class="navbar-header">
-					<button type="button" class="navbar-toggle" data-toggle="collapse"
-						data-target=".navbar-collapse">
-						<span class="sr-only">Toggle navigation</span> 
-					</button>
-					<a class="navbar-brand" href="{% url 'landing_page' %}"></a>
-				</div>
-				<div class="collapse navbar-collapse navbar-ex1-collapse">
-					<ul class="nav navbar-nav">
-						<li class="active"><a href="{% url 'landing_page' %}"><i class="fa fa-home"></i></a></li>
-					</ul>
-				</div>
-			</div>
-		</div>
-	</header>-->
+
 
 		
 	<section>
@@ -141,15 +70,6 @@
 	</section>
 
 
+{% endblock %}
 
-	<script src="{% static 'js/jquery.js' %}"></script>
-	<script src="{% static 'js/bootstrap.min.js' %}"></script>
-	 <script>
-	  $('.carousel').carousel({
-	   interval: 3000
-	  });
-	 </script>  
-	 
 
-</body>
-</html>
