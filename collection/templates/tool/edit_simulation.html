@@ -432,7 +432,13 @@
 	<div id="right-sidebar">
 		<div id="right-sidebar-left-edge" style="display:none;"></div>
 		<div id="right-sidebar-head" class="form"  style="display:none;">
-			<div id="object-header"></div>
+			<div id="object-header">
+				<button type="button" id="object-icon-button" class="btn" style="display:inline-block;" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" title="Choose icon" data-content=''>
+					<img src="{% static "images/object_icons/" %}si-glyph-mustache.svg">
+				</button>
+				<input type="text" class="form-control" id="object-name-field" name="object_name" placeholder="Object Name" value="object_name" onchange="" style="display:inline-block;width:300px">
+				<input type="hidden" id="object-number-field" value="">
+			</div>
 			
 			<div id="right-sidebar-body"></div>
 				
