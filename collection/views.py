@@ -1143,6 +1143,8 @@ def save_changed_simulation(request):
                 model_record.nb_of_parameters_to_keep = request_body['nb_of_parameters_to_keep']
                 model_record.error_threshold = request_body['error_threshold']
                 model_record.run_locally = request_body['run_locally']
+                model_record.limit_to_populated_y0_columns = request_body['limit_to_populated_y0_columns']
+				
 
             if 'timestep_size' in request_body:
                 model_record.timestep_size = request_body['timestep_size']
@@ -1766,6 +1768,7 @@ def edit_simulation_new(request):
 										max_number_of_instances=2000,
 										error_threshold=0.2,
 										run_locally=False,
+										limit_to_populated_y0_columns=False,
 										validation_data='{}',
 										data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
     simulation_model.save()

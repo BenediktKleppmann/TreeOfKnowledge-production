@@ -188,6 +188,7 @@ class Simulation_model(models.Model):
     max_number_of_instances = models.IntegerField()
     error_threshold = models.FloatField()
     run_locally = models.BooleanField(default=False)
+    limit_to_populated_y0_columns = models.BooleanField(default=False)
     data_querying_info = models.TextField()
     rule_infos = models.TextField(null=True)
     triggered_rules = models.TextField(null=True)

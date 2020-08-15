@@ -93,6 +93,7 @@ class Simulator:
         self.max_number_of_instances = simulation_model_record.max_number_of_instances
         self.error_threshold = simulation_model_record.error_threshold
         self.run_locally = simulation_model_record.run_locally
+        self.limit_to_populated_y0_columns = simulation_model_record.limit_to_populated_y0_columns
         execution_order = json.loads(Execution_order.objects.get(id=self.execution_order_id).execution_order)
 
         if not self.is_timeseries_analysis:
