@@ -858,6 +858,7 @@ class Simulator:
                         #         period_30_condition_df['run' + str(self.number_of_batches) + 'condition_satisfied'] = pd.eval(rule['condition_exec'])
                         #     period_30_condition_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-25/period_30_condition.csv', index=False)
                         # ==========================================================================
+                        pdb.set_trace()
                         if condition_satisfying_rows.iloc[0] in [-1,-2]: #messy bug-fix for bug where eval returns -1 and -2 instead of True and False
                             condition_satisfying_rows += 2
                             condition_satisfying_rows = condition_satisfying_rows.astype(bool)
