@@ -1215,7 +1215,6 @@ class Simulator:
                     # error_of_value_change_non_null = np.minimum(error_of_value_change_non_null, 1)
 
                     error = 0.5*np.minimum(error_in_error_range_non_null,error_of_value_change_non_null) + 0.25*np.sqrt(error_in_error_range_non_null) + 0.25*np.sqrt(error_of_value_change_non_null)
-                    pdb.set_trace()
 
                     null_value_places = np.logical_or(np.isnan(error_in_error_range), np.isnan(error_of_value_change))
                     error[null_value_places] = 0
