@@ -159,13 +159,7 @@ def add_months(d, months):
 
 
 
-def walk_dict(d,depth=0):
-    for k,v in sorted(d.items(),key=lambda x: x[0]):
-        if isinstance(v, dict):
-            print ("  ")*depth + ("%s:" % k)
-            walk_dict(v,depth+1)
-        else:
-            print ("  ")*depth + "%s: %s (%s)" % (k, v, str(type(v))) 
+
 
 
 # ================================================================================

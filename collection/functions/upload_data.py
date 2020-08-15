@@ -25,6 +25,7 @@ import time
 from sqlalchemy import create_engine
 import io
 from django.conf import settings
+import pdb
 
 # called from upload_data1
 def save_new_upload_details(request):
@@ -432,6 +433,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 
 
         # PART 1a: Add Meta Data Facts
+        print('1a')
         for meta_data_fact in meta_data_facts:
             attribute_selection += [int(meta_data_fact['attribute_id'])]
             next_data_table_column_number = str(len(data_table_df.columns))
@@ -439,6 +441,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 
 
         # PART 1b: valid_time_start 
+        print('1b')
         valid_time_start_column = []
         for date_string in datetime_column:
             date_time = dateutil.parser.parse(date_string)
@@ -455,6 +458,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 
 
         # PART 2a: Create missing objects/ Remove not-matched rows
+        print('2a')
         if upload_only_matched_entities == 'True':
             table_df = pd.DataFrame(data_table_json['table_body']) # making new table_df so that it is in the right order
             aggregation_dict = {column:'first' for column in columns}
@@ -482,11 +486,12 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 
 
                 # create new object records 
+            print('2a - 2')
             if len(not_matched_indexes) > 0:     
                 table_rows = list(map(list, zip(*[new_object_ids, [object_type_id] * len(not_matched_indexes)])))
                 number_of_chunks =  math.ceil(len(not_matched_indexes) / 100)
                 for chunk_index in range(number_of_chunks):
-
+                    print('2a - 3 - ' + str(chunk_index))
                     rows_to_insert = table_rows[chunk_index*100: chunk_index*100 + 100]
                     insert_statement = '''
                         INSERT INTO collection_object (id, object_type_id) 
@@ -506,10 +511,12 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 
 
         # PART 2b: save object_id_column
+        print('2b')
         uploaded_dataset.object_id_column = json.dumps(list(data_table_df['object_id']))
         uploaded_dataset.save()
 
         # PART 3: next_time_step <- prepara
+        print('3')
         data_table_df = data_table_df.sort_values(idenifying_columns + ['valid_time_start'])
         if idenifying_columns is not None:
             data_table_df['next_time_step'] = list(data_table_df[1:]['valid_time_start']) + [9999999999999]
@@ -519,6 +526,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 
         # PART 4: Insert into DataPoints
         # for every column: create and save new_datapoint_records
+        print('4')
         data_table_df = data_table_df.sort_values(idenifying_columns + ['valid_time_start'])
         number_of_entities = len(data_table_df)
         for column_number, attribute_id in enumerate(attribute_selection):
@@ -592,7 +600,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
                 insert_statement += ','.join(['(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)']*len(rows_to_insert))
                 cursor.fast_executemany = True 
                 cursor.execute(insert_statement, list(itertools.chain.from_iterable(rows_to_insert)))
-            print('4 - ' + str(time.time()))
+                print('4 - %s/%s' % (chunk_index, number_of_chunks))
 
             with open(progress_tracking_file_name, "w") as progress_tracking_file:
                 percent_of_upload_completed = 5 + (92 * (column_number+1) / len(attribute_selection)) 
@@ -604,6 +612,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 
         # PART 5: Make new Simulation model with same initialisation
         # create new simulation_model
+        print('5')
         object_type_record = Object_types.objects.get(id=object_type_id)
         objects_dict = {}
         objects_dict[1] = { 'object_name':object_type_record.name + ' 1', 

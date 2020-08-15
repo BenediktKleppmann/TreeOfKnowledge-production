@@ -143,7 +143,8 @@
 					
 
 					if (table_data.length > 2000) {
-						table_html_string = 'The result has ' + String(table_data.length) + ' rows. Maximally 2000 can be displayed.'
+						table_html_string = 'The result has ' + String(table_data.length) + ' rows. Maximally 2000 can be displayed.';
+						$("#response-table").html(table_html_string);
 					
 					} else {
 						table_html_string ='<div class="table-section">' +	

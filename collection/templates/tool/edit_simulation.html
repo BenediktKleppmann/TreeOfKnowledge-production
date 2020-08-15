@@ -1320,7 +1320,7 @@
 									'<img src="/static/images/object_icons/' + objects_dict[object_number]['object_icon'] + '.svg">' +
 								'</button>' +
 								'<input type="text" class="form-control" id="object-name-field" name="object_name" placeholder="Object Name" value="' + objects_dict[object_number]['object_name'] + '" onchange="changeObjectName(' + object_number + ')" style="display:inline-block;width:300px">' +
-								'<input type="hidden" id="object-number-field" value="">';
+								'<input type="hidden" id="object-number-field" value="' + object_number + '">';
 
 		$('#object-header').html(object_header_string);
 		
