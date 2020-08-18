@@ -174,6 +174,8 @@ urlpatterns = [
     url(r'^admin/inspect_upload/$', views.inspect_upload, {'upload_id': ''}, name='inspect_upload_empty'),
     url(r'^admin/inspect_upload/(?P<upload_id>[-\d]+)/$', views.inspect_upload, name='inspect_upload'),
     url(r'^admin/get_uploaded_dataset/$', views.get_uploaded_dataset, name='get_uploaded_dataset'),
+    url(r'^admin/inspect_logged_variables/$', views.inspect_logged_variables, name='inspect_logged_variables'),
+    url(r'^admin/get_logged_variables_last_x_minutes/$', views.get_logged_variables_last_x_minutes, name='get_logged_variables_last_x_minutes'),
     url(r'^admin/run_query/$', views.run_query, name='run_query'),
     url(r'^admin/get_query_results/$', views.get_query_results, name='get_query_results'),
     # show

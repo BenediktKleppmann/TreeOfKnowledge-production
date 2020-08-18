@@ -15,6 +15,10 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 import pdb
+import time
+from collection.models import Logged_variable
+import json
+
 
 
 
@@ -159,6 +163,16 @@ def add_months(d, months):
 
 
 
+def log(variable, variable_name):
+    if isinstance(variable, pd.DataFrame):
+        variable = variable.replace({np.nan:None})
+        variable_value = { 'table_headers':list(variable.columns), 
+                        'table_data': variable.values.tolist()}
+    else:
+        variable_value = variable
+    current_time = time.time()
+    logged_variable_record = Logged_variable(logged_time=current_time, variable_name=variable_name, variable_value=json.dumps(variable_value))
+    logged_variable_record.save()
 
 
 

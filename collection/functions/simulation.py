@@ -112,8 +112,6 @@ class Simulator:
 
 
         #  ================  GET DATA  ===========================================
-        print('self.run_number: ' + str(self.run_number))
-
 
         #  --- y0_columns & y0_column_dt ---
         y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
@@ -138,9 +136,9 @@ class Simulator:
         for object_number in self.objects_dict.keys():
             reduced_objects_dict[object_number] = {'object_filter_facts':self.objects_dict[object_number]['object_filter_facts'], 'object_relations':self.objects_dict[object_number]['object_relations'] }
         new_simulation_state_code = str(self.is_timeseries_analysis) + '|' + str(self.simulation_start_time) + '|' + str(self.simulation_end_time) + '|' + str(self.timestep_size) + '|' + str(self.y0_columns) + '|' + str(self.max_number_of_instances) + '|' + str(reduced_objects_dict) + '|' + str(execution_order['attribute_execution_order'])
-        if 'simulation_state_code' in validation_data.keys():
-            print(str(validation_data['simulation_state_code'] == new_simulation_state_code))
-            print('checking ' + validation_data['simulation_state_code'][:100] + '                              ==                       ' + new_simulation_state_code[:100])
+        # if 'simulation_state_code' in validation_data.keys():
+        #     print(str(validation_data['simulation_state_code'] == new_simulation_state_code))
+        #     print('checking ' + validation_data['simulation_state_code'][:100] + '                              ==                       ' + new_simulation_state_code[:100])
         if 'simulation_state_code' in validation_data.keys() and validation_data['simulation_state_code'] == new_simulation_state_code:
             self.df = pd.DataFrame.from_dict(validation_data['df'])
             self.y0_values = validation_data['y0_values']
@@ -325,7 +323,6 @@ class Simulator:
                         mentioned_columns += ['df.' + rule['column_to_change']]
                         df_columns = ['df.'+col for col in self.df.columns]
                         if (set(mentioned_columns) <= set(df_columns + ['df.delta_t', 'df.randomNumber'])):
-                            print('rule' + str(rule['id']) + ': IF ' + rule['condition_exec'] + '  THEN ' + str(rule['effect_exec']))
                             self.rules.append(rule)
                         else: 
                             raise Exception("The following columns are missing: " + str(list(set(mentioned_columns) - set(df_columns + ['df.delta_t']))))
@@ -586,7 +583,6 @@ class Simulator:
                         print('==== post-processing rule'+ str(rule['id']) + '  ===================================================')
  
                         histogram  = np.histogram(list(priors_to_keep_df['triggerThresholdForRule'+ str(rule['id'])]), bins=30, range=(0.0,1.0))
-                        print('histogram: ' + str(histogram))
 
                         # nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_values_in_posterior
                         nb_of_simulations = self.nb_of_tested_parameters * len(self.df)
@@ -598,7 +594,6 @@ class Simulator:
 
                         # PART 2.2: save the learned likelihood function to the database
                         list_of_probabilities_str = json.dumps(list( np.array(histogram[0]) * 30/ np.sum(histogram[0])))
-                        print('list_of_probabilities_str: ' + list_of_probabilities_str)
 
                         try:
                             likelihood_fuction = Likelihood_fuction.objects.get(simulation_id=self.simulation_id, rule_id=rule['id'])
@@ -607,7 +602,6 @@ class Simulator:
                             likelihood_fuction.nb_of_sim_in_which_rule_was_used = nb_of_sim_in_which_rule_was_used
                             likelihood_fuction.nb_of_values_in_posterior = nb_of_values_in_posterior
                             likelihood_fuction.save()
-                            print('saved to existing Likelihood_fuction ' + str(likelihood_fuction.id))
 
                         except:
                             likelihood_fuction = Likelihood_fuction(simulation_id=self.simulation_id, 
@@ -618,7 +612,6 @@ class Simulator:
                                                                     nb_of_sim_in_which_rule_was_used=nb_of_sim_in_which_rule_was_used,
                                                                     nb_of_values_in_posterior=nb_of_values_in_posterior)
                             likelihood_fuction.save()
-                            print('saved to new Likelihood_fuction ' + str(likelihood_fuction.id))
 
 
                     for used_parameter_id in rule['used_parameter_ids']:
@@ -629,7 +622,6 @@ class Simulator:
 
 
                         histogram  = np.histogram(list(priors_to_keep_df['param' + str(used_parameter_id)]), bins=30, range=(min_value,max_value))
-                        print('histogram: ' + str(histogram))
 
                         # nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_values_in_posterior
                         nb_of_simulations = self.nb_of_tested_parameters * len(self.df)
@@ -641,7 +633,6 @@ class Simulator:
 
                         # PART 2.2: save the learned likelihood function to the database
                         list_of_probabilities_str = json.dumps(list( np.array(histogram[0]) * 30/ np.sum(histogram[0])))
-                        print('list_of_probabilities_str: ' + list_of_probabilities_str)
 
                         try:
                             likelihood_fuction = Likelihood_fuction.objects.get(simulation_id=self.simulation_id, parameter_id=used_parameter_id)
@@ -650,7 +641,6 @@ class Simulator:
                             likelihood_fuction.nb_of_sim_in_which_rule_was_used = nb_of_sim_in_which_rule_was_used
                             likelihood_fuction.nb_of_values_in_posterior = nb_of_values_in_posterior
                             likelihood_fuction.save()
-                            print('saved to existing Likelihood_fuction ' + str(likelihood_fuction.id))
 
                         except:
                             likelihood_fuction = Likelihood_fuction(simulation_id=self.simulation_id, 
@@ -661,7 +651,6 @@ class Simulator:
                                                                     nb_of_sim_in_which_rule_was_used=nb_of_sim_in_which_rule_was_used,
                                                                     nb_of_values_in_posterior=nb_of_values_in_posterior)
                             likelihood_fuction.save()
-                            print('saved to new Likelihood_fuction ' + str(likelihood_fuction.id))
 
 
 
@@ -858,7 +847,6 @@ class Simulator:
                         #         period_30_condition_df['run' + str(self.number_of_batches) + 'condition_satisfied'] = pd.eval(rule['condition_exec'])
                         #     period_30_condition_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-25/period_30_condition.csv', index=False)
                         # ==========================================================================
-                        pdb.set_trace()
                         if condition_satisfying_rows.iloc[0] in [-1,-2]: #messy bug-fix for bug where eval returns -1 and -2 instead of True and False
                             condition_satisfying_rows += 2
                             condition_satisfying_rows = condition_satisfying_rows.astype(bool)
@@ -1113,10 +1101,6 @@ class Simulator:
 
 
             errors_dict = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), y0_values_short)
-            print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
-            print(str(errors_dict.keys()))
-            print(len([str(index) + '-' + str(batch_nb) for index, batch_nb in zip(df.index, [batch_number]*len(df))]))
-            print(len(errors_dict['all_errors']))
             error_df = pd.DataFrame({  'simulation_number': [str(index) + '-' + str(batch_nb) for index, batch_nb in zip(df.index, [batch_number]*len(df))],
                                         'error': errors_dict['all_errors']})
             errors_df = errors_df.append(error_df)

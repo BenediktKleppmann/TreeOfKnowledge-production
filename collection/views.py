@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule, Execution_order, Likelihood_fuction, Rule_parameter
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule, Execution_order, Likelihood_fuction, Rule_parameter, Logged_variable
 from django.contrib.auth.models import User
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
@@ -38,7 +38,7 @@ from django.core.mail import EmailMultiAlternatives
 import pdb
 from boto import sns
 import psycopg2
-
+from datetime import datetime
 
 
  # ===============================================================================
@@ -1950,6 +1950,27 @@ def get_uploaded_dataset(request):
                                 'meta_data_facts':uploaded_dataset.meta_data_facts}
 
     return HttpResponse(json.dumps(uploaded_dataset_dict))
+
+
+
+@staff_member_required
+def inspect_logged_variables(request):
+    return render(request, 'admin/inspect_logged_variables.html')
+
+
+@staff_member_required
+def get_logged_variables_last_x_minutes(request):
+    last_x_minutes = int(request.GET.get('last_x_minutes', None))
+    earliest_time = time.time() - last_x_minutes*60
+    logged_variable_records = Logged_variable.objects.filter(logged_time__gt=earliest_time).order_by('logged_time') 
+
+    response = []
+    for logged_variable_record in logged_variable_records:
+        logged_datetime = datetime.fromtimestamp(logged_variable_record.logged_time)
+        time_string = '%02d:%02d:%02d' % (logged_datetime.hour, logged_datetime.minute, logged_datetime.second)
+        response.append({'logged_time': logged_variable_record.logged_time, 'time_string':time_string, 'variable_name': logged_variable_record.variable_name, 'variable_value': logged_variable_record.variable_value})
+    return HttpResponse(json.dumps(response))
+
 
 
 

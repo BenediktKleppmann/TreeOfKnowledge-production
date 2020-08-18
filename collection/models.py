@@ -252,7 +252,10 @@ class Rule_parameter(models.Model):
     max_value = models.FloatField()
     
 
-
+class Logged_variable(models.Model):
+    logged_time = models.IntegerField()
+    variable_name = models.TextField()
+    variable_value = models.TextField()
 
 
 # ========================================================================================

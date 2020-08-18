@@ -754,7 +754,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                                                       FROM object_ids_table
                                                     )
                                   AND valid_time_start >= %s
-                                  AND valid_time_end <= %s 
+                                  AND valid_time_end <= v %s 
                             )  as inner_query
                         WHERE inner_query.rank = 1
                     ''' % (object_number, object_number, valid_time_start, valid_time_end)
@@ -1178,12 +1178,14 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             # TESTING ----------------------------------------------------
             # long_table_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-11/long_table_df.csv', index=False)
             # ------------------------------------------------------------
-
+            pdb.set_trace()
+            generally_useful_functions.log(long_table_df, 'long_table_df')
             long_table_df.set_index(['object_id','column_name','period'],inplace=True)
             broad_table_df = long_table_df.unstack(level=['column_name', 'period'])
             # long_table_df.set_index(['object_id','column_name','period', 'attribute_id'],inplace=True)
             # long_table_df.unstack(level=['column_name', 'period', 'attribute_id'])
             broad_table_df.columns = [col[1] for col in list(broad_table_df.columns)]
+            generally_useful_functions.log(broad_table_df, 'broad_table_df')
             # TESTING ----------------------------------------------------
             # broad_table_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-11/broad_table_df.csv', index=False)
             # ------------------------------------------------------------

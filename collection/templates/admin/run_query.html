@@ -141,37 +141,39 @@
 					table_data = response_dict["table_data"];
 					table_headers = response_dict["table_headers"];
 					
-
-					if (table_data.length > 2000) {
-						table_html_string = 'The result has ' + String(table_data.length) + ' rows. Maximally 2000 can be displayed.';
-						$("#response-table").html(table_html_string);
-					
+					var table_length = table_data.length;
+					if (table_length > 2000) {
+						table_html_string = 'This table has ' + String(table_data.length) + ' rows. Here are the first 2000 of them.';
+						table_length = 2000;
 					} else {
-						table_html_string ='<div class="table-section">' +	
-												'<table class="table table-sm table-condensed data-table" style="width:' + (150*table_headers.length + 20) + 'px;">' +
-													'<thead>' +
-														'<tr>';
-
-						for (var j = 0; j < table_headers.length; j++) {
-							table_html_string +=  			'<th scope="col">' + table_headers[j] + '</th>';
-						}
-						
-						table_html_string +=  			'</tr>' +
-													'</thead>' +
-													'<tbody>';
-
-						for (var j = 0; j < table_data.length; j++) {
-							table_html_string +=  		'<tr>';
-							for (var k = 0; k < table_data[j].length; k++) {
-								table_html_string +=  		'<td>' + table_data[j][k] + '</td>';
-							}
-														'</tr>';
-						}
-
-						table_html_string += 		'</tbody>' +
-												'</table>';
-						$("#response-table").html(table_html_string);		
+						table_html_string = 'This table has ' + String(table_data.length) + ' rows.';
 					}
+					
+					table_html_string ='<div class="table-section">' +	
+											'<table class="table table-sm table-condensed data-table" style="width:' + (150*table_headers.length + 20) + 'px;">' +
+												'<thead>' +
+													'<tr>';
+
+					for (var j = 0; j < table_headers.length; j++) {
+						table_html_string +=  			'<th scope="col">' + table_headers[j] + '</th>';
+					}
+					
+					table_html_string +=  			'</tr>' +
+												'</thead>' +
+												'<tbody>';
+
+					for (var j = 0; j < table_length; j++) {
+						table_html_string +=  		'<tr>';
+						for (var k = 0; k < table_data[j].length; k++) {
+							table_html_string +=  		'<td>' + table_data[j][k] + '</td>';
+						}
+													'</tr>';
+					}
+
+					table_html_string += 		'</tbody>' +
+											'</table>';
+					$("#response-table").html(table_html_string);		
+					
 				} else {
 					$("#response-table").html(this.responseText);
 				}
