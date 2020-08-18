@@ -136,9 +136,10 @@ class Simulator:
         for object_number in self.objects_dict.keys():
             reduced_objects_dict[object_number] = {'object_filter_facts':self.objects_dict[object_number]['object_filter_facts'], 'object_relations':self.objects_dict[object_number]['object_relations'] }
         new_simulation_state_code = str(self.is_timeseries_analysis) + '|' + str(self.simulation_start_time) + '|' + str(self.simulation_end_time) + '|' + str(self.timestep_size) + '|' + str(self.y0_columns) + '|' + str(self.max_number_of_instances) + '|' + str(reduced_objects_dict) + '|' + str(execution_order['attribute_execution_order'])
-        # if 'simulation_state_code' in validation_data.keys():
-        #     print(str(validation_data['simulation_state_code'] == new_simulation_state_code))
-        #     print('checking ' + validation_data['simulation_state_code'][:100] + '                              ==                       ' + new_simulation_state_code[:100])
+        pdb.set_trace()
+        if 'simulation_state_code' in validation_data.keys():
+            print(str(validation_data['simulation_state_code'] == new_simulation_state_code))
+            print('checking ' + validation_data['simulation_state_code'][:100] + '                              ==                       ' + new_simulation_state_code[:100])
         if 'simulation_state_code' in validation_data.keys() and validation_data['simulation_state_code'] == new_simulation_state_code:
             self.df = pd.DataFrame.from_dict(validation_data['df'])
             self.y0_values = validation_data['y0_values']

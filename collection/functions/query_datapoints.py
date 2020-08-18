@@ -926,14 +926,14 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                             WHERE
                     '''
                     if filter_fact['operation'] == '=':     
-                        sql_string1 +=            "attribute_id = '%s' AND string_value = '%s' AND valid_time_start <= %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
+                        sql_string1 +=            "attribute_id = '%s' AND string_value = '%s' AND valid_time_start <= %s AND valid_time_end >= %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
                     elif filter_fact['operation'] == '>':
-                        sql_string1 +=            "attribute_id = '%s' AND numeric_value > %s AND valid_time_start <= %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
+                        sql_string1 +=            "attribute_id = '%s' AND numeric_value > %s AND valid_time_start <= %s AND valid_time_end >= %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
                     elif filter_fact['operation'] == '<':
-                        sql_string1 +=            "attribute_id = '%s' AND numeric_value < %s AND valid_time_start <= %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
+                        sql_string1 +=            "attribute_id = '%s' AND numeric_value < %s AND valid_time_start <= %s AND valid_time_end >= %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
                     elif filter_fact['operation'] == 'in':
                         values = ['"%s"' % value for value in filter_fact['value']]
-                        sql_string1 +=            "attribute_id = '%s' AND string_value IN (%s) AND valid_time_start <= %s AND valid_time_end > %s " % (filter_fact['attribute_id'], ', '.join(values), str(condition_holding_period_end), str(condition_holding_period_start))
+                        sql_string1 +=            "attribute_id = '%s' AND string_value IN (%s) AND valid_time_start <= %s AND valid_time_end >= %s " % (filter_fact['attribute_id'], ', '.join(values), str(condition_holding_period_end), str(condition_holding_period_start))
 
                 
 
@@ -963,6 +963,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             sql_string1    += '''  ) as inner_query
                                 ORDER BY RANDOM()
                                 LIMIT %s;''' % max_number_of_instances
+            pdb.set_trace()
             cursor.execute(sql_string1)
 
 
