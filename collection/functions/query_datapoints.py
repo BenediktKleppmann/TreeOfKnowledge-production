@@ -754,7 +754,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                                                       FROM object_ids_table
                                                     )
                                   AND valid_time_start >= %s
-                                  AND valid_time_end <= v %s 
+                                  AND valid_time_end <= %s 
                             )  as inner_query
                         WHERE inner_query.rank = 1
                     ''' % (object_number, object_number, valid_time_start, valid_time_end)
