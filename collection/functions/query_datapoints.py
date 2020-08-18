@@ -1178,7 +1178,6 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             # TESTING ----------------------------------------------------
             # long_table_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-11/long_table_df.csv', index=False)
             # ------------------------------------------------------------
-            pdb.set_trace()
             generally_useful_functions.log(long_table_df, 'long_table_df')
             long_table_df.set_index(['object_id','column_name','period'],inplace=True)
             broad_table_df = long_table_df.unstack(level=['column_name', 'period'])
