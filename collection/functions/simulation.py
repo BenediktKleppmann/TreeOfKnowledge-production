@@ -734,6 +734,7 @@ class Simulator:
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write(json.dumps({"text": 'Preparing results - step: ', "current_number": 3, "total_number": 3}))
 
+        generally_useful_functions.log(errors_df, 'errors_df')
         errors = {}
         errors['score'] = math.exp(-errors_df['error'].mean())
         errors_df.index = errors_df['simulation_number']
