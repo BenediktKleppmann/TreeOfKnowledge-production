@@ -163,6 +163,8 @@ class Simulator:
 
 
 
+
+
         #  ================  PREPARE RULES  ===========================================
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 6, "total_number": 6}))
@@ -861,12 +863,8 @@ class Simulator:
                         condition_satisfying_rows = pd.Series([True] * batch_size)
 
 
-                # --------  used rules  --------
-                if rule['learn_posterior']:
-                    rule['rule_was_used_in_simulation'] = rule['rule_was_used_in_simulation'] | condition_satisfying_rows
 
-
-                # --------  THEN  --------
+                # --------  new_values  --------
                 if rule['effect_is_calculation']: 
                     if 'sums' in rule:
                         for sum_number in rule['sums'].keys():
@@ -893,11 +891,19 @@ class Simulator:
                     new_values = pd.Series([rule['effect_exec']] * batch_size)
 
 
-                # df.loc[satisfying_rows,rule['column_to_change']] = new_values 
+
+                # --------  used rules  --------
+                if rule['learn_posterior']:
+                    rule_was_used_this_period = condition_satisfying_rows & new_values.notnull()
+                    rule['rule_was_used_in_simulation'] = rule['rule_was_used_in_simulation'] | rule_was_used_this_period
+
+
+                # --------  Apply the Change (new_values)  --------
                 satisfying_rows[satisfying_rows.isna()] = False
                 new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
                 new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
                 df[rule['column_to_change']] = new_values
+
 
 
             y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
