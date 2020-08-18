@@ -444,8 +444,8 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                                     FROM (
                                         SELECT DISTINCT object_id AS obj%sattrobject_id
                                         FROM collection_data_point
-                                        WHERE valid_time_start < %s
-                                          AND valid_time_end > %s
+                                        WHERE valid_time_start <= %s
+                                          AND valid_time_end >= %s
                                           AND object_id IN (
                                                             SELECT DISTINCT id 
                                                             FROM collection_object 
@@ -462,8 +462,8 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                                             SELECT DISTINCT object_id, numeric_value 
                                             FROM collection_data_point
                                             WHERE attribute_id = '%s'
-                                              AND valid_time_start < %s
-                                              AND valid_time_end > %s
+                                              AND valid_time_start <= %s
+                                              AND valid_time_end >= %s
                                               AND object_id IN (
                                                                 SELECT DISTINCT id 
                                                                 FROM collection_object 
@@ -482,8 +482,8 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                                             SELECT DISTINCT object_id, numeric_value 
                                             FROM collection_data_point
                                             WHERE attribute_id = '%s'
-                                              AND valid_time_start < %s
-                                              AND valid_time_end > %s
+                                              AND valid_time_start <= %s
+                                              AND valid_time_end >= %s
                                               AND object_id IN (
                                                                 SELECT DISTINCT id 
                                                                 FROM collection_object 
@@ -511,14 +511,14 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                                             WHERE 
                     '''
                     if filter_fact['operation'] == '=':     
-                        sql_string1 +=            "attribute_id = '%s' AND string_value = '%s' AND valid_time_start < %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(valid_time_end), str(valid_time_start))
+                        sql_string1 +=            "attribute_id = '%s' AND string_value = '%s' AND valid_time_start <= %s AND valid_time_end >= %s " % (filter_fact['attribute_id'], filter_fact['value'], str(valid_time_end), str(valid_time_start))
                     elif filter_fact['operation'] == '>':
-                        sql_string1 +=            "attribute_id = '%s' AND numeric_value > %s AND valid_time_start < %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(valid_time_end), str(valid_time_start))
+                        sql_string1 +=            "attribute_id = '%s' AND numeric_value > %s AND valid_time_start <= %s AND valid_time_end >= %s " % (filter_fact['attribute_id'], filter_fact['value'], str(valid_time_end), str(valid_time_start))
                     elif filter_fact['operation'] == '<':
-                        sql_string1 +=            "attribute_id = '%s' AND numeric_value < %s AND valid_time_start < %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(valid_time_end), str(valid_time_start))
+                        sql_string1 +=            "attribute_id = '%s' AND numeric_value < %s AND valid_time_start <= %s AND valid_time_end >= %s " % (filter_fact['attribute_id'], filter_fact['value'], str(valid_time_end), str(valid_time_start))
                     elif filter_fact['operation'] == 'in':
                         values = ['"%s"' % value for value in filter_fact['value']]
-                        sql_string1 +=            "attribute_id = '%s' AND string_value IN (%s) AND valid_time_start < %s AND valid_time_end > %s " % (filter_fact['attribute_id'], ', '.join(values), str(valid_time_end), str(valid_time_start))
+                        sql_string1 +=            "attribute_id = '%s' AND string_value IN (%s) AND valid_time_start <= %s AND valid_time_end >= %s " % (filter_fact['attribute_id'], ', '.join(values), str(valid_time_end), str(valid_time_start))
 
 
 
@@ -529,14 +529,14 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                                                 SELECT DISTINCT object_id
                                                 FROM collection_data_point
                                                 WHERE attribute_id = '%s'
-                                                  AND valid_time_start < %s
-                                                  AND valid_time_end > %s
+                                                  AND valid_time_start <= %s
+                                                  AND valid_time_end >= %s
                                             INTERSECT
                                                 SELECT DISTINCT object_id
                                                 FROM collection_data_point
                                                 WHERE attribute_id = '%s'
-                                                  AND valid_time_start < %s
-                                                  AND valid_time_end > %s
+                                                  AND valid_time_start <= %s
+                                                  AND valid_time_end >= %s
                     ''' % (attribute_id, str(valid_time_end), str(valid_time_start), attribute_id, str(valid_time_end), str(valid_time_end))
 
 
@@ -571,8 +571,8 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                                             SELECT DISTINCT object_id, numeric_value AS object_%s_relation_%s
                                             FROM collection_data_point
                                             WHERE attribute_id = '%s'
-                                              AND valid_time_start > %s
-                                              AND valid_time_end > %s
+                                              AND valid_time_start >= %s
+                                              AND valid_time_end <= %s
                                               AND object_id IN (SELECT DISTINCT object_id FROM object_%s_object_ids__with_missing_relations)
                                     ) AS relation_table_%s
                                     ON original_table.object_id = relation_%s.object_id 
@@ -860,8 +860,8 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                     FROM (
                                         SELECT DISTINCT object_id AS obj%sattrobject_id
                                         FROM collection_data_point
-                                        WHERE valid_time_start < %s
-                                          AND valid_time_end > %s
+                                        WHERE valid_time_start <= %s
+                                          AND valid_time_end >= %s
                                           AND object_id IN (
                                                             SELECT DISTINCT id 
                                                             FROM collection_object 
@@ -878,8 +878,8 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                             SELECT DISTINCT object_id, numeric_value 
                                             FROM collection_data_point
                                             WHERE attribute_id = '%s'
-                                              AND valid_time_start < %s
-                                              AND valid_time_end > %s
+                                              AND valid_time_start <= %s
+                                              AND valid_time_end >= %s
                                               AND object_id IN (
                                                                 SELECT DISTINCT id 
                                                                 FROM collection_object 
@@ -898,8 +898,8 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                             SELECT DISTINCT object_id, numeric_value 
                                             FROM collection_data_point
                                             WHERE attribute_id = '%s'
-                                              AND valid_time_start < %s
-                                              AND valid_time_end > %s
+                                              AND valid_time_start <= %s
+                                              AND valid_time_end >= %s
                                               AND object_id IN (
                                                                 SELECT DISTINCT id 
                                                                 FROM collection_object 
@@ -926,14 +926,14 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                             WHERE
                     '''
                     if filter_fact['operation'] == '=':     
-                        sql_string1 +=            "attribute_id = '%s' AND string_value = '%s' AND valid_time_start < %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
+                        sql_string1 +=            "attribute_id = '%s' AND string_value = '%s' AND valid_time_start <= %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
                     elif filter_fact['operation'] == '>':
-                        sql_string1 +=            "attribute_id = '%s' AND numeric_value > %s AND valid_time_start < %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
+                        sql_string1 +=            "attribute_id = '%s' AND numeric_value > %s AND valid_time_start <= %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
                     elif filter_fact['operation'] == '<':
-                        sql_string1 +=            "attribute_id = '%s' AND numeric_value < %s AND valid_time_start < %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
+                        sql_string1 +=            "attribute_id = '%s' AND numeric_value < %s AND valid_time_start <= %s AND valid_time_end > %s " % (filter_fact['attribute_id'], filter_fact['value'], str(condition_holding_period_end), str(condition_holding_period_start))
                     elif filter_fact['operation'] == 'in':
                         values = ['"%s"' % value for value in filter_fact['value']]
-                        sql_string1 +=            "attribute_id = '%s' AND string_value IN (%s) AND valid_time_start < %s AND valid_time_end > %s " % (filter_fact['attribute_id'], ', '.join(values), str(condition_holding_period_end), str(condition_holding_period_start))
+                        sql_string1 +=            "attribute_id = '%s' AND string_value IN (%s) AND valid_time_start <= %s AND valid_time_end > %s " % (filter_fact['attribute_id'], ', '.join(values), str(condition_holding_period_end), str(condition_holding_period_start))
 
                 
 
@@ -944,14 +944,14 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                                 SELECT DISTINCT object_id
                                                 FROM collection_data_point
                                                 WHERE attribute_id = '%s'
-                                                  AND valid_time_start < %s
-                                                  AND valid_time_end > %s
+                                                  AND valid_time_start <= %s
+                                                  AND valid_time_end >= %s
                                             INTERSECT
                                                 SELECT DISTINCT object_id
                                                 FROM collection_data_point
                                                 WHERE attribute_id = '%s'
-                                                  AND valid_time_start < %s
-                                                  AND valid_time_end > %s
+                                                  AND valid_time_start <= %s
+                                                  AND valid_time_end >= %s
                     ''' % (attribute_id, str(condition_holding_period_end), str(condition_holding_period_start), attribute_id, str(valid_time_end), str(condition_holding_period_end))
                     
                 if len(relation_ids) > 0:
@@ -985,8 +985,8 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                             SELECT DISTINCT object_id, numeric_value AS object_%s_relation_%s
                                             FROM collection_data_point
                                             WHERE attribute_id = '%s'
-                                              AND valid_time_start > %s
-                                              AND valid_time_end > %s
+                                              AND valid_time_start >= %s
+                                              AND valid_time_end <= %s
                                               AND object_id IN (SELECT DISTINCT object_id FROM object_%s_object_ids__with_missing_relations)
                                     ) AS relation_table_%s
                                     ON original_table.object_id = relation_%s.object_id 
@@ -1142,8 +1142,8 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                                           SELECT DISTINCT obj%sattrobject_id 
                                                           FROM object_ids_table
                                                         )
-                                      AND valid_time_start > %s
-                                      AND valid_time_end < %s 
+                                      AND valid_time_start >= %s
+                                      AND valid_time_end <= %s 
                                 )
                             WHERE rank = 1
                         ''' % (object_number, valid_time_start, timestep_size, valid_time_start, timestep_size, object_number, valid_time_start, valid_time_end)
@@ -1168,8 +1168,8 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                                           SELECT DISTINCT obj%sattrobject_id 
                                                           FROM object_ids_table
                                                         )
-                                      AND valid_time_start > %s
-                                      AND valid_time_end < %s 
+                                      AND valid_time_start >= %s
+                                      AND valid_time_end <= %s 
                                 ) as inner_query
                             WHERE inner_query.rank = 1
                         ''' % (object_number, valid_time_start, timestep_size, valid_time_start, timestep_size, object_number, valid_time_start, valid_time_end)
