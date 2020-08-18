@@ -1175,10 +1175,14 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                         ''' % (object_number, valid_time_start, timestep_size, valid_time_start, timestep_size, object_number, valid_time_start, valid_time_end)
 
             long_table_df = pd.read_sql_query(sql_string5, connection)
+            
             # TESTING ----------------------------------------------------
-            # long_table_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-11/long_table_df.csv', index=False)
-            # ------------------------------------------------------------
+            generally_useful_functions.log(sql_string5, 'sql_string5')
             generally_useful_functions.log(long_table_df, 'long_table_df')
+            distinct_object_ids_df = pd.read_sql_query("SELECT DISTINCT obj1sattrobject_id FROM object_ids_table", connection)
+            generally_useful_functions.log(distinct_object_ids_df, 'distinct_object_ids_df')
+            # ------------------------------------------------------------
+            
             long_table_df.set_index(['object_id','column_name','period'],inplace=True)
             broad_table_df = long_table_df.unstack(level=['column_name', 'period'])
             # long_table_df.set_index(['object_id','column_name','period', 'attribute_id'],inplace=True)
