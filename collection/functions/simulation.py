@@ -492,7 +492,7 @@ class Simulator:
             progress_tracking_file.write(json.dumps({"text": 'Learning parameters - simulation:', "current_number": 0, "total_number": self.nb_of_tested_parameters * len(self.df)}))
 
 
-        print('learn likelihoods 1')
+        print('learn likelihoods 1 - ' + json.dumps(self.rules))
         all_priors_df = pd.DataFrame()
         self.nb_of_sim_in_which_rule_was_used = 0
         for rule in self.rules:
