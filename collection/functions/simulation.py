@@ -299,8 +299,10 @@ class Simulator:
                         if not rule['learn_posterior']:
                             for used_parameter_id in rule['used_parameter_ids']: 
                                 histogram, mean, standard_dev, nb_of_values_in_posterior, message= get_from_db.get_single_pdf(simulation_id, object_number, used_parameter_id, False)
+                                print('used_parameter_id:' + str(used_parameter_id) + ' - get_single_pdf:' + str(histogram))
                                 if histogram is None:
                                     histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations = get_from_db.get_rules_pdf(used_parameter_id, False)
+                                    print('used_parameter_id:' + str(used_parameter_id) + ' - get_rules_pdf:' + str(histogram))
 
                                 # change to the parameter's range
                                 min_value = rule['parameters'][used_parameter_id]['min_value']
