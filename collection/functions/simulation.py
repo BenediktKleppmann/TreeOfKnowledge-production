@@ -1221,6 +1221,10 @@ class Simulator:
         dimensionality = np.maximum(dimensionality, [1]*len(u))
         error = total_error/dimensionality
         error[non_validated_rows] = 1
+        generally_useful_functions.log(non_validated_rows, 'non_validated_rows')
+        generally_useful_functions.log(total_error, 'total_error')
+        generally_useful_functions.log(dimensionality, 'dimensionality')
+
 
 
         errors_dict = {'all_errors':error}
