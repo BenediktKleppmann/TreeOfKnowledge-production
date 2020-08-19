@@ -738,7 +738,7 @@ class Simulator:
         errors = {}
         errors['score'] = math.exp(-errors_df['error'].mean())
         errors_df.index = errors_df['simulation_number']
-        errors['all_errors'] = list(errors_df['error'].to_dict())
+        errors['all_errors'] = errors_df['error'].to_dict()
         errors['correct_runs'] = list(errors_df.loc[errors_df['error'] < self.error_threshold, 'simulation_number'])
         errors['false_runs'] = list(errors_df.loc[errors_df['error'] > self.error_threshold, 'simulation_number'])
 
