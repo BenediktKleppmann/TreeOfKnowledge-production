@@ -173,7 +173,10 @@ def log(variable, variable_name):
     else:
         variable_value = variable
     current_time = time.time()
-    logged_variable_record = Logged_variable(logged_time=current_time, variable_name=variable_name, variable_value=json.dumps(variable_value))
+    try:
+        logged_variable_record = Logged_variable(logged_time=current_time, variable_name=variable_name, variable_value=json.dumps(variable_value))
+    except:
+        logged_variable_record = Logged_variable(logged_time=current_time, variable_name=variable_name, variable_value=str(variable_value))
     logged_variable_record.save()
 
 
