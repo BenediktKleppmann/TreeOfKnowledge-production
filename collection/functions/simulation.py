@@ -16,7 +16,7 @@ from collection.functions import query_datapoints, get_from_db, generally_useful
 from operator import itemgetter
 import random
 import random
-from scipy.stats import rv_histogram
+from scipy.stats import rv_histogram, rankdata
 import math
 from copy import deepcopy
 import re
@@ -1183,6 +1183,7 @@ class Simulator:
                 for period_column in period_columns:
                     period_number = max(int(period_column.split('period')[1]), 1)
       
+                    # -------------  version 1  -----------------------
                     # relative_change = np.abs(np.array(u_df[period_column]) - np.array(v_df[period_column.split('period')[0]]))/period_number
                     # normalisation_factor = np.maximum(np.abs(u_df[period_column]),np.abs(v_df[period_column.split('period')[0]]))
                     # normalisation_factor = np.maximum(normalisation_factor, 1)
@@ -1193,31 +1194,49 @@ class Simulator:
                     # absolute_change = absolute_change/np.abs(np.percentile(absolute_change, 30))
                     # # absolute_change_non_null = np.nan_to_num(absolute_change, nan=1.0) 
 
-                    generally_useful_functions.log(v_df[period_column], 'v_df[period_column]__period' + str(period_number))
-                    generally_useful_functions.log(u_df[period_column], 'u_df[period_column]__period' + str(period_number))
-                    generally_useful_functions.log(v_df[period_column.split('period')[0]], 'v_df[period_column.split(\'period\')[0]__period' + str(period_number))
 
-                    residuals = np.abs(np.array(u_df[period_column]) - np.array(v_df[period_column]))
-                    non_null_residuals = residuals[~np.isnan(residuals)]
-                    nth_percentile = np.percentile(non_null_residuals, self.error_threshold*100) if len(non_null_residuals) > 0 else 1# whereby n is the error_threshold. It therefore automatically adapts to the senistivity...
-                    error_divisor = nth_percentile if nth_percentile != 0 else 1
-                    error_in_error_range =  residuals/error_divisor
-                    error_in_error_range_non_null = np.nan_to_num(error_in_error_range, nan=0)  
+
+                    # -------------  version 2 (works quite well)  -----------------------
+                    # residuals = np.abs(np.array(u_df[period_column]) - np.array(v_df[period_column]))
+                    # non_null_residuals = residuals[~np.isnan(residuals)]
+                    # nth_percentile = np.percentile(non_null_residuals, self.error_threshold*100) if len(non_null_residuals) > 0 else 1# whereby n is the error_threshold. It therefore automatically adapts to the senistivity...
+                    # error_divisor = nth_percentile if nth_percentile != 0 else 1
+                    # error_in_error_range =  residuals/error_divisor
+                    # error_in_error_range = np.log(1 + error_in_error_range)
+                    # error_in_error_range_non_null = np.nan_to_num(error_in_error_range, nan=0)  
                     # error_in_error_range_non_null = np.minimum(error_in_error_range_non_null, 1)
+
+                    # true_change_factor = (np.array(v_df[period_column])/np.array(v_df[period_column.split('period')[0]]))
+                    # true_change_factor_per_period = np.power(true_change_factor, (1/period_number))
+                    # simulated_change_factor = (np.array(u_df[period_column])/np.array(v_df[period_column.split('period')[0]]))
+                    # simulated_change_factor_per_period = np.power(simulated_change_factor, (1/period_number))
+                    # error_of_value_change = np.abs(simulated_change_factor_per_period - true_change_factor_per_period) 
+                    # error_of_value_change = np.log(1 + error_of_value_change)
+                    # error_of_value_change_non_null = np.nan_to_num(error_of_value_change, nan=0)  
+                    # error_of_value_change_non_null = np.minimum(error_of_value_change_non_null, 1)
+
+                    # error = 0.5*np.minimum(error_in_error_range_non_null,error_of_value_change_non_null) + 0.25*np.sqrt(error_in_error_range_non_null) + 0.25*np.sqrt(error_of_value_change_non_null)
+
+
+                    # -------------  version 3  -----------------------
+                    residual_rank = np.abs(np.array(u_df[period_column]) - np.array(v_df[period_column]))
+                    not_null_index = pd.notnull(residual_rank)
+                    residual_rank[not_null_index] = rankdata(residual_rank[not_null_index])
+
 
                     true_change_factor = (np.array(v_df[period_column])/np.array(v_df[period_column.split('period')[0]]))
                     true_change_factor_per_period = np.power(true_change_factor, (1/period_number))
                     simulated_change_factor = (np.array(u_df[period_column])/np.array(v_df[period_column.split('period')[0]]))
                     simulated_change_factor_per_period = np.power(simulated_change_factor, (1/period_number))
-                    error_of_value_change = np.abs(simulated_change_factor_per_period - true_change_factor_per_period) 
-                    error_of_value_change_non_null = np.nan_to_num(error_of_value_change, nan=0)  
-                    # error_of_value_change_non_null = np.minimum(error_of_value_change_non_null, 1)
+                    value_change_rank = np.abs(simulated_change_factor_per_period - true_change_factor_per_period) 
+                    not_null_index = pd.notnull(value_change_rank)
+                    value_change_rank[not_null_index] = rankdata(value_change_rank[not_null_index])
 
-                    error = 0.5*np.minimum(error_in_error_range_non_null,error_of_value_change_non_null) + 0.25*np.sqrt(error_in_error_range_non_null) + 0.25*np.sqrt(error_of_value_change_non_null)
+                    both_ranks = np.array([residual_rank, value_change_rank])
+                    error = np.nanmin(both_ranks, axis=0) + np.nanmax(both_ranks, axis=0) 
 
-                    null_value_places = np.logical_or(np.isnan(error_in_error_range), np.isnan(error_of_value_change))
+                    null_value_places = np.isnan(error)
                     error[null_value_places] = 0
-
                     dimensionality += 1 - null_value_places.astype('int')
                     total_error += error 
 

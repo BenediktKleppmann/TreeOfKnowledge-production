@@ -160,7 +160,7 @@
 
 		var i = parseInt($('#selected_variable').val());
 		
-		if (logged_variables[i]['variable_value'][0] == '{' || logged_variables[i]['variable_value'][0] == '[') {
+		try {
 			variable_value_dict = JSON.parse(logged_variables[i]['variable_value']);
 			
 			if ("table_data" in variable_value_dict) {
@@ -202,7 +202,7 @@
 			} else {
 				document.getElementById("variable-display").textContent = JSON.stringify(variable_value_dict, undefined, 2);
 			}
-		} else {
+		} catch (e) {
 			$("#variable-display").html(logged_variables[i]['variable_value']);
 		}
 	}
