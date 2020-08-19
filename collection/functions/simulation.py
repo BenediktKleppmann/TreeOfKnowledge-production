@@ -492,7 +492,7 @@ class Simulator:
             progress_tracking_file.write(json.dumps({"text": 'Learning parameters - simulation:', "current_number": 0, "total_number": self.nb_of_tested_parameters * len(self.df)}))
 
 
-
+        print('learn likelihoods 1')
         all_priors_df = pd.DataFrame()
         self.nb_of_sim_in_which_rule_was_used = 0
         for rule in self.rules:
@@ -505,7 +505,9 @@ class Simulator:
                     all_priors_df['param' + str(used_parameter_id)] = np.random.uniform(rule['parameters'][used_parameter_id]['min_value'], rule['parameters'][used_parameter_id]['max_value'], self.nb_of_tested_parameters)
         
 
+        print('learn likelihoods 2 - ' + str(len(all_priors_df)))
         if len(all_priors_df) > 0:
+            print('learn likelihoods 3 - ' + str(self.run_locally))
             if self.run_locally:
                 # =================  Simulation Loop  ==========================
                 for batch_number in range(self.nb_of_tested_parameters):
@@ -734,7 +736,6 @@ class Simulator:
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write(json.dumps({"text": 'Preparing results - step: ', "current_number": 3, "total_number": 3}))
 
-        generally_useful_functions.log(errors_df, 'errors_df')
         errors = {}
         errors['score'] = 1 - errors_df['error'].mean()
         errors_df.index = errors_df['simulation_number']
@@ -1261,10 +1262,10 @@ class Simulator:
                     dimensionality += 1 - null_value_places.astype('int')
                     total_error += error 
 
-                    generally_useful_functions.log(v_df[period_column], 'v_df[period_column]')
-                    generally_useful_functions.log(u_df[period_column], 'u_df[period_column]')
-                    generally_useful_functions.log(v_df[period_column.split('period')[0]], 'v_df[period_column.split(\'period\')[0]]')
-                    generally_useful_functions.log(error, 'error')
+                    # generally_useful_functions.log(v_df[period_column], 'v_df[period_column]')
+                    # generally_useful_functions.log(u_df[period_column], 'u_df[period_column]')
+                    # generally_useful_functions.log(v_df[period_column.split('period')[0]], 'v_df[period_column.split(\'period\')[0]]')
+                    # generally_useful_functions.log(error, 'error')
 
 
         non_validated_rows = dimensionality == 0
