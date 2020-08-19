@@ -1967,7 +1967,7 @@ def get_logged_variables_last_x_minutes(request):
     response = []
     for logged_variable_record in logged_variable_records:
         logged_datetime = datetime.fromtimestamp(logged_variable_record.logged_time)
-        time_string = '%02d:%02d:%02d' % (logged_datetime.hour, logged_datetime.minute, logged_datetime.second)
+        time_string = '%02d:%02d:%s' % (logged_datetime.hour, logged_datetime.minute, logged_datetime.second)
         response.append({'logged_time': logged_variable_record.logged_time, 'time_string':time_string, 'variable_name': logged_variable_record.variable_name, 'variable_value': logged_variable_record.variable_value})
     return HttpResponse(json.dumps(response))
 
