@@ -168,7 +168,7 @@ def log(variable, variable_name):
         variable = variable.replace({np.nan:None})
         variable_value = { 'table_headers':list(variable.columns), 
                         'table_data': variable.values.tolist()}
-    if isinstance(variable_value,(pd.core.series.Series,np.ndarray)):
+    if isinstance(variable,(pd.core.series.Series,np.ndarray)):
         variable_value = list(variable)
     else:
         variable_value = variable
