@@ -1193,6 +1193,10 @@ class Simulator:
                     # absolute_change = absolute_change/np.abs(np.percentile(absolute_change, 30))
                     # # absolute_change_non_null = np.nan_to_num(absolute_change, nan=1.0) 
 
+                    generally_useful_functions.log(v_df[period_column], 'v_df[period_column]__period' + period_number)
+                    generally_useful_functions.log(u_df[period_column], 'u_df[period_column]__period' + period_number)
+                    generally_useful_functions.log(v_df[period_column.split('period')[0]], 'v_df[period_column.split(\'period\')[0]__period' + period_number)
+
                     residuals = np.abs(np.array(u_df[period_column]) - np.array(v_df[period_column]))
                     non_null_residuals = residuals[~np.isnan(residuals)]
                     nth_percentile = np.percentile(non_null_residuals, self.error_threshold*100) if len(non_null_residuals) > 0 else 1# whereby n is the error_threshold. It therefore automatically adapts to the senistivity...
@@ -1221,9 +1225,7 @@ class Simulator:
         dimensionality = np.maximum(dimensionality, [1]*len(u))
         error = total_error/dimensionality
         error[non_validated_rows] = 1
-        generally_useful_functions.log(non_validated_rows, 'non_validated_rows')
-        generally_useful_functions.log(total_error, 'total_error')
-        generally_useful_functions.log(dimensionality, 'dimensionality')
+
 
 
 
