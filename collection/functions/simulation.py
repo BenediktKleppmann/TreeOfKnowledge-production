@@ -736,7 +736,7 @@ class Simulator:
 
         generally_useful_functions.log(errors_df, 'errors_df')
         errors = {}
-        errors['score'] = math.exp(-errors_df['error'].mean())
+        errors['score'] = 1 - errors_df['error'].mean()
         errors_df.index = errors_df['simulation_number']
         errors['all_errors'] = errors_df['error'].to_dict()
         errors['correct_runs'] = list(errors_df.loc[errors_df['error'] < self.error_threshold, 'simulation_number'])
@@ -1255,6 +1255,7 @@ class Simulator:
 
                     both_errors = np.array([error_in_error_range, error_of_value_change])
                     error = (np.nanmin(both_errors, axis=0) + np.nanmax(both_errors, axis=0))/ 2
+                    error = 1 - np.exp(-2*error)
                     null_value_places = np.isnan(error)
                     error[null_value_places] = 0
                     dimensionality += 1 - null_value_places.astype('int')
