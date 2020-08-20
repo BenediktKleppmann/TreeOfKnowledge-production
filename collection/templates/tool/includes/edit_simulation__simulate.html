@@ -78,7 +78,16 @@
 		border: 1px solid rgb(204, 204, 204);
 	}
 	
+	#save-button {
+		display: inline-block;
+		margin-top: 2px;
+		margin-right: 5px;
+		border-radius: 6px;
+		padding: 7px 15px;
+	}
+	
 	#run-button {
+		display: inline-block;
 		margin-top: 2px;
 		border-radius: 6px;
 		padding: 7px 15px;
@@ -886,6 +895,7 @@
 															'</div>' +
 														'</div>' +
 													'</div>' +
+													'<button id="save-button" class="btn btn-primary" type="button" onclick="saveSimulation()">Save</button>' +
 													'<button id="run-button" class="btn btn-success" type="button" onclick="run()">Run</button>' +
 												'</div>' +
 											'</div>' +

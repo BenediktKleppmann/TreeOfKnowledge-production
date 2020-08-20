@@ -202,6 +202,7 @@ class Simulator:
 
                     try:
                         rule = self.objects_dict[str(object_number)]['object_rules'][str(attribute_id)][str(rule_id)]
+                        print('rule %s:  learn_posterior=%s ;has_probability_1=%s; used_parameter_ids=%s' % (rule['id'], rule['learn_posterior'], rule['has_probability_1'], rule['used_parameter_ids']))
 
 
                         if not self.is_timeseries_analysis and 'df.delta_t' in rule['effect_exec']:  
@@ -494,7 +495,7 @@ class Simulator:
             progress_tracking_file.write(json.dumps({"text": 'Learning parameters - simulation:', "current_number": 0, "total_number": self.nb_of_tested_parameters * len(self.df)}))
 
 
-        print('learn likelihoods 1 - ' + json.dumps(self.rules))
+        print('learn likelihoods 1')
         all_priors_df = pd.DataFrame()
         self.nb_of_sim_in_which_rule_was_used = 0
         for rule in self.rules:
