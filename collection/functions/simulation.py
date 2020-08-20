@@ -498,6 +498,7 @@ class Simulator:
         all_priors_df = pd.DataFrame()
         self.nb_of_sim_in_which_rule_was_used = 0
         for rule in self.rules:
+            print('rule %s:  learn_posterior=%s ;has_probability_1=%s; used_parameter_ids=%s' % (rule['learn_posterior'], rule['has_probability_1'], rule['used_parameter_ids']))
             if rule['learn_posterior']:
                 all_priors_df['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] = [np.nan] * self.nb_of_tested_parameters
                 all_priors_df['error_rule' + str(rule['id'])] = [np.nan] * self.nb_of_tested_parameters

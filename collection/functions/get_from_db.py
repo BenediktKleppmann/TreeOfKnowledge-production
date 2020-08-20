@@ -265,7 +265,6 @@ def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
         nb_of_values_in_posterior = likelihood_function.nb_of_values_in_posterior
         list_of_probabilities = json.loads(likelihood_function.list_of_probabilities)
         histogram = (list(list_of_probabilities), list(np.linspace(0,1,31)))
-        print('histogram: ' + str(histogram))
 
         x_values = np.linspace(0,0.966666666666667,30) + 1/60
         mean = np.average(x_values, weights=list_of_probabilities)
@@ -279,7 +278,6 @@ def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
         else:
             message = ''
 
-        print('histogram: ' + str(histogram))
         return histogram, mean, standard_dev, nb_of_values_in_posterior, message
 
     else:
