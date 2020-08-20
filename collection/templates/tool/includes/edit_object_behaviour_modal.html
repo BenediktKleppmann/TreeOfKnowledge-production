@@ -2086,15 +2086,7 @@ var parameter_info = {};
 		
 		
 		//load (all) Rule into objects_dict
-		var xhttp = new XMLHttpRequest();       
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				response = JSON.parse(this.responseText);
-				objects_dict[response['object_number']]['object_rules'] = response['object_rules'];
-			}
-		};
-		xhttp.open('GET', '/tool/get_object_rules?object_number=' + String(object_number) + '&object_type_id=' + objects_dict[object_number]['object_type_id'] , true);
-		xhttp.send();
+		getObjectRules(object_number, objects_dict[object_number]['object_type_id']);
 		
 		
 		// empty the right part of the modal

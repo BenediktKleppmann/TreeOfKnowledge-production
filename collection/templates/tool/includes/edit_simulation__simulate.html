@@ -1542,7 +1542,37 @@
 	}
 
 	
-	
+	function getObjectRules(object_number, object_type_id){
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				response = JSON.parse(this.responseText);
+				
+				//remember for which rules the learn_posterior-checkbox was clicked
+				var learn_posterior_rules = []
+				var attribute_ids = Object.keys(objects_dict[response['object_number']]['object_rules'])
+				for (var i = 0; i < attribute_ids.length; i++) {
+					rule_ids = Object.keys(objects_dict[response['object_number']]['object_rules'][attribute_ids[i]]);
+					for (var j = 0; j < rule_ids.length; j++) {
+						if (objects_dict[response['object_number']]['object_rules'][attribute_ids[i]][rule_ids[j]]["learn_posterior"]) {
+							learn_posterior_rules.push({'attribute_id':attribute_ids[i], 'rule_id':rule_ids[j]});
+						}
+					}
+				}
+				// get the new rules
+				objects_dict[response['object_number']]['object_rules'] = response['object_rules'];
+				
+				//select the learn_posterior-checkboxes that were selected before
+				for (var i = 0; i < learn_posterior_rules.length; i++) {
+					var attribute_id = learn_posterior_rules[i]['attribute_id']
+					var rule_id = learn_posterior_rules[i]['rule_id']
+					objects_dict[response['object_number']]['object_rules'][attribute_id][rule_id]["learn_posterior"]=true;
+				}
+			}
+		};
+		xhttp.open('GET', '/tool/get_object_rules?object_number=' + String(object_number) + '&object_type_id=' + object_type_id , true);
+		xhttp.send();
+	}
 	
 	
 	function attributeValueChange(object_number, attribute_id , attribute_value) {

@@ -1460,7 +1460,6 @@ def delete_execution_order(request):
 @login_required
 def edit_column(request): 
     request_body = json.loads(request.body)
-    pdb.set_trace()
 
     transformation = request_body['transformation']
     transformation = transformation.replace('"','')
@@ -1780,7 +1779,6 @@ def edit_simulation_new(request):
 @login_required
 def edit_simulation(request, simulation_id):
     simulation_model = Simulation_model.objects.get(id=simulation_id)
-
     if request.method == 'POST':
         the_simulator = simulation.Simulator(simulation_id)
         the_simulator.run()
