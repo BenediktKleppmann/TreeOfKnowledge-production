@@ -123,6 +123,26 @@
 		width: 217px;
 	}
 	
+	#threshold_box {
+		margin-top: 17px;
+	}
+
+	
+	
+	#threshold-label {
+	    margin-top: 8px;
+		padding-left: 27px;
+		width: 134px;
+		float: left;
+	}
+	
+	#error_threshold {
+		display: inline-block;
+		width: 53px;
+		height: 33px;
+		padding-bottom: 5px;
+		margin-bottom: 1px;
+	}
 	
 	#initial-state-run-selection-buttons {
 		margin-top: 26px;
@@ -132,7 +152,7 @@
 	
 	#individual-run-selection-buttons {
 		margin-top: 26px;
-		max-height: calc(100vh - 400px);
+		max-height: calc(100vh - 440px);
 		overflow-y: auto;
 	}
 	
@@ -397,8 +417,14 @@
 	<div class="run-selection-area">
 		<div class="run-selection-box">
 			<button id="all-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectAllRuns()">All Runs</button>
-			<button id="correct-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectCorrectRuns()">Correct Runs</button>
-			<button id="false-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectFalseRuns()">False Runs</button>
+			<div id="threshold_box">
+				<div id="threshold-label">Error Threshold:</div>	
+				<input type="text" id="error_threshold" class="form-control" value="0.5">							
+			</div>
+			<div id="correct_and_false_runs">
+				<button id="correct-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectCorrectRuns()">Correct Runs</button>
+				<button id="false-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectFalseRuns()">False Runs</button>
+			</div>
 		</div>
 		<div id="initial-state-run-selection-buttons" class="run-selection-box"></div>
 		<div id="individual-run-selection-buttons" class="run-selection-box"></div>
@@ -535,12 +561,24 @@
 	
 	//Correct Runs  -------------------------------
 	function selectCorrectRuns() {
+	
+		//determine correct_runs
+		var error_threshold = parseFloat($('#error_threshold').val());
+		var correct_runs = [];
+		var run_numbers = Object.keys(errors['all_errors']);
+		for (var i = 0; i < run_numbers.length; i++) {
+			if (errors['all_errors'][run_numbers[i]] < error_threshold) {
+				correct_runs.push(run_numbers[i]);
+			}
+		}
+		
+		//filter according to correct_runs
 		$('#correct-runs-button').toggleClass('active');
 		if (clicked_selection_buttons['select_correct_clicked']) {
 			clicked_selection_buttons['select_correct_clicked'] = false;
 			
-			for (var i = 0; i < errors['correct_runs'].length; i++) {
-				var run_number = errors['correct_runs'][i];
+			for (var i = 0; i < correct_runs.length; i++) {
+				var run_number = correct_runs[i];
 				selected_runs.delete(run_number);
 				$('#selection-button-' + run_number).removeClass('active');
 			}
@@ -548,8 +586,8 @@
 		} else {
 			clicked_selection_buttons['select_correct_clicked'] = true;
 			
-			for (var i = 0; i < errors['correct_runs'].length; i++) {
-				var run_number = errors['correct_runs'][i];
+			for (var i = 0; i < correct_runs.length; i++) {
+				var run_number = correct_runs[i];
 				selected_runs.add(run_number);
 				$('#selection-button-' + run_number).addClass('active');
 			}
@@ -559,12 +597,24 @@
 	
 	//False Runs  -------------------------------
 	function selectFalseRuns() {
+	
+		//determine false_runs
+		var error_threshold = parseFloat($('#error_threshold').val());
+		var false_runs = [];
+		var run_numbers = Object.keys(errors['all_errors']);
+		for (var i = 0; i < run_numbers.length; i++) {
+			if (errors['all_errors'][run_numbers[i]] >= error_threshold) {
+				false_runs.push(run_numbers[i]);
+			}
+		}
+		
+		//filter according to false_runs
 		$('#false-runs-button').toggleClass('active');
 		if (clicked_selection_buttons['select_false_clicked']) {
 			clicked_selection_buttons['select_false_clicked'] = false;
 			
-			for (var i = 0; i < errors['false_runs'].length; i++) {
-				var run_number = errors['false_runs'][i];
+			for (var i = 0; i < false_runs.length; i++) {
+				var run_number = false_runs[i];
 				selected_runs.delete(run_number);
 				$('#selection-button-' + run_number).removeClass('active');
 			}
@@ -572,8 +622,8 @@
 		} else {
 			clicked_selection_buttons['select_false_clicked'] = true;
 			
-			for (var i = 0; i < errors['false_runs'].length; i++) {
-				var run_number = errors['false_runs'][i];
+			for (var i = 0; i < false_runs.length; i++) {
+				var run_number = false_runs[i];
 				selected_runs.add(run_number);
 				$('#selection-button-' + run_number).addClass('active');
 			}
