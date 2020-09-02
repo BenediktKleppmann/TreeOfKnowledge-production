@@ -1232,9 +1232,16 @@
 		
 		run_simulation_post_request.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200 && simulation_running) {
+
+				parameters_were_learned = JSON.parse(this.responseText);
+
 				$('#progress-bar-description').html('Completed!');				
 				$('#progress-bar').attr('style','width:100%')
-				$('#show-results-button-frame').html('<button id="display-results-button" type="button" class="btn" onclick="displayResultsInNewWindow();" >Show Results in new Window</button>')
+				if (parameters_were_learned) {
+					$('#show-results-button-frame').html('<button id="display-results-button" type="button" class="btn" onclick="showLearnedParameterValues();" >Show Learned Parameter Values</button>')
+				} else {
+					$('#show-results-button-frame').html('<button id="display-results-button" type="button" class="btn" onclick="showSimulationResults();" >Show Simulation Results</button>')
+				}
 				$('#simulation-progress-modal-text').css('display','none');
 
 
@@ -1272,15 +1279,25 @@
 	
 	
 	
-	function displayResultsInNewWindow() {
+	function showLearnedParameterValues() {
 		console.log('!!!!!!!!!!!!  completed simulation  !!!!!!!!!!!!!!!!!');
 		simulation_running = false;
 		var url_components = window.location.href.split("/");
 		var simulation_id = url_components[url_components.length - 2];
-		var w = window.open("/tool/analyse_simulation/" + simulation_id + "/");
+		var w = window.open("/tool/analyse_learned_parameters/" + simulation_id + "/");
 		//w.document.open();
 		//w.document.write(this.response);
 		//w.document.close();
+		$('#simulationProgressModal').modal('hide');
+	}
+	
+	
+	function showSimulationResults() {
+		console.log('!!!!!!!!!!!!  completed simulation  !!!!!!!!!!!!!!!!!');
+		simulation_running = false;
+		var url_components = window.location.href.split("/");
+		var simulation_id = url_components[url_components.length - 2];
+		var w = window.open("/tool/analyse_simulation/" + simulation_id + "/0/");
 		$('#simulationProgressModal').modal('hide');
 	}
 	

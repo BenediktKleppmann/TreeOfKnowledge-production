@@ -191,6 +191,7 @@ class Simulation_model(models.Model):
     limit_to_populated_y0_columns = models.BooleanField(default=False)
     data_querying_info = models.TextField()
     rule_infos = models.TextField(null=True)
+    all_priors_df = models.TextField()
     triggered_rules = models.TextField(null=True)
     validation_data = models.TextField()
     simulation_data = models.TextField(null=True)
@@ -257,6 +258,18 @@ class Logged_variable(models.Model):
     variable_name = models.TextField()
     variable_value = models.TextField()
 
+
+class Simulation_result(models.Model):
+    simulation_id = models.IntegerField()
+    run_number = models.IntegerField()
+    parameter_number = models.IntegerField()
+    prior_dict = models.TextField()
+    rule_infos = models.TextField()
+    not_used_rules = models.TextField()
+    triggered_rules = models.TextField()
+    simulation_data = models.TextField()
+    correct_values = models.TextField()
+    errors = models.TextField()
 
 # ========================================================================================
 # No Longer Used

@@ -8,7 +8,7 @@
 # (at your option) any later version - see http://www.gnu.org/licenses/.
 #####################################################################
 
-from collection.models import Simulation_model, Rule, Likelihood_fuction, Attribute, Execution_order, Rule_parameter
+from collection.models import Simulation_model, Rule, Likelihood_fuction, Attribute, Execution_order, Rule_parameter, Simulation_result
 import json
 import pandas as pd
 import numpy as np
@@ -49,7 +49,16 @@ class Simulator:
     parameter_columns = []
     rules = []
     currently_running_learn_likelihoods = False
-    number_of_batches = 0
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -65,7 +74,7 @@ class Simulator:
 # 
 # =================================================================================================================
 
-    def __init__(self, simulation_id):
+    def __init__(self, simulation_id, ignore_learn_posteriors):
 
         # IMPORTANT SETTINGS  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         
@@ -79,7 +88,11 @@ class Simulator:
 
         simulation_model_record = Simulation_model.objects.get(id=simulation_id)
 
-        self.run_number = simulation_model_record.run_number + 1
+        if ignore_learn_posteriors:
+            self.run_number = simulation_model_record.run_number
+        else:
+            self.run_number = simulation_model_record.run_number + 1
+
         self.objects_dict = json.loads(simulation_model_record.objects_dict)
         self.execution_order_id = simulation_model_record.execution_order_id
         self.environment_start_time = simulation_model_record.environment_start_time
@@ -289,7 +302,7 @@ class Simulator:
 
                         # ===  histograms  ===========
                         # rule probability
-                        if (not rule['has_probability_1']) and (not rule['learn_posterior']):
+                        if (not rule['has_probability_1']) and (not rule['learn_posterior'] or ignore_learn_posteriors):
                             # if a specific posterior for this simulation has been learned, take this, else take the combined posterior of all other simulations
                             histogram, mean, standard_dev, nb_of_values_in_posterior, message= get_from_db.get_single_pdf(simulation_id, object_number, rule_id, True)
                             if histogram is None:
@@ -297,7 +310,7 @@ class Simulator:
                             rule['histogram'] = (list(histogram[0]), list(histogram[1]))
 
                         # parameter
-                        if not rule['learn_posterior']:
+                        if not rule['learn_posterior'] or ignore_learn_posteriors:
                             for used_parameter_id in rule['used_parameter_ids']: 
                                 histogram, mean, standard_dev, nb_of_values_in_posterior, message= get_from_db.get_single_pdf(simulation_id, object_number, used_parameter_id, False)
                                 print('used_parameter_id:' + str(used_parameter_id) + ' - get_single_pdf:' + str(histogram))
@@ -456,6 +469,16 @@ class Simulator:
 
         return (df, y0_values)
 
+
+
+
+
+
+
+
+
+
+
 # ==========================================================================================
 #    __  __       _       
 #   |  \/  |     (_)      
@@ -466,27 +489,52 @@ class Simulator:
 # 
 # ==========================================================================================
 
-    def run(self):
-        
+    def learn_and_run_best_parameter(self):
+        # learn parameters
+        best_performing_prior_dict = self.__learn_likelihoods()
+
+        # predicting
+        (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(nb_of_simulations=300, prior_dict=best_performing_prior_dict)
+        self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df, best_performing_prior_dict, 300, 0)
+
+        parameters_were_learned = best_performing_prior_dict!={}
+        return parameters_were_learned
 
 
 
-        self.__learn_likelihoods()
-
-
-        (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(300)
-        self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df, 300)
-
+    def run_single_monte_carlo(self, number_of_entities_to_simulate, prior_dict, parameter_number):
+        (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(nb_of_simulations=number_of_entities_to_simulate, prior_dict=prior_dict)
+        self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df, prior_dict, number_of_entities_to_simulate, parameter_number)
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+# ==========================================================================================
+#     _                           
+#    | |                          
+#    | |     ___  __ _ _ __ _ __  
+#    | |    / _ \/ _` | '__| '_ \ 
+#    | |___|  __/ (_| | |  | | | |
+#    |______\___|\__,_|_|  |_| |_|                             
+# 
+# ==========================================================================================
 
 
     def __learn_likelihoods(self):
         print('=======  learn_likelihoods  =======')
         
-        # PART 1 - Run the Simulation
+        # PART 1 - Run the Simulation & populate all_priors_df
         self.currently_running_learn_likelihoods = True
         batch_size = len(self.df)
 
@@ -498,6 +546,8 @@ class Simulator:
         print('learn likelihoods 1')
         all_priors_df = pd.DataFrame()
         self.nb_of_sim_in_which_rule_was_used = 0
+        all_priors_df['error'] = [np.nan] * self.nb_of_tested_parameters
+        to_be_learned_priors_exist = False
         for rule in self.rules:
             print('rule %s:  learn_posterior=%s ;has_probability_1=%s; used_parameter_ids=%s' % (rule['id'], rule['learn_posterior'], rule['has_probability_1'], rule['used_parameter_ids']))
             if rule['learn_posterior']:
@@ -505,12 +555,14 @@ class Simulator:
                 all_priors_df['error_rule' + str(rule['id'])] = [np.nan] * self.nb_of_tested_parameters
                 if not rule['has_probability_1']:
                     all_priors_df['triggerThresholdForRule' + str(rule['id'])] = np.random.uniform(0, 1, self.nb_of_tested_parameters)
+                    to_be_learned_priors_exist = True
                 for used_parameter_id in rule['used_parameter_ids']:
                     all_priors_df['param' + str(used_parameter_id)] = np.random.uniform(rule['parameters'][used_parameter_id]['min_value'], rule['parameters'][used_parameter_id]['max_value'], self.nb_of_tested_parameters)
+                    to_be_learned_priors_exist = True
         
 
-        print('learn likelihoods 2 - ' + str(len(all_priors_df)))
-        if len(all_priors_df) > 0:
+        print('learn likelihoods 2 - ' + str(to_be_learned_priors_exist))
+        if to_be_learned_priors_exist:
             print('learn likelihoods 3 - ' + str(self.run_locally))
             if self.run_locally:
                 # =================  Simulation Loop  ==========================
@@ -524,6 +576,7 @@ class Simulator:
 
                     y0_values_in_simulation = self.likelihood_learning_simulator(self.df, self.rules, priors_dict, batch_size)
                     errors_dict = self.n_dimensional_distance(y0_values_in_simulation, self.y0_values) 
+                    all_priors_df.loc[batch_number, 'error'] = errors_dict['error']
                     for rule in self.rules:
                         if rule['learn_posterior']:
                             all_priors_df.loc[batch_number, 'nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] = errors_dict[rule['id']]['nb_of_sim_in_which_rule_was_used']
@@ -565,6 +618,7 @@ class Simulator:
                 all_simulation_results_df = pd.DataFrame(all_simulation_results, columns=['simulation_id', 'run_number', 'batch_number', 'priors_dict', 'simulation_results'])
                 for index, row in all_simulation_results_df.iterrows():
                     simulation_results = json.loads(row['simulation_results'])
+                    all_priors_df.loc[row['batch_number'], 'error'] = simulation_results['error']
                     for rule in self.rules:
                         if rule['learn_posterior']:
                             all_priors_df.loc[row['batch_number'], 'nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] = simulation_results['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] 
@@ -572,10 +626,11 @@ class Simulator:
 
 
             
-            # PART 2 - Post Processing
+            # PART 2 - Save results as likelihood_fuction
             self.currently_running_learn_likelihoods = False
             with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
                 progress_tracking_file.write(json.dumps({"text": 'Learning parameters - post-processing: ', "current_number": self.nb_of_tested_parameters * len(self.df), "total_number": self.nb_of_tested_parameters * len(self.df)}))
+
 
             for rule_number, rule in enumerate(self.rules):
 
@@ -660,15 +715,396 @@ class Simulator:
                                                                     nb_of_values_in_posterior=nb_of_values_in_posterior)
                             likelihood_fuction.save()
 
+            all_priors_df = all_priors_df.sort_values('error')
+            all_priors_df.index = range(len(all_priors_df))
+            simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
+            simulation_model_record.all_priors_df = json.dumps(all_priors_df.to_dict(orient='index'))
+            simulation_model_record.save()
+
+            best_performing_prior_dict = {}
+            for rule_number, rule in enumerate(self.rules):
+                if rule['learn_posterior']:
+                    best_performing_prior_dict[str(rule['id'])] = {}
+                    if not rule['has_probability_1']:
+                        best_performing_prior_dict[str(rule['id'])]['probability'] = all_priors_df.loc[0,'triggerThresholdForRule'+ str(rule['id'])]
+                    for used_parameter_id in rule['used_parameter_ids']:
+                        best_performing_prior_dict[str(rule['id'])][str(used_parameter_id)] = all_priors_df.loc[0,'param' + str(used_parameter_id)]
+
+            return best_performing_prior_dict
+
+        else:
+            return {}
+            
+
+
+
+
+    #  Rule Learning  ---------------------------------------------------------------------------------
+    def likelihood_learning_simulator(self, df_original, rules, priors_dict, batch_size):
+        print('---- likelihood_learning_simulator ----')
+        df = df_original.copy()
+
+
+        for rule_nb in range(len(rules)):
+            rules[rule_nb]['rule_was_used_in_simulation'] = [False]*batch_size
+            rule = rules[rule_nb]
+
+            if rule['learn_posterior']:
+                if not rule['has_probability_1']:
+                    df['triggerThresholdForRule' + str(rule['id'])] = priors_dict['triggerThresholdForRule' + str(rule['id'])]
+                for used_parameter_id in rule['used_parameter_ids']:
+                    df['param' + str(used_parameter_id)] = priors_dict['param' + str(used_parameter_id)]
+            else:
+                if not rule['has_probability_1']:
+                    df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
+                for used_parameter_id in rule['used_parameter_ids']:
+                    df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][used_parameter_id]['histogram']).rvs(size=batch_size)
+
+
+        if self.is_timeseries_analysis: 
+            df['delta_t'] = self.timestep_size
+        else:
+            df[self.y0_columns] = None
+
+
+        # if self.is_timeseries_analysis:    
+            # times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)    
+        #     times = generally_useful_functions.get_list_of_times(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)    
+        # else:
+        #     times = [self.simulation_start_time, self.simulation_end_time]
+
+
+        y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
+        for period in range(len(self.times[1:])):
+            df['randomNumber'] = np.random.random(batch_size)
+            for rule in rules:
+                populated_df_rows = pd.Series([True] * len(df))
+                for used_column in rule['used_columns']:
+                    populated_df_rows = populated_df_rows & ~df[used_column].isna()
+                populated_df = df[populated_df_rows]
+
+                if rule['is_conditionless']:
+                    condition_satisfying_rows = pd.Series([True] * batch_size)
+                    if rule['has_probability_1']:
+                        satisfying_rows = pd.Series([True] * batch_size)
+                    else:
+                        satisfying_rows = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
+                        
+                else:
+                    condition_satisfying_rows = pd.Series([False] * batch_size)
+
+                    if len(populated_df)==0:
+                        satisfying_rows = populated_df_rows
+                    if rule['has_probability_1']:
+                        condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
+
+                        if condition_satisfying_rows.iloc[0] in [-1,-2]: #messy bug-fix for bug where eval returns -1 and -2 instead of True and False
+                            condition_satisfying_rows += 2
+                            condition_satisfying_rows = condition_satisfying_rows.astype(bool)
+                        satisfying_rows = condition_satisfying_rows
+                    else:
+                        condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
+                        triggered_rules = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
+                        satisfying_rows = condition_satisfying_rows & triggered_rules 
+
+                    # fix for: conditions with randomNumber/param+ might be basically satisfied except for the random number
+                    if 'df.randomNumber' in rule['condition_exec'] or 'df.param' in rule['condition_exec']:
+                        condition_satisfying_rows = pd.Series([True] * batch_size)
+
+
+
+                # --------  new_values  --------
+                if rule['effect_is_calculation']: 
+                    if 'sums' in rule:
+                        for sum_number in rule['sums'].keys():
+                            df['sum' + str(sum_number)] = 0
+                            for sum_term in rule['sums'][sum_number]:
+                                df['sum' + str(sum_number)] += pd.eval(sum_term).fillna(0)
+
+                    new_values = pd.eval(rule['effect_exec'])
+                    if rule['changed_var_data_type'] in ['relation','int']:
+                        nan_rows = new_values.isnull()
+                        new_values = new_values.fillna(0)
+                        new_values = new_values.astype(int)
+                        new_values[nan_rows] = np.nan
+                    elif rule['changed_var_data_type'] == 'real':
+                        new_values = new_values.astype(float)
+                    # elif rule['changed_var_data_type'] in ['boolean','bool']:
+                    elif rule['changed_var_data_type'] in ['string','date']:
+                        nan_rows = new_values.isnull()
+                        new_values = new_values.astype(str)
+                        new_values[nan_rows] = np.nan
+
+                else:
+                    # new_values = rule['effect_exec']
+                    new_values = pd.Series([rule['effect_exec']] * batch_size)
+
+
+
+                # --------  used rules  --------
+                if rule['learn_posterior']:
+                    rule_was_used_this_period = condition_satisfying_rows & new_values.notnull()
+                    rule['rule_was_used_in_simulation'] = rule['rule_was_used_in_simulation'] | rule_was_used_this_period
+
+
+                # --------  Apply the Change (new_values)  --------
+                satisfying_rows[satisfying_rows.isna()] = False
+                new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
+                new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
+                df[rule['column_to_change']] = new_values
+
+
+
+            y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
+            y0_values_in_this_period.columns = [col + 'period' + str(period+1) for col in y0_values_in_this_period.columns] #faster version
+            y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
+
+
+        for rule in rules:  
+            if rule['learn_posterior']:
+                y0_values_in_simulation['rule_used_in_simulation_' + str(rule['id'])] = rule['rule_was_used_in_simulation']
+                del rule['rule_was_used_in_simulation']
+
+
+        y0_values_in_simulation = pd.concat([y0_values_in_simulation,df[self.parameter_columns]], axis=1)
+        y0_values_in_simulation.index = range(len(y0_values_in_simulation))
+        return y0_values_in_simulation.to_dict('records')
+
+         
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         
+# ==========================================================================================
+#      _____              _ _      _   
+#     |  __ \            | (_)    | |  
+#     | |__) | __ ___  __| |_  ___| |_ 
+#     |  ___/ '__/ _ \/ _` | |/ __| __|
+#     | |   | | |  __/ (_| | | (__| |_ 
+#     |_|   |_|  \___|\__,_|_|\___|\__|
+#                                                                      
+# ==========================================================================================
 
 
 
 
 
-    def __post_process_data(self, simulation_data_df, triggered_rules_df, errors_df, number_of_simulations):
+
+    #  Monte-Carlo  ---------------------------------------------------------------------------------
+    def __run_monte_carlo_simulation(self, nb_of_simulations=300, prior_dict={}):
+        print('¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬  __run_monte_carlo_simulation   ¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬')
+        batch_number = 0 # this is a relict from times when this could run more simulations than len(df), maybe some of this could be refactored sometime
+
+        # if df is longer than nb_of_simulations, shorten it (saves unnecessary computation)
+        df_short = self.df[:nb_of_simulations]
+        df = df_short.copy()
+        y0_values_df_short = self.y0_values_df[:nb_of_simulations]
+        y0_values_short = self.y0_values[:nb_of_simulations]
+
+        y0 = np.asarray(df_short[self.y0_columns].copy())
+        batch_size = len(y0)
+
+
+        triggered_rules_df = pd.DataFrame()
+
+        simulation_data_df = df.copy()
+        simulation_data_df['initial_state_id'] = df.index
+        simulation_data_df['batch_number'] = batch_number
+        simulation_data_df['period'] = 0
+
+
+
+
+        for rule in self.rules:
+            if rule['changed_var_data_type'] in ['boolean','bool']:
+                simulation_data_df[rule['column_to_change']] = simulation_data_df[rule['column_to_change']].astype('object')
+            if not rule['has_probability_1']:
+                if rule['id'] in prior_dict and 'probability' in prior_dict[str(rule['id'])]:
+                    df['triggerThresholdForRule' + str(rule['id'])] = prior_dict[str(rule['id'])]['probability']
+                else:
+                    df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
+            for used_parameter_id in rule['used_parameter_ids']:
+
+                if str(rule['id']) in prior_dict and str(used_parameter_id) in prior_dict[str(rule['id'])]:
+                    df['param' + str(used_parameter_id)] = prior_dict[str(rule['id'])][str(used_parameter_id)]
+                else:
+                    print('using histogram - rule%s, parameter%s' % (rule['id'],used_parameter_id))
+                    print(prior_dict)
+                    print(prior_dict[str(rule['id'])])
+                    print(prior_dict[str(rule['id'])][str(used_parameter_id)])
+                    print(rule['parameters'])
+                    df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][used_parameter_id]['histogram']).rvs(size=batch_size)
+
+
+        if self.is_timeseries_analysis: 
+            df['delta_t'] = self.timestep_size
+        else: 
+            df[self.y0_columns] = None
+
+        # if self.is_timeseries_analysis:
+            # times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
+            # times = generally_useful_functions.get_list_of_times(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
+        # else:
+            # times = [self.simulation_start_time, self.simulation_end_time]
+
+        y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
+        for period in range(len(self.times[1:])):
+
+            with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
+                progress_tracking_file.write(json.dumps({"text": 'Making predictions - simulation: ', "current_number": int(batch_size * (period/len(self.times[1:]))), "total_number": nb_of_simulations}))
+
+
+
+            print('period: ' + str(period) + '/' + str(len(self.times[1:])))
+            df['randomNumber'] = np.random.random(batch_size)
+            for rule in self.rules:
+                populated_df_rows = pd.Series([True] * len(df))
+                for used_column in rule['used_columns']:
+                    populated_df_rows = populated_df_rows & ~df[used_column].isna()
+                populated_df = df[populated_df_rows]
+
+                # Apply Rule  ================================================================
+                if rule['is_conditionless']:
+                    if rule['has_probability_1']:
+                        satisfying_rows = populated_df_rows
+                        condition_satisfying_rows = [True] * batch_size
+                        trigger_thresholds = [0] * batch_size
+                    else:
+                        satisfying_rows = populated_df_rows & pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id'])).tolist()
+                        condition_satisfying_rows = [True] * batch_size
+                        trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
+
+                else:
+
+                    condition_satisfying_rows = pd.Series([False] * batch_size)
+
+                    if len(populated_df)==0:
+                        satisfying_rows = populated_df_rows
+                        trigger_thresholds = [0] * batch_size
+                    elif rule['has_probability_1']:
+                        condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
+                        if condition_satisfying_rows.iloc[0] in [-1,-2]: #messy bug-fix for bug where eval returns -1 and -2 instead of True and False
+                            condition_satisfying_rows += 2
+                            condition_satisfying_rows = condition_satisfying_rows.astype(bool)
+                        satisfying_rows = condition_satisfying_rows.tolist()
+                        trigger_thresholds = [0] * batch_size
+                    else:
+                        condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
+                        satisfying_rows = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id'])) & condition_satisfying_rows
+                        trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
+            
+
+
+                # --------  THEN  --------
+                if rule['effect_is_calculation']:
+                    if 'sums' in rule:
+                        for sum_number in rule['sums'].keys():
+                            df['sum' + str(sum_number)] = 0
+                            for sum_term in rule['sums'][sum_number]:
+                                df['sum' + str(sum_number)] += pd.eval(sum_term).fillna(0)
+
+                    all_new_values = pd.eval(rule['effect_exec'])
+                    if rule['changed_var_data_type'] in ['relation','int']:
+                        nan_rows = all_new_values.isnull()
+                        all_new_values = all_new_values.fillna(0)
+                        all_new_values = all_new_values.astype(int)
+                        all_new_values[nan_rows] = np.nan
+                    elif rule['changed_var_data_type'] == 'real':
+                        all_new_values = all_new_values.astype(float)
+                    # elif rule['changed_var_data_type'] in ['boolean','bool']:
+                    elif rule['changed_var_data_type'] in ['string','date']:
+                        nan_rows = all_new_values.isnull()
+                        all_new_values = all_new_values.astype(str)
+                        all_new_values[nan_rows] = np.nan
+
+                else:
+                    # all_new_values = [json.loads(rule['effect_exec'])] * batch_size
+                    all_new_values = pd.Series([rule['effect_exec']] * batch_size)
+
+
+                # new_values = [value for value, satisfying in zip(all_new_values,satisfying_rows) if satisfying]
+                # df.loc[satisfying_rows,rule['column_to_change']] = new_values
+                new_values = all_new_values
+                new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
+                new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
+                df[rule['column_to_change']] = new_values
+
+
+                calculated_values = list(df[rule['column_to_change']])
+                errors = np.zeros(len(calculated_values))
+                correct_value = ['unknown'] * len(calculated_values)
+                if rule['column_to_change'] in self.y0_columns:
+                    errors = self.error_of_single_values(df_short, y0_values_df_short, np.array(calculated_values), rule['column_to_change'], period+1)
+                    correct_value = list(y0_values_df_short[rule['column_to_change'] + 'period' + str(period+1)])
+
+
+                triggered_rule_infos_df = pd.DataFrame({'condition_satisfied': condition_satisfying_rows,
+                                                        'id':[rule['id']]* batch_size,
+                                                        'pt': satisfying_rows,          # pt = probability_triggered
+                                                        'tp': trigger_thresholds,       # tp = trigger_probability
+                                                        'v': calculated_values,         # v = new_value
+                                                        'error':errors})
+
+                triggered_rule_infos = triggered_rule_infos_df.to_dict('records')
+                triggered_rule_infos = [rule_info if rule_info['condition_satisfied'] else None for rule_info in triggered_rule_infos]
+                for i in range(len(triggered_rule_infos)):
+                    if triggered_rule_infos[i] is not None:
+                            del triggered_rule_infos[i]['condition_satisfied']
+                            if np.isnan(triggered_rule_infos[i]['error']):
+                                del triggered_rule_infos[i]['error']
+
+
+                currently_triggered_rules = pd.DataFrame({  'initial_state_id':df.index,
+                                                            'batch_number':[batch_number]*batch_size,
+                                                            'attribute_id':[rule['column_to_change']]*batch_size,
+                                                            'period':[period+1]*batch_size,
+                                                            'triggered_rule': triggered_rule_infos, 
+                                                            'correct_value': correct_value
+                                                            })
+
+                triggered_rules_df = triggered_rules_df.append(currently_triggered_rules)
+
+            
+            # simulated values
+            df['initial_state_id'] = df.index
+            df['batch_number'] = batch_number
+            df['period'] = period+1
+            simulation_data_df = simulation_data_df.append(df)
+
+            # error
+            y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
+            y0_values_in_this_period.columns = [col + 'period' + str(period+1) for col in y0_values_in_this_period.columns] #faster version
+            y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
+
+
+        errors_dict = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), y0_values_short)
+        errors_df = pd.DataFrame({  'simulation_number': [str(index) + '-' + str(batch_nb) for index, batch_nb in zip(df.index, [batch_number]*len(df))],
+                                    'error': errors_dict['all_errors']})
+
+
+        return (simulation_data_df, triggered_rules_df, errors_df)
+
+
+
+
+
+
+
+
+
+    def __post_process_data(self, simulation_data_df, triggered_rules_df, errors_df, prior_dict, number_of_simulations, parameter_number):
 
         print('process_data_1')
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
@@ -773,355 +1209,19 @@ class Simulator:
         simulation_model_record.save()
 
 
+        print('process_data_7')
+        simulation_result_record = Simulation_result(simulation_id=self.simulation_id,
+                                                    run_number=self.run_number,
+                                                    parameter_number=parameter_number,
+                                                    prior_dict=json.dumps(prior_dict),
+                                                    rule_infos=json.dumps(rule_infos), 
+                                                    not_used_rules=self.not_used_rules, 
+                                                    triggered_rules=json.dumps(triggered_rules), 
+                                                    simulation_data=json.dumps(simulation_data), 
+                                                    correct_values=json.dumps(correct_values), 
+                                                    errors=json.dumps(errors))
+        simulation_result_record.save()
 
-
-
-
-
-# ===========================================================================================================
- #   _____ _                 _       _   _               ______                _   _                 
- #  / ____(_)               | |     | | (_)             |  ____|              | | (_)                
- # | (___  _ _ __ ___  _   _| | __ _| |_ _  ___  _ __   | |__ _   _ _ __   ___| |_ _  ___  _ __  ___ 
- #  \___ \| | '_ ` _ \| | | | |/ _` | __| |/ _ \| '_ \  |  __| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
- #  ____) | | | | | | | |_| | | (_| | |_| | (_) | | | | | |  | |_| | | | | (__| |_| | (_) | | | \__ \
- # |_____/|_|_| |_| |_|\__,_|_|\__,_|\__|_|\___/|_| |_| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
-
-# ===========================================================================================================
-
-
-
-    #  Rule Learning  ---------------------------------------------------------------------------------
-    def likelihood_learning_simulator(self, df_original, rules, priors_dict, batch_size):
-        print('---- likelihood_learning_simulator ----')
-        df = df_original.copy()
-
-
-        for rule_nb in range(len(rules)):
-            rules[rule_nb]['rule_was_used_in_simulation'] = [False]*batch_size
-            rule = rules[rule_nb]
-
-            if rule['learn_posterior']:
-                if not rule['has_probability_1']:
-                    df['triggerThresholdForRule' + str(rule['id'])] = priors_dict['triggerThresholdForRule' + str(rule['id'])]
-                for used_parameter_id in rule['used_parameter_ids']:
-                    df['param' + str(used_parameter_id)] = priors_dict['param' + str(used_parameter_id)]
-            else:
-                if not rule['has_probability_1']:
-                    df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
-                for used_parameter_id in rule['used_parameter_ids']:
-                    df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][used_parameter_id]['histogram']).rvs(size=batch_size)
-
-
-        if self.is_timeseries_analysis: 
-            df['delta_t'] = self.timestep_size
-        else:
-            df[self.y0_columns] = None
-
-
-        # if self.is_timeseries_analysis:    
-            # times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)    
-        #     times = generally_useful_functions.get_list_of_times(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)    
-        # else:
-        #     times = [self.simulation_start_time, self.simulation_end_time]
-
-
-        y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
-        for period in range(len(self.times[1:])):
-            df['randomNumber'] = np.random.random(batch_size)
-            for rule in rules:
-                populated_df_rows = pd.Series([True] * len(df))
-                for used_column in rule['used_columns']:
-                    populated_df_rows = populated_df_rows & ~df[used_column].isna()
-                populated_df = df[populated_df_rows]
-
-                if rule['is_conditionless']:
-                    condition_satisfying_rows = pd.Series([True] * batch_size)
-                    if rule['has_probability_1']:
-                        satisfying_rows = pd.Series([True] * batch_size)
-                    else:
-                        satisfying_rows = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
-                        
-                else:
-                    condition_satisfying_rows = pd.Series([False] * batch_size)
-
-                    if len(populated_df)==0:
-                        satisfying_rows = populated_df_rows
-                    if rule['has_probability_1']:
-                        condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
-                        # == Testing ========================================================================
-                        # if period == 30:
-                        #     period_30_condition_df = pd.read_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-25/period_30_condition.csv')
-                        #     # for col in ['param52', 'obj1attr185', 'param50', 'param51', 'param57', 'param58', 'param59', 'param60', 'obj1attr92', 'obj1attr90', 'randomNumber']:
-                        #     for col in ['param61','param62',  'obj1attr185','obj1attr92', 'obj1attr90', 'randomNumber']:
-                        #         period_30_condition_df['run' + str(self.number_of_batches)+ '_' + col] = df[col]
-                        #         period_30_condition_df['run' + str(self.number_of_batches) + 'condition_satisfied'] = pd.eval(rule['condition_exec'])
-                        #     period_30_condition_df.to_csv('C:/Users/l412/Documents/2 temporary stuff/2020-06-25/period_30_condition.csv', index=False)
-                        # ==========================================================================
-                        if condition_satisfying_rows.iloc[0] in [-1,-2]: #messy bug-fix for bug where eval returns -1 and -2 instead of True and False
-                            condition_satisfying_rows += 2
-                            condition_satisfying_rows = condition_satisfying_rows.astype(bool)
-                        satisfying_rows = condition_satisfying_rows
-                    else:
-                        condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
-                        triggered_rules = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id']))
-                        satisfying_rows = condition_satisfying_rows & triggered_rules 
-
-                    # fix for: conditions with randomNumber/param+ might be basically satisfied except for the random number
-                    if 'df.randomNumber' in rule['condition_exec'] or 'df.param' in rule['condition_exec']:
-                        condition_satisfying_rows = pd.Series([True] * batch_size)
-
-
-
-                # --------  new_values  --------
-                if rule['effect_is_calculation']: 
-                    if 'sums' in rule:
-                        for sum_number in rule['sums'].keys():
-                            df['sum' + str(sum_number)] = 0
-                            for sum_term in rule['sums'][sum_number]:
-                                df['sum' + str(sum_number)] += pd.eval(sum_term).fillna(0)
-
-                    new_values = pd.eval(rule['effect_exec'])
-                    if rule['changed_var_data_type'] in ['relation','int']:
-                        nan_rows = new_values.isnull()
-                        new_values = new_values.fillna(0)
-                        new_values = new_values.astype(int)
-                        new_values[nan_rows] = np.nan
-                    elif rule['changed_var_data_type'] == 'real':
-                        new_values = new_values.astype(float)
-                    # elif rule['changed_var_data_type'] in ['boolean','bool']:
-                    elif rule['changed_var_data_type'] in ['string','date']:
-                        nan_rows = new_values.isnull()
-                        new_values = new_values.astype(str)
-                        new_values[nan_rows] = np.nan
-
-                else:
-                    # new_values = rule['effect_exec']
-                    new_values = pd.Series([rule['effect_exec']] * batch_size)
-
-
-
-                # --------  used rules  --------
-                if rule['learn_posterior']:
-                    rule_was_used_this_period = condition_satisfying_rows & new_values.notnull()
-                    rule['rule_was_used_in_simulation'] = rule['rule_was_used_in_simulation'] | rule_was_used_this_period
-
-
-                # --------  Apply the Change (new_values)  --------
-                satisfying_rows[satisfying_rows.isna()] = False
-                new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
-                new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
-                df[rule['column_to_change']] = new_values
-
-
-
-            y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
-            y0_values_in_this_period.columns = [col + 'period' + str(period+1) for col in y0_values_in_this_period.columns] #faster version
-            y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
-
-
-        for rule in rules:  
-            if rule['learn_posterior']:
-                y0_values_in_simulation['rule_used_in_simulation_' + str(rule['id'])] = rule['rule_was_used_in_simulation']
-                del rule['rule_was_used_in_simulation']
-
-
-        y0_values_in_simulation = pd.concat([y0_values_in_simulation,df[self.parameter_columns]], axis=1)
-        y0_values_in_simulation.index = range(len(y0_values_in_simulation))
-        return y0_values_in_simulation.to_dict('records')
-
-          
-
-
-
-
-
-    #  Monte-Carlo  ---------------------------------------------------------------------------------
-    def __run_monte_carlo_simulation(self, nb_of_simulations=300):
-        print('¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬  __run_monte_carlo_simulation   ¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬')
-        # if df is longer than nb_of_simulations, shorten it (saves unnecessary computation)
-        df_short = self.df[:nb_of_simulations]
-        y0_values_df_short = self.y0_values_df[:nb_of_simulations]
-        y0_values_short = self.y0_values[:nb_of_simulations]
-
-        y0 = np.asarray(df_short[self.y0_columns].copy())
-        batch_size = len(y0)
-
-
-        triggered_rules_df = pd.DataFrame()
-        errors_df = pd.DataFrame()
-
-        number_of_batches = math.ceil(nb_of_simulations/batch_size)
-        for batch_number in range(number_of_batches):
-            print('batch_number: ' + str(batch_number) + '/' + str(number_of_batches))
-
-
-            df = df_short.copy()
-
-            simulation_data_df = df.copy()
-            simulation_data_df['initial_state_id'] = df.index
-            simulation_data_df['batch_number'] = batch_number
-            simulation_data_df['period'] = 0
-
-
-            for rule in self.rules:
-                if rule['changed_var_data_type'] in ['boolean','bool']:
-                    simulation_data_df[rule['column_to_change']] = simulation_data_df[rule['column_to_change']].astype('object')
-                if not rule['has_probability_1']:
-                    df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
-                for used_parameter_id in rule['used_parameter_ids']:
-                    df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][used_parameter_id]['histogram']).rvs(size=batch_size)
-
-
-            if self.is_timeseries_analysis: 
-                df['delta_t'] = self.timestep_size
-            else: 
-                df[self.y0_columns] = None
-
-            # if self.is_timeseries_analysis:
-                # times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
-                # times = generally_useful_functions.get_list_of_times(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
-            # else:
-                # times = [self.simulation_start_time, self.simulation_end_time]
-
-
-            y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
-            for period in range(len(self.times[1:])):
-
-                with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-                    progress_tracking_file.write(json.dumps({"text": 'Making predictions - simulation: ', "current_number": batch_number*batch_size + int(batch_size * (period/len(self.times[1:]))), "total_number": nb_of_simulations}))
-
-
-
-                print('period: ' + str(period) + '/' + str(len(self.times[1:])))
-                df['randomNumber'] = np.random.random(batch_size)
-                for rule in self.rules:
-                    populated_df_rows = pd.Series([True] * len(df))
-                    for used_column in rule['used_columns']:
-                        populated_df_rows = populated_df_rows & ~df[used_column].isna()
-                    populated_df = df[populated_df_rows]
-
-                    # Apply Rule  ================================================================
-                    if rule['is_conditionless']:
-                        if rule['has_probability_1']:
-                            satisfying_rows = populated_df_rows
-                            condition_satisfying_rows = [True] * batch_size
-                            trigger_thresholds = [0] * batch_size
-                        else:
-                            satisfying_rows = populated_df_rows & pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id'])).tolist()
-                            condition_satisfying_rows = [True] * batch_size
-                            trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
-
-                    else:
-
-                        condition_satisfying_rows = pd.Series([False] * batch_size)
-
-                        if len(populated_df)==0:
-                            satisfying_rows = populated_df_rows
-                            trigger_thresholds = [0] * batch_size
-                        elif rule['has_probability_1']:
-                            condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
-                            if condition_satisfying_rows.iloc[0] in [-1,-2]: #messy bug-fix for bug where eval returns -1 and -2 instead of True and False
-                                condition_satisfying_rows += 2
-                                condition_satisfying_rows = condition_satisfying_rows.astype(bool)
-                            satisfying_rows = condition_satisfying_rows.tolist()
-                            trigger_thresholds = [0] * batch_size
-                        else:
-                            condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
-                            satisfying_rows = pd.eval('df.randomNumber < df.triggerThresholdForRule' + str(rule['id'])) & condition_satisfying_rows
-                            trigger_thresholds = list(df['triggerThresholdForRule' + str(rule['id'])])
-                
-
-
-                    # --------  THEN  --------
-                    if rule['effect_is_calculation']:
-                        if 'sums' in rule:
-                            for sum_number in rule['sums'].keys():
-                                df['sum' + str(sum_number)] = 0
-                                for sum_term in rule['sums'][sum_number]:
-                                    df['sum' + str(sum_number)] += pd.eval(sum_term).fillna(0)
-
-                        all_new_values = pd.eval(rule['effect_exec'])
-                        if rule['changed_var_data_type'] in ['relation','int']:
-                            nan_rows = all_new_values.isnull()
-                            all_new_values = all_new_values.fillna(0)
-                            all_new_values = all_new_values.astype(int)
-                            all_new_values[nan_rows] = np.nan
-                        elif rule['changed_var_data_type'] == 'real':
-                            all_new_values = all_new_values.astype(float)
-                        # elif rule['changed_var_data_type'] in ['boolean','bool']:
-                        elif rule['changed_var_data_type'] in ['string','date']:
-                            nan_rows = all_new_values.isnull()
-                            all_new_values = all_new_values.astype(str)
-                            all_new_values[nan_rows] = np.nan
-
-                    else:
-                        # all_new_values = [json.loads(rule['effect_exec'])] * batch_size
-                        all_new_values = pd.Series([rule['effect_exec']] * batch_size)
-
-
-                    # new_values = [value for value, satisfying in zip(all_new_values,satisfying_rows) if satisfying]
-                    # df.loc[satisfying_rows,rule['column_to_change']] = new_values
-                    new_values = all_new_values
-                    new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
-                    new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
-                    df[rule['column_to_change']] = new_values
-
-
-                    calculated_values = list(df[rule['column_to_change']])
-                    errors = np.zeros(len(calculated_values))
-                    correct_value = ['unknown'] * len(calculated_values)
-                    if rule['column_to_change'] in self.y0_columns:
-                        errors = self.error_of_single_values(df_short, y0_values_df_short, np.array(calculated_values), rule['column_to_change'], period+1)
-                        correct_value = list(y0_values_df_short[rule['column_to_change'] + 'period' + str(period+1)])
-
-
-                    triggered_rule_infos_df = pd.DataFrame({'condition_satisfied': condition_satisfying_rows,
-                                                            'id':[rule['id']]* batch_size,
-                                                            'pt': satisfying_rows,          # pt = probability_triggered
-                                                            'tp': trigger_thresholds,       # tp = trigger_probability
-                                                            'v': calculated_values,         # v = new_value
-                                                            'error':errors})
-
-                    triggered_rule_infos = triggered_rule_infos_df.to_dict('records')
-                    triggered_rule_infos = [rule_info if rule_info['condition_satisfied'] else None for rule_info in triggered_rule_infos]
-                    for i in range(len(triggered_rule_infos)):
-                        if triggered_rule_infos[i] is not None:
-                                del triggered_rule_infos[i]['condition_satisfied']
-                                if np.isnan(triggered_rule_infos[i]['error']):
-                                    del triggered_rule_infos[i]['error']
-
-
-                    currently_triggered_rules = pd.DataFrame({  'initial_state_id':df.index,
-                                                                'batch_number':[batch_number]*batch_size,
-                                                                'attribute_id':[rule['column_to_change']]*batch_size,
-                                                                'period':[period+1]*batch_size,
-                                                                'triggered_rule': triggered_rule_infos, 
-                                                                'correct_value': correct_value
-                                                                })
-
-                    triggered_rules_df = triggered_rules_df.append(currently_triggered_rules)
-
-                
-                # simulated values
-                df['initial_state_id'] = df.index
-                df['batch_number'] = batch_number
-                df['period'] = period+1
-                simulation_data_df = simulation_data_df.append(df)
-
-                # error
-                y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
-                y0_values_in_this_period.columns = [col + 'period' + str(period+1) for col in y0_values_in_this_period.columns] #faster version
-                y0_values_in_simulation = y0_values_in_simulation.join(y0_values_in_this_period)
-
-
-            errors_dict = self.n_dimensional_distance(y0_values_in_simulation.to_dict('records'), y0_values_short)
-            error_df = pd.DataFrame({  'simulation_number': [str(index) + '-' + str(batch_nb) for index, batch_nb in zip(df.index, [batch_number]*len(df))],
-                                        'error': errors_dict['all_errors']})
-            errors_df = errors_df.append(error_df)
-
-
-
-        return (simulation_data_df, triggered_rules_df, errors_df)
 
 
 
@@ -1134,13 +1234,13 @@ class Simulator:
 
 
 # ===========================================================================================================
-#               _     _ _ _   _                   _    ______ _  __ _    _   _           _           
-#      /\      | |   | (_) | (_)                 | |  |  ____| |/ _(_)  | \ | |         | |          
-#     /  \   __| | __| |_| |_ _  ___  _ __   __ _| |  | |__  | | |_ _   |  \| | ___   __| | ___  ___ 
-#    / /\ \ / _` |/ _` | | __| |/ _ \| '_ \ / _` | |  |  __| | |  _| |  | . ` |/ _ \ / _` |/ _ \/ __|
-#   / ____ \ (_| | (_| | | |_| | (_) | | | | (_| | |  | |____| | | | |  | |\  | (_) | (_| |  __/\__ \
-#  /_/    \_\__,_|\__,_|_|\__|_|\___/|_| |_|\__,_|_|  |______|_|_| |_|  |_| \_|\___/ \__,_|\___||___/
-# 
+#                  _     _ _ _   _                   _   ______                _   _                 
+#         /\      | |   | (_) | (_)                 | | |  ____|              | | (_)                
+#        /  \   __| | __| |_| |_ _  ___  _ __   __ _| | | |__ _   _ _ __   ___| |_ _  ___  _ __  ___ 
+#       / /\ \ / _` |/ _` | | __| |/ _ \| '_ \ / _` | | |  __| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+#      / ____ \ (_| | (_| | | |_| | (_) | | | | (_| | | | |  | |_| | | | | (__| |_| | (_) | | | \__ \
+#     /_/    \_\__,_|\__,_|_|\__|_|\___/|_| |_|\__,_|_| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+#                                                                                                                                                                                                 
 # ===========================================================================================================
 
     def unchanged(self, y):
@@ -1280,7 +1380,7 @@ class Simulator:
 
 
 
-        errors_dict = {'all_errors':error}
+        errors_dict = {'all_errors':error, 'error': error.mean()}
         if self.currently_running_learn_likelihoods:
             for rule in self.rules:
                 if rule['learn_posterior']:

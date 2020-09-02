@@ -102,13 +102,14 @@ urlpatterns = [
     url(r'^tool/get_rules_pdf/$', views.get_rules_pdf, name='get_rules_pdf'),
     url(r'^tool/get_single_pdf/$', views.get_single_pdf, name='get_single_pdf'),
     url(r'^tool/get_parameter_info/$', views.get_parameter_info, name='get_parameter_info'),
-    url(r'^tool/get_execution_order/$', views.get_execution_order, name='get_execution_order'),
+    url(r'^tool/get_simulated_parameter_numbers/$', views.get_simulated_parameter_numbers, name='get_simulated_parameter_numbers'),
 
     # complex get
     url(r'^tool/get_data_points/$', views.get_data_points, name='get_data_points'),
     url(r'^tool/get_data_from_random_object/$', views.get_data_from_random_object, name='get_data_from_random_object'),
     url(r'^tool/get_data_from_random_related_object/$', views.get_data_from_random_related_object, name='get_data_from_random_related_object'),
     url(r'^tool/get_data_from_objects_behind_the_relation/$', views.get_data_from_objects_behind_the_relation, name='get_data_from_objects_behind_the_relation'),
+    url(r'^tool/get_execution_order/$', views.get_execution_order, name='get_execution_order'),
 
     # find
     url(r'^tool/find_suggested_attributes/$', views.find_suggested_attributes, name='find_suggested_attributes'),
@@ -155,10 +156,12 @@ urlpatterns = [
     url(r'^tool/edit_simulation/(?P<simulation_id>[-\d]+)/$', views.edit_simulation, name='edit_simulation'),
     url(r'^tool/copy_simulation/$', views.copy_simulation, name='copy_simulation'),
     url(r'^tool/get_simulation_progress/$', views.get_simulation_progress, name='get_simulation_progress'),
-    url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/$', views.analyse_simulation, name='analyse_simulation'),
+    url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/$', views.analyse_learned_parameters, name='analyse_learned_parameters'),
+    url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/(?P<parameter_number>[-\d]+)/$', views.analyse_simulation, name='analyse_simulation'),
     url(r'^tool/abort_simulation/$', views.abort_simulation, name='abort_simulation'),
     # url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/setup_rule_learning/$', views.setup_rule_learning, name='setup_rule_learning'),
     # url(r'^tool/learn_rule/(?P<learned_rule_id>[-\d]+)/$', views.learn_rule, name='learn_rule'),
+    url(r'^tool/run_single_monte_carlo/$', views.run_single_monte_carlo, name='run_single_monte_carlo'),
     
 
 	# catching missspellt urls...

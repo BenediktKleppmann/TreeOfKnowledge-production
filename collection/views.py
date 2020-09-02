@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule, Execution_order, Likelihood_fuction, Rule_parameter, Logged_variable
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule, Execution_order, Likelihood_fuction, Rule_parameter, Logged_variable, Simulation_result
 from django.contrib.auth.models import User
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
@@ -673,6 +673,94 @@ def get_parameter_info(request):
 
 
 
+
+# used in analyse_learned_parameters.html
+@login_required
+def get_simulated_parameter_numbers(request):
+    simulation_id = request.GET.get('simulation_id', '')
+    run_number = request.GET.get('run_number', '')
+    parameter_numbers = Simulation_result.objects.filter(simulation_id=simulation_id, run_number=run_number).order_by('parameter_number').values_list('parameter_number', flat=True)
+    parameter_numbers = list(set(parameter_numbers))
+    return HttpResponse(json.dumps(parameter_numbers))  
+
+
+
+
+# ==================
+# complex GET
+# ==================
+
+# used in query_data.html
+@login_required
+def get_data_points(request):
+    request_body = json.loads(request.body)
+    object_type_id = request_body['object_type_id']
+    filter_facts = request_body['filter_facts']
+    specified_start_time = int(request_body['specified_start_time'])
+    specified_end_time = int(request_body['specified_end_time'])
+
+    response = query_datapoints.get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time)
+    return HttpResponse(json.dumps(response))
+
+
+# used in edit_model.html
+@login_required
+def get_data_from_random_object(request):
+    request_body = json.loads(request.body)
+    object_number = request_body['object_number']
+    object_type_id = request_body['object_type_id']
+    filter_facts = request_body['filter_facts']
+    specified_start_time = request_body['specified_start_time']
+    specified_end_time = request_body['specified_end_time']
+
+    (object_id, attribute_values) = query_datapoints.get_data_from_random_object(object_type_id, filter_facts, specified_start_time, specified_end_time)
+    response = {'object_number':object_number, 'object_id':object_id, 'attribute_values':attribute_values}
+    return HttpResponse(json.dumps(response))
+
+
+# used in edit_model.html
+@login_required
+def get_data_from_random_related_object(request):
+    request_body = json.loads(request.body)
+    simulation_id = request_body['simulation_id']
+    objects_dict = request_body['objects_dict']
+    environment_start_time = request_body['environment_start_time']
+    environment_end_time = request_body['environment_end_time']
+    max_number_of_instances = request_body['max_number_of_instances']
+
+
+    objects_data = query_datapoints.get_data_from_random_related_object(simulation_id, objects_dict, environment_start_time, environment_end_time, max_number_of_instances)
+    data_querying_info = Simulation_model.objects.get(id=simulation_id).data_querying_info
+    print('preparing response')
+    response = {'objects_data': objects_data, 
+                'data_querying_info': data_querying_info}    
+    print('sending response')           
+    return HttpResponse(json.dumps(response))
+
+
+# used in query_data.html
+@login_required
+def get_data_from_objects_behind_the_relation(request):
+    request_body = json.loads(request.body)
+    object_type_id = request_body['object_type_id']
+    object_ids = request_body['object_ids']
+    object_ids = list(set([el for el in object_ids if el])) #distinct not-null values
+    specified_start_time = request_body['specified_start_time']
+    specified_end_time = request_body['specified_end_time']
+    print('*******************************************************')
+    print(request_body.keys())
+    print(request_body['object_type_id'])
+    print(request_body['object_ids'])
+    print(request_body['specified_start_time'])
+    print(request_body['specified_end_time'])
+    print('*******************************************************')
+
+    response = query_datapoints.get_data_from_objects_behind_the_relation(object_type_id, object_ids, specified_start_time, specified_end_time)   
+    return HttpResponse(json.dumps(response))
+
+
+
+
 @login_required
 def get_execution_order(request):
     
@@ -772,81 +860,6 @@ def get_execution_order(request):
     execution_order_record.save()
 
     return HttpResponse(json.dumps(execution_order))
-
-
-# ==================
-# complex GET
-# ==================
-
-# used in query_data.html
-@login_required
-def get_data_points(request):
-    request_body = json.loads(request.body)
-    object_type_id = request_body['object_type_id']
-    filter_facts = request_body['filter_facts']
-    specified_start_time = int(request_body['specified_start_time'])
-    specified_end_time = int(request_body['specified_end_time'])
-
-    response = query_datapoints.get_data_points(object_type_id, filter_facts, specified_start_time, specified_end_time)
-    return HttpResponse(json.dumps(response))
-
-
-# used in edit_model.html
-@login_required
-def get_data_from_random_object(request):
-    request_body = json.loads(request.body)
-    object_number = request_body['object_number']
-    object_type_id = request_body['object_type_id']
-    filter_facts = request_body['filter_facts']
-    specified_start_time = request_body['specified_start_time']
-    specified_end_time = request_body['specified_end_time']
-
-    (object_id, attribute_values) = query_datapoints.get_data_from_random_object(object_type_id, filter_facts, specified_start_time, specified_end_time)
-    response = {'object_number':object_number, 'object_id':object_id, 'attribute_values':attribute_values}
-    return HttpResponse(json.dumps(response))
-
-
-# used in edit_model.html
-@login_required
-def get_data_from_random_related_object(request):
-    request_body = json.loads(request.body)
-    simulation_id = request_body['simulation_id']
-    objects_dict = request_body['objects_dict']
-    environment_start_time = request_body['environment_start_time']
-    environment_end_time = request_body['environment_end_time']
-    max_number_of_instances = request_body['max_number_of_instances']
-
-
-    objects_data = query_datapoints.get_data_from_random_related_object(simulation_id, objects_dict, environment_start_time, environment_end_time, max_number_of_instances)
-    data_querying_info = Simulation_model.objects.get(id=simulation_id).data_querying_info
-    print('preparing response')
-    response = {'objects_data': objects_data, 
-                'data_querying_info': data_querying_info}    
-    print('sending response')           
-    return HttpResponse(json.dumps(response))
-
-
-# used in query_data.html
-@login_required
-def get_data_from_objects_behind_the_relation(request):
-    request_body = json.loads(request.body)
-    object_type_id = request_body['object_type_id']
-    object_ids = request_body['object_ids']
-    object_ids = list(set([el for el in object_ids if el])) #distinct not-null values
-    specified_start_time = request_body['specified_start_time']
-    specified_end_time = request_body['specified_end_time']
-    print('*******************************************************')
-    print(request_body.keys())
-    print(request_body['object_type_id'])
-    print(request_body['object_ids'])
-    print(request_body['specified_start_time'])
-    print(request_body['specified_end_time'])
-    print('*******************************************************')
-
-    response = query_datapoints.get_data_from_objects_behind_the_relation(object_type_id, object_ids, specified_start_time, specified_end_time)   
-    return HttpResponse(json.dumps(response))
-
-
 
 # ==================
 # FIND
@@ -1780,13 +1793,16 @@ def edit_simulation_new(request):
 def edit_simulation(request, simulation_id):
     simulation_model = Simulation_model.objects.get(id=simulation_id)
     if request.method == 'POST':
-        the_simulator = simulation.Simulator(simulation_id)
-        the_simulator.run()
-        print('simulation completed, redirecting..')
-        if 'DB_CONNECTION_URL' in os.environ:
-            return redirect('https://www.treeofknowledge.ai/tool/analyse_simulation', simulation_id=simulation_id)
-        else:
-            return redirect('analyse_simulation', simulation_id=simulation_id)
+        the_simulator = simulation.Simulator(simulation_id, False)
+        print('learning simulation')
+        parameters_were_learned = the_simulator.learn_and_run_best_parameter()
+        print('simulation learned')
+        return HttpResponse(json.dumps(parameters_were_learned))
+        # print('simulation completed, redirecting..')
+        # if 'DB_CONNECTION_URL' in os.environ:
+        #     return redirect('https://www.treeofknowledge.ai/tool/analyse_simulation', simulation_id=simulation_id)
+        # else:
+        #     return redirect('analyse_simulation', simulation_id=simulation_id)
 
 
     
@@ -1822,22 +1838,28 @@ def get_simulation_progress(request):
 
 
 
+@login_required
+def analyse_learned_parameters(request, simulation_id):
+    print('analyse_learned_parameters')
+   
+    with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
+        progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
+    simulation_model = Simulation_model.objects.get(id=simulation_id)
+    return render(request, 'tool/analyse_learned_parameters.html', {'simulation_model':simulation_model})
+
+
+
 
 @login_required
-def analyse_simulation(request, simulation_id):
+def analyse_simulation(request, simulation_id, parameter_number):
     print('analyse_simulation')
-   
-    if request.method == 'POST':
-        the_simulator = simulation.Simulator(simulation_id)
-        the_simulator.run()
-        simulation_model = Simulation_model.objects.get(id=simulation_id)
-        return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model})
-
 
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
         progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
     simulation_model = Simulation_model.objects.get(id=simulation_id)
-    return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model})
+    print('simulation_id=%s, parameter_number=%s'  % (simulation_id, parameter_number))
+    simulation_result = Simulation_result.objects.filter(simulation_id=simulation_id, parameter_number=parameter_number).order_by('-id').first()
+    return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'simulation_result':simulation_result})
 
 
 @login_required
@@ -1847,6 +1869,23 @@ def abort_simulation(request):
     model_record.aborted = True
     model_record.save()
     return HttpResponse("success")
+
+
+@login_required
+def run_single_monte_carlo(request):
+    print('----- run_single_monte_carlo -----')
+    if request.method == 'POST':
+        print('rsmc 1')
+        request_body = json.loads(request.body)
+        print('rsmc 2')
+        the_simulator = simulation.Simulator(request_body['simulation_id'], True)
+        print('rsmc 3')
+        the_simulator.run_single_monte_carlo(request_body['number_of_entities_to_simulate'], request_body['prior_dict'], request_body['parameter_number'])
+        print('rsmc 4')
+
+    return HttpResponse(request_body['parameter_number'])
+
+
 
 # @login_required
 # def setup_rule_learning(request, simulation_id):

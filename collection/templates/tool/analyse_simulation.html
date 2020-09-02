@@ -1,6 +1,5 @@
-{% extends 'layouts/base_tool.html' %}'
 {% load staticfiles %}
-
+<!doctype html>
 <!-- 
 ####################################################################
 # This file is part of the Tree of Knowledge project.
@@ -13,421 +12,484 @@
 #####################################################################
 -->
 
-{% block title %}
-	Analyse Simulation
-{% endblock %}
 
-{% block additionalcss %}
+<html lang="en">
+<head>
+
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151938988-1"></script>
+	<script>   window.dataLayer = window.dataLayer || [];   function gtag(){dataLayer.push(arguments);}   gtag('js', new Date());    gtag('config', 'UA-151938988-1'); </script>
+
+
+	<meta charset="utf-8">
+	<meta name="HandheldFriendly" content="true" />
+	<meta name="author" content="Benedikt Kleppmann">
+	<title>Analyse Simulation</title>
+	
+
   <link href="https://cdn.anychart.com/releases/v8/css/anychart-ui.min.css?hcode=be5162d915534272a57d0bb781d27f2b" rel="stylesheet" type="text/css">
   <link href="https://cdn.anychart.com/releases/v8/fonts/css/anychart-font.min.css?hcode=be5162d915534272a57d0bb781d27f2b" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="{% static 'css/bootstrap-3.4.0.min.css' %}" />
 	
-<style>
-
-
-	.content {
-		padding: 0px;
-	}
-
-
-
-	#score-box {
-		position: absolute;
-		right: 12px;
-		top: 58px;
-		padding: 6px 19px;
-		font-size: 15px;
-		border: 1px solid rgb(202,202,202);
-		z-index: 2;
-		border-radius: 0px 0px 8px 8px;
-		background: rgb(235, 235, 235);
-	}
-	
-	#simulation-score {
-		display: inline-block;
-	}
-
-
-	/* --------------------------------------------------------------------------*/
-	/* Panels -------------------------------------------------------------------*/
-	/* --------------------------------------------------------------------------*/
-	.left-panel {
-		float:left;
-		display: inline-block;
-		width: 256px;
-		height:calc(100vh - 59px);
-		background: rgb(226, 226, 226);
-	}
-	
-	/* Right */
-	.right-panel-container {
-		display: inline-block;
-		display: flex;
-		flex-direction: column;
-		border: 1px solid silver;
-		overflow: hidden;
-		xtouch-action: none; /* avoid browser level touch actions */
-		height:calc(100vh - 59px);
-	}
-
-	#top-panel {
-	  flex: 0 0 auto;  /* only manually resize */
-	  height: 55%;
-	  min-height: 150px;
-	  width: 100%;
-	  //white-space: nowrap;
-	}
-
-	#splitter {
-	  flex: 0 0 auto;
-	  height: 4px;  
-	  background: rgb(225, 225, 225);
-	  border: 1px solid rgb(200, 200, 200);
-	  cursor: row-resize; 
-	  //box-shadow: 0px  -2px 6px 0 rgba(0, 0, 0, 0.14);
-	  z-index: 1;
-	}
-
-	#bottom-panel {
-	  flex: 1 1 auto;   /* resizable */
-	  padding-right: 10px;
-	  min-height: 200px;
-	  width: 100%;
-	  height: 100%;
-	  overflow-x: scroll;
-	  background: rgb(255,255,255);
-	}
-	
-	/* Top Right */
-	
-	.top-right-panel-container {
-		height: 100%;
-		display: inline-block;
-		display: flex;
-		flex-direction: column;
-		border: 1px solid silver;
-		overflow: hidden;
-		xtouch-action: none; /* avoid browser level touch actions */
-		height:calc(100vh - 59px);
-	}
-
-
-					
-	/* --------------------------------------------------------------------------*/
-	/* Left Panel ---------------------------------------------------------------*/
-	/* --------------------------------------------------------------------------*/
-	
-	.run-selection-area {
-	    margin-top: 34px;
-		margin-left: 15px;
-		width: 217px;
-	}
-	
-	#threshold_box {
-		margin-top: 17px;
-	}
-
-	
-	
-	#threshold-label {
-	    margin-top: 8px;
-		padding-left: 27px;
-		width: 134px;
-		float: left;
-	}
-	
-	#error_threshold {
-		display: inline-block;
-		width: 53px;
-		height: 33px;
-		padding-bottom: 5px;
-		margin-bottom: 1px;
-	}
-	
-	#initial-state-run-selection-buttons {
-		margin-top: 26px;
-		max-height: 132px;
-		overflow-y: auto;
-	}
-	
-	#individual-run-selection-buttons {
-		margin-top: 26px;
-		max-height: calc(100vh - 440px);
-		overflow-y: auto;
-	}
-	
-	.run-selection-button {
-		width: 100%;
-		background: rgb(248, 248, 248);
-		border: 1px solid rgb(210, 210, 210);
-	}
-	
-	.run-selection-button.active {
-		background: rgb(219, 219, 219)
-	}
-	
-	/* --------------------------------------------------------------------------*/
-	/* Bottom Panel -------------------------------------------------------------*/
-	/* --------------------------------------------------------------------------*/
-
-	#bottom-object-items {
-		list-style-type: none;
-		padding-inline-start: 0px;
-		margin: 17px;
-	}
- 
-	#bottom-object-items li {
-		margin: 7px;
-		float: left;
-	}
-	
-	.bottom-object-outer-box {
-		background: rgb(220, 227, 250);
-		border: 1px solid rgb(202, 202, 202);
-		padding-top: 3px;
-		background: rgb(226, 226, 226);
-		box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.20);
-	}
-	
-	.bottom-object-name {
-		display: inline-block;
-	}
-	
-	.bottom-object-icon {
-		height: 33px;
-		margin-top: 4px;
-		margin-right: 10px;
-		margin-left: 12px;
-		border: 1px solid rgb(183, 183, 183);
-		border-radius: 4px;
-	}
-	
-	.collapse-triangle {
-		font-size: 9px;
-		padding: 12px;
-		padding-left: 22px;
-	}
-	
-	.bottom-object-inner-box {
-		margin-top: 3px;
-		background: rgb(255,255,255);
-		border-top: 1px solid rgb(202,202,202);
-		overflow: hidden;
-	}
-	
-	.bottom-object-data-row {
-		border-bottom: 1px solid rgb(190, 190, 190);
-		display: block;
-	}
-	
-	.bottom-attribute-name {
-		display: inline-block;
-		padding: 6px 0px 6px 8px;
-		background: rgb(242, 242, 242);
-		height: 100%;
-		border-right: 1px solid rgb(202, 202, 202);
-		/*border-bottom: 1px solid rgb(202, 202, 202);*/
-		width: 175px;
-		background: -webkit-gradient( linear, left top, left bottom, from(#f5f5f2), to(#ebeae6));
-					-moz-box-shadow: inset 0px 0px 3px rgba(255,255,255,0.9);
-					-webkit-box-shadow: inset 0px 0px 3px rgba(255,255,255,0.9);
-		box-shadow: inset 0px 0px 3px rgba(255,255,255,0.9);
-		float: left;
-	}
-	
-	.buffer-div {
-		display: inline-block;
-	}
-	
-	.bottom-attribute-values {
-		display: inline-block;	
-		/*float: right;*/
-	}
-	
-	
-	.attribute-value {
-		width: 55px;
-		display: inline-block;
-		text-align: center;
-		border-right: 1px solid rgb(190, 190, 190);
-		padding: 6px 0px 6px 0px;
-		color: rgb(95, 95, 95);
-	}
-	
-	
-	.attribute-value-span {
-		overflow: hidden;
-		width: 55px;
-	}
-	
-	/* --------------------------------------------------------------------------*/
-	/* Top Panel ----------------------------------------------------------------*/
-	/* --------------------------------------------------------------------------*/
-	
-	#graph-panel {
-	  	height: calc(100% - 45px);
-		width: 100%;
-	}
-	
-	#top-menu-bar {
-		height: 45px;
-		width: 100%;
-		background: rgb(226, 226, 226);
-		border-top: 1px solid rgb(202,202,202); 
-		position: relative;
-	}	
-
-	#vertically-centered {
-		margin: 0;
-		position: absolute;
-		top: 50%;
-		-ms-transform: translateY(-50%);
-		transform: translateY(-50%);
-		width: 100%;
-	}
-
-	#inlude-zero-menu {
-		display: inline-block;
-		margin-left: 25px;
-		margin-right: 15px;
-		margin-top: 8px;
-	}
-	
-	.menu-bar-error-message {
-		display: inline-block;
-		margin-left: 25px;
-	}
-	
-	#show-rules-button {
-	    background: rgb(248, 248, 248);
-		border: 1px solid rgb(210, 210, 210);
-		margin-left: 14px;
-		margin-top: 1px;
-	}
-	
-	
-	/* --------------------------------------------------------------------------*/
-	/* Top Panel - RULES --------------------------------------------------------*/
-	/* --------------------------------------------------------------------------*/
-	
-	.color0 { background: #B9D7DA;}
-	.color1 { background: #B9D2DA;}
-	.color2 { background: #B9CEDA;}
-	.color3 { background: #B9CADA;}
-	.color4 { background: #B9C6DA;}
-	.color5 { background: #BAC2DA;}
-	.color6 { background: #BABEDA;}
-	.color7 { background: #BABADA;}
-	.color8 { background: #BEBADA;}
-	.color9 { background: #C3BBDA;}
-	.color10 { background: #C7BBDB;}
-	.color11 { background: #CBBBDB;}
-	.color12 { background: #CFBBDB;}
-	.color13 { background: #D4BCDB;}
-	.color14 { background: #D8BCDB;}
-	.color15 { background: #DBBCDA;}
-	.color16 { background: #DBBCD6;}
-	.color17 { background: #DBBDD3;}
-	.color18 { background: #DBBDCF;}
-	.color19 { background: #DBBDCB;}
-	.color20 { background: #DCBDC7;}
-	.color21 { background: #DCBEC4;}
-	.color22 { background: #DCBEC0;}
-	.color23 { background: #DCC0BE;}
-	.color24 { background: #DCC4BE;}
-	.color25 { background: #DCC8BF;}
-	.color26 { background: #DCCCBF;}
-	.color27 { background: #DCD0BF;}
-	.color28 { background: #DCD4BF;}
-	.color29 { background: #DDD8C0;}
-
-	
-	
-	#triggerd-rules-panel {
-		max-height: 146px;
-		/*padding-right: 18px;*/
-	}
-	
-	#triggerd-rules-title {
-		width: 118px;
-		height: 66px;
-		display: inline-block;
-		writing-mode: vertical-rl;
-		transform: rotate(180deg);
-		padding-right: 7px;
-		text-align: center;
-		float: left;
-	}
-	
-	#triggerd-rule-periods {
-		display: inline-block;
-		text-align: center;
-		width: calc(100% - 118px);
-		overflow-y: scroll;
-	}
-	
-	.triggerd-rules-period {
-		padding: 2px 5px 0px 5px;
-		display: inline-block;
-	}
-	
-	.triggerd-rule {
-		padding-top: 2px;
-		/*border: 1px solid rgb(210, 210, 210);*/
-		max-width: 265px;
-		text-align: center;
-		margin-top: 2px; 
-		margin-left: auto;
-		margin-right: auto;
-		border-radius: 6px;
-	}
-	
-	
-	.triggerd-rule .rule-name {
-		display: inline-block;
-		font-weight: 600;
-	}
-	
-	.triggerd-rule .rule-prob {
-		display: inline-block;
-		font-size: 11.5px;
-		margin-left: 2px;
-	}
-	
-
-	
-	.triggerd-rule .rule-value {
-		display: inline-block;
-		margin-left: 6px;
-	}
-	
-	
-	
-
-
-</style>	
+	<style>
+		.content {
+			padding: 0px;
+		}
 
 
 
-{% endblock %}	
+		#score-box {
+			position: absolute;
+			right: 12px;
+			top: 0px;
+			padding: 6px 19px;
+			font-size: 15px;
+			border: 1px solid rgb(202,202,202);
+			z-index: 2;
+			border-radius: 0px 0px 8px 8px;
+			background: rgb(235, 235, 235);
+		}
+		
+		#simulation-score {
+			display: inline-block;
+		}
 
-{% block content %}
-<div id="score-box">Overall Score: <div id="simulation-score"></div></div>
+
+		/* --------------------------------------------------------------------------*/
+		/* Panels -------------------------------------------------------------------*/
+		/* --------------------------------------------------------------------------*/
+		.left-panel {
+			float:left;
+			display: inline-block;
+			width: 256px;
+			height:calc(100vh);
+			background: rgb(226, 226, 226);
+		}
+		
+		/* Right */
+		.right-panel-container {
+			display: inline-block;
+			display: flex;
+			flex-direction: column;
+			border: 1px solid silver;
+			overflow: hidden;
+			xtouch-action: none; /* avoid browser level touch actions */
+			height:calc(100vh);
+		}
+
+		#top-panel {
+		  flex: 0 0 auto;  /* only manually resize */
+		  height: 55%;
+		  min-height: 150px;
+		  width: 100%;
+		  //white-space: nowrap;
+		}
+
+		#splitter {
+		  flex: 0 0 auto;
+		  height: 4px;  
+		  background: rgb(225, 225, 225);
+		  border: 1px solid rgb(200, 200, 200);
+		  cursor: row-resize; 
+		  //box-shadow: 0px  -2px 6px 0 rgba(0, 0, 0, 0.14);
+		  z-index: 1;
+		}
+
+		#bottom-panel {
+		  flex: 1 1 auto;   /* resizable */
+		  padding-right: 10px;
+		  min-height: 200px;
+		  width: 100%;
+		  height: 100%;
+		  overflow-x: scroll;
+		  background: rgb(255,255,255);
+		}
+		
+		/* Top Right */
+		
+		.top-right-panel-container {
+			height: 100%;
+			display: inline-block;
+			display: flex;
+			flex-direction: column;
+			border: 1px solid silver;
+			overflow: hidden;
+			xtouch-action: none; /* avoid browser level touch actions */
+			height:calc(100vh - 59px);
+		}
+
+
+						
+		/* --------------------------------------------------------------------------*/
+		/* Left Panel ---------------------------------------------------------------*/
+		/* --------------------------------------------------------------------------*/
+		
+		.card-header {
+			border-top: 1px solid rgb(180, 180, 180);
+			border-bottom: 1px solid rgb(180, 180, 180);
+		}
+		
+		.left-panel-header {
+			font-size: 15.5px;
+			background: rgb(226, 226, 226);
+			width: 100%;
+			padding-left: 20px;
+			text-align: left;
+			overflow: hidden;
+		}
+		
+		.card-body {
+			padding-left: 4px;
+			padding-right: 5px;
+			background-color: rgb(244, 244, 244);
+		}
+
+
+		/* Parameter Values -----------------------------------------------------*/
+		#simulation-parameter-box {
+			width: 400px;
+			padding-bottom: 10px;
+		}
+		
+		.rule-heading {
+			font-weight: 600;
+			margin-bottom: 1px;
+			padding-top: 6px;
+		}
+		
+		.parameter-value {
+			padding-left: 16px;
+		}
+	
+	
+		/* Entities/Entity Combinations ------------------------------------------*/
+		.run-selection-area {
+			padding-top: 19px;
+			margin-left: 15px;
+			width: 217px;
+			padding-bottom: 13px;
+		}
+		
+		#threshold_box {
+			margin-top: 17px;
+		}
+
+		
+		
+		#threshold-label {
+			margin-top: 8px;
+			padding-left: 27px;
+			width: 134px;
+			float: left;
+		}
+		
+		#error_threshold {
+			display: inline-block;
+			width: 53px;
+			height: 33px;
+			padding-bottom: 5px;
+			margin-bottom: 1px;
+		}
+		
+		#initial-state-run-selection-buttons {
+			margin-top: 26px;
+			max-height: 132px;
+			overflow-y: auto;
+		}
+		
+		#individual-run-selection-buttons {
+			margin-top: 26px;
+			max-height: calc(100vh - 445px);
+			overflow-y: auto;
+		}
+		
+		.run-selection-button {
+			width: 100%;
+			background: rgb(248, 248, 248);
+			border: 1px solid rgb(210, 210, 210);
+		}
+		
+		.run-selection-button.active {
+			background: rgb(219, 219, 219)
+		}
+		
+		/* --------------------------------------------------------------------------*/
+		/* Bottom Panel -------------------------------------------------------------*/
+		/* --------------------------------------------------------------------------*/
+
+		#bottom-object-items {
+			list-style-type: none;
+			padding-inline-start: 0px;
+			margin: 17px;
+		}
+	 
+		#bottom-object-items li {
+			margin: 7px;
+			float: left;
+		}
+		
+		.bottom-object-outer-box {
+			background: rgb(220, 227, 250);
+			border: 1px solid rgb(202, 202, 202);
+			padding-top: 3px;
+			background: rgb(226, 226, 226);
+			box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.20);
+		}
+		
+		.bottom-object-name {
+			display: inline-block;
+		}
+		
+		.bottom-object-icon {
+			height: 33px;
+			margin-top: 4px;
+			margin-right: 10px;
+			margin-left: 12px;
+			border: 1px solid rgb(183, 183, 183);
+			border-radius: 4px;
+		}
+		
+		.collapse-triangle {
+			font-size: 9px;
+			padding: 12px;
+			padding-left: 22px;
+		}
+		
+		.bottom-object-inner-box {
+			margin-top: 3px;
+			background: rgb(255,255,255);
+			border-top: 1px solid rgb(202,202,202);
+			overflow: hidden;
+		}
+		
+		.bottom-object-data-row {
+			border-bottom: 1px solid rgb(190, 190, 190);
+			display: block;
+		}
+		
+		.bottom-attribute-name {
+			display: inline-block;
+			padding: 6px 0px 6px 8px;
+			background: rgb(242, 242, 242);
+			height: 100%;
+			border-right: 1px solid rgb(202, 202, 202);
+			/*border-bottom: 1px solid rgb(202, 202, 202);*/
+			width: 175px;
+			background: -webkit-gradient( linear, left top, left bottom, from(#f5f5f2), to(#ebeae6));
+						-moz-box-shadow: inset 0px 0px 3px rgba(255,255,255,0.9);
+						-webkit-box-shadow: inset 0px 0px 3px rgba(255,255,255,0.9);
+			box-shadow: inset 0px 0px 3px rgba(255,255,255,0.9);
+			float: left;
+		}
+		
+		.buffer-div {
+			display: inline-block;
+		}
+		
+		.bottom-attribute-values {
+			display: inline-block;	
+			/*float: right;*/
+		}
+		
+		
+		.attribute-value {
+			width: 55px;
+			display: inline-block;
+			text-align: center;
+			border-right: 1px solid rgb(190, 190, 190);
+			padding: 6px 0px 6px 0px;
+			color: rgb(95, 95, 95);
+		}
+		
+		
+		.attribute-value-span {
+			overflow: hidden;
+			width: 55px;
+		}
+		
+		/* --------------------------------------------------------------------------*/
+		/* Top Panel ----------------------------------------------------------------*/
+		/* --------------------------------------------------------------------------*/
+		
+		#graph-panel {
+			height: calc(100% - 45px);
+			width: 100%;
+		}
+		
+		#top-menu-bar {
+			height: 45px;
+			width: 100%;
+			background: rgb(226, 226, 226);
+			border-top: 1px solid rgb(202,202,202); 
+			position: relative;
+		}	
+
+		#vertically-centered {
+			margin: 0;
+			position: absolute;
+			top: 50%;
+			-ms-transform: translateY(-50%);
+			transform: translateY(-50%);
+			width: 100%;
+		}
+
+		#inlude-zero-menu {
+			display: inline-block;
+			margin-left: 25px;
+			margin-right: 15px;
+			margin-top: 8px;
+		}
+		
+		.menu-bar-error-message {
+			display: inline-block;
+			margin-left: 25px;
+		}
+		
+		#show-rules-button {
+			background: rgb(248, 248, 248);
+			border: 1px solid rgb(210, 210, 210);
+			margin-left: 14px;
+			margin-top: 1px;
+		}
+		
+		
+		/* --------------------------------------------------------------------------*/
+		/* Top Panel - RULES --------------------------------------------------------*/
+		/* --------------------------------------------------------------------------*/
+		
+		.color0 { background: #B9D7DA;}
+		.color1 { background: #B9D2DA;}
+		.color2 { background: #B9CEDA;}
+		.color3 { background: #B9CADA;}
+		.color4 { background: #B9C6DA;}
+		.color5 { background: #BAC2DA;}
+		.color6 { background: #BABEDA;}
+		.color7 { background: #BABADA;}
+		.color8 { background: #BEBADA;}
+		.color9 { background: #C3BBDA;}
+		.color10 { background: #C7BBDB;}
+		.color11 { background: #CBBBDB;}
+		.color12 { background: #CFBBDB;}
+		.color13 { background: #D4BCDB;}
+		.color14 { background: #D8BCDB;}
+		.color15 { background: #DBBCDA;}
+		.color16 { background: #DBBCD6;}
+		.color17 { background: #DBBDD3;}
+		.color18 { background: #DBBDCF;}
+		.color19 { background: #DBBDCB;}
+		.color20 { background: #DCBDC7;}
+		.color21 { background: #DCBEC4;}
+		.color22 { background: #DCBEC0;}
+		.color23 { background: #DCC0BE;}
+		.color24 { background: #DCC4BE;}
+		.color25 { background: #DCC8BF;}
+		.color26 { background: #DCCCBF;}
+		.color27 { background: #DCD0BF;}
+		.color28 { background: #DCD4BF;}
+		.color29 { background: #DDD8C0;}
+
+		
+		
+		#triggerd-rules-panel {
+			max-height: 146px;
+			/*padding-right: 18px;*/
+		}
+		
+		#triggerd-rules-title {
+			width: 118px;
+			height: 66px;
+			display: inline-block;
+			writing-mode: vertical-rl;
+			transform: rotate(180deg);
+			padding-right: 7px;
+			text-align: center;
+			float: left;
+		}
+		
+		#triggerd-rule-periods {
+			display: inline-block;
+			text-align: center;
+			width: calc(100% - 118px);
+			overflow-y: scroll;
+		}
+		
+		.triggerd-rules-period {
+			padding: 2px 5px 0px 5px;
+			display: inline-block;
+		}
+		
+		.triggerd-rule {
+			padding-top: 2px;
+			/*border: 1px solid rgb(210, 210, 210);*/
+			max-width: 265px;
+			text-align: center;
+			margin-top: 2px; 
+			margin-left: auto;
+			margin-right: auto;
+			border-radius: 6px;
+		}
+		
+		
+		.triggerd-rule .rule-name {
+			display: inline-block;
+			font-weight: 600;
+		}
+		
+		.triggerd-rule .rule-prob {
+			display: inline-block;
+			font-size: 11.5px;
+			margin-left: 2px;
+		}
+		
+
+		
+		.triggerd-rule .rule-value {
+			display: inline-block;
+			margin-left: 6px;
+		}	
+	</style>
+	
+</head>
+
+
+
+<div id="score-box">Score: <div id="simulation-score"></div></div>
 <div class="left-panel">
-	<div class="run-selection-area">
-		<div class="run-selection-box">
-			<button id="all-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectAllRuns()">All Runs</button>
-			<div id="threshold_box">
-				<div id="threshold-label">Error Threshold:</div>	
-				<input type="text" id="error_threshold" class="form-control" value="0.5">							
+	<div class="accordion md-accordion" id="accordion-left" role="tablist" aria-multiselectable="true">	
+		<div class="card">
+			<div class="card-header" role="tab" id="accordion-left-header-1">
+				<button id="parameter-values-accordion-button" class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-1" aria-expanded="false" aria-controls="accordion-left-content-1" onclick="drawParameterValues()">Parameter Values</button>
 			</div>
-			<div id="correct_and_false_runs">
-				<button id="correct-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectCorrectRuns()">Correct Runs</button>
-				<button id="false-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectFalseRuns()">False Runs</button>
+			<div id="accordion-left-content-1" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-1" data-parent="#accordion-left">
+				<div class="card-body">
+					<div id="simulation-parameter-box"></div>
+				</div>
 			</div>
 		</div>
-		<div id="initial-state-run-selection-buttons" class="run-selection-box"></div>
-		<div id="individual-run-selection-buttons" class="run-selection-box"></div>
+		<div class="card">
+			<div class="card-header" role="tab" id="accordion-left-header-2">
+				<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-2" aria-expanded="false" aria-controls="accordion-left-content-2">Entities/Entity Combinations</button>
+			</div>
+			<div id="accordion-left-content-2" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-2" data-parent="#accordion-left">
+				<div class="card-body">
+					<div class="run-selection-area">
+						<div class="run-selection-box">
+							<button id="all-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectAllRuns()">All Entities</button>
+							<div id="threshold_box">
+								<div id="threshold-label">Error Threshold:</div>	
+								<input type="text" id="error_threshold" class="form-control" value="0.5">							
+							</div>
+							<div id="correct_and_false_runs">
+								<button id="correct-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectCorrectRuns()">Correct Entities</button>
+								<button id="false-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectFalseRuns()">False Entities</button>
+							</div>
+						</div>
+						<div id="initial-state-run-selection-buttons" class="run-selection-box"></div>
+						<div id="individual-run-selection-buttons" class="run-selection-box"></div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
 <div class="right-panel-container">
@@ -458,12 +520,15 @@
 	// GLOBAL VARIABLES:
 	var objects_dict = {{ simulation_model.objects_dict|safe }};
 	var y_value_attributes = {{ simulation_model.y_value_attributes|safe }};
-	var rule_infos = {{ simulation_model.rule_infos|safe }};
-	var not_used_rules = {{ simulation_model.not_used_rules|safe }};
-	var triggered_rules = {{ simulation_model.triggered_rules|safe }};
-	var simulation_data = {{ simulation_model.simulation_data|safe }};
-	var correct_values = {{ simulation_model.correct_values|safe }};
-	var errors = {{ simulation_model.errors|safe }};
+	var all_priors_df = {{ simulation_model.all_priors_df|safe }};
+	
+	var prior_dict = {{ simulation_result.prior_dict|safe }};
+	var rule_infos = {{ simulation_result.rule_infos|safe }};
+	var not_used_rules = {{ simulation_result.not_used_rules|safe }};
+	var triggered_rules = {{ simulation_result.triggered_rules|safe }};
+	var simulation_data = {{ simulation_result.simulation_data|safe }};
+	var correct_values = {{ simulation_result.correct_values|safe }};
+	var errors = {{ simulation_result.errors|safe }};
 	
 	var is_timeseries_analysis = {{ simulation_model.is_timeseries_analysis|yesno:"true,false" }};
 	var simulation_start_time = {{ simulation_model.simulation_start_time }};
@@ -490,6 +555,7 @@
 	var delta_t_list = ['delta_t (years)', 'delta_t (months)', 'delta_t (days)', 'delta_t (hours)', 'delta_t (minutes)', 'delta_t (seconds)'];
 	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1];
 	var error_colours = ['#97CF99', '#97CF97', '#98CF97', '#9ACF97', '#9CCF97', '#9DCF97', '#9FCF97', '#A1CF97', '#A3CF97', '#A5CF97', '#A6CF97', '#A8CF97', '#AACF97', '#ACCF98', '#AECF98', '#AFCF98', '#B1CF98', '#B3CF98', '#B5CF98', '#B6CF98', '#B8CF98', '#BACF98', '#BCCF98', '#BDCF98', '#BFCF98', '#C1CF98', '#C2CF99', '#C4CF99', '#C6CF99', '#C8CF99', '#C9CF99', '#CBCF99', '#CDD099', '#CFD099', '#D0CF99', '#D0CD99', '#D0CC99', '#D0CA99', '#D0C89A', '#D0C79A', '#D0C59A', '#D0C39A', '#D0C29A', '#D0C09A', '#D0BF9A', '#D0BD9A', '#D0BB9A', '#D0BA9A', '#D0B89A', '#D0B79A', '#D0B59A', '#D0B39B', '#D0B29B', '#D0B09B', '#D0AF9B', '#D0AD9B', '#D0AB9B', '#D0AA9B', '#D0A89B', '#D0A79B', '#D0A59B', '#D0A49B', '#D0A29B', '#D1A19C']
+	var parameter_info = {};
 	
 
 
@@ -497,11 +563,53 @@
 
 	//========================================================================
 	//========================================================================
-	//=========================   LEFT PANEL      ============================
+	//================   LEFT PANEL - Parameter Values    ====================
 	//========================================================================
 	//========================================================================
 
 	
+	
+	function drawParameterValues() {
+	
+		var simulation_parameters_string = 	'';
+												
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			
+			var attribute_ids = Object.keys(objects_dict[object_numbers[i]]['object_rules']);
+			for (var j = 0; j < attribute_ids.length; j++) {
+			
+				var rule_ids = Object.keys(objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]]);
+				for (var k = 0; k < rule_ids.length; k++) {
+				
+					var rule = objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]][rule_ids[k]]
+					if (rule['learn_posterior']) {
+					
+						simulation_parameters_string += '<div class="rule-heading">' + objects_dict[object_numbers[i]]['object_name'] + '.[' + objects_dict[object_numbers[i]]['object_attributes'][attribute_ids[j]]['attribute_name'] + '], Rule ' + String(rule_ids[k]) + ':</div>';
+						if (!rule['has_probability_1']) {
+							simulation_parameters_string += '<div class="parameter-value">Rule probaility = ' + prior_dict[rule_ids[k]]['probability'].toFixed(3) + '</div>';
+							simulation_parameters_string += '<div class="parameter-value">Rule probaility = ' + prior_dict[rule_ids[k]]['probability'].toFixed(3) + '</div>';
+						}
+						var used_parameter_ids = rule['used_parameter_ids'];
+						for (var l = 0; l < used_parameter_ids.length; l++) {
+							simulation_parameters_string += '<div class="parameter-value">' + parameter_info[used_parameter_ids[l]]["parameter_name"] + ' = ' + prior_dict[rule_ids[k]][used_parameter_ids[l]].toFixed(3) + '</div>';
+						}
+					}
+					
+				}
+			}
+		}
+		$('#simulation-parameter-box').html(simulation_parameters_string);
+	
+
+	}
+
+	//========================================================================
+	//========================================================================
+	//=========   LEFT PANEL - Entities/Entity Combinations    ===============
+	//========================================================================
+	//========================================================================	
+										
 
 	//== draw buttons ================================================================================================
 	function drawLeftPanel() {
@@ -1494,8 +1602,8 @@
 	//========================================================================
 	//========================    MAIN      ==================================
 	//========================================================================
-	//========================================================================
-	
+	//========================================================================	
+		
 	drawLeftPanel();
 	
 	score = errors['score'] * 100;
@@ -1521,7 +1629,66 @@
 	};
 	xhttp.open('GET', '/tool/get_execution_order?execution_order_id=' + execution_order_id , true);
 	xhttp.send();
-	 
+		
+	window.onload = function() {	
+		// make the accordion in the left sidebar collapseable
+		$('.accordion-toggle').click(function() {
+			content_element = $($(this).attr('href'));
+			if (content_element.hasClass('in')) {
+				content_element.hide();
+				content_element.removeClass('in')
+			} else {
+				content_element.show();
+				content_element.addClass('in')
+			}
+		});
+		
+		$('#accordion-left-content-2').show();
+		$('#accordion-left-content-2').addClass('in');
+		
+		
+		
+		
+		// load parameter_info
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			
+			var attribute_ids = Object.keys(objects_dict[object_numbers[i]]['object_rules']);
+			for (var j = 0; j < attribute_ids.length; j++) {
+			
+				var rule_ids = Object.keys(objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]]);
+				for (var k = 0; k < rule_ids.length; k++) {
+				
+					var rule = objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]][rule_ids[k]]
+					if (rule['learn_posterior']) {
+					
+						var used_parameter_ids = rule['used_parameter_ids'];
+						for (var l = 0; l < used_parameter_ids.length; l++) {
+							//get the Parameter Info
+							var xhttp = new XMLHttpRequest();       
+							xhttp.onreadystatechange = function() {
+								if (this.readyState == 4 && this.status == 200) {
+									response_dict = JSON.parse(this.responseText);
+									parameter_info[response_dict['id']] = response_dict;
+								}
+							};
+							xhttp.open('GET', '/tool/get_parameter_info?parameter_id=' + String(used_parameter_ids[l]) + '&is_last_parameter=' + String(l == (used_parameter_ids.length-1)), true);
+							xhttp.send();
+						}
+					}
+					
+				}
+			}
+		}
+		
+		
+		// add parameter number
+		var url_components = window.location.href.split("/");
+		var parameter_number = url_components[url_components.length - 2];
+		$('#parameter-values-accordion-button').html('Parameter Values ' + parameter_number)
+		
+	}
+	
 </script>
 
 
@@ -1549,7 +1716,6 @@
 </script>
 	 
 
-{% endblock %}
 
 
 
