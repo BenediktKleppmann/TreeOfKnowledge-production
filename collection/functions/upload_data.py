@@ -373,6 +373,7 @@ def perform_uploading(uploaded_dataset, request):
 											run_locally=False,
 											limit_to_populated_y0_columns=False,
 											validation_data='{}',
+											all_priors_df='{}',
                                             data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
         simulation_model.save()
@@ -652,6 +653,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 											run_locally=False,
 											limit_to_populated_y0_columns=False,
 											validation_data='{}',
+											all_priors_df='{}',
                                             data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
         simulation_model.save()
@@ -1085,6 +1087,7 @@ def perform_uploading__old(uploaded_dataset, request):
 											run_locally=False,
 											limit_to_populated_y0_columns=False,
 											validation_data='{}',
+											all_priors_df='{}',
                                             data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
         simulation_model.save()
@@ -1206,6 +1209,7 @@ def perform_uploading_OLD(uploaded_dataset, request):
 										run_locally=False,
 										limit_to_populated_y0_columns=False,
 										validation_data='{}',
+										all_priors_df='{}',
 										data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
 
     simulation_model.save()

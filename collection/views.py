@@ -1781,8 +1781,9 @@ def edit_simulation_new(request):
 										error_threshold=0.2,
 										run_locally=False,
 										limit_to_populated_y0_columns=False,
-										validation_data='{}',
-										data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}')
+										data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}',
+                                        all_priors_df='{}',
+                                        validation_data='{}',)
     simulation_model.save()
     new_simulation_id = simulation_model.id
     return redirect('edit_simulation', simulation_id=new_simulation_id)
