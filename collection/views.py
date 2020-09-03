@@ -679,9 +679,12 @@ def get_parameter_info(request):
 def get_simulated_parameter_numbers(request):
     simulation_id = request.GET.get('simulation_id', '')
     run_number = request.GET.get('run_number', '')
-    parameter_numbers = Simulation_result.objects.filter(simulation_id=simulation_id, run_number=run_number).order_by('parameter_number').values_list('parameter_number', flat=True)
-    parameter_numbers = list(set(parameter_numbers))
-    return HttpResponse(json.dumps(parameter_numbers))  
+    learned_parameter_numbers = Simulation_result.objects.filter(simulation_id=simulation_id, run_number=run_number, is_new_parameter=False).order_by('parameter_number').values_list('parameter_number', flat=True)
+    learned_parameter_numbers = list(set(learned_parameter_numbers))
+
+    new_parameter_numbers = Simulation_result.objects.filter(simulation_id=simulation_id, run_number=run_number, is_new_parameter=True).order_by('parameter_number').values_list('parameter_number', flat=True)
+    new_parameter_numbers = list(set(new_parameter_numbers))
+    return HttpResponse(json.dumps({'learned_parameter_numbers':learned_parameter_numbers, 'new_parameter_numbers':new_parameter_numbers}))  
 
 
 
@@ -1850,6 +1853,18 @@ def analyse_learned_parameters(request, simulation_id):
 
 
 
+@login_required
+def analyse_new_simulation(request, simulation_id, parameter_number):
+    print('analyse_simulation')
+
+    with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
+        progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
+    simulation_model = Simulation_model.objects.get(id=simulation_id)
+    print('simulation_id=%s, parameter_number=%s'  % (simulation_id, parameter_number))
+    simulation_result = Simulation_result.objects.filter(simulation_id=simulation_id, parameter_number=parameter_number, is_new_parameter=True).order_by('-id').first()
+    return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'simulation_result':simulation_result})
+
+
 
 @login_required
 def analyse_simulation(request, simulation_id, parameter_number):
@@ -1859,7 +1874,7 @@ def analyse_simulation(request, simulation_id, parameter_number):
         progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
     simulation_model = Simulation_model.objects.get(id=simulation_id)
     print('simulation_id=%s, parameter_number=%s'  % (simulation_id, parameter_number))
-    simulation_result = Simulation_result.objects.filter(simulation_id=simulation_id, parameter_number=parameter_number).order_by('-id').first()
+    simulation_result = Simulation_result.objects.filter(simulation_id=simulation_id, parameter_number=parameter_number, is_new_parameter=False).order_by('-id').first()
     return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'simulation_result':simulation_result})
 
 
@@ -1881,10 +1896,10 @@ def run_single_monte_carlo(request):
         print('rsmc 2')
         the_simulator = simulation.Simulator(request_body['simulation_id'], True)
         print('rsmc 3')
-        the_simulator.run_single_monte_carlo(request_body['number_of_entities_to_simulate'], request_body['prior_dict'], request_body['parameter_number'])
+        parameter_number = the_simulator.run_single_monte_carlo(request_body['number_of_entities_to_simulate'], request_body['prior_dict'], request_body['parameter_number'])
         print('rsmc 4')
 
-    return HttpResponse(request_body['parameter_number'])
+    return HttpResponse(parameter_number)
 
 
 

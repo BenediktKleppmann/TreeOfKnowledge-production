@@ -263,6 +263,7 @@ class Simulation_result(models.Model):
     simulation_id = models.IntegerField()
     run_number = models.IntegerField()
     parameter_number = models.IntegerField()
+    is_new_parameter = models.BooleanField()
     prior_dict = models.TextField()
     rule_infos = models.TextField()
     not_used_rules = models.TextField()

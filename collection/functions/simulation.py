@@ -504,7 +504,8 @@ class Simulator:
 
     def run_single_monte_carlo(self, number_of_entities_to_simulate, prior_dict, parameter_number):
         (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(nb_of_simulations=number_of_entities_to_simulate, prior_dict=prior_dict)
-        self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df, prior_dict, number_of_entities_to_simulate, parameter_number)
+        parameter_number = self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df, prior_dict, number_of_entities_to_simulate, parameter_number)
+        return parameter_number
 
 
 
@@ -1210,17 +1211,39 @@ class Simulator:
 
 
         print('process_data_7')
-        simulation_result_record = Simulation_result(simulation_id=self.simulation_id,
-                                                    run_number=self.run_number,
-                                                    parameter_number=parameter_number,
-                                                    prior_dict=json.dumps(prior_dict),
-                                                    rule_infos=json.dumps(rule_infos), 
-                                                    not_used_rules=self.not_used_rules, 
-                                                    triggered_rules=json.dumps(triggered_rules), 
-                                                    simulation_data=json.dumps(simulation_data), 
-                                                    correct_values=json.dumps(correct_values), 
-                                                    errors=json.dumps(errors))
-        simulation_result_record.save()
+        if parameter_number is not None:
+            simulation_result_record = Simulation_result(simulation_id=self.simulation_id,
+                                                        run_number=self.run_number,
+                                                        parameter_number=parameter_number,
+                                                        is_new_parameter=False,
+                                                        prior_dict=json.dumps(prior_dict),
+                                                        rule_infos=json.dumps(rule_infos), 
+                                                        not_used_rules=self.not_used_rules, 
+                                                        triggered_rules=json.dumps(triggered_rules), 
+                                                        simulation_data=json.dumps(simulation_data), 
+                                                        correct_values=json.dumps(correct_values), 
+                                                        errors=json.dumps(errors))
+            simulation_result_record.save()
+
+        else:
+            simulation_result_record = Simulation_result.objects.filter(simulation_id=self.simulation_id, run_number=self.run_number, is_new_parameter=True).order_by('-parameter_number').first()
+            highest_new_parameter_number = 0 if simulation_result_record is None else simulation_result_record.parameter_number
+            parameter_number = highest_new_parameter_number + 1
+            simulation_result_record = Simulation_result(simulation_id=self.simulation_id,
+                                                        run_number=self.run_number,
+                                                        parameter_number=parameter_number,
+                                                        is_new_parameter=True,
+                                                        prior_dict=json.dumps(prior_dict),
+                                                        rule_infos=json.dumps(rule_infos), 
+                                                        not_used_rules=self.not_used_rules, 
+                                                        triggered_rules=json.dumps(triggered_rules), 
+                                                        simulation_data=json.dumps(simulation_data), 
+                                                        correct_values=json.dumps(correct_values), 
+                                                        errors=json.dumps(errors))
+            simulation_result_record.save()
+
+        return parameter_number
+        
 
 
 

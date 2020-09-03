@@ -157,12 +157,13 @@ urlpatterns = [
     url(r'^tool/copy_simulation/$', views.copy_simulation, name='copy_simulation'),
     url(r'^tool/get_simulation_progress/$', views.get_simulation_progress, name='get_simulation_progress'),
     url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/$', views.analyse_learned_parameters, name='analyse_learned_parameters'),
+    url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/new-(?P<parameter_number>[-\d]+)/$', views.analyse_new_simulation, name='analyse_new_simulation'),
     url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/(?P<parameter_number>[-\d]+)/$', views.analyse_simulation, name='analyse_simulation'),
     url(r'^tool/abort_simulation/$', views.abort_simulation, name='abort_simulation'),
     # url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/setup_rule_learning/$', views.setup_rule_learning, name='setup_rule_learning'),
     # url(r'^tool/learn_rule/(?P<learned_rule_id>[-\d]+)/$', views.learn_rule, name='learn_rule'),
     url(r'^tool/run_single_monte_carlo/$', views.run_single_monte_carlo, name='run_single_monte_carlo'),
-    
+
 
 	# catching missspellt urls...
     url(r'^main_menu/$', RedirectView.as_view(pattern_name='main_menu')),

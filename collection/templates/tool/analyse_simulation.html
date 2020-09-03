@@ -192,6 +192,7 @@
 		}
 		
 		#initial-state-run-selection-buttons {
+			display: none;                               /* REMOVE THIS TO GET BACK THE INITAL STATE SELECTION BUTTONS !!! (it's running in the background already) */
 			margin-top: 26px;
 			max-height: 132px;
 			overflow-y: auto;
@@ -199,7 +200,7 @@
 		
 		#individual-run-selection-buttons {
 			margin-top: 26px;
-			max-height: calc(100vh - 445px);
+			max-height: calc(100vh - 287px);
 			overflow-y: auto;
 		}
 		
@@ -631,7 +632,7 @@
 		
 		var individual_selection_buttons = '';
 		for (var i = 0; i < all_run_numbers.length; i++) {
-			individual_selection_buttons += '<button id="selection-button-' + all_run_numbers[i] + '" class="btn btn-light run-selection-button run-toggle" type="button" onclick="selectRun(\'' + all_run_numbers[i] + '\')">Run ' + i + '</button>'
+			individual_selection_buttons += '<button id="selection-button-' + all_run_numbers[i] + '" class="btn btn-light run-selection-button run-toggle" type="button" onclick="selectRun(\'' + all_run_numbers[i] + '\')">Entity ' + i + '</button>'
 		}	
 		$('#individual-run-selection-buttons').html(individual_selection_buttons);
 	} 
@@ -1148,7 +1149,11 @@
 			// histogram_data
 			var data = []
 			for (var i = 0; i < bin_lower_bounds.length; i++) {
-				data.push([String(bin_lower_bounds[i]), String(bin_occurences[i])])
+				if (bin_occurences[i] > 0) {
+					data.push([String(bin_lower_bounds[i]), String(bin_occurences[i])]);
+				} else {
+					data.push([String(bin_lower_bounds[i]), null]);
+				}
 			}
 			histogram_data = {'data': data, 'labels':bin_labels};
 		}

@@ -63,26 +63,26 @@
 		background-color: rgb(244, 244, 244);
 	}
 
-	/* Info/Settings ------------------------------------------------------------------------ */
+	/* Info ------------------------------------------------------------------------ */
 	
 	#bottom-from-group {
 		margin-bottom: 0px;
 	}
 
-	/* Tested Parameter Distributions ------------------------------------------------------- */
+	/* Parameter Distributions ------------------------------------------------------- */
 	
-	/* Tested Parameter Simulations --------------------------------------------------------- */
+	/* Inspect Simulations --------------------------------------------------------- */
 	
 	.parameter-selection-area {
 		width: 217px;
 	}
 	
-	#individual-parameter-selection-buttons {
-		max-height: calc(100vh - 205px);
+	#learned-parameter-selection-buttons {
+		max-height: calc(100vh - 236px);
 		overflow-y: auto;
 	}
 
-	#individual-parameter-selection-buttons .selection-button {
+	#learned-parameter-selection-buttons .selection-button, #new-parameter-selection-buttons .selection-button {
 		width: 100%;
 		background: rgb(248, 248, 248);
 		border: 1px solid rgb(210, 210, 210);
@@ -96,13 +96,18 @@
 		margin-left: 20px;
 	}
 	
+	#left-new-simulation-button {
+		margin-top: 11px;
+		margin-left: 33px;
+	}
 	
 	/* --------------------------------------------------------------------------*/
-	/* Right Panel - Tested Parameter Distributions  ----------------------------*/
+	/* Right Panel - Parameter Distributions  ----------------------------*/
 	/* --------------------------------------------------------------------------*/
 	
 	#graph-panel {
-		width: 80%;
+		height: 320px;
+		width: 75%;
 		margin-left: auto;
 		margin-right: auto;
 		margin-top: 55px;
@@ -110,7 +115,7 @@
 	}
 	
 	#tested_params-bottom-panel {
-		width: 360px;
+		width: 416px;
 		margin-left: auto;
 		margin-right: auto;
 	}
@@ -122,7 +127,7 @@
 	
 	
 	/* --------------------------------------------------------------------------*/
-	/* Right Panel - Tested Parameter Simulations  ------------------------------*/
+	/* Right Panel - Inspect Simulations  ---------------------------------------*/
 	/* --------------------------------------------------------------------------*/
 	
 	
@@ -197,6 +202,39 @@
 		margin-right: auto;
 	}
 	
+	/* --------------------------------------------------------------------------*/
+	/* Right Panel - Test New Parameters  ---------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+	
+	#test-new-parameters #simulation-parameter-box , #test-new-parameters #parameter-values-title {
+		width: 400px;
+	}
+	
+	#test-new-parameters .form-group {
+		    margin-bottom: 8px;
+	}
+	
+	#test-new-parameters .parameter-label{
+		font-weight: 500;
+		margin-top: 8px;
+	}
+	
+	#test-new-parameters #right-main-lower-box {
+		width: 517px;
+	}
+	
+	#test-new-parameters #number-of-entities-to-simulate-box {
+		display: inline-block;
+		width: 236px;
+		margin-left: 0px;
+	}
+	
+	#test-new-parameters #run-monte-carlo-sim-button {
+		display: inline-block;
+		float: right;
+	}
+	
+	
 </style>	
 
 
@@ -208,7 +246,7 @@
 	<div class="accordion md-accordion" id="accordion-left" role="tablist" aria-multiselectable="true">	
 		<div class="card">
 			<div class="card-header" role="tab" id="accordion-left-header-1">
-				<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-1" aria-expanded="false" aria-controls="accordion-left-content-1">Info/Settings</button>
+				<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-1" aria-expanded="false" aria-controls="accordion-left-content-1">Info</button>
 			</div>
 			<div id="accordion-left-content-1" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-1" data-parent="#accordion-left">
 				<div class="card-body">
@@ -225,7 +263,7 @@
 		</div>
 		<div class="card">
 			<div class="card-header" role="tab" id="accordion-left-header-2">
-				<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-2" aria-expanded="false" aria-controls="accordion-left-content-2" onclick="drawTestedParameterDistributions()">Tested Parameter Distributions</button>
+				<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-2" aria-expanded="false" aria-controls="accordion-left-content-2" onclick="drawParameterDistributions()">Parameter Distributions</button>
 			</div>
 			<div id="accordion-left-content-2" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-2" data-parent="#accordion-left">
 				<div class="card-body">
@@ -235,16 +273,26 @@
 		</div>
 		<div class="card">
 			<div class="card-header" role="tab" id="accordion-left-header-3">
-				<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-3" aria-expanded="false" aria-controls="accordion-left-content-3">Tested Parameter Simulations</button>
+				<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-3" aria-expanded="false" aria-controls="accordion-left-content-3">Inspect Simulations</button>
 			</div>
 			<div id="accordion-left-content-3" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-3" data-parent="#accordion-left">
 				<div class="card-body">
 					<div class="parameter-selection-area">
-						<div id="individual-parameter-selection-buttons">
-							<button id="param-selection-button-0" class="btn btn-light selection-button run-toggle" type="button" onclick="showParameterSimulations(0)">Param 0 - Score: 74% </button>
-							<button id="param-selection-button-1" class="btn btn-light selection-button run-toggle" type="button" onclick="showParameterSimulations(1)">Param 1 - Score: 71% </button>
-						</div>
+						<div id="learned-parameter-selection-buttons"></div>
 					</div>
+				</div>
+			</div>
+		</div>
+		<div class="card">
+			<div class="card-header" role="tab" id="accordion-left-header-4">
+				<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-4" aria-expanded="false" aria-controls="accordion-left-content-4">Test New Parameters</button>
+			</div>
+			<div id="accordion-left-content-4" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-4" data-parent="#accordion-left">
+				<div class="card-body">
+					<div class="parameter-selection-area">
+						<div id="new-parameter-selection-buttons"></div>
+					</div>
+					<button id="left-new-simulation-button" class="btn btn-success" type="button" onclick="showNewSimulationButton()">+ New Simulation</button>
 				</div>
 			</div>
 		</div>
@@ -304,8 +352,8 @@
 	//========================================================================
 
 
-	//== Fill in  'Tested Parameter Distributions' ================================================================================================
-	function drawTestedParameterDistributions() {
+	//== Fill in  'Parameter Distributions' ================================================================================================
+	function drawParameterDistributions() {
 	
 		var parameter_distribution_buttons_str = '';
 		var object_numbers = Object.keys(objects_dict);
@@ -339,15 +387,15 @@
 	
 	
 	
-	//== Fill in  'Tested Parameter Simulations' ================================================================================================
-	function drawTestedParameterSimulations() {
+	//== Fill in  'Inspect Simulations' ================================================================================================
+	function drawInspectSimulations() {
 		var parameter_numbers = Object.keys(all_priors_df);
 		var parameter_selection_buttons_str = '';
 		for (var i = 0; i < parameter_numbers.length; i++) {
 			var parameter_number = parameter_numbers[i];
 			parameter_selection_buttons_str += '<button id="param-selection-button-' +  parameter_number + '" class="btn btn-light selection-button run-toggle" type="button" onclick="showParameterSimulations(' +  parameter_number + ')">Param ' +  parameter_number + ' - Score: ' + String(Math.round((1 - all_priors_df[parameter_number]["error"])*100)) + '% </button>';
 		}
-		$('#individual-parameter-selection-buttons').html(parameter_selection_buttons_str);
+		$('#learned-parameter-selection-buttons').html(parameter_selection_buttons_str);
 	} 
 	
 
@@ -365,13 +413,25 @@
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				//activate those that were returned
 				parameter_numbers = JSON.parse(this.responseText);
-				for (var i = 0; i < parameter_numbers.length; i++) {
-					$('#param-selection-button-' + String(parameter_numbers[i])).attr("onclick",'showParameterSimulations(' + String(parameter_numbers[i]) + ')');
-					$('#param-selection-button-' + String(parameter_numbers[i])).css("background",'rgb(248, 248, 248)');
-					$('#param-selection-button-' + String(parameter_numbers[i])).css("color",'#333');
+				
+				//activate Inspect Simulation buttons
+				learned_parameter_numbers = parameter_numbers['learned_parameter_numbers']
+				for (var i = 0; i < learned_parameter_numbers.length; i++) {
+					$('#param-selection-button-' + String(learned_parameter_numbers[i])).attr("onclick",'showParameterSimulations(' + String(learned_parameter_numbers[i]) + ')');
+					$('#param-selection-button-' + String(learned_parameter_numbers[i])).css("background",'rgb(248, 248, 248)');
+					$('#param-selection-button-' + String(learned_parameter_numbers[i])).css("color",'#333');
 				}
+				
+				//create Test New Parameters buttons
+				new_parameter_numbers = parameter_numbers['new_parameter_numbers']
+				parameter_selection_buttons_str = '';
+				for (var i = 0; i < new_parameter_numbers.length; i++) {
+					var parameter_number = new_parameter_numbers[i];
+					parameter_selection_buttons_str += '<button  class="btn btn-light selection-button run-toggle" type="button" onclick="showNewParameterSimulations(' +  parameter_number + ')">Param ' +  parameter_number + '</button>';
+				}
+				$('#new-parameter-selection-buttons').html(parameter_selection_buttons_str);
+				
 			}
 		};
 		xhttp.open('GET', '/tool/get_simulated_parameter_numbers?simulation_id=' + String(simulation_id) + '&run_number=' + String(run_number), true);
@@ -381,7 +441,7 @@
 
 	//========================================================================
 	//========================================================================
-	//========   RIGHT PANEL  - Tested Parameter Distributions    ============
+	//========   RIGHT PANEL  - Parameter Distributions    ===================
 	//========================================================================
 	//========================================================================
 
@@ -435,7 +495,11 @@
 		// histogram_data
 		var histogram_data = []
 		for (var i = 0; i < bin_lower_bounds.length; i++) {
-			histogram_data.push([String(bin_lower_bounds[i]), String(bin_occurences[i])])
+			if (bin_occurences[i] > 0){
+				histogram_data.push([String(bin_lower_bounds[i]), String(bin_occurences[i])]);
+			} else {
+				histogram_data.push([String(bin_lower_bounds[i]), null]);
+			}
 		}
 		
 		//plot the histogram
@@ -476,14 +540,9 @@
 
 	//========================================================================
 	//========================================================================
-	//========   RIGHT PANEL  - Tested Parameter Simulations    ==============
+	//========   RIGHT PANEL  - Inspect Simulations    =======================
 	//========================================================================
 	//========================================================================
-	
-	function showParameterSimulations(parameter_number) {
-	
-		$('#right-main-panel').html('<iframe id="analyse-simulation-box" src="' + String(parameter_number) + '" title="analyse_simulations_with_this_parameter_combination"></iframe>');
-	}
 
 
 	function showRunMonteCarloSimulationButton(parameter_number) {
@@ -597,10 +656,9 @@
 			if (this.readyState == 4 && this.status == 200) {
 				
 				parameter_number = JSON.parse(this.responseText);
-				$('#param-selection-button-' + String(parameter_number)).attr("onclick",'showParameterSimulations(' + String(parameter_number) + ')');
-				$('#param-selection-button-' + String(parameter_number)).css("background",'rgb(248, 248, 248)');
-				$('#param-selection-button-' + String(parameter_number)).css("color",'#333');
 				showParameterSimulations(parameter_number);
+				
+				activateSimulatedParameters();
 				
 			}
 		};
@@ -638,10 +696,161 @@
 		
 	}
 	
+	function showParameterSimulations(parameter_number) {
+		$('#right-main-panel').html('<iframe id="analyse-simulation-box" src="' + String(parameter_number) + '" title="analyse_simulations_with_this_parameter_combination"></iframe>');
+	}
+	
+	
+	//========================================================================
+	//========================================================================
+	//========   RIGHT PANEL  - Test New Parameters    =======================
+	//========================================================================
+	//========================================================================
+	
+	
+	function showNewSimulationButton() {
+		var right_main_panel_string = 	'<div id="right-main-upper-box">' +
+											'<div id="test-new-parameters">' +
+												'<div id="parameter-values-title" class="left-panel-header">Parameter Values</div>' +
+												'<div id="simulation-parameter-box">';
+											
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			
+			var attribute_ids = Object.keys(objects_dict[object_numbers[i]]['object_rules']);
+			for (var j = 0; j < attribute_ids.length; j++) {
+			
+				var rule_ids = Object.keys(objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]]);
+				for (var k = 0; k < rule_ids.length; k++) {
+				
+					var rule = objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]][rule_ids[k]]
+					if (rule['learn_posterior'] && (!(object_numbers[i] in not_used_rules) || (object_numbers[i] in not_used_rules && !(rule_ids[k] in not_used_rules[object_numbers[i]])))) {
+					
+						right_main_panel_string += 		'<div class="rule-heading">' + objects_dict[object_numbers[i]]['object_name'] + ', Rule ' + String(rule_ids[k]) + ':</div>';
+						if (!rule['has_probability_1']) {
+							right_main_panel_string += 	'<div class="form-group row">' +
+															'<label class="col-sm-8 parameter-label" for="probability-of-rule-' + String(rule_ids[k]) + '">Rule Probability = </label>' +
+															'<div class="col-sm-4">' +
+																'<input type="text" id="probability-of-rule-' + String(rule_ids[k]) + '" class="form-control" value="">' +
+															'</div>' +
+														'</div>';
+						}
+						var used_parameter_ids = rule['used_parameter_ids'];
+						for (var l = 0; l < used_parameter_ids.length; l++) {
+							right_main_panel_string += '<div class="form-group row">' +
+															'<label class="col-sm-8 parameter-label" for="value-of-parameter-' + String(used_parameter_ids[l]) + '">' + parameter_info[used_parameter_ids[l]]["parameter_name"] + ' = </label>' +
+															'<div class="col-sm-4">' +
+																'<input type="text" id="value-of-parameter-' + String(used_parameter_ids[l]) + '" class="form-control" value="">' +
+															'</div>' +
+														'</div>';
+						}
+					}
+					
+				}
+			}
+		}
+		
+		right_main_panel_string +=				'</div>' +
+												'<div id="right-main-lower-box">' +
+													'<div id="number-of-entities-to-simulate-box" class="form">' +
+														'<div class="form-group row">' +
+															'<label for="number_of_entities_to_simulate" class="col-sm-8">Number of Entities to run</label>' +
+															'<div class="col-sm-4">' +
+																'<input id="number_of_entities_to_simulate" class="form-control" value="300">' +
+															'</div>' +
+														'</div>' +
+													'</div>' +
+													'<button id="run-monte-carlo-sim-button" class="btn btn-success" type="button" onclick="runNewSimulation()">Run</button>' +
+												'</div>' +
+												'<div id="progress-bar-frame" style="display:none;">' +
+													'<div id="progress-box" class="progress">' +
+														'<div id="progress-bar" class="progress-bar" style="width:0%"></div>' +
+													'</div>' +
+													'<div id="progress-bar-description" class="progress-description"></div>' +
+												'</div>' +
+											'</div>' +
+										'</div>';
+										
+		$('#right-main-panel').html(right_main_panel_string);
+	
+	}
+
+
+
+	function runNewSimulation() {
+		
+		$('#run-monte-carlo-sim-button').prop('disabled',true)
+		$('#progress-bar-frame').css('display', 'block');
+		$('#progress-bar').attr('style','width:0%');
+		$('#progress-bar-description').html('');
+		
+		setTimeout('sendNewSimulationRequest();', 10);
+		setTimeout('update_the_progress_bar();', 2000);
+	}
+	
+	
+	
+	async function sendNewSimulationRequest() {
+	
+		request_body = {'simulation_id': simulation_id, 'parameter_number': null}
+
+		//add number_of_entities_to_simulate
+		request_body['number_of_entities_to_simulate'] =  parseInt($('#number_of_entities_to_simulate').val());
+		
+		//add posted_prior_dict
+		posted_prior_dict = {}
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			
+			var attribute_ids = Object.keys(objects_dict[object_numbers[i]]['object_rules']);
+			for (var j = 0; j < attribute_ids.length; j++) {
+			
+				var rule_ids = Object.keys(objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]]);
+				for (var k = 0; k < rule_ids.length; k++) {
+				
+					var rule = objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]][rule_ids[k]]
+					if (rule['learn_posterior']) {
+						posted_prior_dict[rule_ids[k]] = {}
+					
+						if (!rule['has_probability_1']) {
+							posted_prior_dict[rule_ids[k]]['probability'] = parseFloat($('#probability-of-rule-' + String(rule_ids[k])).val());
+						}
+						var used_parameter_ids = rule['used_parameter_ids'];
+						for (var l = 0; l < used_parameter_ids.length; l++) {
+							posted_prior_dict[rule_ids[k]][used_parameter_ids[l]] = parseFloat($('#value-of-parameter-' + String(used_parameter_ids[l])).val());
+						}
+					}
+				}
+			}
+		}
+		request_body['prior_dict'] =  posted_prior_dict;
+		
+		
+		run_simulation_post_request = new XMLHttpRequest();   // new HttpRequest instance
+		run_simulation_post_request.onreadystatechange = function() {
+		
+			if (this.readyState == 4 && this.status == 200) {
+				
+				parameter_number = JSON.parse(this.responseText);
+				$('#param-selection-button-' + String(parameter_number)).attr("onclick",'showParameterSimulations(' + String(parameter_number) + ')');
+				$('#param-selection-button-' + String(parameter_number)).css("background",'rgb(248, 248, 248)');
+				$('#param-selection-button-' + String(parameter_number)).css("color",'#333');
+				showNewParameterSimulations(parameter_number);
+				
+			}
+		};
+		run_simulation_post_request.open("POST", "/tool/run_single_monte_carlo/", true);
+		run_simulation_post_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		run_simulation_post_request.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		run_simulation_post_request.send(JSON.stringify(request_body));
+	}
+	
 	
 	
 
-	
+	function showNewParameterSimulations(parameter_number) {
+		$('#right-main-panel').html('<iframe id="analyse-simulation-box" src="new-' + String(parameter_number) + '" title="analyse_simulations_with_this_parameter_combination"></iframe>');
+	}
 	//========================================================================
 	//========================================================================
 	//========================    MAIN      ==================================
@@ -663,8 +872,8 @@
 			}
 		});
 		
-		$('#accordion-left-content-3').show();
-		$('#accordion-left-content-3').addClass('in');
+		//$('#accordion-left-content-3').show();
+		//$('#accordion-left-content-3').addClass('in');
 		
 		
 		
@@ -701,7 +910,7 @@
 		}
 		
 		
-		drawTestedParameterSimulations();
+		drawInspectSimulations();
 		activateSimulatedParameters();
 		
 		
