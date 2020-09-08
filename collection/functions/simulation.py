@@ -102,7 +102,6 @@ class Simulator:
         self.timestep_size = simulation_model_record.timestep_size  
         self.is_timeseries_analysis = simulation_model_record.is_timeseries_analysis
         self.nb_of_tested_parameters = simulation_model_record.nb_of_tested_parameters
-        self.nb_of_parameters_to_keep = simulation_model_record.nb_of_parameters_to_keep
         self.max_number_of_instances = simulation_model_record.max_number_of_instances
         self.error_threshold = simulation_model_record.error_threshold
         self.run_locally = simulation_model_record.run_locally
@@ -302,7 +301,7 @@ class Simulator:
 
                         # ===  histograms  ===========
                         # rule probability
-                        if (not rule['has_probability_1']) and (not rule['learn_posterior'] or ignore_learn_posteriors):
+                        if (not rule['has_probability_1']):
                             # if a specific posterior for this simulation has been learned, take this, else take the combined posterior of all other simulations
                             histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(rule_id, True)
                             if histogram_smooth is None:

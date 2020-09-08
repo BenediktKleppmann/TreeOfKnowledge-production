@@ -1242,7 +1242,6 @@ def save_changed_simulation(request):
             if 'is_timeseries_analysis' in request_body:
                 model_record.is_timeseries_analysis = request_body['is_timeseries_analysis']
                 model_record.nb_of_tested_parameters = request_body['nb_of_tested_parameters']
-                model_record.nb_of_parameters_to_keep = request_body['nb_of_parameters_to_keep']
                 model_record.error_threshold = request_body['error_threshold']
                 model_record.run_locally = request_body['run_locally']
                 model_record.limit_to_populated_y0_columns = request_body['limit_to_populated_y0_columns']
@@ -1866,7 +1865,6 @@ def edit_simulation_new(request):
                                         simulation_end_time=1577836800, 
                                         timestep_size=31622400,
                                         nb_of_tested_parameters=40,
-                                        nb_of_parameters_to_keep=2,
                                         max_number_of_instances=2000,
                                         error_threshold=0.2,
                                         run_locally=False,

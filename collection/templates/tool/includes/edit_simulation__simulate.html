@@ -865,12 +865,6 @@
 															'</div>' +
 														'</div>' +
 														'<div class="form-group row">' +
-															'<label for="nb_of_parameters_to_keep" class="col-sm-8">#(Parameters to Keep)</label>' +
-															'<div class="col-sm-4">' +
-																'<input type="text" id="nb_of_parameters_to_keep" class="form-control" value="2">' +
-															'</div>' +
-														'</div>' +
-														'<div class="form-group row">' +
 															'<label for="error_threshold" class="col-sm-8">Error Threshold</label>' +
 															'<div class="col-sm-4">' +
 																'<input type="text" id="error_threshold" class="form-control" value="0.2">' +
@@ -907,7 +901,6 @@
 		
 		
 		$("#nb_of_tested_parameters").val(nb_of_tested_parameters);
-		$("#nb_of_parameters_to_keep").val(nb_of_parameters_to_keep);
 		$("#error_threshold").val(error_threshold);
 		$('#run_locally').find('option[value="' + run_locally + '"]').attr("selected",true);
 		$('#limit_to_populated_y0_columns').find('option[value="' + limit_to_populated_y0_columns + '"]').attr("selected",true);
@@ -1362,7 +1355,6 @@
 		if (window_state=='simulate') {
 			request_body['is_timeseries_analysis'] = ($('#analysis_type').find(":selected").text() == 'Simulate changes over time');
 			request_body['nb_of_tested_parameters'] = parseInt($('#nb_of_tested_parameters').val());
-			request_body['nb_of_parameters_to_keep'] = parseInt($('#nb_of_parameters_to_keep').val());
 			request_body['error_threshold'] = parseFloat($('#error_threshold').val());
 			run_locally_string = $('#run_locally').children("option:selected").val();
 			request_body['run_locally'] = run_locally_string =='True';
