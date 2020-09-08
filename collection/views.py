@@ -39,6 +39,8 @@ import pdb
 from boto import sns
 import psycopg2
 from datetime import datetime
+import scipy.stats as stats
+
 
 
  # ===============================================================================
@@ -498,7 +500,7 @@ def get_attribute_details(request):
                 'expected_valid_period':attribute_record.expected_valid_period,
                 'description':attribute_record.description,
                 'format_specification':json.loads(attribute_record.format_specification),
-				'first_applicable_object_type':attribute_record.first_applicable_object_type,
+                'first_applicable_object_type':attribute_record.first_applicable_object_type,
                 'first_relation_object_type':attribute_record.first_relation_object_type}
     print("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
     print(str(attribute_id))
@@ -557,7 +559,7 @@ def get_object_rules(request):
             rule['used_parameter_ids'] = json.loads(rule['used_parameter_ids'])
 
             # calculate 'probability' and 'standard_dev'
-            histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations = get_from_db.get_rules_pdf(rule['id'], True)
+            histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(rule['id'], True)
             rule['probability'] = None if mean is None or np.isnan(mean) else mean 
             rule['standard_dev'] = None if standard_dev is None or np.isnan(standard_dev) else standard_dev 
 
@@ -571,6 +573,88 @@ def get_object_rules(request):
     return HttpResponse(json.dumps(response)) 
 
 
+@login_required
+def get_all_pdfs(request):
+    print('get_all_pdfs 1')
+    from django.db import connection
+    
+
+
+    rule_or_parameter_id = int(request.GET.get('rule_or_parameter_id', ''))
+    is_rule = (request.GET.get('is_rule', '').lower() == 'true')
+
+    response = {'individual_pdfs':[]}
+    print('get_all_pdfs 2')
+    if is_rule:
+        query = ''' SELECT  DISTINCT simulation_id, object_number, 
+                            FIRST_VALUE(list_of_probabilities) over (partition by simulation_id, object_number ORDER BY id DESC) as list_of_probabilities, 
+                            FIRST_VALUE(nb_of_simulations) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_simulations, 
+                            FIRST_VALUE(nb_of_sim_in_which_rule_was_used) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_sim_in_which_rule_was_used, 
+                            FIRST_VALUE(nb_of_tested_parameters) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_tested_parameters, 
+                            FIRST_VALUE(nb_of_tested_parameters_in_posterior) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_tested_parameters_in_posterior 
+                    FROM collection_likelihood_fuction 
+                    WHERE rule_id=%s  
+                      AND nb_of_tested_parameters_in_posterior > 0 
+                    ORDER BY simulation_id; ''' % rule_or_parameter_id
+
+    else: 
+        query = ''' SELECT  distinct simulation_id, object_number, 
+                            FIRST_VALUE(list_of_probabilities) over (partition by simulation_id, object_number order by id DESC) as list_of_probabilities, 
+                            FIRST_VALUE(nb_of_simulations) over (partition by simulation_id, object_number order by id DESC) as nb_of_simulations, 
+                            FIRST_VALUE(nb_of_sim_in_which_rule_was_used) over (partition by simulation_id, object_number order by id DESC) as nb_of_sim_in_which_rule_was_used, 
+                            FIRST_VALUE(nb_of_tested_parameters) over (partition by simulation_id, object_number order by id DESC) as nb_of_tested_parameters, 
+                            FIRST_VALUE(nb_of_tested_parameters_in_posterior) over (partition by simulation_id, object_number order by id DESC) as nb_of_tested_parameters_in_posterior 
+                    FROM collection_likelihood_fuction 
+                    WHERE parameter_id=%s  
+                      AND nb_of_tested_parameters_in_posterior > 0 
+                    ORDER BY simulation_id; ''' % rule_or_parameter_id
+
+    individual_pdfs_df = pd.read_sql_query(query, connection)
+
+
+
+    print('get_all_pdfs 3')
+    for index, row in individual_pdfs_df.iterrows():
+        print('get_all_pdfs 3.1')
+        list_of_probabilities = np.asarray(json.loads(row['list_of_probabilities']))
+        list_of_probabilities = [np.float64(el) for el in list_of_probabilities]
+        list_of_probabilities_smooth = np.zeros(30)
+        nb_of_tested_parameters_in_posterior = row['nb_of_tested_parameters_in_posterior']
+
+        # kernel smoothing for list_of_probabilities_smooth
+        print('get_all_pdfs 3.2')
+        x = np.linspace(-1, 1, 59)
+        sigma = 0.03 + 1/(nb_of_tested_parameters_in_posterior)
+        weights = stats.norm.pdf(x, 0, sigma)
+        for position in range(30):
+            list_of_probabilities_smooth[position] = np.sum(list_of_probabilities * weights[29-position:59-position])
+        list_of_probabilities_smooth = list_of_probabilities_smooth * 30/ np.sum(list_of_probabilities_smooth) 
+        
+
+
+        print('get_all_pdfs 3.3')
+        simulation_name = Simulation_model.objects.get(id=row['simulation_id']).simulation_name
+        response['individual_pdfs'].append({'simulation_id': row['simulation_id'], 
+                                            'simulation_name':simulation_name, 
+                                            'nb_of_tested_parameters': row['nb_of_tested_parameters'],
+                                            'nb_of_tested_parameters_in_posterior': row['nb_of_tested_parameters_in_posterior'],
+                                            'pdf': [[bucket_value, count] for bucket_value, count in zip(list(np.linspace(0,1,31)), list_of_probabilities)],
+                                            'smooth_pdf': [[bucket_value, count] for bucket_value, count in zip(list(np.linspace(0,1,31)), list_of_probabilities_smooth)],
+                                            })
+    
+    print('get_all_pdfs 4')  
+    histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(rule_or_parameter_id, is_rule)
+    response['combined_pdf'] = {'nb_of_tested_parameters': nb_of_tested_parameters,
+                                'nb_of_tested_parameters_in_posterior': nb_of_tested_parameters_in_posterior,
+                                'pdf': [[bucket_value, min(count,10000)] for bucket_value, count in zip(histogram[1], histogram[0])],
+                                'smooth_pdf': [[bucket_value, min(count,10000)] for bucket_value, count in zip(histogram_smooth[1], histogram_smooth[0])]
+                                }
+    print('get_all_pdfs 5')
+    return HttpResponse(json.dumps(response))
+
+
+
+
 # used in edit_object_behaviour_modal.html (which in turn is used in edit_simulation.html and analyse_simulation.html)
 @login_required
 def get_rules_pdf(request):
@@ -578,9 +662,11 @@ def get_rules_pdf(request):
     rule_or_parameter_id = request.GET.get('rule_or_parameter_id', '')
     is_rule = (request.GET.get('is_rule', '').lower() == 'true')
 
-    histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations = get_from_db.get_rules_pdf(rule_or_parameter_id, is_rule)
-    response = {'nb_of_values_in_posterior': nb_of_values_in_posterior,
-                'nb_of_simulations': nb_of_simulations}
+    histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(rule_or_parameter_id, is_rule)
+    response = {'nb_of_simulations': nb_of_simulations,
+                'nb_of_sim_in_which_rule_was_used': nb_of_sim_in_which_rule_was_used,
+                'nb_of_tested_parameters': nb_of_tested_parameters,
+                'nb_of_tested_parameters_in_posterior': nb_of_tested_parameters_in_posterior}
 
     if histogram is None:
         return HttpResponse('null')
@@ -614,7 +700,7 @@ def get_single_pdf(request):
     object_number = request.GET.get('object_number', '')
     rule_or_parameter_id = request.GET.get('rule_or_parameter_id', '')
     is_rule = (request.GET.get('is_rule', '').lower() == 'true')
-    histogram, mean, standard_dev, nb_of_values_in_posterior, message = get_from_db.get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule)
+    histogram, mean, standard_dev, nb_of_sim_in_which_rule_was_used, message = get_from_db.get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule)
     print('====================   get_single_pdf   ==================================')
     print(str(rule_or_parameter_id))
     print(str(simulation_id))
@@ -624,7 +710,7 @@ def get_single_pdf(request):
     print(str(histogram is None))
     print(str(histogram))
     print('=========================================================================')
-    response['nb_of_values_in_posterior'] = nb_of_values_in_posterior
+    response['nb_of_sim_in_which_rule_was_used'] = nb_of_sim_in_which_rule_was_used
     if message != '':
         response['message'] = message
 
@@ -1104,7 +1190,7 @@ def save_rule(request):
                                 changed_var_data_type= request_body['changed_var_data_type'],
                                 condition_text= request_body['condition_text'],
                                 condition_exec= request_body['condition_exec'],
-								aggregation_text= request_body['aggregation_text'],
+                                aggregation_text= request_body['aggregation_text'],
                                 aggregation_exec= request_body['aggregation_exec'],
                                 effect_text= request_body['effect_text'],
                                 effect_exec= request_body['effect_exec'],
@@ -1160,7 +1246,7 @@ def save_changed_simulation(request):
                 model_record.error_threshold = request_body['error_threshold']
                 model_record.run_locally = request_body['run_locally']
                 model_record.limit_to_populated_y0_columns = request_body['limit_to_populated_y0_columns']
-				
+                
 
             if 'timestep_size' in request_body:
                 model_record.timestep_size = request_body['timestep_size']
@@ -1249,7 +1335,7 @@ def save_rule_parmeter(request):
                 if request_body['parameter_range_change']:
                     Likelihood_fuction.objects.filter(parameter_id=request_body['id']).delete()
                     list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-                    likelihood_fuction = Likelihood_fuction(simulation_id=simulation_id, object_number=object_number, parameter_id=request_body['id'], list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_values_in_posterior=0)
+                    likelihood_fuction = Likelihood_fuction(simulation_id=simulation_id, object_number=object_number, parameter_id=request_body['id'], list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_tested_parameters=0, nb_of_tested_parameters_in_posterior=0)
                     likelihood_fuction.save()
 
 
@@ -1267,7 +1353,7 @@ def save_rule_parmeter(request):
   
                 # add uniform likelihood_function
                 list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-                likelihood_fuction = Likelihood_fuction(simulation_id=simulation_id, object_number=object_number, parameter_id=new_parameter.id, list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_values_in_posterior=0)
+                likelihood_fuction = Likelihood_fuction(simulation_id=simulation_id, object_number=object_number, parameter_id=new_parameter.id, list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_tested_parameters=0, nb_of_tested_parameters_in_posterior=0)
                 likelihood_fuction.save()
 
                 return_dict = {'parameter_id': new_parameter.id, 'is_new': True, 'request_body':request_body}
@@ -1295,11 +1381,12 @@ def save_likelihood_function(request):
                 likelihood_function.list_of_probabilities = json.dumps(request_body['list_of_probabilities'])
                 likelihood_function.nb_of_simulations = request_body['nb_of_simulations']
                 likelihood_function.nb_of_sim_in_which_rule_was_used = request_body['nb_of_sim_in_which_rule_was_used']
-                likelihood_function.nb_of_values_in_posterior = request_body['nb_of_values_in_posterior']
+                likelihood_function.nb_of_tested_parameters = request_body['nb_of_tested_parameters']
+                likelihood_function.nb_of_tested_parameters_in_posterior = request_body['nb_of_tested_parameters_in_posterior']
                 likelihood_function.save()
                 return HttpResponse(str(likelihood_function.id))
             else:
-                new_likelihood_function = Likelihood_fuction(simulation_id=request_body['simulation_id'], object_number=request_body['object_number'], parameter_id=request_body['parameter_id'], list_of_probabilities=json.dumps(request_body['list_of_probabilities']), nb_of_simulations=request_body['nb_of_simulations'], nb_of_sim_in_which_rule_was_used=request_body['nb_of_sim_in_which_rule_was_used'], nb_of_values_in_posterior=request_body['nb_of_values_in_posterior'])
+                new_likelihood_function = Likelihood_fuction(simulation_id=request_body['simulation_id'], object_number=request_body['object_number'], parameter_id=request_body['parameter_id'], list_of_probabilities=json.dumps(request_body['list_of_probabilities']), nb_of_simulations=request_body['nb_of_simulations'], nb_of_sim_in_which_rule_was_used=request_body['nb_of_sim_in_which_rule_was_used'], nb_of_tested_parameters=request_body['nb_of_tested_parameters'], nb_of_tested_parameters_in_posterior=request_body['nb_of_tested_parameters_in_posterior'])
                 new_likelihood_function.save()
                 return HttpResponse(str(new_likelihood_function.id))
         except Exception as error:
@@ -1762,7 +1849,7 @@ def download_file2_csv(request):
 def edit_simulation_new(request):    
     simulation_model = Simulation_model(aborted=False,
                                         run_number=0,
-										user=request.user, 
+                                        user=request.user, 
                                         is_timeseries_analysis=True,
                                         objects_dict=json.dumps({}), 
                                         y_value_attributes=json.dumps([]), 
@@ -1770,7 +1857,7 @@ def edit_simulation_new(request):
                                         object_type_counts=json.dumps({}),
                                         total_object_count=0,
                                         number_of_additional_object_facts=2,
-										simulation_name='New Simulation',
+                                        simulation_name='New Simulation',
                                         execution_order_id=1,
                                         not_used_rules='{}',
                                         environment_start_time=946684800, 
@@ -1778,13 +1865,13 @@ def edit_simulation_new(request):
                                         simulation_start_time=946684800, 
                                         simulation_end_time=1577836800, 
                                         timestep_size=31622400,
-										nb_of_tested_parameters=40,
-										nb_of_parameters_to_keep=2,
-										max_number_of_instances=2000,
-										error_threshold=0.2,
-										run_locally=False,
-										limit_to_populated_y0_columns=False,
-										data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}',
+                                        nb_of_tested_parameters=40,
+                                        nb_of_parameters_to_keep=2,
+                                        max_number_of_instances=2000,
+                                        error_threshold=0.2,
+                                        run_locally=False,
+                                        limit_to_populated_y0_columns=False,
+                                        data_querying_info='{"timestamps":{}, "table_sizes":{}, "relation_sizes":{}}',
                                         all_priors_df='{}',
                                         validation_data='{}',)
     simulation_model.save()
@@ -2282,15 +2369,7 @@ def test_page1(request):
 
 def test_page2(request):
 
-    import boto3
-    sqs = boto3.client('sqs', region_name='eu-central-1')
-
-    queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/Treeofknowledge-queue'
-    response = sqs.send_message(QueueUrl= queue_url, MessageBody='{"simulation_id":143, "run":2, "parameter_value":0.24785, "is_valid":false}')
-
-    queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/awseb-e-qwnyj2drkn-stack-NewSignupQueue-1VKLS1VF5RHQF'
-    response = sqs.send_message(QueueUrl= queue_url, MessageBody='Test3')
-    return HttpResponse('success' + str(response))
+    return render(request, 'tool/test_page2.html')
 
     
 
@@ -2299,16 +2378,16 @@ def test_page3(request):
 
 
     # return redirect('analyse_simulation', simulation_id=420)
-    database_settings = settings.DATABASES['default']
-    connection = psycopg2.connect(user=database_settings['USER'], password=database_settings['PASSWORD'], host=database_settings['HOST'], port=database_settings['PORT'], database=database_settings['NAME'])
-    cursor = connection.cursor()
-    cursor.execute('''select validation_data from collection_simulation_model WHERE id =433;
-                    ''')
+    # database_settings = settings.DATABASES['default']
+    # connection = psycopg2.connect(user=database_settings['USER'], password=database_settings['PASSWORD'], host=database_settings['HOST'], port=database_settings['PORT'], database=database_settings['NAME'])
+    # cursor = connection.cursor()
+    # cursor.execute('''select validation_data from collection_simulation_model WHERE id =433;
+    #                 ''')
 
-    validation_data_json = cursor.fetchall() 
-    return HttpResponse('success: ' + str(validation_data_json))
+    # validation_data_json = cursor.fetchall() 
+    # return HttpResponse('success: ' + str(validation_data_json))
 
-    # return render(request, 'tool/test_page3.html')
+    return render(request, 'tool/test_page3.html')
 
 
 

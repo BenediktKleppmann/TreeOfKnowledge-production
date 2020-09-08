@@ -1351,7 +1351,7 @@ var parameter_info = {};
 					chart.draw();
 				});
 				
-				$('#parameter-this-simulation-warning-message').html(message + '(' + response['nb_of_values_in_posterior'] + ' correct runs)');
+				$('#parameter-this-simulation-warning-message').html(message + '(' + response['nb_of_sim_in_which_rule_was_used'] + ' correct runs)');
 				
 			}
 		};
@@ -1393,7 +1393,7 @@ var parameter_info = {};
 					$('.pdf-all-simulations .pdf-title').attr('title', 'This distribution was learned from ' + response['nb_of_simulations'] + ' different simulations');
 					$('[data-toggle="tooltip"]').tooltip()
 				}
-				$('#parameter-all-simulations-warning-message').html('(total: ' + response['nb_of_values_in_posterior'] + ' correct runs)');
+				$('#parameter-all-simulations-warning-message').html('(total: ' + response['nb_of_sim_in_which_rule_was_used'] + ' correct runs)');
 				
 			}
 		};
@@ -1456,7 +1456,8 @@ var parameter_info = {};
 							'list_of_probabilities': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 							'nb_of_simulations': 0,
 							'nb_of_sim_in_which_rule_was_used': 0,
-							'nb_of_values_in_posterior': 0
+							'nb_of_tested_parameters': 0,
+							'nb_of_tested_parameters_in_posterior': 0
 						}
 						
 						var xmlhttp = new XMLHttpRequest();   

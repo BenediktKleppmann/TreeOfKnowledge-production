@@ -99,6 +99,7 @@ urlpatterns = [
     url(r'^tool/get_object_hierachy_tree/$', views.get_object_hierachy_tree, name='get_object_hierachy_tree'),
     # url(r'^tool/get_available_variables/$', views.get_available_variables, name='get_available_variables'),
     url(r'^tool/get_object_rules/$', views.get_object_rules, name='get_object_rules'),
+    url(r'^tool/get_all_pdfs/$', views.get_all_pdfs, name='get_all_pdfs'),
     url(r'^tool/get_rules_pdf/$', views.get_rules_pdf, name='get_rules_pdf'),
     url(r'^tool/get_single_pdf/$', views.get_single_pdf, name='get_single_pdf'),
     url(r'^tool/get_parameter_info/$', views.get_parameter_info, name='get_parameter_info'),

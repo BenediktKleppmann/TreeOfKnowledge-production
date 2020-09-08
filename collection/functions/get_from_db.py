@@ -14,6 +14,8 @@ import json
 import numpy as np
 import pdb
 import pandas as pd
+import scipy
+import scipy.stats as stats
 
 
 
@@ -217,40 +219,61 @@ def get_available_relations():
 
 # used in simulation.py
 def get_rules_pdf(rule_or_parameter_id, is_rule):
-   
     print('-----------  get_rules_pdf(' + str(rule_or_parameter_id) + ', ' + str(is_rule) + ')  ----------------------')
     if is_rule:
-        likelihoods_df = pd.DataFrame(Likelihood_fuction.objects.filter(rule_id=rule_or_parameter_id).values())
+        likelihoods_df = pd.DataFrame(Likelihood_fuction.objects.filter(rule_id=rule_or_parameter_id, nb_of_tested_parameters_in_posterior__gt=0).values())
     else:
-        likelihoods_df = pd.DataFrame(Likelihood_fuction.objects.filter(parameter_id=rule_or_parameter_id).values())
+        likelihoods_df = pd.DataFrame(Likelihood_fuction.objects.filter(parameter_id=rule_or_parameter_id, nb_of_tested_parameters_in_posterior__gt=0).values())
 
     if len(likelihoods_df) > 0:
         # multiply the likelihood functions of all different simulations/evidences to get a combined posterior
         likelihoods_df = likelihoods_df.sort_values(['simulation_id','id'], ascending=[False, False])
-        likelihoods_df = likelihoods_df.groupby(['simulation_id', 'object_number']).aggregate({'simulation_id':'first', 'object_number':'first', 'list_of_probabilities':'first', 'nb_of_simulations':'first', 'nb_of_sim_in_which_rule_was_used':'first', 'nb_of_values_in_posterior':'first'})
+        likelihoods_df = likelihoods_df.groupby(['simulation_id', 'object_number']).aggregate({'list_of_probabilities':'first', 'nb_of_simulations':'first', 'nb_of_sim_in_which_rule_was_used':'first', 'nb_of_tested_parameters':'first', 'nb_of_tested_parameters_in_posterior':'first'})
 
         posterior_probabilities = np.array([1] * 30)
-        nb_of_values_in_posterior = 0
-        nb_of_simulations = len(likelihoods_df)
+        posterior_probabilities_smooth = np.array([1] * 30)
+        nb_of_simulations = 0
+        nb_of_sim_in_which_rule_was_used = 0
+        nb_of_tested_parameters = 0
+        nb_of_tested_parameters_in_posterior = 0
+        
         for index, row in likelihoods_df.iterrows():
             list_of_probabilities = json.loads(row['list_of_probabilities'])
+            list_of_probabilities_smooth = np.zeros(30)
+
+            # list_of_probabilities_smooth (kernel smoothing)
+            x = np.linspace(-1, 1, 59)
+            sigma = 0.03 + 1/(row['nb_of_tested_parameters'] + 1)
+            weights = stats.norm.pdf(x, 0, sigma)
+            for position in range(30):
+                list_of_probabilities_smooth[position] = np.sum(list_of_probabilities * weights[29-position:59-position])
+            list_of_probabilities_smooth = list_of_probabilities_smooth * 30/ np.sum(list_of_probabilities_smooth) 
+
+            # multiply with likelihood function
             if not np.any(np.isnan(list_of_probabilities)):
-                posterior_probabilities = posterior_probabilities * list_of_probabilities           # multiply with likelihood function
-                nb_of_values_in_posterior += row['nb_of_values_in_posterior']
+                posterior_probabilities = posterior_probabilities * list_of_probabilities                            # <- most important line
+                posterior_probabilities_smooth = posterior_probabilities_smooth * list_of_probabilities_smooth       # <- most important line
+                nb_of_simulations += row['nb_of_simulations']
+                nb_of_sim_in_which_rule_was_used += row['nb_of_sim_in_which_rule_was_used']
+                nb_of_tested_parameters += row['nb_of_tested_parameters']
+                nb_of_tested_parameters_in_posterior += row['nb_of_tested_parameters_in_posterior']
         
+        # re-normalisation
         if np.sum(posterior_probabilities)>0:
-            posterior_probabilities = posterior_probabilities * 30/ np.sum(posterior_probabilities) # re-normalisation
+            posterior_probabilities = posterior_probabilities * 30/ np.sum(posterior_probabilities) 
+            posterior_probabilities_smooth = posterior_probabilities_smooth * 30/ np.sum(posterior_probabilities_smooth) 
         else: 
             posterior_probabilities = np.array([1] * 30)
         histogram = (posterior_probabilities.tolist(), np.linspace(0,1,31).tolist())
+        histogram_smooth = (posterior_probabilities_smooth.tolist(), np.linspace(0,1,31).tolist())
 
         x_values = np.linspace(0,0.966666666666667,30) + 1/60
         mean = np.average(x_values, weights=posterior_probabilities)
         standard_dev = np.sqrt(np.average((x_values - mean)**2, weights=posterior_probabilities))
-        return histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations
+        return histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth
             
     else:
-        return None, None, None, 0, 0
+        return None, None, None, 0, 0, 0, 0,None
 
 
 def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
@@ -262,7 +285,7 @@ def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
 
     if likelihood_function is not None:
 
-        nb_of_values_in_posterior = likelihood_function.nb_of_values_in_posterior
+        nb_of_tested_parameters_in_posterior = likelihood_function.nb_of_tested_parameters_in_posterior
         list_of_probabilities = json.loads(likelihood_function.list_of_probabilities)
         histogram = (list(list_of_probabilities), list(np.linspace(0,1,31)))
 
@@ -278,7 +301,7 @@ def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
         else:
             message = ''
 
-        return histogram, mean, standard_dev, nb_of_values_in_posterior, message
+        return histogram, mean, standard_dev, nb_of_sim_in_which_rule_was_used, message
 
     else:
         return None, None, None, 0, None

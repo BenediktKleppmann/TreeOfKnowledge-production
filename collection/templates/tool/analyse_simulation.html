@@ -523,9 +523,9 @@
 	var y_value_attributes = {{ simulation_model.y_value_attributes|safe }};
 	var all_priors_df = {{ simulation_model.all_priors_df|safe }};
 	
-	var prior_dict = {{ simulation_result.prior_dict|safe }};
-	var rule_infos = {{ simulation_result.rule_infos|safe }};
+	
 	var not_used_rules = {{ simulation_result.not_used_rules|safe }};
+	var prior_dict = {{ simulation_result.prior_dict|safe }};
 	var triggered_rules = {{ simulation_result.triggered_rules|safe }};
 	var simulation_data = {{ simulation_result.simulation_data|safe }};
 	var correct_values = {{ simulation_result.correct_values|safe }};

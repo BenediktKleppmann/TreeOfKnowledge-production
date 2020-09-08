@@ -304,25 +304,33 @@ class Simulator:
                         # rule probability
                         if (not rule['has_probability_1']) and (not rule['learn_posterior'] or ignore_learn_posteriors):
                             # if a specific posterior for this simulation has been learned, take this, else take the combined posterior of all other simulations
-                            histogram, mean, standard_dev, nb_of_values_in_posterior, message= get_from_db.get_single_pdf(simulation_id, object_number, rule_id, True)
-                            if histogram is None:
-                                histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations = get_from_db.get_rules_pdf(rule_id, True)
-                            rule['histogram'] = (list(histogram[0]), list(histogram[1]))
+                            histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(rule_id, True)
+                            if histogram_smooth is None:
+                                if histogram is None:
+                                    histogram, mean, standard_dev, nb_of_tested_parameters_in_posterior, message = get_from_db.get_single_pdf(simulation_id, object_number, rule_id, True)
+                                rule['histogram'] = (list(histogram[0]), list(histogram[1]))
+                            else:    
+                                rule['histogram'] = (list(histogram_smooth[0]), list(histogram_smooth[1]))
 
                         # parameter
                         if not rule['learn_posterior'] or ignore_learn_posteriors:
                             for used_parameter_id in rule['used_parameter_ids']: 
-                                histogram, mean, standard_dev, nb_of_values_in_posterior, message= get_from_db.get_single_pdf(simulation_id, object_number, used_parameter_id, False)
-                                print('used_parameter_id:' + str(used_parameter_id) + ' - get_single_pdf:' + str(histogram))
-                                if histogram is None:
-                                    histogram, mean, standard_dev, nb_of_values_in_posterior, nb_of_simulations = get_from_db.get_rules_pdf(used_parameter_id, False)
-                                    print('used_parameter_id:' + str(used_parameter_id) + ' - get_rules_pdf:' + str(histogram))
+                                histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(used_parameter_id, False)
+                                
+                                histogram_to_use = None
+                                if histogram_smooth is None:
+                                    if histogram is None:
+                                        histogram, mean, standard_dev, nb_of_sim_in_which_rule_was_used, message= get_from_db.get_single_pdf(simulation_id, object_number, used_parameter_id, False)
+                                        print('used_parameter_id:' + str(used_parameter_id) + ' - get_single_pdf:' + str(histogram))
+                                    histogram_to_use = histogram
+                                else:
+                                    print('used_parameter_id:' + str(used_parameter_id) + ' - get_rules_pdf:' + str(histogram_to_use))
+                                    histogram_to_use = histogram_smooth
 
-                                # change to the parameter's range
+                                # change to the parameter's range                                
                                 min_value = rule['parameters'][used_parameter_id]['min_value']
                                 max_value = rule['parameters'][used_parameter_id]['max_value']
-                                histogram = (histogram[0], np.linspace(min_value,max_value,31))
-                                rule['parameters'][used_parameter_id]['histogram'] = (list(histogram[0]), list(histogram[1]))
+                                rule['parameters'][used_parameter_id]['histogram'] = (list(histogram_to_use[0]), list(np.linspace(min_value,max_value,31)))
 
 
                         # used_columns
@@ -626,95 +634,101 @@ class Simulator:
                             all_priors_df.loc[row['batch_number'],'error_rule' + str(rule['id'])] = simulation_results['error_rule' + str(rule['id'])]
 
 
-            
-            # PART 2 - Save results as likelihood_fuction
-            self.currently_running_learn_likelihoods = False
-            with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-                progress_tracking_file.write(json.dumps({"text": 'Learning parameters - post-processing: ', "current_number": self.nb_of_tested_parameters * len(self.df), "total_number": self.nb_of_tested_parameters * len(self.df)}))
+            all_priors_df['nb_of_simulations'] = len(self.df)
+            # # PART 2 - Save results as likelihood_fuction
+            # self.currently_running_learn_likelihoods = False
+            # with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
+            #     progress_tracking_file.write(json.dumps({"text": 'Learning parameters - post-processing: ', "current_number": self.nb_of_tested_parameters * len(self.df), "total_number": self.nb_of_tested_parameters * len(self.df)}))
 
 
-            for rule_number, rule in enumerate(self.rules):
+            # for rule_number, rule in enumerate(self.rules):
 
-                # histogram
-                print('rule%s.learn_posterior = %s; rule%s.has_probability_1 = %s;' % (rule['id'], rule['learn_posterior'], rule['id'], rule['has_probability_1']))
-                if rule['learn_posterior']:
-                    all_priors_df = all_priors_df.sort_values('error_rule' + str(rule['id']))
-                    all_priors_df.index = range(len(all_priors_df))
-                    priors_to_keep_df = all_priors_df[:self.nb_of_parameters_to_keep]
-                    print('nb_of_parameters_to_keep: %s ; len(priors_to_keep_df): %s' % (self.nb_of_parameters_to_keep, len(priors_to_keep_df)))
+            #     # histogram
+            #     print('rule%s.learn_posterior = %s; rule%s.has_probability_1 = %s;' % (rule['id'], rule['learn_posterior'], rule['id'], rule['has_probability_1']))
+            #     if rule['learn_posterior']:
+            #         all_priors_df = all_priors_df.sort_values('error_rule' + str(rule['id']))
+            #         all_priors_df.index = range(len(all_priors_df))
+            #         priors_to_keep_df = all_priors_df[:self.nb_of_parameters_to_keep]
+            #         print('nb_of_parameters_to_keep: %s ; len(priors_to_keep_df): %s' % (self.nb_of_parameters_to_keep, len(priors_to_keep_df)))
 
-                    if not rule['has_probability_1']:
-                        print('==== post-processing rule'+ str(rule['id']) + '  ===================================================')
+            #         if not rule['has_probability_1']:
+            #             print('==== post-processing rule'+ str(rule['id']) + '  ===================================================')
  
-                        histogram  = np.histogram(list(priors_to_keep_df['triggerThresholdForRule'+ str(rule['id'])]), bins=30, range=(0.0,1.0))
+            #             histogram  = np.histogram(list(priors_to_keep_df['triggerThresholdForRule'+ str(rule['id'])]), bins=30, range=(0.0,1.0))
 
-                        # nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_values_in_posterior
-                        nb_of_simulations = self.nb_of_tested_parameters * len(self.df)
-                        nb_of_sim_in_which_rule_was_used = priors_to_keep_df['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'].sum()
-                        nb_of_values_in_posterior = len(priors_to_keep_df)
+            #             # nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior
+            #             nb_of_simulations = self.nb_of_tested_parameters * len(self.df)
+            #             nb_of_sim_in_which_rule_was_used = priors_to_keep_df['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'].sum()
+            #             nb_of_tested_parameters = self.nb_of_tested_parameters
+            #             nb_of_tested_parameters_in_posterior = len(priors_to_keep_df)
 
-                        # PART 2.1: update the rule's histogram - the next simulation will use the newly learned probabilities
-                        self.rules[rule_number]['histogram'] = histogram 
+            #             # PART 2.1: update the rule's histogram - the next simulation will use the newly learned probabilities
+            #             self.rules[rule_number]['histogram'] = histogram 
 
-                        # PART 2.2: save the learned likelihood function to the database
-                        list_of_probabilities_str = json.dumps(list( np.array(histogram[0]) * 30/ np.sum(histogram[0])))
+            #             # PART 2.2: save the learned likelihood function to the database
+            #             list_of_probabilities_str = json.dumps(list( np.array(histogram[0]) * 30/ np.sum(histogram[0])))
 
-                        try:
-                            likelihood_fuction = Likelihood_fuction.objects.get(simulation_id=self.simulation_id, rule_id=rule['id'])
-                            likelihood_fuction.list_of_probabilities = list_of_probabilities_str
-                            likelihood_fuction.nb_of_simulations = nb_of_simulations
-                            likelihood_fuction.nb_of_sim_in_which_rule_was_used = nb_of_sim_in_which_rule_was_used
-                            likelihood_fuction.nb_of_values_in_posterior = nb_of_values_in_posterior
-                            likelihood_fuction.save()
+            #             try:
+            #                 likelihood_fuction = Likelihood_fuction.objects.get(simulation_id=self.simulation_id, rule_id=rule['id'])
+            #                 likelihood_fuction.list_of_probabilities = list_of_probabilities_str
+            #                 likelihood_fuction.nb_of_simulations = nb_of_simulations
+            #                 likelihood_fuction.nb_of_sim_in_which_rule_was_used = nb_of_sim_in_which_rule_was_used
+            #                 likelihood_fuction.nb_of_tested_parameters = self.nb_of_tested_parameters
+            #                 likelihood_fuction.nb_of_tested_parameters_in_posterior = nb_of_tested_parameters_in_posterior
+            #                 likelihood_fuction.save()
 
-                        except:
-                            likelihood_fuction = Likelihood_fuction(simulation_id=self.simulation_id, 
-                                                                    object_number=rule['object_number'],
-                                                                    rule_id=rule['id'], 
-                                                                    list_of_probabilities=list_of_probabilities_str,
-                                                                    nb_of_simulations=nb_of_simulations,
-                                                                    nb_of_sim_in_which_rule_was_used=nb_of_sim_in_which_rule_was_used,
-                                                                    nb_of_values_in_posterior=nb_of_values_in_posterior)
-                            likelihood_fuction.save()
-
-
-                    for used_parameter_id in rule['used_parameter_ids']:
-                        print('==== post-processing parameter ' + str(used_parameter_id) + '  ===================================================')
-
-                        min_value = rule['parameters'][used_parameter_id]['min_value']
-                        max_value = rule['parameters'][used_parameter_id]['max_value']
+            #             except:
+            #                 likelihood_fuction = Likelihood_fuction(simulation_id=self.simulation_id, 
+            #                                                         object_number=rule['object_number'],
+            #                                                         rule_id=rule['id'], 
+            #                                                         list_of_probabilities=list_of_probabilities_str,
+            #                                                         nb_of_simulations=nb_of_simulations,
+            #                                                         nb_of_sim_in_which_rule_was_used=nb_of_sim_in_which_rule_was_used,
+            #                                                         nb_of_tested_parameters=nb_of_tested_parameters,
+            #                                                         nb_of_tested_parameters_in_posterior=nb_of_tested_parameters_in_posterior)
+            #                 likelihood_fuction.save()
 
 
-                        histogram  = np.histogram(list(priors_to_keep_df['param' + str(used_parameter_id)]), bins=30, range=(min_value,max_value))
+            #         for used_parameter_id in rule['used_parameter_ids']:
+            #             print('==== post-processing parameter ' + str(used_parameter_id) + '  ===================================================')
 
-                        # nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_values_in_posterior
-                        nb_of_simulations = self.nb_of_tested_parameters * len(self.df)
-                        nb_of_sim_in_which_rule_was_used = priors_to_keep_df['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'].sum()
-                        nb_of_values_in_posterior = len(priors_to_keep_df)
+            #             min_value = rule['parameters'][used_parameter_id]['min_value']
+            #             max_value = rule['parameters'][used_parameter_id]['max_value']
 
-                        # PART 2.1: update the rule's histogram - the next simulation will use the newly learned probabilities
-                        self.rules[rule_number]['parameters'][used_parameter_id]['histogram'] = histogram 
 
-                        # PART 2.2: save the learned likelihood function to the database
-                        list_of_probabilities_str = json.dumps(list( np.array(histogram[0]) * 30/ np.sum(histogram[0])))
+            #             histogram  = np.histogram(list(priors_to_keep_df['param' + str(used_parameter_id)]), bins=30, range=(min_value,max_value))
 
-                        try:
-                            likelihood_fuction = Likelihood_fuction.objects.get(simulation_id=self.simulation_id, parameter_id=used_parameter_id)
-                            likelihood_fuction.list_of_probabilities = list_of_probabilities_str
-                            likelihood_fuction.nb_of_simulations = nb_of_simulations
-                            likelihood_fuction.nb_of_sim_in_which_rule_was_used = nb_of_sim_in_which_rule_was_used
-                            likelihood_fuction.nb_of_values_in_posterior = nb_of_values_in_posterior
-                            likelihood_fuction.save()
+            #             # nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior
+            #             nb_of_simulations = self.nb_of_tested_parameters * len(self.df)
+            #             nb_of_sim_in_which_rule_was_used = priors_to_keep_df['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'].sum()
+            #             nb_of_tested_parameters = self.nb_of_tested_parameters
+            #             nb_of_tested_parameters_in_posterior = len(priors_to_keep_df)
 
-                        except:
-                            likelihood_fuction = Likelihood_fuction(simulation_id=self.simulation_id, 
-                                                                    object_number=rule['object_number'],
-                                                                    parameter_id=used_parameter_id,  
-                                                                    list_of_probabilities=list_of_probabilities_str,
-                                                                    nb_of_simulations=nb_of_simulations,
-                                                                    nb_of_sim_in_which_rule_was_used=nb_of_sim_in_which_rule_was_used,
-                                                                    nb_of_values_in_posterior=nb_of_values_in_posterior)
-                            likelihood_fuction.save()
+            #             # PART 2.1: update the rule's histogram - the next simulation will use the newly learned probabilities
+            #             self.rules[rule_number]['parameters'][used_parameter_id]['histogram'] = histogram 
+
+            #             # PART 2.2: save the learned likelihood function to the database
+            #             list_of_probabilities_str = json.dumps(list( np.array(histogram[0]) * 30/ np.sum(histogram[0])))
+
+            #             try:
+            #                 likelihood_fuction = Likelihood_fuction.objects.get(simulation_id=self.simulation_id, parameter_id=used_parameter_id)
+            #                 likelihood_fuction.list_of_probabilities = list_of_probabilities_str
+            #                 likelihood_fuction.nb_of_simulations = nb_of_simulations
+            #                 likelihood_fuction.nb_of_sim_in_which_rule_was_used = nb_of_sim_in_which_rule_was_used
+            #                 likelihood_fuction.nb_of_tested_parameters = self.nb_of_tested_parameters
+            #                 likelihood_fuction.nb_of_tested_parameters_in_posterior = nb_of_tested_parameters_in_posterior
+            #                 likelihood_fuction.save()
+
+            #             except:
+            #                 likelihood_fuction = Likelihood_fuction(simulation_id=self.simulation_id, 
+            #                                                         object_number=rule['object_number'],
+            #                                                         parameter_id=used_parameter_id,  
+            #                                                         list_of_probabilities=list_of_probabilities_str,
+            #                                                         nb_of_simulations=nb_of_simulations,
+            #                                                         nb_of_sim_in_which_rule_was_used=nb_of_sim_in_which_rule_was_used,
+            #                                                         nb_of_tested_parameters=nb_of_tested_parameters,
+            #                                                         nb_of_tested_parameters_in_posterior=nb_of_tested_parameters_in_posterior)
+            #                 likelihood_fuction.save()
 
             all_priors_df = all_priors_df.sort_values('error')
             all_priors_df.index = range(len(all_priors_df))
@@ -1112,16 +1126,7 @@ class Simulator:
             progress_tracking_file.write(json.dumps({"text": 'Preparing results - step: ', "current_number": 1, "total_number": 3}))
 
 
-        # rule_infos
-        print('process_data_2')
-        triggered_rules_df = triggered_rules_df[triggered_rules_df['triggered_rule'].notnull()]
-        rule_ids = [triggered_rule_info['id'] for triggered_rule_info  in list(triggered_rules_df['triggered_rule'])]
-        rule_ids = list(set(rule_ids))
-        rule_info_list = list(Rule.objects.filter(id__in=rule_ids).values())
-        rule_infos = {}
-        for rule in rule_info_list:
-            rule_infos[rule['id']] = rule
-        
+       
 
 
         # triggered_rules
@@ -1201,12 +1206,7 @@ class Simulator:
 
         print('process_data_7')
         simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
-        simulation_model_record.rule_infos = json.dumps(rule_infos)
         simulation_model_record.not_used_rules = self.not_used_rules
-        simulation_model_record.triggered_rules = json.dumps(triggered_rules)
-        simulation_model_record.simulation_data = json.dumps(simulation_data)
-        simulation_model_record.correct_values = json.dumps(correct_values)
-        simulation_model_record.errors = json.dumps(errors)
         simulation_model_record.save()
 
 
@@ -1217,7 +1217,6 @@ class Simulator:
                                                         parameter_number=parameter_number,
                                                         is_new_parameter=False,
                                                         prior_dict=json.dumps(prior_dict),
-                                                        rule_infos=json.dumps(rule_infos), 
                                                         not_used_rules=self.not_used_rules, 
                                                         triggered_rules=json.dumps(triggered_rules), 
                                                         simulation_data=json.dumps(simulation_data), 
@@ -1234,7 +1233,6 @@ class Simulator:
                                                         parameter_number=parameter_number,
                                                         is_new_parameter=True,
                                                         prior_dict=json.dumps(prior_dict),
-                                                        rule_infos=json.dumps(rule_infos), 
                                                         not_used_rules=self.not_used_rules, 
                                                         triggered_rules=json.dumps(triggered_rules), 
                                                         simulation_data=json.dumps(simulation_data), 
@@ -1406,7 +1404,7 @@ class Simulator:
         errors_dict = {'all_errors':error, 'error': error.mean()}
         if self.currently_running_learn_likelihoods:
             for rule in self.rules:
-                if rule['learn_posterior']:
+                if rule['learn_posterior'] and 'rule_used_in_simulation_' + str(rule['id']) in u_df.columns:
                     rule_used_in_simulation = u_df['rule_used_in_simulation_' + str(rule['id'])]
                     errors_dict[rule['id']] = {'error': error[rule_used_in_simulation].mean(), 'nb_of_sim_in_which_rule_was_used': rule_used_in_simulation.sum()}
 

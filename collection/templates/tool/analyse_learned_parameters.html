@@ -17,12 +17,18 @@
 	Analyse Learned Parameters
 {% endblock %}
 
+
 {% block additionalcss %}
+
   <link href="https://cdn.anychart.com/releases/v8/css/anychart-ui.min.css?hcode=be5162d915534272a57d0bb781d27f2b" rel="stylesheet" type="text/css">
   <link href="https://cdn.anychart.com/releases/v8/fonts/css/anychart-font.min.css?hcode=be5162d915534272a57d0bb781d27f2b" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="{% static 'css/bootstrap-3.4.0.min.css' %}" />
+  
+
+  <link rel="stylesheet" href="{% static 'css/bootstrap-slider.css' %}" />
 	
 	
+
 <style>
 	.content {
 		padding: 0px;
@@ -110,22 +116,44 @@
 		width: 75%;
 		margin-left: auto;
 		margin-right: auto;
-		margin-top: 55px;
-		margin-bottom: 45px;
+		margin-top: 15px;
+		margin-bottom: 47px;
 	}
 	
 	#tested_params-bottom-panel {
-		width: 416px;
 		margin-left: auto;
 		margin-right: auto;
+		width: 410px;
+	}                 
+	
+	#slider-box {
+		margin-left: 75px;
+		margin-bottom: 18px;
 	}
 	
 	#show-the-top-text {
+		margin-left: 5px;
+	}
+	
+	#top-x-value {
 		display: inline-block;
-		margin-right: 7px;
+		width: 38px;
+		text-align: right;
+		border-width: 1px;
+	}
+	
+	#compare-and-save-buttons {
+		display: inline-block;
+		margin-top: 6px;
 	}
 	
 	
+	#compare-to-posteriors-button {
+		margin-right: 11px;
+	}
+	
+	#save-as-posterior-button {}
+										
 	/* --------------------------------------------------------------------------*/
 	/* Right Panel - Inspect Simulations  ---------------------------------------*/
 	/* --------------------------------------------------------------------------*/
@@ -303,6 +331,9 @@
 
 
 
+
+	
+
 		
 <script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
 <script src="https://cdn.anychart.com/releases/v8/js/anychart-ui.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
@@ -315,6 +346,10 @@
 <script type="text/javascript" src="https://rawgit.com/RickStrahl/jquery-resizable/master/src/jquery-resizable.js"></script>
 
 
+<script src="https://seiyria.com/bootstrap-slider/dependencies/js/jquery.min.js"></script>
+<script src="https://seiyria.com/bootstrap-slider/dependencies/js/popper.min.js"></script>
+<script src="https://seiyria.com/bootstrap-slider/dependencies/js/bootstrap.min.js"></script>
+<script src="https://seiyria.com/bootstrap-slider/js/bootstrap-slider.js"></script>
 
  
 <script type="text/javascript">
@@ -326,6 +361,8 @@
 	var y_value_attributes = {{ simulation_model.y_value_attributes|safe }};
 	var all_priors_df = {{ simulation_model.all_priors_df|safe }};
 	var not_used_rules = {{ simulation_model.not_used_rules|safe }};
+	
+	var X = 10;
 	
 	
 	
@@ -448,16 +485,38 @@
 	function showParameterDistribution(object_number, attribute_id, rule_id, parameter_id) {
 		$('#right-main-panel').html('<div id="graph-panel"></div>' +
 									'<div id="tested_params-bottom-panel">' + 
-										'<div id="show-the-top-text">Show the top</div>' +
-										'<div id="top-x-button-group" class="btn-group" data-toggle="buttons">' + 
-											'<label class="btn design-simulate-button active" onclick="showDistributionOfTopX(3, ' + String(object_number) + ',' + String(attribute_id) + ',' + String(rule_id) + ',' + String(parameter_id) + ')">3</label>' + 
-											'<label class="btn design-simulate-button active" onclick="showDistributionOfTopX(10, ' + String(object_number) + ',' + String(attribute_id) + ',' + String(rule_id) + ',' + String(parameter_id) + ')">10</label>' + 
-											'<label class="btn design-simulate-button active" onclick="showDistributionOfTopX(30, ' + String(object_number) + ',' + String(attribute_id) + ',' + String(rule_id) + ',' + String(parameter_id) + ')">30</label>' + 
-											'<label class="btn design-simulate-button active" onclick="showDistributionOfTopX(100, ' + String(object_number) + ',' + String(attribute_id) + ',' + String(rule_id) + ',' + String(parameter_id) + ')">100</label>' + 
-											'<label class="btn design-simulate-button active" onclick="showDistributionOfTopX(10000, ' + String(object_number) + ',' + String(attribute_id) + ',' + String(rule_id) + ',' + String(parameter_id) + ')">All</label>' + 
-										'</div>' + 
+										'<div id="slider-box">' + 
+											'<div id="show-the-top-text">' +
+												'Use the ' +
+												'<input id="top-x-value" type="text" name="top-x-value" value="10"/>' +
+												' best parameters' +
+											'</div>' +
+											'<input id="top-x-slider-input" data-slider-id="top-x-slider" type="text" data-slider-min="0" data-slider-max="' + Object.keys(all_priors_df).length + '" data-slider-step="1" data-slider-value="' + String(X) + '"/>' +
+										'</div>' +
+										'<div id="compare-and-save-buttons">' + 
+											'<button id="compare-to-posteriors-button" class="btn btn-secondary" type="button" onclick="showComparePosteriorsModal(' + object_number + ',' + attribute_id + ',' + rule_id + ',' + parameter_id + ')">Compare to other Posteriors</button>' +
+											'<button id="save-as-posterior-button" class="btn btn-success" type="button" onclick="saveAsPosterior(' + object_number + ',' + rule_id + ',' + parameter_id + ')">Save as Posterior</button>' +
+											'<div id="saving-response"></div>' +
+										'</div>' +
 									'</div>');
-		showDistributionOfTopX(10, object_number, attribute_id, rule_id, parameter_id);
+		
+		
+		$('#top-x-slider-input').slider();
+		$('#top-x-slider-input').on("slide", function(sliderValue) {
+			document.getElementById("top-x-value").value = sliderValue.value;
+			showDistributionOfTopX(sliderValue.value, object_number, attribute_id, rule_id, parameter_id); 
+		});
+		
+		
+		$("#top-x-value").change(function(){
+			X = parseInt($("#top-x-value").val());
+			X = X > Object.keys(all_priors_df).length ? Object.keys(all_priors_df).length : X;  // X should be no bigger than Object.keys(all_priors_df).length
+			X = X < 0  ? 0 : X;  																// X should be no smaller than 0
+			$('#top-x-slider-input').slider('setValue', X);
+			showDistributionOfTopX(X, object_number, attribute_id, rule_id, parameter_id); 
+		});
+			
+		showDistributionOfTopX(X, object_number, attribute_id, rule_id, parameter_id);
 	}
 	
 
@@ -473,12 +532,9 @@
 		
 		//bin_lower_bounds
 		var bin_interval = (upper_bound - lower_bound)/40;
-		var bin_interval_order_of_magnitude = Math.pow(10, Math.floor(Math.log(bin_interval)/Math.log(10)));
-		var rounded_bin_interval = Math.ceil(bin_interval/bin_interval_order_of_magnitude) * bin_interval_order_of_magnitude
-		var bins_bottom_edge = Math.floor(lower_bound/rounded_bin_interval) * rounded_bin_interval 
 		var bin_lower_bounds = []
 		for (var i = 0; i < 40; i++) {
-			bin_lower_bounds.push(bins_bottom_edge + i*rounded_bin_interval)
+			bin_lower_bounds.push(Math.round((lower_bound + i*bin_interval) * 1000000) /1000000)
 		}
 		
 		// bin_occurences
@@ -538,6 +594,78 @@
 		});
 	}
 
+
+
+	function saveAsPosterior(object_number, rule_id, parameter_id) {
+		X = parseInt($("#top-x-value").val());
+		X = Math.min(X,Object.keys(all_priors_df).length);
+		
+		// ------- list_of_probabilities --------------------
+		var lower_bound = parameter_info[parameter_id]['min_value'];
+		var upper_bound = parameter_info[parameter_id]['max_value'];
+		
+		//list_of_probabilities: bin_lower_bounds
+		var bin_interval = (upper_bound - lower_bound)/30;
+		var bin_lower_bounds = []
+		for (var i = 0; i < 30; i++) {
+			bin_lower_bounds.push(Math.round((lower_bound + i*bin_interval) * 1000000) /1000000)
+		}
+		
+		//list_of_probabilities: list_of_probabilities
+		list_of_probabilities = Array(30).fill(0);
+		for (var i = 0; i < Math.min(X,Object.keys(all_priors_df).length); i++) {
+			var value = all_priors_df[i]['param' + String(parameter_id)];
+			var bin_number = 0;
+			for (var j = 0; j < bin_lower_bounds.length; j++) {
+				if (value > bin_lower_bounds[j]) { bin_number = j;	}
+			}
+			list_of_probabilities[bin_number] += 1;
+		}
+		
+		//list_of_probabilities: normalize
+		var sum = list_of_probabilities.reduce(function(a, b){ return a + b; }, 0);
+		for (var i = 0; i < list_of_probabilities.length; i++) {
+			list_of_probabilities[i] = list_of_probabilities[i]*30/sum
+		}
+		
+		// nb_of_sim_in_which_rule_was_used
+		nb_of_sim_in_which_rule_was_used = 0
+		for (var i = 0; i < Object.keys(all_priors_df).length; i++) {
+			nb_of_sim_in_which_rule_was_used += all_priors_df[i]['nb_of_sim_in_which_rule_' + rule_id + '_was_used']
+		}
+		
+		
+		
+		// ------- send POST request --------------------
+		request_body =  {'simulation_id': simulation_id, 
+						'object_number': object_number, 
+						'parameter_id': parameter_id, 
+						'list_of_probabilities': list_of_probabilities,
+						'nb_of_simulations': all_priors_df[0]['nb_of_simulations'] * Object.keys(all_priors_df).length,
+						'nb_of_sim_in_which_rule_was_used': nb_of_sim_in_which_rule_was_used,
+						'nb_of_tested_parameters': Object.keys(all_priors_df).length, 
+						'nb_of_tested_parameters_in_posterior': X};
+		
+		
+		run_simulation_post_request = new XMLHttpRequest();   
+		run_simulation_post_request.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				
+				if (!isNaN(this.responseText)) {
+					$('#saving-response').html('Saved!');
+				} else {
+					$('#saving-response').html(this.responseText);
+				}
+			}
+		};
+		run_simulation_post_request.open("POST", "/tool/save_likelihood_function/", true);
+		run_simulation_post_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		run_simulation_post_request.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		run_simulation_post_request.send(JSON.stringify(request_body));
+		
+	}
+	
+	
 	//========================================================================
 	//========================================================================
 	//========   RIGHT PANEL  - Inspect Simulations    =======================
@@ -851,6 +979,10 @@
 	function showNewParameterSimulations(parameter_number) {
 		$('#right-main-panel').html('<iframe id="analyse-simulation-box" src="new-' + String(parameter_number) + '" title="analyse_simulations_with_this_parameter_combination"></iframe>');
 	}
+	
+	
+	
+	
 	//========================================================================
 	//========================================================================
 	//========================    MAIN      ==================================
@@ -919,10 +1051,351 @@
 </script>
 
 
-<script src="//code.jquery.com/jquery-1.10.2.js"></script>
-<script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+<!-- **********************************-->
+<!-- *                                *-->
+<!-- *    Compare Posteriors Modal    *-->
+<!-- *                                *-->
+<!-- **********************************-->
+	
+<style type='text/css'>
+	#comparePosteriorsModal .modal-dialog{
+		position: absolute;
+		left: 25%;
+	}
 
-	 
+	#comparePosteriorsModal .modal-content{
+		width: 1200px;
+	}
+	
+	#comparePosteriorsModal .modal-header{
+		height: 68px;
+		width: 100%;
+		margin-left: 0px;
+	}
+	
+	#comparePosteriorsModal #modal-title {
+		display: inline-block;
+		font-size: 22px;
+		margin-top: 8px;
+		margin-left: 17px;
+	}
+	
+	#x-button {
+		font-size: 31px;
+		margin-right: 6px;
+	}
+	
+	
+	#comparePosteriorsModal #modal-body {
+		padding: 0px;
+		padding-top: 15px;
+	}
+	
+	#comparePosteriorsModal .container-fluid {
+		padding: 0px 5px;
+	}
+	/* ----------------------------------------------------------*/
+	/* PDFS -----------------------------------------------------*/
+	/* ----------------------------------------------------------*/
+		
+	
+	/* PDF Row - Left --------------------------------------------*/
+	.simulation-name {
+		display: inline-block;
+		float: left;
+		width: 286px;
+		padding-top: 50px;
+		text-align: center;
+		font-size: 20px;
+	}
+	/* PDF Row - Middle ------------------------------------------*/
+	
+	.pdf-box {
+		display: inline-block;
+		margin-top: 3px;
+		margin-right: 20px;
+	}
+	
+	.outer-pdf-graph-container{
+		height: 108px;
+		width: 280px;
+		border: 1px solid rgb(240,240,240);
+		overflow: hidden;
+	}
+	
+	.inner-pdf-graph-container {
+		height: 166px;
+		width: 362px;
+		margin-left: -48px;
+		margin-top: 5px;
+	}
+	
+
+	#pdf-graph-all-simulations {
+		height: 178px;
+		width: 288px;
+		margin-left: -48px;
+		margin-top: -2px;
+	}
+	
+	.pdf-title {
+	    width: 100%;
+		text-align: center;
+		margin-top: -9px;
+	}
+	
+	.pdf-x-axis {
+		margin-top: -2px;
+		margin-left: -2px;
+		margin-right: -2px;
+		font-size: 12px;
+		width: 281px;
+	}
+	
+	.pdf-x-axis .left {
+		display: inline-block;
+	}
+	
+	.pdf-x-axis .right {
+	    display: inline-block;
+		float: right;
+	}
+	
+	/* PDF Row - Right ------------------------------------------*/
+	.values-in-posterior-box {
+		display: inline-block;
+		margin-right: 67px;
+		float: right;
+		padding-top: 33px;
+	}
+	
+	.values-in-posterior {
+		display: inline-block;
+		float: right;
+		font-size: 21px;
+		margin-top: 12px;
+	}
+	
+	.slash {
+		display: inline-block;
+		float: right;
+		font-size: 36px;
+		padding-bottom: 15px;
+		margin: 1px;
+	}
+	
+	#separation-line {
+	    margin-top: 4px;
+		margin-bottom: 1px;
+		margin-left: 5%;
+		width: 91%;
+		border: 2px solid rgb(83, 152, 193);
+		margin-top: 25px;
+	}
+	
+	#total-text {
+		margin-left: 64px;
+		font-size: 19px;
+		color: rgb(57, 121, 159);
+	}
+</style>
+
+<!-- Compare Posteriors Modal -->
+<div class="modal fade" id="comparePosteriorsModal" tabindex="-1" role="dialog" aria-labelledby="chooseAttributeTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+	<div class="modal-content">
+	  <div class="modal-header row">
+		<div class="modal-title object-type-name" id="modal-title">Posteriors for ...</div>
+		<button id="x-button" type="button col-md-1" class="close" data-dismiss="modal" aria-label="Close"  onclick="closeComparePosteriorsModal()">
+		  <span aria-hidden="true" >&times;</span>
+		</button>
+	  </div>
+	  <div class="modal-body">
+		<div class="container-fluid">
+		  <div id="modal-content">
+		  </div>
+		</div>
+	  </div>
+	</div>
+  </div>
+</div>
+
+<script type="text/javascript" src="{% static 'js/bootstrap-3.4.0.min.js' %}"></script>
+
+	
+	
+<script type="text/javascript">
+
+	//========================================================================
+	//========================================================================
+	//=================    comparePosteriorsModal      =======================
+	//========================================================================
+	//========================================================================	
+	
+	
+	function showComparePosteriorsModal(object_number, attribute_id, rule_id, parameter_id) {
+		$('#comparePosteriorsModal #modal-content').html('');
+		$("#comparePosteriorsModal").modal('show');
+		
+		$('#modal-title').html('Posteriors for [' + parameter_info[parameter_id]['parameter_name'] + ']');
+		
+		if (parameter_id) {
+
+			var xhttp = new XMLHttpRequest();       
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					
+					var response = JSON.parse(this.responseText);
+					var pdfs_html_string = '';
+					for (var i = 0; i < response['individual_pdfs'].length; i++) {
+						var individual_pdf = response['individual_pdfs'][i];
+						pdfs_html_string += '<div class="individual-pdf-row">' +
+												'<div class="simulation-name"><a href="/edit_simulation/' + String(individual_pdf['simulation_id']) + '">' + individual_pdf['simulation_name'] + '</a></div>' +
+												'<div class="pdf-box">' +
+													'<div class="outer-pdf-graph-container">' +
+														'<div id="parameter-pdf-graph-this-simulation-' + String(i) + '" class="inner-pdf-graph-container"></div>' +
+													'</div>' +
+													'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
+												'</div>' +
+												'<div class="pdf-box">' +
+													'<div class="outer-pdf-graph-container">' +
+														'<div id="parameter-pdf-graph-this-simulation-' + String(i) + '-smooth" class="inner-pdf-graph-container"></div>' +
+													'</div>' +
+													'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
+												'</div>' +
+												'<div class="values-in-posterior-box">' +
+													'<div class="values-in-posterior">' + String(individual_pdf['nb_of_tested_parameters']) + '</div><div class="slash">/</div><div class="values-in-posterior">' + String(individual_pdf['nb_of_tested_parameters_in_posterior']) + '</div>' +
+												'</div>' +
+											'</div>';
+					}
+					pdfs_html_string += 	'<div id="separation-line"></div>' +
+											'<div id="total-text">Total</div>' +
+											'<div class="individual-pdf-row">' +
+												'<div class="simulation-name"></div>' +
+												'<div class="pdf-box">' +
+													'<div class="outer-pdf-graph-container">' +
+														'<div id="parameter-pdf-graph-combined-simulations" class="inner-pdf-graph-container"></div>' +
+													'</div>' +
+													'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
+												'</div>' +
+												'<div class="pdf-box">' +
+													'<div class="outer-pdf-graph-container">' +
+														'<div id="parameter-pdf-graph-combined-simulations-smooth" class="inner-pdf-graph-container"></div>' +
+													'</div>' +
+													'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
+												'</div>' +
+												'<div class="values-in-posterior-box">' +
+													'<div class="values-in-posterior">' + String(response['combined_pdf']['nb_of_tested_parameters']) + '</div><div class="slash">/</div><div class="values-in-posterior">' + String(response['combined_pdf']['nb_of_tested_parameters_in_posterior']) + '</div>' +
+												'</div>' +
+											'</div>';
+											
+					$('#comparePosteriorsModal #modal-content').html(pdfs_html_string);
+					
+					
+					for (var i = 0; i < response['individual_pdfs'].length; i++) {
+					
+						// simulation pdf - normal
+						anychart.onDocumentReady(function () {
+							var dataSet = anychart.data.set(response['individual_pdfs'][i]['pdf']);
+							var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
+							var chart = anychart.area();
+							var series = chart.area(seriesData);
+							series.tooltip().enabled(false);
+
+							chart.yAxis();
+							var xAxis = chart.xAxis();
+							xAxis.title('Probability');
+							xAxis.labels().format("{%Value}%");
+
+							chart.container('parameter-pdf-graph-this-simulation-' + String(i));
+							chart.draw();
+						});
+						
+						// simulation pdf - smooth
+						anychart.onDocumentReady(function () {
+							var dataSet = anychart.data.set(response['individual_pdfs'][i]['smooth_pdf']);
+							var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
+							var chart = anychart.area();
+							var series = chart.area(seriesData);
+							series.tooltip().enabled(false);
+
+							chart.yAxis();
+							var xAxis = chart.xAxis();
+							xAxis.title('Probability');
+							xAxis.labels().format("{%Value}%");
+
+							chart.container('parameter-pdf-graph-this-simulation-' + String(i) + '-smooth');
+							chart.draw();
+						});
+					}
+					
+					// combined pdf - normal
+					anychart.onDocumentReady(function () {
+						var dataSet = anychart.data.set(response['combined_pdf']['pdf']);
+						var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
+						var chart = anychart.area();
+						var series = chart.area(seriesData);
+						series.tooltip().enabled(false);
+
+						chart.yAxis();
+						var xAxis = chart.xAxis();
+						xAxis.title('Probability');
+						xAxis.labels().format("{%Value}%");
+
+						chart.container('parameter-pdf-graph-combined-simulations');
+						chart.draw();
+					});		
+
+					// combined pdf - smooth
+					anychart.onDocumentReady(function () {
+						var dataSet = anychart.data.set(response['combined_pdf']['smooth_pdf']);
+						var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
+						var chart = anychart.area();
+						var series = chart.area(seriesData);
+						series.tooltip().enabled(false);
+
+						chart.yAxis();
+						var xAxis = chart.xAxis();
+						xAxis.title('Probability');
+						xAxis.labels().format("{%Value}%");
+						
+						var yScale = chart.yScale().minimum(0);
+
+						chart.container('parameter-pdf-graph-combined-simulations-smooth');
+						chart.draw();
+					});						
+
+				}
+			};
+			xhttp.open("GET", "/tool/get_all_pdfs?rule_or_parameter_id=" + String(parameter_id) + '&is_rule=false', true);
+			xhttp.send();
+			
+		} else {
+		
+			var xhttp = new XMLHttpRequest();       
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					
+					var progress_dict = JSON.parse(this.responseText);
+
+				}
+			};
+			xhttp.open("GET", "/tool/get_all_pdfs?rule_or_parameter_id=" + String(parameter_id) + '&is_rule=true', true);
+			xhttp.send();
+			
+			
+		}
+		
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+</script>
 
 {% endblock %}
 
