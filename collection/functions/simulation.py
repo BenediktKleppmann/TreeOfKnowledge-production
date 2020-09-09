@@ -286,16 +286,6 @@ class Simulator:
                             rule['parameters'][used_parameter_id] = {'min_value': parameter.min_value, 'max_value': parameter.max_value}
 
                         
-                        if rule['learn_posterior']:
-                            # rule probability
-                            if not rule['has_probability_1']:
-                                self.parameter_columns.append('triggerThresholdForRule' + str(rule_id))
-                            # parameter
-                            for used_parameter_id in rule['used_parameter_ids']:
-                                self.parameter_columns.append('param' + str(used_parameter_id))
-
-
-
 
 
 
@@ -359,6 +349,13 @@ class Simulator:
                                        
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 6, "total_number": 6}))
+
+        for rule in self.rules:
+            if rule['learn_posterior']:
+                if not rule['has_probability_1']:
+                    self.parameter_columns.append('triggerThresholdForRule' + str(rule_id))
+                for used_parameter_id in rule['used_parameter_ids']:
+                    self.parameter_columns.append('param' + str(used_parameter_id))
 
 
 
@@ -593,7 +590,7 @@ class Simulator:
             else:
                 for batch_number in range(self.nb_of_tested_parameters):
                     print('posting batch %s : %s' % (batch_number, str(all_priors_df.loc[batch_number,:].to_dict())))
-                    simulation_parameters = {'simulation_id':  self.simulation_id, 'run_number':  self.run_number, 'batch_number': batch_number, 'rules': self.rules , 'priors_dict':  all_priors_df.loc[batch_number,:].to_dict(), 'batch_size': batch_size , 'is_timeseries_analysis': self.is_timeseries_analysis, 'times': self.times, 'timestep_size':  self.timestep_size, 'y0_columns': self.y0_columns, 'parameter_columns':  self.parameter_columns, 'y0_column_dt':  self.y0_column_dt, 'error_threshold':  self.error_threshold}
+                    simulation_parameters = {'simulation_id':  self.simulation_id, 'run_number':  self.run_number, 'batch_number': batch_number, 'rules': self.rules , 'priors_dict':  all_priors_df.loc[batch_number,:].to_dict(), 'batch_size': batch_size , 'is_timeseries_analysis': self.is_timeseries_analysis, 'times': self.times, 'timestep_size':  self.timestep_size, 'y0_columns': self.y0_columns, 'parameter_columns':  self.parameter_columns, 'y0_column_dt':  self.y0_column_dt, 'error_threshold':  self.error_threshold}*
 
                     sqs = boto3.client('sqs', region_name='eu-central-1')
                     queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/Treeofknowledge-queue'
