@@ -1240,131 +1240,12 @@
 		$('#modal-title').html('Posteriors for [' + parameter_info[parameter_id]['parameter_name'] + ']');
 		
 		if (parameter_id) {
-
+		
 			var xhttp = new XMLHttpRequest();       
 			xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200) {
-					
+				if (this.readyState == 4 && this.status == 200) {	
 					var response = JSON.parse(this.responseText);
-					var pdfs_html_string = '';
-					for (var i = 0; i < response['individual_pdfs'].length; i++) {
-						var individual_pdf = response['individual_pdfs'][i];
-						pdfs_html_string += '<div class="individual-pdf-row">' +
-												'<div class="simulation-name"><a href="/edit_simulation/' + String(individual_pdf['simulation_id']) + '">' + individual_pdf['simulation_name'] + '</a></div>' +
-												'<div class="pdf-box">' +
-													'<div class="outer-pdf-graph-container">' +
-														'<div id="parameter-pdf-graph-this-simulation-' + String(i) + '" class="inner-pdf-graph-container"></div>' +
-													'</div>' +
-													'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
-												'</div>' +
-												'<div class="pdf-box">' +
-													'<div class="outer-pdf-graph-container">' +
-														'<div id="parameter-pdf-graph-this-simulation-' + String(i) + '-smooth" class="inner-pdf-graph-container"></div>' +
-													'</div>' +
-													'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
-												'</div>' +
-												'<div class="values-in-posterior-box">' +
-													'<div class="values-in-posterior">' + String(individual_pdf['nb_of_tested_parameters']) + '</div><div class="slash">/</div><div class="values-in-posterior">' + String(individual_pdf['nb_of_tested_parameters_in_posterior']) + '</div>' +
-												'</div>' +
-											'</div>';
-					}
-					pdfs_html_string += 	'<div id="separation-line"></div>' +
-											'<div id="total-text">Total</div>' +
-											'<div class="individual-pdf-row">' +
-												'<div class="simulation-name"></div>' +
-												'<div class="pdf-box">' +
-													'<div class="outer-pdf-graph-container">' +
-														'<div id="parameter-pdf-graph-combined-simulations" class="inner-pdf-graph-container"></div>' +
-													'</div>' +
-													'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
-												'</div>' +
-												'<div class="pdf-box">' +
-													'<div class="outer-pdf-graph-container">' +
-														'<div id="parameter-pdf-graph-combined-simulations-smooth" class="inner-pdf-graph-container"></div>' +
-													'</div>' +
-													'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
-												'</div>' +
-												'<div class="values-in-posterior-box">' +
-													'<div class="values-in-posterior">' + String(response['combined_pdf']['nb_of_tested_parameters']) + '</div><div class="slash">/</div><div class="values-in-posterior">' + String(response['combined_pdf']['nb_of_tested_parameters_in_posterior']) + '</div>' +
-												'</div>' +
-											'</div>';
-											
-					$('#comparePosteriorsModal #modal-content').html(pdfs_html_string);
-					
-					
-					for (var i = 0; i < response['individual_pdfs'].length; i++) {
-					
-						// simulation pdf - normal
-						anychart.onDocumentReady(function () {
-							var dataSet = anychart.data.set(response['individual_pdfs'][i]['pdf']);
-							var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
-							var chart = anychart.area();
-							var series = chart.area(seriesData);
-							series.tooltip().enabled(false);
-
-							chart.yAxis();
-							var xAxis = chart.xAxis();
-							xAxis.title('Probability');
-							xAxis.labels().format("{%Value}%");
-
-							chart.container('parameter-pdf-graph-this-simulation-' + String(i));
-							chart.draw();
-						});
-						
-						// simulation pdf - smooth
-						anychart.onDocumentReady(function () {
-							var dataSet = anychart.data.set(response['individual_pdfs'][i]['smooth_pdf']);
-							var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
-							var chart = anychart.area();
-							var series = chart.area(seriesData);
-							series.tooltip().enabled(false);
-
-							chart.yAxis();
-							var xAxis = chart.xAxis();
-							xAxis.title('Probability');
-							xAxis.labels().format("{%Value}%");
-
-							chart.container('parameter-pdf-graph-this-simulation-' + String(i) + '-smooth');
-							chart.draw();
-						});
-					}
-					
-					// combined pdf - normal
-					anychart.onDocumentReady(function () {
-						var dataSet = anychart.data.set(response['combined_pdf']['pdf']);
-						var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
-						var chart = anychart.area();
-						var series = chart.area(seriesData);
-						series.tooltip().enabled(false);
-
-						chart.yAxis();
-						var xAxis = chart.xAxis();
-						xAxis.title('Probability');
-						xAxis.labels().format("{%Value}%");
-
-						chart.container('parameter-pdf-graph-combined-simulations');
-						chart.draw();
-					});		
-
-					// combined pdf - smooth
-					anychart.onDocumentReady(function () {
-						var dataSet = anychart.data.set(response['combined_pdf']['smooth_pdf']);
-						var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
-						var chart = anychart.area();
-						var series = chart.area(seriesData);
-						series.tooltip().enabled(false);
-
-						chart.yAxis();
-						var xAxis = chart.xAxis();
-						xAxis.title('Probability');
-						xAxis.labels().format("{%Value}%");
-						
-						var yScale = chart.yScale().minimum(0);
-
-						chart.container('parameter-pdf-graph-combined-simulations-smooth');
-						chart.draw();
-					});						
-
+					drawComparePosteriorsContent(response)					;
 				}
 			};
 			xhttp.open("GET", "/tool/get_all_pdfs?rule_or_parameter_id=" + String(parameter_id) + '&is_rule=false', true);
@@ -1375,18 +1256,115 @@
 			var xhttp = new XMLHttpRequest();       
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
-					
-					var progress_dict = JSON.parse(this.responseText);
-
+					var response = JSON.parse(this.responseText);
+					drawComparePosteriorsContent(response);
 				}
 			};
 			xhttp.open("GET", "/tool/get_all_pdfs?rule_or_parameter_id=" + String(parameter_id) + '&is_rule=true', true);
 			xhttp.send();
+	
+		}
+	}
+	
+	
+	function drawComparePosteriorsContent(response) {
+	
+		var pdfs_html_string = '';
+		for (var i = 0; i < response['individual_pdfs'].length; i++) {
+			var individual_pdf = response['individual_pdfs'][i];
+			pdfs_html_string += '<div class="individual-pdf-row">' +
+									'<div class="simulation-name"><a href="/edit_simulation/' + String(individual_pdf['simulation_id']) + '">' + individual_pdf['simulation_name'] + '</a></div>' +
+									'<div class="pdf-box">' +
+										'<div class="outer-pdf-graph-container">' +
+											'<div id="parameter-pdf-graph-this-simulation-' + String(i) + '" class="inner-pdf-graph-container"></div>' +
+										'</div>' +
+										'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
+									'</div>' +
+									'<div class="pdf-box">' +
+										'<div class="outer-pdf-graph-container">' +
+											'<div id="parameter-pdf-graph-this-simulation-' + String(i) + '-smooth" class="inner-pdf-graph-container"></div>' +
+										'</div>' +
+										'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
+									'</div>' +
+									'<div class="values-in-posterior-box">' +
+										'<div class="values-in-posterior">' + String(individual_pdf['nb_of_tested_parameters']) + '</div><div class="slash">/</div><div class="values-in-posterior">' + String(individual_pdf['nb_of_tested_parameters_in_posterior']) + '</div>' +
+									'</div>' +
+								'</div>';
+		}
+		pdfs_html_string += 	'<div id="separation-line"></div>' +
+								'<div id="total-text">Total</div>' +
+								'<div class="individual-pdf-row">' +
+									'<div class="simulation-name"></div>' +
+									'<div class="pdf-box">' +
+										'<div class="outer-pdf-graph-container" style="border: none;"></div>' +
+									'</div>' +
+									'<div class="pdf-box">' +
+										'<div class="outer-pdf-graph-container">' +
+											'<div id="parameter-pdf-graph-combined-simulations-smooth" class="inner-pdf-graph-container"></div>' +
+										'</div>' +
+										'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
+									'</div>' +
+									'<div class="values-in-posterior-box">' +
+										'<div class="values-in-posterior">' + String(response['combined_pdf']['nb_of_tested_parameters']) + '</div><div class="slash">/</div><div class="values-in-posterior">' + String(response['combined_pdf']['nb_of_tested_parameters_in_posterior']) + '</div>' +
+									'</div>' +
+								'</div>';
+								
+		$('#comparePosteriorsModal #modal-content').html(pdfs_html_string);
+		
+		
+		for (var i = 0; i < response['individual_pdfs'].length; i++) {
+		
+			// simulation pdf - normal
+			anychart.onDocumentReady(function () {
+				var dataSet = anychart.data.set(response['individual_pdfs'][i]['pdf']);
+				var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
+				var chart = anychart.area();
+				var series = chart.area(seriesData);
+				series.tooltip().enabled(false);
+
+				chart.yAxis();
+				var xAxis = chart.xAxis();
+				xAxis.title('Probability');
+				xAxis.labels().format("{%Value}%");
+
+				chart.container('parameter-pdf-graph-this-simulation-' + String(i));
+				chart.draw();
+			});
 			
-			
+			// simulation pdf - smooth
+			anychart.onDocumentReady(function () {
+				var dataSet = anychart.data.set(response['individual_pdfs'][i]['smooth_pdf']);
+				var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
+				var chart = anychart.area();
+				var series = chart.area(seriesData);
+				series.tooltip().enabled(false);
+
+				chart.yAxis();
+				var xAxis = chart.xAxis();
+				xAxis.title('Probability');
+				xAxis.labels().format("{%Value}%");
+
+				chart.container('parameter-pdf-graph-this-simulation-' + String(i) + '-smooth');
+				chart.draw();
+			});
 		}
 		
-		
+		// combined pdf - normal
+		anychart.onDocumentReady(function () {
+			var dataSet = anychart.data.set(response['combined_pdf']['pdf']);
+			var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
+			var chart = anychart.area();
+			var series = chart.area(seriesData);
+			series.tooltip().enabled(false);
+
+			chart.yAxis();
+			var xAxis = chart.xAxis();
+			xAxis.title('Probability');
+			xAxis.labels().format("{%Value}%");
+
+			chart.container('parameter-pdf-graph-combined-simulations');
+			chart.draw();
+		});	
 	}
 	
 	
