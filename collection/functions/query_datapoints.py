@@ -580,7 +580,8 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                 cursor.execute(sql_string2)
             
 
-            # 1.3 get data_querying_info['relation_sizes']
+        # 1.3 get data_querying_info['relation_sizes']
+        pdb.set_trace()
         for object_number in object_numbers: 
             print('1.3')
             for relation in objects_dict[object_number]['object_relations']:
@@ -1178,7 +1179,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             
             # TESTING ----------------------------------------------------
             # generally_useful_functions.log(sql_string5, 'sql_string5')
-            # generally_useful_functions.log(long_table_df, 'long_table_df')
+            generally_useful_functions.log(long_table_df, 'long_table_df__object_' + str(object_number))
             # distinct_object_ids_df = pd.read_sql_query("SELECT DISTINCT obj1attrobject_id FROM object_ids_table", connection)
             # generally_useful_functions.log(distinct_object_ids_df, 'distinct_object_ids_df')
             # ------------------------------------------------------------
