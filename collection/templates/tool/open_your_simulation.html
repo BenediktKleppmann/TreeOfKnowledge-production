@@ -32,7 +32,7 @@
 			</div>
 			<ul>
 				{% for simulation in simulation_models %}
-					<li><a class="existing-simulation-link" href="{% url 'edit_simulation' simulation_id=simulation.id %}">Simulation {{ simulation.id }}</a></li>
+					<li><a class="existing-simulation-link" href="{% url 'edit_simulation' simulation_id=simulation.id %}">{{ simulation.simulation_name }}</a></li>
 				{% endfor %}
 			</ul>
 
