@@ -581,7 +581,6 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
             
 
         # 1.3 get data_querying_info['relation_sizes']
-        pdb.set_trace()
         for object_number in object_numbers: 
             print('1.3')
             for relation in objects_dict[object_number]['object_relations']:
