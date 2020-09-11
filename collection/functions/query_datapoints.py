@@ -1177,10 +1177,11 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             long_table_df = pd.read_sql_query(sql_string5, connection)
             
             # TESTING ----------------------------------------------------
-            # generally_useful_functions.log(sql_string5, 'sql_string5')
+            generally_useful_functions.log(sql_string5, 'sql_string5')
             generally_useful_functions.log(long_table_df, 'long_table_df__object_' + str(object_number))
-            # distinct_object_ids_df = pd.read_sql_query("SELECT DISTINCT obj1attrobject_id FROM object_ids_table", connection)
-            # generally_useful_functions.log(distinct_object_ids_df, 'distinct_object_ids_df')
+            distinct_object_ids_df = pd.read_sql_query("SELECT DISTINCT obj1attrobject_id FROM object_ids_table", connection)
+            distinct_object_ids_df.log(object_ids_df, 'distinct_object_ids_df')
+            generally_useful_functions.log(object_ids_df, 'object_ids_df')
             # ------------------------------------------------------------
             
             long_table_df.set_index(['object_id','column_name','period'],inplace=True)

@@ -809,6 +809,7 @@ class Simulator:
                     if rule['has_probability_1']:
                         condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
 
+                        pdb.set_trace()
                         if condition_satisfying_rows.iloc[0] in [-1,-2]: #messy bug-fix for bug where eval returns -1 and -2 instead of True and False
                             condition_satisfying_rows += 2
                             condition_satisfying_rows = condition_satisfying_rows.astype(bool)
