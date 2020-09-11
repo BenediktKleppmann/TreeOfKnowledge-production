@@ -76,11 +76,6 @@ class Simulator:
 
     def __init__(self, simulation_id, ignore_learn_posteriors):
 
-        # IMPORTANT SETTINGS  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-        
-        limit_to_populated_y0_columns = True
-        # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        
 
 
 
@@ -155,7 +150,7 @@ class Simulator:
             self.df = pd.DataFrame.from_dict(validation_data['df'])
             self.y0_values = validation_data['y0_values']
         else:
-            (self.df, self.y0_values) = self.get_new_df_and_y0_values(self.is_timeseries_analysis, self.simulation_start_time, self.simulation_end_time, self.timestep_size, limit_to_populated_y0_columns, self.times, self.y0_columns, self.max_number_of_instances, self.objects_dict, execution_order['attribute_execution_order'])
+            (self.df, self.y0_values) = self.get_new_df_and_y0_values(self.is_timeseries_analysis, self.simulation_start_time, self.simulation_end_time, self.timestep_size, self.times, self.y0_columns, self.max_number_of_instances, self.objects_dict, execution_order['attribute_execution_order'])
             validation_data = {'simulation_state_code': new_simulation_state_code,
                                 'df': self.df.to_dict(orient='list'),
                                 'y0_values':self.y0_values}
@@ -396,12 +391,12 @@ class Simulator:
 
 
 
-    def get_new_df_and_y0_values(self, is_timeseries_analysis, simulation_start_time, simulation_end_time, timestep_size, limit_to_populated_y0_columns, times, y0_columns, max_number_of_instances, objects_dict, attribute_execution_order):
+    def get_new_df_and_y0_values(self, is_timeseries_analysis, simulation_start_time, simulation_end_time, timestep_size,  times, y0_columns, max_number_of_instances, objects_dict, attribute_execution_order):
 
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 2, "total_number": 6}))
 
-        if limit_to_populated_y0_columns:
+        if self.limit_to_populated_y0_columns:
             all_periods_df = query_datapoints.get_data_from_related_objects__multiple_timesteps(objects_dict, simulation_start_time, simulation_end_time, timestep_size, self.progress_tracking_file_name, max_number_of_instances, y0_columns=y0_columns)
         else: 
             all_periods_df = query_datapoints.get_data_from_related_objects__multiple_timesteps(objects_dict, simulation_start_time, simulation_end_time, timestep_size, self.progress_tracking_file_name, max_number_of_instances)
@@ -809,7 +804,6 @@ class Simulator:
                     if rule['has_probability_1']:
                         condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
 
-                        pdb.set_trace()
                         if condition_satisfying_rows.iloc[0] in [-1,-2]: #messy bug-fix for bug where eval returns -1 and -2 instead of True and False
                             condition_satisfying_rows += 2
                             condition_satisfying_rows = condition_satisfying_rows.astype(bool)
