@@ -804,8 +804,8 @@
 	
 	paper = new joint.dia.Paper({ 
 		el: $('#paper'), 
-		width: 1300, 
-		height: 700, 
+		width: screen.width - 330, 
+		height: screen.height - 70, 
 		gridSize: 1, 
 		model: graph 
 	});
@@ -825,8 +825,8 @@
 		var object_type_id = ev.dataTransfer.getData("object_type_id");
 
 		var left_panel_width = parseInt($("#left-panel").css("width"),10);
-		var x_coordinate = (ev.clientX-left_panel_width)-48;
-		var y_coordinate = ev.clientY-72;
+		var x_coordinate = (ev.clientX-left_panel_width)-30;
+		var y_coordinate = ev.clientY-90;
 
 		createObject(object_type_id, x_coordinate, y_coordinate);
 		
