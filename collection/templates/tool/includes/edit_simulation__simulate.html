@@ -1435,7 +1435,7 @@
 		var object_sorted_attribute_ids = [];
 		for (var i = 0; i < object_sorted_attributes.length ; i++) {
 			var object_sorted_attribute_id = String(object_sorted_attributes[i]['id']);
-			if (Object.keys(objects_dict[1]['object_attributes']).includes(object_sorted_attribute_id)) {
+			if (Object.keys(objects_dict[object_number]['object_attributes']).includes(object_sorted_attribute_id)) {
 				object_sorted_attribute_ids.push(object_sorted_attribute_id);
 			}
 		}
