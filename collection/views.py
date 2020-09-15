@@ -2385,8 +2385,9 @@ def test_page3(request):
     s3 = boto3.resource('s3')
 
     for simulation_model in Simulation_model.objects.all():
+        print('-----  test_page3  ' + str(simulation_model.id) + '   --------')
         s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(simulation_model.id) +'_validation_data.json').put(Body=simulation_model.validation_data.encode('utf-8'))
-
+    return HttpResponse('success')
 
     # import boto
     # import boto.s3

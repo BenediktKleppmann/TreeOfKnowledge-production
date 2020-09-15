@@ -25,6 +25,7 @@ import pdb
 import boto3
 import psycopg2
 import time
+import boto3
 
 
 
@@ -138,7 +139,7 @@ class Simulator:
 
 
         #  --- df & y0_values ---
-        validation_data = json.loads(simulation_model_record.validation_data)  
+        
         reduced_objects_dict = {}
         for object_number in self.objects_dict.keys():
             reduced_objects_dict[object_number] = {'object_filter_facts':self.objects_dict[object_number]['object_filter_facts'], 'object_relations':self.objects_dict[object_number]['object_relations'] }
@@ -147,6 +148,9 @@ class Simulator:
             print(str(validation_data['simulation_state_code'] == new_simulation_state_code))
             print('checking ' + validation_data['simulation_state_code'][:100] + '                              ==                       ' + new_simulation_state_code[:100])
         if 'simulation_state_code' in validation_data.keys() and validation_data['simulation_state_code'] == new_simulation_state_code:
+            s3 = boto3.resource('s3')
+            obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(self.simulation_id) + '_validation_data.json')
+            validation_data = json.loads(obj.get()['Body'].read().decode('utf-8'))
             self.df = pd.DataFrame.from_dict(validation_data['df'])
             self.y0_values = validation_data['y0_values']
         else:
@@ -154,7 +158,21 @@ class Simulator:
             validation_data = {'simulation_state_code': new_simulation_state_code,
                                 'df': self.df.to_dict(orient='list'),
                                 'y0_values':self.y0_values}
-            simulation_model_record.validation_data = json.dumps(validation_data)
+            s3 = boto3.resource('s3')
+            s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(self.simulation_id) + '_validation_data.json').put(Body=json.dumps(validation_data).encode('utf-8'))
+
+        # ------------------------------  OLD  ----------------------------------------  
+        # if 'simulation_state_code' in validation_data.keys() and validation_data['simulation_state_code'] == new_simulation_state_code:
+        #     validation_data = json.loads(simulation_model_record.validation_data)  
+        #     self.df = pd.DataFrame.from_dict(validation_data['df'])
+        #     self.y0_values = validation_data['y0_values']
+        # else:
+        #     (self.df, self.y0_values) = self.get_new_df_and_y0_values(self.is_timeseries_analysis, self.simulation_start_time, self.simulation_end_time, self.timestep_size, self.times, self.y0_columns, self.max_number_of_instances, self.objects_dict, execution_order['attribute_execution_order'])
+        #     validation_data = {'simulation_state_code': new_simulation_state_code,
+        #                         'df': self.df.to_dict(orient='list'),
+        #                         'y0_values':self.y0_values}
+        #     simulation_model_record.validation_data = json.dumps(validation_data)
+        # ----------------------------------------------------------------------------------
         
         simulation_model_record.run_number = self.run_number
         simulation_model_record.aborted = False
