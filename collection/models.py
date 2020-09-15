@@ -191,7 +191,7 @@ class Simulation_model(models.Model):
     data_querying_info = models.TextField()
     all_priors_df = models.TextField()
     # triggered_rules = models.TextField(null=True)
-    validation_data = models.TextField()
+    # validation_data = models.TextField()
     # simulation_data = models.TextField(null=True)
     # correct_values = models.TextField(null=True)
     # errors = models.TextField(null=True)
