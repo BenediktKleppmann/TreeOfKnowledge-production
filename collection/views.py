@@ -2375,12 +2375,18 @@ def test_page2(request):
 
 
 def test_page3(request):
+    # import boto3
+    # s3 = boto3.resource('s3')
+    # obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_1_validation_data.json')
+    # body = obj.get()['Body'].read()
+    # response = json.loads(body.decode('utf-8'))
+    # return HttpResponse('success : ' + str(response))
     import boto3
     s3 = boto3.resource('s3')
-    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_1_validation_data.json')
-    body = obj.get()['Body'].read()
-    response = json.loads(body.decode('utf-8'))
-    return HttpResponse('success : ' + str(response))
+
+    for simulation_model in Simulation_model.objects.all():
+        s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(simulation_model.id) +'_validation_data.json').put(Body=simulation_model.validation_data.encode('utf-8'))
+
 
     # import boto
     # import boto.s3
