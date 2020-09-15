@@ -2402,7 +2402,7 @@ def test_page3(request):
     # k.key = 'my test file'
     # k.set_contents_from_filename(testfile,
     #     cb=percent_cb, num_cb=10)
-    # return render(request, 'tool/test_page3.html')
+    return render(request, 'tool/test_page3.html')
 
 
 
