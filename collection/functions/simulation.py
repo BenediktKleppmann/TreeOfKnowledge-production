@@ -351,6 +351,8 @@ class Simulator:
                     self.parameter_columns.append('triggerThresholdForRule' + str(rule_id))
                 for used_parameter_id in rule['used_parameter_ids']:
                     self.parameter_columns.append('param' + str(used_parameter_id))
+        self.parameter_columns = list(set(self.parameter_columns))
+
 
 
 
@@ -764,20 +766,13 @@ class Simulator:
                 if not rule['has_probability_1']:
                     df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
                 for used_parameter_id in rule['used_parameter_ids']:
-                    df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][used_parameter_id]['histogram']).rvs(size=batch_size)
+                    df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][str(used_parameter_id)]['histogram']).rvs(size=batch_size)
 
 
         if self.is_timeseries_analysis: 
             df['delta_t'] = self.timestep_size
         else:
             df[self.y0_columns] = None
-
-
-        # if self.is_timeseries_analysis:    
-            # times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)    
-        #     times = generally_useful_functions.get_list_of_times(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)    
-        # else:
-        #     times = [self.simulation_start_time, self.simulation_end_time]
 
 
         y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
