@@ -2368,7 +2368,7 @@ def test_page1(request):
 def test_page2(request):
     import boto3
     s3 = boto3.resource('s3')
-    s3.Object('arn:aws:s3:::tree-of-knowledge-bucket', 'hello.txt').put(Body=open('collection/static/webservice files/anychart_test_data.json', 'rb'))
+    s3.Object('tree-of-knowledge-bucket', 'hello.txt').put(Body=open('collection/static/webservice files/anychart_test_data.json', 'rb'))
     return HttpResponse('success')
 
     
