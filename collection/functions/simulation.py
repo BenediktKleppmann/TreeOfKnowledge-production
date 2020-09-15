@@ -139,7 +139,9 @@ class Simulator:
 
 
         #  --- df & y0_values ---
-        
+        s3 = boto3.resource('s3')
+        obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(self.simulation_id) + '_validation_data.json')
+        validation_data = json.loads(obj.get()['Body'].read().decode('utf-8'))
         reduced_objects_dict = {}
         for object_number in self.objects_dict.keys():
             reduced_objects_dict[object_number] = {'object_filter_facts':self.objects_dict[object_number]['object_filter_facts'], 'object_relations':self.objects_dict[object_number]['object_relations'] }
@@ -148,9 +150,6 @@ class Simulator:
             print(str(validation_data['simulation_state_code'] == new_simulation_state_code))
             print('checking ' + validation_data['simulation_state_code'][:100] + '                              ==                       ' + new_simulation_state_code[:100])
         if 'simulation_state_code' in validation_data.keys() and validation_data['simulation_state_code'] == new_simulation_state_code:
-            s3 = boto3.resource('s3')
-            obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(self.simulation_id) + '_validation_data.json')
-            validation_data = json.loads(obj.get()['Body'].read().decode('utf-8'))
             self.df = pd.DataFrame.from_dict(validation_data['df'])
             self.y0_values = validation_data['y0_values']
         else:
@@ -158,7 +157,6 @@ class Simulator:
             validation_data = {'simulation_state_code': new_simulation_state_code,
                                 'df': self.df.to_dict(orient='list'),
                                 'y0_values':self.y0_values}
-            s3 = boto3.resource('s3')
             s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(self.simulation_id) + '_validation_data.json').put(Body=json.dumps(validation_data).encode('utf-8'))
 
         # ------------------------------  OLD  ----------------------------------------  
