@@ -2368,7 +2368,7 @@ def test_page1(request):
 def test_page2(request):
     import boto3
     s3 = boto3.resource('s3')
-    s3.Object('tree-of-knowledge-bucket', 'hello.txt').put(Body=open('collection/static/webservice files/anychart_test_data.json', 'rb'))
+    s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_1_validation_data.json').put(Body=json.dumps({'test':[1,2,3]}).encode('utf-8'))
     return HttpResponse('success')
 
     
@@ -2377,8 +2377,10 @@ def test_page2(request):
 def test_page3(request):
     import boto3
     s3 = boto3.resource('s3')
-    s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/hello.txt').put(Body=open('collection/static/webservice files/anychart_test_data.json', 'rb'))
-    return HttpResponse('success')
+    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_1_validation_data.json')
+    body = obj.get()['Body'].read()
+    response = json.loads(body.decode('utf-8'))
+    return HttpResponse('success : ' + str(response))
 
     # import boto
     # import boto.s3
