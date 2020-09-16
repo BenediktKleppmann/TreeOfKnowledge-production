@@ -931,7 +931,7 @@ class Simulator:
         y0_values_short = self.y0_values[:nb_of_simulations]
 
         print('-----')
-        print('df_short.columns = ' + str(df_short.columns))
+        print('df_short.columns = ' + str(list(df_short.columns)))
         print('self.y0_columns = ' + str(self.y0_columns))
         print('-----')
         y0 = np.asarray(df_short[self.y0_columns].copy())
