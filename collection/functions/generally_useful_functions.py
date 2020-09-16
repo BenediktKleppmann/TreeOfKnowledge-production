@@ -18,6 +18,7 @@ import pdb
 import time
 from collection.models import Logged_variable
 import json
+from operator import itemgetter 
 
 
 
@@ -198,3 +199,25 @@ def cash_result(func):
             return df
     return inner
 
+
+
+
+# ================================================================================
+#  Classes
+# ================================================================================   
+
+class SortedListEncoder(json.JSONEncoder):
+    def encode(self, obj):
+        def sort_lists(item):
+            if isinstance(item, list):
+                if len(item)>0:
+                    if isinstance(item[0], dict):
+                        keys = list(item[0].keys())
+                        return sorted([sort_lists(i) for i in item], key=itemgetter(*keys)) 
+                    else:
+                        return sorted(sort_lists(i) for i in item)
+            elif isinstance(item, dict):
+                return {k: sort_lists(v) for k, v in item.items()}
+            else:
+                return item
+        return super(SortedListEncoder, self).encode(sort_lists(obj))

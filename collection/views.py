@@ -18,7 +18,7 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
 from django.template.defaultfilters import slugify
-from collection.functions import upload_data, get_from_db, admin_fuctions, tdda_functions, query_datapoints, simulation
+from collection.functions import upload_data, get_from_db, admin_fuctions, tdda_functions, query_datapoints, simulation, generally_useful_functions
 from django.http import HttpResponse
 import json
 import traceback
@@ -2365,9 +2365,11 @@ def test_page1(request):
 
 
 def test_page2(request):
-    import boto3
-    s3 = boto3.resource('s3')
-    s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_1_validation_data.json').put(Body=json.dumps({'test':[1,2,3]}).encode('utf-8'))
+    # import boto3
+    # s3 = boto3.resource('s3')
+    # s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_1_validation_data.json').put(Body=json.dumps({'test':[1,2,3]}).encode('utf-8'))
+    # bla = json.loads('')
+    # return HttpResponse(json.dumps(bla, sort_keys=True, cls=generally_useful_functions.SortedListEncoder))
     return HttpResponse('success')
 
     
