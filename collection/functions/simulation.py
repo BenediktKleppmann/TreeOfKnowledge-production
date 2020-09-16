@@ -145,7 +145,7 @@ class Simulator:
         reduced_objects_dict = {}
         for object_number in self.objects_dict.keys():
             reduced_objects_dict[object_number] = {'object_filter_facts':self.objects_dict[object_number]['object_filter_facts'], 'object_relations':self.objects_dict[object_number]['object_relations'] }
-        new_simulation_state_code = str(self.is_timeseries_analysis) + '|' + str(self.simulation_start_time) + '|' + str(self.simulation_end_time) + '|' + str(self.timestep_size) + '|' + str(self.max_number_of_instances) + '|' + + str(set(self.y0_columns)) + '|' json.dumps(reduced_objects_dict, sort_keys=True) + '|' + json.dumps(execution_order['attribute_execution_order'], sort_keys=True)
+        new_simulation_state_code = str(self.is_timeseries_analysis) + '|' + str(self.simulation_start_time) + '|' + str(self.simulation_end_time) + '|' + str(self.timestep_size) + '|' + str(self.max_number_of_instances) + '|' + + str(set(self.y0_columns)) + '|' + json.dumps(reduced_objects_dict, sort_keys=True) + '|' + json.dumps(execution_order['attribute_execution_order'], sort_keys=True)
         if 'simulation_state_code' in validation_data.keys():
             print(str(validation_data['simulation_state_code'] == new_simulation_state_code))
             print('checking ' + validation_data['simulation_state_code'][:100] + '                              ==                       ' + new_simulation_state_code[:100])
@@ -930,6 +930,10 @@ class Simulator:
         y0_values_df_short = self.y0_values_df[:nb_of_simulations]
         y0_values_short = self.y0_values[:nb_of_simulations]
 
+        print('-----')
+        print('df_short.columns = ' + str(df_short.columns))
+        print('self.y0_columns = ' + str(self.y0_columns))
+        print('-----')
         y0 = np.asarray(df_short[self.y0_columns].copy())
         batch_size = len(y0)
 
