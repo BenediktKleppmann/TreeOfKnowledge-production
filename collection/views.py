@@ -2365,6 +2365,7 @@ def test_page1(request):
 
 
 def test_page2(request):
+    import boto3
     y0_columns = []
     simulation_model_record = Simulation_model.objects.get(id=480)
     y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
