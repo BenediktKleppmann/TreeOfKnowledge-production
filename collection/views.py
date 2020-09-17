@@ -2365,12 +2365,34 @@ def test_page1(request):
 
 
 def test_page2(request):
+    y0_columns = []
+    simulation_model_record = Simulation_model.objects.get(id=480)
+    y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
+    for y_value_attribute in generally_useful_functions.deduplicate_list_of_dicts(y_value_attributes):
+        column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
+        y0_columns.append(column_name)
+
+    y0_columns = list(set(y0_columns))
+
+
+
+    session = boto3.session.Session()
+    s3 = session.resource('s3')
+    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(simulation_id) + '_validation_data.json')
+    s3_document = obj.get()
+    document_body = s3_document['Body'].read()
+    document_body_str = document_body.decode('utf-8')
+    validation_data = json.loads(document_body_str)
+
+
+    y0_values = validation_data['y0_values'] 
+    df = pd.DataFrame.from_dict(validation_data['df'])
     # import boto3
     # s3 = boto3.resource('s3')
     # s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_1_validation_data.json').put(Body=json.dumps({'test':[1,2,3]}).encode('utf-8'))
     # bla = json.loads('')
     # return HttpResponse(json.dumps(bla, sort_keys=True, cls=generally_useful_functions.SortedListEncoder))
-    return HttpResponse('success')
+    return HttpResponse(json.dumps({'y0_columns': y0_columns, 'df.columns': list(df.columns)}))
 
     
 
