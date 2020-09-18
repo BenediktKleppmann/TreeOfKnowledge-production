@@ -122,8 +122,8 @@ class Simulator:
         #  ================  GET DATA  ===========================================
 
         #  --- y0_columns & y0_column_dt ---
-        y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
-        for y_value_attribute in generally_useful_functions.deduplicate_list_of_dicts(y_value_attributes):
+        self.y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
+        for y_value_attribute in generally_useful_functions.deduplicate_list_of_dicts(self.y_value_attributes):
             column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
             self.y0_columns.append(column_name)
             self.y0_column_dt[column_name] = Attribute.objects.get(id=y_value_attribute['attribute_id']).data_type
@@ -604,7 +604,9 @@ class Simulator:
                 for batch_number in range(self.nb_of_tested_parameters):
                     print('posting batch %s : %s' % (batch_number, str(all_priors_df.loc[batch_number,:].to_dict())))
                     print('simulation_id: ' + str(len(str( self.simulation_id))) + '; run_number: ' + str(len(str( self.run_number))) + '; batch_number: ' +  str(len(str(batch_number))) + '; rules: ' +  str(len(str( self.rules ))) + '; priors_dict: ' + str(len(str( all_priors_df.loc[batch_number,:].to_dict()))) + '; batch_size: ' + str(len(str(batch_size ))) + '; is_timeseries_analysis :' +  str(len(str(self.is_timeseries_analysis))) + '; times: ' + str(len(str(self.times))) + '; timestep_size: ' + str(len(str( self.timestep_size))) + '; y0_columns: ' + str(len(str(self.y0_columns))) + '; parameter_columns: '  + str(len(str(self.parameter_columns))) + '; y0_column_dt: ' + str(len(str( self.y0_column_dt))) + '; error_threshold: ' + str(len(str( self.error_threshold))))
-                    simulation_parameters = {'simulation_id':  self.simulation_id, 'run_number':  self.run_number, 'batch_number': batch_number, 'rules': self.rules , 'priors_dict':  all_priors_df.loc[batch_number,:].to_dict(), 'batch_size': batch_size , 'is_timeseries_analysis': self.is_timeseries_analysis, 'times': self.times, 'timestep_size':  self.timestep_size, 'y0_columns': self.y0_columns, 'parameter_columns':  self.parameter_columns, 'y0_column_dt':  self.y0_column_dt, 'error_threshold':  self.error_threshold}
+                    
+
+                    simulation_parameters = {'y_value_attributes': self.y_value_attributes, 'simulation_id':  self.simulation_id, 'run_number':  self.run_number, 'batch_number': batch_number, 'rules': self.rules , 'priors_dict':  all_priors_df.loc[batch_number,:].to_dict(), 'batch_size': batch_size , 'is_timeseries_analysis': self.is_timeseries_analysis, 'times': self.times, 'timestep_size':  self.timestep_size, 'y0_columns': self.y0_columns, 'parameter_columns':  self.parameter_columns, 'y0_column_dt':  self.y0_column_dt, 'error_threshold':  self.error_threshold}
 
                     sqs = boto3.client('sqs', region_name='eu-central-1')
                     queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/Treeofknowledge-queue'
