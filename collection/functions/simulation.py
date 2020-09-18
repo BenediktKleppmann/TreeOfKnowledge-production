@@ -607,7 +607,7 @@ class Simulator:
                     
 
                     simulation_parameters = {'y_value_attributes': self.y_value_attributes, 'simulation_id':  self.simulation_id, 'run_number':  self.run_number, 'batch_number': batch_number, 'rules': self.rules , 'priors_dict':  all_priors_df.loc[batch_number,:].to_dict(), 'batch_size': batch_size , 'is_timeseries_analysis': self.is_timeseries_analysis, 'times': self.times, 'timestep_size':  self.timestep_size, 'y0_columns': self.y0_columns, 'parameter_columns':  self.parameter_columns, 'y0_column_dt':  self.y0_column_dt, 'error_threshold':  self.error_threshold}
-
+                    print(simulation_parameters.keys())
                     sqs = boto3.client('sqs', region_name='eu-central-1')
                     queue_url = 'https://sqs.eu-central-1.amazonaws.com/662304246363/Treeofknowledge-queue'
                     response = sqs.send_message(QueueUrl= queue_url, MessageBody=json.dumps(simulation_parameters))
