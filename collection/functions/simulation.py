@@ -122,6 +122,7 @@ class Simulator:
         #  ================  GET DATA  ===========================================
 
         #  --- y0_columns & y0_column_dt ---
+        self.y0_columns = []
         self.y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
         for y_value_attribute in generally_useful_functions.deduplicate_list_of_dicts(self.y_value_attributes):
             column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
@@ -148,7 +149,10 @@ class Simulator:
         new_simulation_state_code = str(self.is_timeseries_analysis) + '|' + str(self.simulation_start_time) + '|' + str(self.simulation_end_time) + '|' + str(self.timestep_size) + '|' + str(self.max_number_of_instances) + '|' + json.dumps(self.y0_columns, sort_keys=True, cls=generally_useful_functions.SortedListEncoder) + '|' + json.dumps(reduced_objects_dict, sort_keys=True, cls=generally_useful_functions.SortedListEncoder) + '|' + json.dumps(execution_order['attribute_execution_order'], sort_keys=True, cls=generally_useful_functions.SortedListEncoder)
         if 'simulation_state_code' in validation_data.keys():
             print(str(validation_data['simulation_state_code'] == new_simulation_state_code))
-            print('checking ' + validation_data['simulation_state_code'][:100] + '                              ==                       ' + new_simulation_state_code[:100])
+            print('checking :')
+            print(validation_data['simulation_state_code'])
+            print('vs.')
+            print(new_simulation_state_code)
         if 'simulation_state_code' in validation_data.keys() and validation_data['simulation_state_code'] == new_simulation_state_code:
             self.df = pd.DataFrame.from_dict(validation_data['df'])
             self.y0_values = validation_data['y0_values']
