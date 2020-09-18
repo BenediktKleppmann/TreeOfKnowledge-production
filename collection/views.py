@@ -2379,7 +2379,7 @@ def test_page2(request):
     for y_value_attribute in generally_useful_functions.deduplicate_list_of_dicts(y_value_attributes):
         column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
         y0_columns.append(column_name)
-    y0_columns = list(set(y0_columns))
+    y0_columns = sorted(set(y0_columns))
 
     execution_order_id = simulation_model_record.execution_order_id
     execution_order = json.loads(Execution_order.objects.get(id=execution_order_id).execution_order)
@@ -2407,46 +2407,32 @@ def test_page2(request):
 
 def test_page3(request):
     import boto3
-    s3 = boto3.resource('s3')
+    
+    simulation_model_record = Simulation_model.objects.get(id=480)
+
+    y0_columns = []
+    y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
+    for y_value_attribute in generally_useful_functions.deduplicate_list_of_dicts(y_value_attributes):
+        column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
+        y0_columns.append(column_name)
+    y0_columns = sorted(set(y0_columns))
+
+
+
+    session = boto3.session.Session()
+    s3 = session.resource('s3')
     obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_480_validation_data.json')
-    body = obj.get()['Body'].read()
-    response = json.loads(body.decode('utf-8'))
-    return HttpResponse('success : ' + str(response))
-    # import boto3
-    # s3 = boto3.resource('s3')
-
-    # for simulation_model in Simulation_model.objects.all():
-    #     print('-----  test_page3  ' + str(simulation_model.id) + '   --------')
-    #     s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(simulation_model.id) +'_validation_data.json').put(Body=simulation_model.validation_data.encode('utf-8'))
-    # return HttpResponse('success')
-
-    # import boto
-    # import boto.s3
-    # import sys
-    # from boto.s3.key import Key
-
-    # AWS_ACCESS_KEY_ID = ''
-    # AWS_SECRET_ACCESS_KEY = ''
-
-    # bucket_name = 'tree-of-knowledge-bucket'
-    # conn = boto.connect_s3(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+    s3_document = obj.get()
+    document_body = s3_document['Body'].read()
+    document_body_str = document_body.decode('utf-8')
+    validation_data = json.loads(document_body_str)
+    simulation_state_code_s3 = validation_data['simulation_state_code']
 
 
-    # bucket = conn.create_bucket(bucket_name,
-    #     location=boto.s3.connection.Location.DEFAULT)
 
-    # testfile = "/static/webservice files/anychart_test_data.json"
-    # print('Uploading %s to Amazon S3 bucket %s' % (testfile, bucket_name))
+    # return HttpResponse(json.dumps(bla, sort_keys=True, cls=generally_useful_functions.SortedListEncoder))
+    return HttpResponse(json.dumps({'y0_columns': y0_columns, 'simulation_state_code_s3': simulation_state_code_s3}))
 
-    # def percent_cb(complete, total):
-    #     sys.stdout.write('.')
-    #     sys.stdout.flush()
-
-
-    # k = Key(bucket)
-    # k.key = 'my test file'
-    # k.set_contents_from_filename(testfile,
-    #     cb=percent_cb, num_cb=10)
     # return render(request, 'tool/test_page3.html')
 
 
