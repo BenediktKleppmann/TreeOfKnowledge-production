@@ -2323,40 +2323,33 @@ def upload_file(request):
 # TEST PAGES
 # ==================
 def test_page1(request):
+    import boto3
     
-    connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="ebdb")
-    cursor = connection.cursor()
-    cursor.execute('''DROP TABLE IF EXISTS tested_simulation_parameters;''') 
+    simulation_model_record = Simulation_model.objects.get(id=481)
 
-    cursor.execute('''
-                    CREATE TABLE tested_simulation_parameters ( 
-                        simulation_id       integer NOT NULL,
-                        run_number          integer NOT NULL,
-                        batch_number        integer NOT NULL,
-                        priors_dict         text NOT NULL,
-                        simulation_results  text NOT NULL);
-                    ''')
+    y0_columns = []
+    y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
+    for y_value_attribute in generally_useful_functions.deduplicate_list_of_dicts(y_value_attributes):
+        column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
+        y0_columns.append(column_name)
+    y0_columns = sorted(set(y0_columns))
 
 
 
-    # cursor.execute('''INSERT INTO  tested_simulation_parameters (simulation_id, simulation_run_nb, priors_dict, simulation_results) VALUES (140, 1, 'test1', 'test1');''')
+    session = boto3.session.Session()
+    s3 = session.resource('s3')
+    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_481_validation_data.json')
+    s3_document = obj.get()
+    document_body = s3_document['Body'].read()
+    document_body_str = document_body.decode('utf-8')
+    validation_data = json.loads(document_body_str)
+    simulation_state_code_s3 = validation_data['simulation_state_code']
 
-    connection.commit()
 
-    return HttpResponse('success')
-
+    return HttpResponse(json.dumps({'y0_columns': y0_columns, 'simulation_state_code_s3': simulation_state_code_s3}))
 
 
-    # connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="postgres")
-    # cursor = connection.cursor()
-    # cursor.execute('''SELECT EXISTS (
-    #                     SELECT * 
-    #                     FROM  public."tested_simulation_parameters"
-    #                    );
-    #                 ''')
 
-    # exists_query = cursor.fetchall() 
-   
 
 
     # return HttpResponse('success: ' + str(exists_query))
