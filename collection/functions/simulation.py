@@ -39,23 +39,6 @@ class Simulator:
     if possible compared to the values in the KB."""
 
 
-    objects_dict = {}
-    simulation_start_time = 946684800
-    simulation_end_time = 1577836800
-    timestep_size = 31622400
-
-    times = []
-    y0_columns = []
-    y0_column_dt = {}
-    parameter_columns = []
-    rules = []
-    currently_running_learn_likelihoods = False
-
-
-
-
-
-
 
 
 
@@ -78,17 +61,27 @@ class Simulator:
     def __init__(self, simulation_id, ignore_learn_posteriors):
 
 
+        self.objects_dict = {}
+        self.simulation_start_time = 946684800
+        self.simulation_end_time = 1577836800
+        self.timestep_size = 31622400
+
+        self.times = []
+        self.y0_columns = []
+        self.y0_column_dt = {}
+        self.parameter_columns = []
+        self.rules = []
+        self.currently_running_learn_likelihoods = False
+
 
 
         self.simulation_id = simulation_id
-
         simulation_model_record = Simulation_model.objects.get(id=simulation_id)
 
         if ignore_learn_posteriors:
             self.run_number = simulation_model_record.run_number
         else:
             self.run_number = simulation_model_record.run_number + 1
-
         self.objects_dict = json.loads(simulation_model_record.objects_dict)
         self.execution_order_id = simulation_model_record.execution_order_id
         self.environment_start_time = simulation_model_record.environment_start_time
@@ -122,7 +115,6 @@ class Simulator:
         #  ================  GET DATA  ===========================================
 
         #  --- y0_columns & y0_column_dt ---
-        self.y0_columns = []
         self.y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
         for y_value_attribute in generally_useful_functions.deduplicate_list_of_dicts(self.y_value_attributes):
             column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
@@ -210,7 +202,6 @@ class Simulator:
 
 
         
-        self.rules = []
         self.not_used_rules = {object_number:{} for object_number in object_numbers}
 
         for object_number in object_numbers:

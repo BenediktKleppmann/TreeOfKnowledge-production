@@ -633,7 +633,10 @@ def get_all_pdfs(request):
 
 
         print('get_all_pdfs 3.3')
-        simulation_name = Simulation_model.objects.get(id=row['simulation_id']).simulation_name
+        try:
+            simulation_name = Simulation_model.objects.get(id=row['simulation_id']).simulation_name
+        except:
+            simulation_name = "This simulation has already been deleted."
         response['individual_pdfs'].append({'simulation_id': row['simulation_id'], 
                                             'simulation_name':simulation_name, 
                                             'nb_of_tested_parameters': row['nb_of_tested_parameters'],
