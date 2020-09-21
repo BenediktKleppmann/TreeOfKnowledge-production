@@ -1911,6 +1911,7 @@ def copy_simulation(request):
     simulation_id = int(request.GET.get('simulation_id', ''))
     simulation_record = Simulation_model.objects.get(id=simulation_id)
     simulation_record.id = None
+    simulation_record.simulation_name = 'Copy of ' + simulation_record.simulation_name
     simulation_record.save()
     id_of_new_simulation_record = simulation_record.id
     return HttpResponse(str(id_of_new_simulation_record))
@@ -2328,16 +2329,6 @@ def upload_file(request):
 def test_page1(request):
     import boto3
     
-    simulation_model_record = Simulation_model.objects.get(id=481)
-
-    y0_columns = []
-    y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
-    for y_value_attribute in generally_useful_functions.deduplicate_list_of_dicts(y_value_attributes):
-        column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
-        y0_columns.append(column_name)
-    y0_columns = sorted(set(y0_columns))
-
-
 
     session = boto3.session.Session()
     s3 = session.resource('s3')
@@ -2346,10 +2337,10 @@ def test_page1(request):
     document_body = s3_document['Body'].read()
     document_body_str = document_body.decode('utf-8')
     validation_data = json.loads(document_body_str)
-    simulation_state_code_s3 = validation_data['simulation_state_code']
 
 
-    return HttpResponse(json.dumps({'y0_columns': y0_columns, 'simulation_state_code_s3': simulation_state_code_s3}))
+
+    return HttpResponse(json.dumps(validation_data['y0_values']))
 
 
 
