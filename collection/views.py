@@ -1911,7 +1911,7 @@ def copy_simulation(request):
     simulation_id = int(request.GET.get('simulation_id', ''))
     simulation_record = Simulation_model.objects.get(id=simulation_id)
     simulation_record.id = None
-    simulation_record.simulation_name = 'Copy of ' + simulation_record.simulation_name
+    simulation_record.simulation_name = 'Copy of: ' + simulation_record.simulation_name
     simulation_record.save()
     id_of_new_simulation_record = simulation_record.id
     return HttpResponse(str(id_of_new_simulation_record))

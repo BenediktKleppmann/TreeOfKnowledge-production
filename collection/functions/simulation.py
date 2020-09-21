@@ -132,9 +132,12 @@ class Simulator:
 
 
         #  --- df & y0_values ---
-        s3 = boto3.resource('s3')
-        obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(self.simulation_id) + '_validation_data.json')
-        validation_data = json.loads(obj.get()['Body'].read().decode('utf-8'))
+        try:
+            s3 = boto3.resource('s3')
+            obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(self.simulation_id) + '_validation_data.json')
+            validation_data = json.loads(obj.get()['Body'].read().decode('utf-8'))
+        except:
+            validation_data = {'simulation_state_code': '','df':{}, 'y0_values':{}}
         reduced_objects_dict = {}
         for object_number in self.objects_dict.keys():
             reduced_objects_dict[object_number] = {'object_filter_facts':self.objects_dict[object_number]['object_filter_facts'], 'object_relations':self.objects_dict[object_number]['object_relations'] }
