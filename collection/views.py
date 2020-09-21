@@ -2332,7 +2332,7 @@ def test_page1(request):
 
     session = boto3.session.Session()
     s3 = session.resource('s3')
-    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_481_validation_data.json')
+    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_480_validation_data.json')
     s3_document = obj.get()
     document_body = s3_document['Body'].read()
     document_body_str = document_body.decode('utf-8')
