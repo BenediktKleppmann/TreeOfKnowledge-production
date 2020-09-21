@@ -382,7 +382,7 @@ def perform_uploading(uploaded_dataset, request):
         with open(progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write('100')
 
-        return (number_of_entities, new_model_id)
+        return (number_of_entities*len(attribute_selection), new_model_id)
 
 
 
@@ -660,7 +660,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
         with open(progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write('100')
 
-        return (number_of_entities, new_model_id)
+        return (number_of_entities*len(attribute_selection), new_model_id)
 
 
 
