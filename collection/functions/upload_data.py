@@ -182,31 +182,32 @@ def perform_uploading(uploaded_dataset, request):
     with open(progress_tracking_file_name, "w") as progress_tracking_file:
         progress_tracking_file.write('0')
 
+
+    # PART 0: Variables
+    print('2')
+    object_type_id = uploaded_dataset.object_type_id
+    data_quality = uploaded_dataset.correctness_of_data
+    attribute_selection = json.loads(uploaded_dataset.attribute_selection)
+    meta_data_facts = json.loads(uploaded_dataset.meta_data_facts)
+    list_of_matches = json.loads(uploaded_dataset.list_of_matches)
+    upload_only_matched_entities = uploaded_dataset.upload_only_matched_entities
+    valid_time_start = (uploaded_dataset.data_generation_date - datetime.date(1970, 1, 1)).days * 86400
+    data_table_json = json.loads(uploaded_dataset.data_table_json)
+    data_table_df = pd.DataFrame(data_table_json['table_body'])
+    print('3')
+
+
+    # PART 1: Add Meta Data Facts
+    for meta_data_fact in meta_data_facts:
+        attribute_selection += [int(meta_data_fact['attribute_id'])]
+        next_data_table_column_number = str(len(data_table_df.columns))
+        data_table_df[next_data_table_column_number] = [meta_data_fact['value']] * len(data_table_df)
+
+
+
+    # PART 2: Create missing objects/ Remove not-matched rows
     with connection.cursor() as cursor:
 
-        # PART 0: Variables
-        print('2')
-        object_type_id = uploaded_dataset.object_type_id
-        data_quality = uploaded_dataset.correctness_of_data
-        attribute_selection = json.loads(uploaded_dataset.attribute_selection)
-        meta_data_facts = json.loads(uploaded_dataset.meta_data_facts)
-        list_of_matches = json.loads(uploaded_dataset.list_of_matches)
-        upload_only_matched_entities = uploaded_dataset.upload_only_matched_entities
-        valid_time_start = (uploaded_dataset.data_generation_date - datetime.date(1970, 1, 1)).days * 86400
-        data_table_json = json.loads(uploaded_dataset.data_table_json)
-        data_table_df = pd.DataFrame(data_table_json['table_body'])
-        print('3')
-
-
-        # PART 1: Add Meta Data Facts
-        for meta_data_fact in meta_data_facts:
-            attribute_selection += [int(meta_data_fact['attribute_id'])]
-            next_data_table_column_number = str(len(data_table_df.columns))
-            data_table_df[next_data_table_column_number] = [meta_data_fact['value']] * len(data_table_df)
-
-
-
-        # PART 2: Create missing objects/ Remove not-matched rows
         data_table_df['object_id'] = list_of_matches
 
         if upload_only_matched_entities == 'True':
@@ -361,10 +362,10 @@ def perform_uploading(uploaded_dataset, request):
 											simulation_name='New Simulation',
                                             execution_order_id=1,
 											not_used_rules='{}',
-                                            environment_start_time=946684800, 
-                                            environment_end_time=1577836800, 
-                                            simulation_start_time=946684800, 
-                                            simulation_end_time=1577836800, 
+                                            environment_start_time=valid_time_start, 
+                                            environment_end_time=valid_time_start + 31536000, 
+                                            simulation_start_time=valid_time_start, 
+                                            simulation_end_time=valid_time_start + 31536000, 
                                             timestep_size=31536000,
 											nb_of_tested_parameters=40,
 											max_number_of_instances=2000,
@@ -629,7 +630,7 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
         simulation_model = Simulation_model(aborted=False,
 											run_number=0,
 											user=request.user, 
-                                            is_timeseries_analysis=False,
+                                            is_timeseries_analysis=True,
                                             objects_dict=json.dumps(objects_dict),
                                             y_value_attributes=json.dumps([]), 
                                             sorted_attribute_ids=json.dumps([]), 
@@ -639,10 +640,10 @@ def perform_uploading_for_timeseries(uploaded_dataset, request):
 											simulation_name='New Simulation',
                                             execution_order_id=1,
 											not_used_rules='{}',
-                                            environment_start_time=946684800, 
-                                            environment_end_time=1577836800, 
-                                            simulation_start_time=946684800, 
-                                            simulation_end_time=1577836800, 
+                                            environment_start_time=data_table_df['valid_time_start'].min() , 
+                                            environment_end_time=data_table_df['valid_time_start'].max(), 
+                                            simulation_start_time=data_table_df['valid_time_start'].min(), 
+                                            simulation_end_time=data_table_df['valid_time_start'].max(), 
                                             timestep_size=31536000,
 											nb_of_tested_parameters=40,
 											max_number_of_instances=2000,
