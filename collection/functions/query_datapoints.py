@@ -1177,7 +1177,8 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             long_table_df = pd.read_sql_query(sql_string5, connection)
             
             # TESTING ----------------------------------------------------
-            if object_number == 17:
+            if object_number == 17 or object_number == '17':
+                print('[[[[[[[[[[[[[[[[[[  logging obj17  ]]]]]]]]]]]]]]]]]]]]]]')
                 generally_useful_functions.log(sql_string5, 'sql_string5')
                 generally_useful_functions.log(long_table_df, 'long_table_df__object_' + str(object_number))
                 distinct_object_ids_df = pd.read_sql_query("SELECT DISTINCT obj1attrobject_id FROM object_ids_table", connection)
@@ -1192,7 +1193,8 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
             broad_table_df.columns = [col[1] for col in list(broad_table_df.columns)]
             
             # TESTING ----------------------------------------------------
-            if object_number == 17:
+            if object_number == 17 or object_number == '17':
+                print('[[[[[[[[[[[[[[[[[[  logging obj17  ]]]]]]]]]]]]]]]]]]]]]]')
                 generally_useful_functions.log(broad_table_df, 'broad_table_df')
             # ------------------------------------------------------------
 
