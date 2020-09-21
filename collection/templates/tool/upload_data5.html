@@ -1190,6 +1190,7 @@
 		
 		$("#editColumnModal").modal('show');
 		$("#edited-column-name").html(table_headers[attributenumber]);
+		$("#edit-column-attributenumber").html(String(attributenumber));
 		edited_column = table_body[attributenumber]
 		//console.log(edited_column);
 		drawEditedColumnValues();
@@ -1267,7 +1268,7 @@
 	
 	
 	function takeOverEditedColumn() {
-		var edited_column_number = $("#edit-column-attributenumber").html();
+		var edited_column_number = parseInt($("#edit-column-attributenumber").html());
 		table_body[edited_column_number] = edited_column;
 		updateColumn(edited_column_number);
 		showColumnsFormatViolations(edited_column_number);
