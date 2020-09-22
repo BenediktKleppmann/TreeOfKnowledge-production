@@ -693,6 +693,7 @@
 	var new_rule_used_attribute_names = [];
 	var new_rule_used_attribute_ids = [];
 	var highlighted_words_dict = {};
+	
 	var delta_t_list = ['delta_t (years)', 'delta_t (months)', 'delta_t (days)', 'delta_t (hours)', 'delta_t (minutes)', 'delta_t (seconds)'];
 	var timestep_units = [31622400, 2635200, 604800, 86400, 3600, 60, 1];
 	var got_object_data = false;
@@ -1478,6 +1479,7 @@
 						if (attribute_id in manually_set_initial_values[object_number]) {
 							attribute_value = manually_set_initial_values[object_number][attribute_id];
 							var attribute_value_color = 'rgb(220, 231, 247)';
+						}
 					}
 					
 
