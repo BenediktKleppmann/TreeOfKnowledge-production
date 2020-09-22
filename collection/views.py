@@ -1229,6 +1229,7 @@ def save_changed_simulation(request):
             
             model_record.objects_dict = json.dumps(request_body['objects_dict'])
             model_record.y_value_attributes = json.dumps(request_body['y_value_attributes'])
+            model_record.manually_set_initial_values = json.dumps(request_body['manually_set_initial_values'])
             model_record.sorted_attribute_ids = json.dumps(request_body['sorted_attribute_ids'])
             model_record.object_type_counts = json.dumps(request_body['object_type_counts'])
             model_record.total_object_count = request_body['total_object_count']
