@@ -1045,6 +1045,11 @@ class Simulator:
                                 df['sum' + str(sum_number)] += pd.eval(sum_term).fillna(0)
 
                     all_new_values = pd.eval(rule['effect_exec'])
+                    # testing================================
+                    if rule['id']==110:
+                        print('rule110: ' + rule['effect_exec'])
+                        print('all_new_values: ' + str(all_new_values))
+                    # =====================
                     if rule['changed_var_data_type'] in ['relation','int']:
                         nan_rows = all_new_values.isnull()
                         all_new_values = all_new_values.fillna(0)
