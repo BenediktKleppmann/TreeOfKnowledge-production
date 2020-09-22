@@ -785,7 +785,7 @@ class Simulator:
                 for used_parameter_id in rule['used_parameter_ids']:
                     df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][str(used_parameter_id)]['histogram']).rvs(size=batch_size)
 
-
+        df['null'] = np.nan
         if self.is_timeseries_analysis: 
             df['delta_t'] = self.timestep_size
         else:
@@ -970,6 +970,7 @@ class Simulator:
                     df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][used_parameter_id]['histogram']).rvs(size=batch_size)
 
 
+        df['null'] = np.nan
         if self.is_timeseries_analysis: 
             df['delta_t'] = self.timestep_size
         else: 
