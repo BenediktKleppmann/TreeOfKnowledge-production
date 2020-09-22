@@ -1435,7 +1435,7 @@ def save_new_execution_order(request):
 
     copied_execution_order = Execution_order.objects.get(id=id_to_copy).execution_order
 
-    new_execution_order_record = Simulation_model(name=name,
+    new_execution_order_record = Execution_order(name=name,
                                         description=description,
                                         execution_order=copied_execution_order)
 
@@ -1853,10 +1853,11 @@ def edit_simulation_new(request):
                                         run_number=0,
                                         user=request.user, 
                                         is_timeseries_analysis=True,
-                                        objects_dict=json.dumps({}), 
-                                        y_value_attributes=json.dumps([]), 
-                                        sorted_attribute_ids=json.dumps([]), 
-                                        object_type_counts=json.dumps({}),
+                                        objects_dict='{}', 
+                                        y_value_attributes='[]', 
+										manually_set_initial_values = '{}',
+                                        sorted_attribute_ids='[]', 
+                                        object_type_counts='{}',
                                         total_object_count=0,
                                         number_of_additional_object_facts=2,
                                         simulation_name='New Simulation',
@@ -2010,8 +2011,8 @@ def run_single_monte_carlo(request):
 #                                 attribute_id=attribute_id,
 #                                 attribute_name=objects_dict[str(object_number)]['object_attributes'][str(attribute_id)]['attribute_name'],
 #                                 object_filter_facts=json.dumps(objects_dict[str(object_number)]['object_filter_facts']),
-#                                 specified_factors = json.dumps({}),
-#                                 sorted_factor_numbers = json.dumps([]),
+#                                 specified_factors = '{}',
+#                                 sorted_factor_numbers = '[]',
 #                                 valid_times= json.dumps(valid_times),
 #                                 min_score_contribution = 0.01,
 #                                 max_p_value = 0.05,

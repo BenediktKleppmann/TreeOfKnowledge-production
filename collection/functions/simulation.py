@@ -96,6 +96,7 @@ class Simulator:
         self.run_locally = simulation_model_record.run_locally
         self.limit_to_populated_y0_columns = simulation_model_record.limit_to_populated_y0_columns
         execution_order = json.loads(Execution_order.objects.get(id=self.execution_order_id).execution_order)
+        manually_set_initial_values = json.loads(simulation_model_record.manually_set_initial_values)
 
         if not self.is_timeseries_analysis:
             self.timestep_size = self.simulation_end_time - self.simulation_start_time
@@ -141,7 +142,7 @@ class Simulator:
         reduced_objects_dict = {}
         for object_number in self.objects_dict.keys():
             reduced_objects_dict[object_number] = {'object_filter_facts':self.objects_dict[object_number]['object_filter_facts'], 'object_relations':self.objects_dict[object_number]['object_relations'] }
-        new_simulation_state_code = str(self.is_timeseries_analysis) + '|' + str(self.simulation_start_time) + '|' + str(self.simulation_end_time) + '|' + str(self.timestep_size) + '|' + str(self.max_number_of_instances) + '|' + json.dumps(self.y0_columns, sort_keys=True, cls=generally_useful_functions.SortedListEncoder) + '|' + json.dumps(reduced_objects_dict, sort_keys=True, cls=generally_useful_functions.SortedListEncoder) + '|' + json.dumps(execution_order['attribute_execution_order'], sort_keys=True, cls=generally_useful_functions.SortedListEncoder)
+        new_simulation_state_code = str(self.is_timeseries_analysis) + '|' + str(self.simulation_start_time) + '|' + str(self.simulation_end_time) + '|' + str(self.timestep_size) + '|' + str(self.max_number_of_instances) + '|' + json.dumps(self.y0_columns, sort_keys=True, cls=generally_useful_functions.SortedListEncoder) + '|' + json.dumps(reduced_objects_dict, sort_keys=True, cls=generally_useful_functions.SortedListEncoder) + '|' + json.dumps(execution_order['attribute_execution_order'], sort_keys=True, cls=generally_useful_functions.SortedListEncoder) + '|' + json.dumps(manually_set_initial_values, sort_keys=True, cls=generally_useful_functions.SortedListEncoder) 
         if 'simulation_state_code' in validation_data.keys():
             print(str(validation_data['simulation_state_code'] == new_simulation_state_code))
             print('checking :')
@@ -152,7 +153,7 @@ class Simulator:
             self.df = pd.DataFrame.from_dict(validation_data['df'])
             self.y0_values = validation_data['y0_values']
         else:
-            (self.df, self.y0_values) = self.get_new_df_and_y0_values(self.is_timeseries_analysis, self.simulation_start_time, self.simulation_end_time, self.timestep_size, self.times, self.y0_columns, self.max_number_of_instances, self.objects_dict, execution_order['attribute_execution_order'])
+            (self.df, self.y0_values) = self.get_new_df_and_y0_values(self.is_timeseries_analysis, self.simulation_start_time, self.simulation_end_time, self.timestep_size, self.times, self.y0_columns, self.max_number_of_instances, self.objects_dict, execution_order['attribute_execution_order'], manually_set_initial_values)
             validation_data = {'simulation_state_code': new_simulation_state_code,
                                 'df': self.df.to_dict(orient='list'),
                                 'y0_values':self.y0_values}
@@ -407,7 +408,7 @@ class Simulator:
 
 
 
-    def get_new_df_and_y0_values(self, is_timeseries_analysis, simulation_start_time, simulation_end_time, timestep_size,  times, y0_columns, max_number_of_instances, objects_dict, attribute_execution_order):
+    def get_new_df_and_y0_values(self, is_timeseries_analysis, simulation_start_time, simulation_end_time, timestep_size,  times, y0_columns, max_number_of_instances, objects_dict, attribute_execution_order, manually_set_initial_values):
 
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
             progress_tracking_file.write(json.dumps({"text": 'Initializing simulations - step: ', "current_number": 2, "total_number": 6}))
@@ -479,6 +480,11 @@ class Simulator:
             del df[column_to_remove]
             del y0_values_df[column_to_remove] 
 
+
+        # manually_set_initial_values
+        for object_number in manually_set_initial_values.keys():
+            for attribute_id in manually_set_initial_values[object_number].keys():
+                df['obj' + str(object_number) + 'attr' + str(attribute_id)] = manually_set_initial_values[object_number][attribute_id]
 
         y0_values = [row for index, row in sorted(y0_values_df.to_dict('index').items())]
 

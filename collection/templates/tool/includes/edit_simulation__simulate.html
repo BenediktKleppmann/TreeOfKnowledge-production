@@ -688,7 +688,7 @@
 	
 <script>
 	// GLOBAL VARIABLES:
-	var object_attribute_changes = {};
+	var manually_set_initial_values = {};
 	var rules_list = {};
 	//var new_rule_cursor_position = {};
 	var new_rule_used_attribute_names = [];
@@ -1473,12 +1473,21 @@
 				object_attributes_string = '<ul id="object-attributes-table" class="list-group">';
 				for (var i = 0; i < object_sorted_attribute_ids.length ; i++) {
 					var attribute_id = object_sorted_attribute_ids[i];
+					
+					var attribute_value = object_attributes[attribute_id]['attribute_value'];
+					var attribute_value_color = 'white';
+					if (object_number in manually_set_initial_values) {
+						if (attribute_id in manually_set_initial_values[object_number]) {
+							attribute_value = manually_set_initial_values[object_number][attribute_id];
+							var attribute_value_color = 'rgb(220, 231, 247)';
+					}
+					
 
 					object_attributes_string += '<li class="list-group-item">' +
 													'<div id="optimisation-attribute-button-' + object_number + '-' + attribute_id + '" class="attribute-name" onclick="selectOptimisationAttribute(' + object_number + ', ' + attribute_id + ')">' + 
 														'<p class="attribute-name-paragraph">' + object_attributes[attribute_id]['attribute_name'] + '</p>' + 
 													'</div>' +
-													'<div class="attribute-value-box"><input class="form-control attribute-value" type="text" value="' + object_attributes[attribute_id]['attribute_value'] + '" onchange="attributeValueChange(' + object_number + ',' + attribute_id + ', this.value)"></div>' +
+													'<div class="attribute-value-box"><input id="attribute-value-' + object_number + '-' + attribute_id + '" class="form-control attribute-value" type="text" value="' + attribute_value + '" onchange="manuallySetInitialValue(' + object_number + ',' + attribute_id + ', this.value)" style="background:' + attribute_value_color + '"></div>' +
 													'<button type="button" id="format_violation' + 1 + '" class="btn btn-danger pull-left" data-container="body" data-toggle="popover" data-placement="left" data-html="true" title="Invalid value" style="display:none;" data-content="">!</button>' + 
 													'<div class="attribute-rule-box">' + 
 														'<button id="attribute-button' + attribute_id + '" type="button" class="btn btn-outline-dark attribute-rule-button" onclick="openEditObjectBehaviourModal(' + object_number + ',' + attribute_id + ',\'' + object_attributes[attribute_id]['attribute_name'] + '\', null)">edit behaviour</button>'
@@ -1584,14 +1593,15 @@
 	}
 	
 	
-	function attributeValueChange(object_number, attribute_id , attribute_value) {
+	function manuallySetInitialValue(object_number, attribute_id , attribute_value) {
 		objects_dict[object_number]['object_attributes'][attribute_id]['attribute_value'] = attribute_value;
 		
 		//save object_attribute_change for potential use in mass-simulation
-		if (!(object_number in object_attribute_changes)) {
-			object_attribute_changes[object_number] = {};
+		if (!(object_number in manually_set_initial_values)) {
+			manually_set_initial_values[object_number] = {};
 		}
-		object_attribute_changes[object_number][attribute_id] = attribute_value;
+		manually_set_initial_values[object_number][attribute_id] = attribute_value;
+		$('#attribute-value-' + object_number + '-' + attribute_id).css("background", "rgb(220, 231, 247)");
 	}
 	
 	
