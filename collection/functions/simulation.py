@@ -486,6 +486,14 @@ class Simulator:
             for attribute_id in manually_set_initial_values[object_number].keys():
                 df['obj' + str(object_number) + 'attr' + str(attribute_id)] = manually_set_initial_values[object_number][attribute_id]
 
+        # some additional useful columns
+        df['null'] = np.nan
+        if is_timeseries_analysis: 
+            df['delta_t'] = timestep_size
+        else:
+            df[y0_columns] = None
+
+
         y0_values = [row for index, row in sorted(y0_values_df.to_dict('index').items())]
 
         return (df, y0_values)
@@ -791,13 +799,15 @@ class Simulator:
                 for used_parameter_id in rule['used_parameter_ids']:
                     df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][str(used_parameter_id)]['histogram']).rvs(size=batch_size)
 
-        df['null'] = np.nan
-        if self.is_timeseries_analysis: 
-            df['delta_t'] = self.timestep_size
-        else:
-            df[self.y0_columns] = None
 
 
+        # df['null'] = np.nan
+        # if self.is_timeseries_analysis: 
+        #     df['delta_t'] = self.timestep_size
+        # else: 
+        #     df[self.y0_columns] = None
+
+            
         y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
         for period in range(len(self.times[1:])):
             df['randomNumber'] = np.random.random(batch_size)
@@ -976,11 +986,11 @@ class Simulator:
                     df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][used_parameter_id]['histogram']).rvs(size=batch_size)
 
 
-        df['null'] = np.nan
-        if self.is_timeseries_analysis: 
-            df['delta_t'] = self.timestep_size
-        else: 
-            df[self.y0_columns] = None
+        # df['null'] = np.nan
+        # if self.is_timeseries_analysis: 
+        #     df['delta_t'] = self.timestep_size
+        # else: 
+        #     df[self.y0_columns] = None
 
         # if self.is_timeseries_analysis:
             # times = np.arange(self.simulation_start_time + self.timestep_size, self.simulation_end_time, self.timestep_size)
@@ -1045,11 +1055,7 @@ class Simulator:
                                 df['sum' + str(sum_number)] += pd.eval(sum_term).fillna(0)
 
                     all_new_values = pd.eval(rule['effect_exec'])
-                    # testing================================
-                    if rule['id']==110:
-                        print('rule110: ' + rule['effect_exec'])
-                        print('all_new_values: ' + str(all_new_values))
-                    # =====================
+
                     if rule['changed_var_data_type'] in ['relation','int']:
                         nan_rows = all_new_values.isnull()
                         all_new_values = all_new_values.fillna(0)

@@ -1597,12 +1597,25 @@
 	function manuallySetInitialValue(object_number, attribute_id , attribute_value) {
 		objects_dict[object_number]['object_attributes'][attribute_id]['attribute_value'] = attribute_value;
 		
-		//save object_attribute_change for potential use in mass-simulation
-		if (!(object_number in manually_set_initial_values)) {
-			manually_set_initial_values[object_number] = {};
+		
+		if (attribute_value=='') {
+		
+			//remove it 
+			delete manually_set_initial_values[object_number][attribute_id];
+			$('#attribute-value-' + object_number + '-' + attribute_id).css("background", "white");
+			
+		} else {
+		
+			//add it
+			if (!isNaN(attribute_value)) {
+				attribute_value = parseFloat(attribute_value);
+			}
+			if (!(object_number in manually_set_initial_values)) {
+				manually_set_initial_values[object_number] = {};
+			}
+			manually_set_initial_values[object_number][attribute_id] = attribute_value;
+			$('#attribute-value-' + object_number + '-' + attribute_id).css("background", "rgb(220, 231, 247)");
 		}
-		manually_set_initial_values[object_number][attribute_id] = attribute_value;
-		$('#attribute-value-' + object_number + '-' + attribute_id).css("background", "rgb(220, 231, 247)");
 	}
 	
 	
