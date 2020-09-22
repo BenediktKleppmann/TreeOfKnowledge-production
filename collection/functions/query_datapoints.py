@@ -784,6 +784,9 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
             list_of_parent_object_types = [el['id'] for el in get_from_db.get_list_of_parent_objects(object_type_id)]
             all_attribute_ids = Attribute.objects.filter(first_applicable_object_type__in = list_of_parent_object_types).values_list('id', flat=True)
             all_columns = ['obj%sattr%s' % (object_number, attribute_id) for attribute_id in all_attribute_ids]
+            print('insert missing columns --------')
+            print('list_of_parent_object_types: ' + str(list_of_parent_object_types))
+            print('all_attribute_ids: ' + str(all_attribute_ids))
             existing_columns = list(broad_table_df.columns)
             for column_name in all_columns:
                 if column_name not in existing_columns:

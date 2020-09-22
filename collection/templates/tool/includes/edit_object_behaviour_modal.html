@@ -1730,7 +1730,7 @@ var parameter_info = {};
 		var startPosition = myElement.selectionStart;
 		var endPosition = myElement.selectionEnd;
 		var rule_effect_text = document.getElementById('rule-effect-text').value;
-		var new_rule_effect_text = rule_effect_text.substring(0, startPosition) + string_to_insert + rule_effect_text.substring(endPosition, rule_text.length);
+		var new_rule_effect_text = rule_effect_text.substring(0, startPosition) + string_to_insert + rule_effect_text.substring(endPosition, rule_effect_text.length);
 		document.getElementById('rule-effect-text').value = new_rule_effect_text;
 	}
 	

@@ -2147,7 +2147,7 @@ def get_query_results(request):
 
 @staff_member_required
 def show_attributes(request):
-    attributes = Attribute.objects.all()
+    attributes = Attribute.objects.all().order_by('id')
     return render(request, 'admin/show_attributes.html', {'attributes': attributes,})
 
 @staff_member_required
