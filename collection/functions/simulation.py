@@ -258,19 +258,9 @@ class Simulator:
                                 for used_object in used_objects:
                                     object_conditions.append('(%s)' % (rule['aggregation_exec'].replace('x_df.', 'df.obj' + used_object)))
                                 count_x_occurences = re.findall(r'COUNT\(x\)', rule['effect_exec'])
-                                print('===   count_x_occurences ' + str(rule['id']) + ' ==')
-                                print('rule[\'effect_exec\']=' + rule['effect_exec'])
-                                print('count_x_occurences=' + str(count_x_occurences))
-                                print('=============================')
                                 for count_x_occurence in count_x_occurences:
                                     count_x_replacement_str = '(0 + %s)' % (' + 0 + '.join(object_conditions))
                                     rule['effect_exec'] = rule['effect_exec'].replace(count_x_occurence, count_x_replacement_str)
-                                    print('====================   count_x_occurence  ======================')
-                                    print('count_x_occurence=' + str(count_x_occurence))
-                                    print('object_conditions=' + str(object_conditions))
-                                    print('count_x_replacement_str=' + str(count_x_replacement_str))
-                                    print('rule[\'effect_exec\']=' + str(rule['effect_exec']))
-                                    print('================================================================')
                                 sum_occurences = re.findall(r'SUM\(.*\)', rule['effect_exec'])
                                 if len(sum_occurences) > 0:
                                     rule['sums'] = {}
@@ -841,6 +831,11 @@ class Simulator:
                         satisfying_rows = populated_df_rows
                     if rule['has_probability_1']:
                         condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
+                        if rule['id']==110:
+                            print('rule110 condition -------------------------------------------')
+                            print('rule[\'condition_exec\'] = ' + rule['condition_exec'])
+                            print(str(list(df['obj1attr226'])))
+                            print('-------------------------------------------------------------')
 
                         if condition_satisfying_rows.iloc[0] in [-1,-2]: #messy bug-fix for bug where eval returns -1 and -2 instead of True and False
                             condition_satisfying_rows += 2
@@ -863,9 +858,6 @@ class Simulator:
                         for sum_number in rule['sums'].keys():
                             df['sum' + str(sum_number)] = 0
                             for sum_term in rule['sums'][sum_number]:
-                                print('executing sum term ' + str(sum_number) +'-----------------------------')
-                                print('sum_term=' + sum_term)
-                                print('--------------------------------------------------------------')
                                 df['sum' + str(sum_number)] += pd.eval(sum_term).fillna(0)
 
                     new_values = pd.eval(rule['effect_exec'])
