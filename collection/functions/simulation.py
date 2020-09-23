@@ -890,7 +890,6 @@ class Simulator:
                     print('period'+ str(period) +' rule'+ str(rule['id']) +' condition -------------------------------------------')
                     print('rule[\'condition_exec\'] = ' + rule['condition_exec'])
                     print(str(list(df['obj1attr226'])))
-                    print(str(list(pd.eval(rule['condition_exec']))))
                     print(str(satisfying_rows))
                     print(rule['column_to_change'])
                     print(str(list(new_values)))
