@@ -1901,10 +1901,10 @@ var parameter_info = {};
 					executable = executable.split('x.' + search_value).join('x_df.rel' + String(available_attribute_ids[i]));
 					executable = executable.split('.' + search_value).join('.rel' + String(available_attribute_ids[i]));
 					executable = executable.split(search_value).join('df.rel' + String(available_attribute_ids[i]));
-				} else if (['string', 'date'].includes(data_type)){
-					executable = executable.split('x.' + search_value).join('x_df.attr' + String(available_attribute_ids[i]) + '"');
-					executable = executable.split('.' + search_value).join('.attr' + String(available_attribute_ids[i]) + '"');
-					executable = executable.split(search_value).join('df.attr' + String(available_attribute_ids[i]) + '"');
+				//} else if (['string', 'date'].includes(data_type)){
+				//	executable = executable.split('x.' + search_value).join('x_df.attr' + String(available_attribute_ids[i]) + '"');
+				//	executable = executable.split('.' + search_value).join('.attr' + String(available_attribute_ids[i]) + '"');
+				//	executable = executable.split(search_value).join('df.attr' + String(available_attribute_ids[i]) + '"');
 				} else {
 					executable = executable.split('x.' + search_value).join('x_df.attr' + String(available_attribute_ids[i]));
 					executable = executable.split('.' + search_value).join('.attr' + String(available_attribute_ids[i]));
