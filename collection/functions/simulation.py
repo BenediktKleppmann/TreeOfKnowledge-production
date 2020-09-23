@@ -1439,8 +1439,8 @@ class Simulator:
 
         if len(error)==0:
             print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
-            print('v_df=' + json.dumps(v_df))
-            print('u_df=' + json.dumps(u_df))
+            print('v_df=' + json.dumps(list(u)))
+            print('u_df=' + json.dumps(list(v)))
             print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
         errors_dict = {'all_errors':error, 'error': error.mean()}
         if self.currently_running_learn_likelihoods:
