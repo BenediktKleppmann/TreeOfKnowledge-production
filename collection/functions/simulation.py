@@ -276,7 +276,7 @@ class Simulator:
                                     rule['sums'] = {}
                                 for sum_number, sum_occurence in enumerate(sum_occurences):
                                     sum_term = sum_occurence[3:]
-                                    object_sum_terms = ['(0 + ('object_condition + ')) * ' + sum_term.replace('x_df.', 'df.obj' + used_object) for used_object, object_condition in zip(used_objects,object_conditions)]
+                                    object_sum_terms = ['(0 + (' + object_condition + ')) * ' + sum_term.replace('x_df.', 'df.obj' + used_object) for used_object, object_condition in zip(used_objects,object_conditions)]
                                     object_sum_terms = [self.collapse_relations(sum_term, relation_dict, object_number) for sum_term in object_sum_terms]
                                     object_sum_terms = [sum_term.replace('df.attr', 'df.obj' + str(object_number) + 'attr') for sum_term in object_sum_terms]
                                     rule['sums'][sum_number] = object_sum_terms
@@ -863,6 +863,9 @@ class Simulator:
                         for sum_number in rule['sums'].keys():
                             df['sum' + str(sum_number)] = 0
                             for sum_term in rule['sums'][sum_number]:
+                                print('executing sum term ' + str(sum_number) +'-----------------------------')
+                                print('sum_term=' + sum_term)
+                                print('--------------------------------------------------------------')
                                 df['sum' + str(sum_number)] += pd.eval(sum_term).fillna(0)
 
                     new_values = pd.eval(rule['effect_exec'])
