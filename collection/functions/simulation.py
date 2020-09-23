@@ -1089,7 +1089,8 @@ class Simulator:
                 # df.loc[satisfying_rows,rule['column_to_change']] = new_values
                 new_values = all_new_values
                 new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
-                new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
+                if rule['effect_exec'] != 'df.null':
+                    new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
                 df[rule['column_to_change']] = new_values
 
 
