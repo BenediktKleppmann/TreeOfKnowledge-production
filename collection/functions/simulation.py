@@ -885,7 +885,8 @@ class Simulator:
                 # --------  Apply the Change (new_values)  --------
                 satisfying_rows[satisfying_rows.isna()] = False
                 new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
-                new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
+                if rule['effect_exec'] != 'df.null':
+                    new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
                 if rule['id'] in [98, 110]:
                     print('period'+ str(period) +' rule'+ str(rule['id']) +' condition -------------------------------------------')
                     print('rule[\'condition_exec\'] = ' + rule['condition_exec'])
