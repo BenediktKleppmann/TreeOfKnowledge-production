@@ -354,7 +354,9 @@ class Simulator:
 
                     except Exception:
                         self.not_used_rules[object_number][rule_id] = {'condition_text':rule['condition_text'], 
+                                                                        'condition_exec':rule['condition_exec'],
                                                                         'effect_text':rule['effect_text'], 
+                                                                        'effect_exec':rule['effect_exec'], 
                                                                         'reason':str(traceback.format_exc())}
                                        
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
@@ -807,7 +809,7 @@ class Simulator:
         # else: 
         #     df[self.y0_columns] = None
 
-            
+
         y0_values_in_simulation = pd.DataFrame(index=range(batch_size))
         for period in range(len(self.times[1:])):
             df['randomNumber'] = np.random.random(batch_size)
