@@ -835,6 +835,9 @@ class Simulator:
                             print('rule110 condition -------------------------------------------')
                             print('rule[\'condition_exec\'] = ' + rule['condition_exec'])
                             print(str(list(df['obj1attr226'])))
+                            print(str(list(pd.eval(rule['condition_exec']))))
+                            print(str(list(df['null'])))
+                            print(str(list(pd.eval('df.null'))))
                             print('-------------------------------------------------------------')
 
                         if condition_satisfying_rows.iloc[0] in [-1,-2]: #messy bug-fix for bug where eval returns -1 and -2 instead of True and False
