@@ -263,7 +263,7 @@ class Simulator:
                                 print('count_x_occurences=' + str(count_x_occurences))
                                 print('=============================')
                                 for count_x_occurence in count_x_occurences:
-                                    count_x_replacement_str = '(%s)' % (' + 0 + '.join(object_conditions))
+                                    count_x_replacement_str = '(0 + %s)' % (' + 0 + '.join(object_conditions))
                                     rule['effect_exec'] = rule['effect_exec'].replace(count_x_occurence, count_x_replacement_str)
                                     print('====================   count_x_occurence  ======================')
                                     print('count_x_occurence=' + str(count_x_occurence))
