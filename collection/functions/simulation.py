@@ -887,15 +887,16 @@ class Simulator:
                 new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
                 if rule['effect_exec'] != 'df.null':
                     new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
+                df[rule['column_to_change']] = new_values
                 if rule['id'] in [98, 110]:
                     print('period'+ str(period) +' rule'+ str(rule['id']) +' condition -------------------------------------------')
                     print('rule[\'condition_exec\'] = ' + rule['condition_exec'])
                     print(str(list(df['obj1attr226'])))
-                    print(str(satisfying_rows))
+                    print(str(list(satisfying_rows)))
                     print(rule['column_to_change'])
                     print(str(list(new_values)))
+                    print(str(list(df[rule['column_to_change']])))
                     print('-------------------------------------------------------------')
-                df[rule['column_to_change']] = new_values
 
 
 
