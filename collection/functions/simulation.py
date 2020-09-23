@@ -276,7 +276,7 @@ class Simulator:
                                     rule['sums'] = {}
                                 for sum_number, sum_occurence in enumerate(sum_occurences):
                                     sum_term = sum_occurence[3:]
-                                    object_sum_terms = [object_condition + ' * ' + sum_term.replace('x_df.', 'df.obj' + used_object) for used_object, object_condition in zip(used_objects,object_conditions)]
+                                    object_sum_terms = ['(0 + ('object_condition + ')) * ' + sum_term.replace('x_df.', 'df.obj' + used_object) for used_object, object_condition in zip(used_objects,object_conditions)]
                                     object_sum_terms = [self.collapse_relations(sum_term, relation_dict, object_number) for sum_term in object_sum_terms]
                                     object_sum_terms = [sum_term.replace('df.attr', 'df.obj' + str(object_number) + 'attr') for sum_term in object_sum_terms]
                                     rule['sums'][sum_number] = object_sum_terms
@@ -492,8 +492,6 @@ class Simulator:
             del df[column_to_remove]
             del y0_values_df[column_to_remove] 
 
-        print('before *****************************************************')
-        print('df1 = ' + json.dumps(df.to_dict()))
         # manually_set_initial_values
         for object_number in manually_set_initial_values.keys():
             for attribute_id in manually_set_initial_values[object_number].keys():
@@ -505,8 +503,6 @@ class Simulator:
             df['delta_t'] = timestep_size
         else:
             df[y0_columns] = None
-        print('df2 = ' + json.dumps(df.to_dict()))
-        print('after *****************************************************')
 
         y0_values = [row for index, row in sorted(y0_values_df.to_dict('index').items())]
 
