@@ -492,7 +492,8 @@ class Simulator:
             del df[column_to_remove]
             del y0_values_df[column_to_remove] 
 
-
+        print('before *****************************************************')
+        print('df1 = ' + json.dumps(df.to_dict()))
         # manually_set_initial_values
         for object_number in manually_set_initial_values.keys():
             for attribute_id in manually_set_initial_values[object_number].keys():
@@ -504,7 +505,8 @@ class Simulator:
             df['delta_t'] = timestep_size
         else:
             df[y0_columns] = None
-
+        print('df2 = ' + json.dumps(df.to_dict()))
+        print('after *****************************************************')
 
         y0_values = [row for index, row in sorted(y0_values_df.to_dict('index').items())]
 
