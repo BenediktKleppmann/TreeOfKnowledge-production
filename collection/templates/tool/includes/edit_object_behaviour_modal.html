@@ -2045,7 +2045,7 @@ var parameter_info = {};
 		
 
 		// setting: effect_is_calculation
-		if (effect_executable_dict['executable'].indexOf('df.') >=0) {
+		if (effect_executable_dict['executable'].indexOf('df.')>=0 || effect_executable_dict['executable'].indexOf('COUNT')>=0) {
 			rule_dict['effect_is_calculation'] = true;
 		} else {
 			rule_dict['effect_is_calculation'] = false;
