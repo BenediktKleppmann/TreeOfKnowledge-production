@@ -831,14 +831,7 @@ class Simulator:
                         satisfying_rows = populated_df_rows
                     if rule['has_probability_1']:
                         condition_satisfying_rows[populated_df_rows] = pd.eval(rule['condition_exec'])
-                        if rule['id']==110:
-                            print('rule110 condition -------------------------------------------')
-                            print('rule[\'condition_exec\'] = ' + rule['condition_exec'])
-                            print(str(list(df['obj1attr226'])))
-                            print(str(list(pd.eval(rule['condition_exec']))))
-                            print(str(list(df['null'])))
-                            print(str(list(pd.eval('df.null'))))
-                            print('-------------------------------------------------------------')
+
 
                         if condition_satisfying_rows.iloc[0] in [-1,-2]: #messy bug-fix for bug where eval returns -1 and -2 instead of True and False
                             condition_satisfying_rows += 2
@@ -893,6 +886,15 @@ class Simulator:
                 satisfying_rows[satisfying_rows.isna()] = False
                 new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
                 new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
+                if rule['id'] in [98, 110]:
+                    print('period'+ str(period) +' rule'+ str(rule['id']) +' condition -------------------------------------------')
+                    print('rule[\'condition_exec\'] = ' + rule['condition_exec'])
+                    print(str(list(df['obj1attr226'])))
+                    print(str(list(pd.eval(rule['condition_exec']))))
+                    print(str(satisfying_rows))
+                    print(rule['column_to_change'])
+                    print(str(list(new_values)))
+                    print('-------------------------------------------------------------')
                 df[rule['column_to_change']] = new_values
 
 
