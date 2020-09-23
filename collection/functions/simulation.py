@@ -259,8 +259,14 @@ class Simulator:
                                     object_conditions.append('(%s)' % (rule['aggregation_exec'].replace('x_df.', 'df.obj' + used_object)))
                                 count_x_occurences = re.findall(r'COUNT\(x\)', rule['effect_exec'])
                                 for count_x_occurence in count_x_occurences:
-                                    count_x_replacement_str = '(%s)' % (' + '.join(object_conditions))
+                                    count_x_replacement_str = '(%s)' % (' + 0 + '.join(object_conditions))
                                     rule['effect_exec'] = rule['effect_exec'].replace(count_x_occurence, count_x_replacement_str)
+                                    print('====================   count_x_occurence  ======================')
+                                    print('count_x_occurence=' + str(count_x_occurence))
+                                    print('object_conditions=' + str(object_conditions))
+                                    print('count_x_replacement_str=' + str(count_x_replacement_str))
+                                    print('rule['effect_exec']=' + str(rule['effect_exec']))
+                                    print('================================================================')
                                 sum_occurences = re.findall(r'SUM\(.*\)', rule['effect_exec'])
                                 if len(sum_occurences) > 0:
                                     rule['sums'] = {}
