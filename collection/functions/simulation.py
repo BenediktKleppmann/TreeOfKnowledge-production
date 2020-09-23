@@ -265,7 +265,7 @@ class Simulator:
                                     print('count_x_occurence=' + str(count_x_occurence))
                                     print('object_conditions=' + str(object_conditions))
                                     print('count_x_replacement_str=' + str(count_x_replacement_str))
-                                    print('rule['effect_exec']=' + str(rule['effect_exec']))
+                                    print('rule[\'effect_exec\']=' + str(rule['effect_exec']))
                                     print('================================================================')
                                 sum_occurences = re.findall(r'SUM\(.*\)', rule['effect_exec'])
                                 if len(sum_occurences) > 0:
