@@ -583,7 +583,7 @@ def get_all_pdfs(request):
     rule_or_parameter_id = int(request.GET.get('rule_or_parameter_id', ''))
     is_rule = (request.GET.get('is_rule', '').lower() == 'true')
 
-    response = {'individual_pdfs':[]}
+    response = {'rule_or_parameter_id':rule_or_parameter_id, 'is_rule':is_rule, 'individual_pdfs':[]}
     print('get_all_pdfs 2')
     if is_rule:
         query = ''' SELECT  DISTINCT simulation_id, object_number, 

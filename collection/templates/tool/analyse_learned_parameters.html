@@ -153,6 +153,11 @@
 	}
 	
 	#save-as-posterior-button {}
+	
+	#saving-response {
+		padding-left: 250px;
+		padding-top: 3px;
+	}
 										
 	/* --------------------------------------------------------------------------*/
 	/* Right Panel - Inspect Simulations  ---------------------------------------*/
@@ -1286,6 +1291,7 @@
 	
 	function drawComparePosteriorsContent(response) {
 	
+		var parameter_id = response['rule_or_parameter_id'];
 		var pdfs_html_string = '';
 		for (var i = 0; i < response['individual_pdfs'].length; i++) {
 			var individual_pdf = response['individual_pdfs'][i];
