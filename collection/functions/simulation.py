@@ -859,6 +859,9 @@ class Simulator:
                         for sum_number in rule['sums'].keys():
                             df['sum' + str(sum_number)] = 0
                             for sum_term in rule['sums'][sum_number]:
+                                print('^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v')
+                                print('sum_term=' + sum_term)
+                                print('^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v')
                                 df['sum' + str(sum_number)] += pd.eval(sum_term).fillna(0)
 
                     new_values = pd.eval(rule['effect_exec'])
