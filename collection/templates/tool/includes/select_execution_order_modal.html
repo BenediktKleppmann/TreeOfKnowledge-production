@@ -217,7 +217,7 @@ var selected_execution_order_id = execution_order_id;
 	function saveExecutionOrderChanges() {
 		// local
 		new_execution_order_name = $('#execution-order-name').val();
-		new_execution_order_description = $('#execution-order-description').html();
+		new_execution_order_description = $('#execution-order-description').val();
 		available_execution_orders[selected_execution_order_id]['name'] = new_execution_order_name;
 		available_execution_orders[selected_execution_order_id]['description'] = new_execution_order_description;
 		showExecutionOrdersList();
@@ -236,24 +236,32 @@ var selected_execution_order_id = execution_order_id;
 
 	function saveExecutionOrderAsNew() {
 		new_execution_order_name = $('#execution-order-name').val();
-		new_execution_order_description = $('#execution-order-description').html();
+		new_execution_order_description = $('#execution-order-description').val();
 		
 		if (new_execution_order_name != available_execution_orders[selected_execution_order_id]['name']) {
 			$('#execution-order-info-panel').html('');
 		
 			// remote
-			var xhttp = new XMLHttpRequest();       
-			xhttp.onreadystatechange = function() {
+			request_body = {
+				'id_to_copy': selected_execution_order_id,
+				'name': new_execution_order_name,
+				'description': new_execution_order_description
+			}
+			
+			var xmlhttp = new XMLHttpRequest();    
+			xmlhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
-				
 					// local
 					new_execution_order_dict = JSON.parse(this.responseText);
 					available_execution_orders[new_execution_order_dict['id']] = {'name': new_execution_order_dict['name'], 'description':new_execution_order_dict['description']};
 					showExecutionOrdersList();
 				}
-			};
-			xhttp.open('GET', '/tool/save_new_execution_order?id_to_copy=' + String(selected_execution_order_id) + '&name=' + new_execution_order_name + '&description=' + new_execution_order_description);
-			xhttp.send();
+			};		
+			xmlhttp.open("POST", "/tool/save_new_execution_order/");
+			xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+			xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+			xmlhttp.send(JSON.stringify(request_body));	
+		
 
 		} else {
 			alert('A new Execution Order Name is required to avoid confusion');

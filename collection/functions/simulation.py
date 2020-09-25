@@ -258,7 +258,6 @@ class Simulator:
                                 for used_object in used_objects:
                                     object_conditions.append('(%s)' % (rule['aggregation_exec'].replace('x_df.', 'df.obj' + used_object)))
                                 count_x_occurences = re.findall(r'COUNT\(x\)', rule['effect_exec'])
-                                print('%%%  aggregation_exec   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
                                 for count_x_occurence in count_x_occurences:
                                     count_x_replacement_str = '(0 + %s)' % (' + 0 + '.join(object_conditions))
                                     rule['effect_exec'] = rule['effect_exec'].replace(count_x_occurence, count_x_replacement_str)
@@ -272,10 +271,6 @@ class Simulator:
                                     object_sum_terms = [sum_term.replace('df.attr', 'df.obj' + str(object_number) + 'attr') for sum_term in object_sum_terms]
                                     rule['sums'][sum_number] = object_sum_terms
                                     rule['effect_exec'] = rule['effect_exec'].replace(sum_occurence, ' (df.sum%s) ' % sum_number)
-                                    print('object_sum_terms=' + str(object_sum_terms))
-                                print('rule[\'effect_exec\']=' + rule['effect_exec'])
-                                print('object_conditions=' + str(object_conditions))
-                                print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
                             else:
                                 raise Exception("None of the objects have all the columns required by this rule, which are: "  + str(rule['used_attribute_ids']))
 
@@ -859,9 +854,6 @@ class Simulator:
                         for sum_number in rule['sums'].keys():
                             df['sum' + str(sum_number)] = 0
                             for sum_term in rule['sums'][sum_number]:
-                                print('^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v')
-                                print('sum_term=' + sum_term)
-                                print('^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v')
                                 df['sum' + str(sum_number)] += pd.eval(sum_term).fillna(0)
 
                     new_values = pd.eval(rule['effect_exec'])

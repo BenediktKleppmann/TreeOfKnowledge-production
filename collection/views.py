@@ -1430,20 +1430,28 @@ def save_changed_execution_order(request):
 # used in: select_execution_order_modal.html
 @login_required
 def save_new_execution_order(request):
-    id_to_copy = int(request.GET.get('simulation_id', ''))
-    name = request.GET.get('simulation_id', '')
-    description = request.GET.get('simulation_id', '')
+    if request.method == 'POST':
 
-    copied_execution_order = Execution_order.objects.get(id=id_to_copy).execution_order
+        request_body = json.loads(request.body)
+        id_to_copy = request_body['id_to_copy']
+        name = request_body['name']
+        description = request_body['description']
 
-    new_execution_order_record = Execution_order(name=name,
-                                        description=description,
-                                        execution_order=copied_execution_order)
+        copied_execution_order = Execution_order.objects.get(id=id_to_copy).execution_order
 
-    new_execution_order_record.save()
-    new_execution_order_id = new_execution_order_record.id
-    new_execution_order_dict = {'id':new_execution_order_id, 'name':name, 'description':description}
-    return HttpResponse(json.dumps(new_execution_order_dict))
+        new_execution_order_record = Execution_order(name=name,
+                                            description=description,
+                                            execution_order=copied_execution_order)
+
+        new_execution_order_record.save()
+        new_execution_order_id = new_execution_order_record.id
+        new_execution_order_dict = {'id':new_execution_order_id, 'name':name, 'description':description}
+        return HttpResponse(json.dumps(new_execution_order_dict))
+
+    else:
+        return HttpResponse("This must be a POST request.")
+
+
 
 
 
