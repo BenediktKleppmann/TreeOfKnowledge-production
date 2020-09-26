@@ -2338,11 +2338,11 @@ def upload_file(request):
 # ==================
 def test_page1(request):
     import boto3
-    
+    simulation_id = request.GET.get('simulation_id', '')
 
     session = boto3.session.Session()
     s3 = session.resource('s3')
-    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_487_validation_data.json')
+    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(simulation_id) + '_validation_data.json')
     s3_document = obj.get()
     document_body = s3_document['Body'].read()
     document_body_str = document_body.decode('utf-8')
@@ -2363,23 +2363,26 @@ def test_page1(request):
 
 def test_page2(request):
     import boto3
+    simulation_id = request.GET.get('simulation_id', '')
+
     session = boto3.session.Session()
     s3 = session.resource('s3')
-    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_487_validation_data.json')
+    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(simulation_id) + '_validation_data.json')
     s3_document = obj.get()
     document_body = s3_document['Body'].read()
     document_body_str = document_body.decode('utf-8')
     validation_data = json.loads(document_body_str)
 
-
-
     return HttpResponse(json.dumps(validation_data['df']))
+
+
 
 
 def test_page3(request):
     import boto3
     
-    simulation_model_record = Simulation_model.objects.get(id=480)
+    simulation_id = request.GET.get('simulation_id', '')
+    simulation_model_record = Simulation_model.objects.get(id=int(simulation_id))
 
     y0_columns = []
     y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
@@ -2392,7 +2395,7 @@ def test_page3(request):
 
     session = boto3.session.Session()
     s3 = session.resource('s3')
-    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_480_validation_data.json')
+    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(simulation_id) + '_validation_data.json')
     s3_document = obj.get()
     document_body = s3_document['Body'].read()
     document_body_str = document_body.decode('utf-8')
