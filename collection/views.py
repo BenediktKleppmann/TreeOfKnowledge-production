@@ -40,6 +40,7 @@ from boto import sns
 import psycopg2
 from datetime import datetime
 import scipy.stats as stats
+import re
 
 
 
@@ -774,6 +775,37 @@ def get_simulated_parameter_numbers(request):
     new_parameter_numbers = Simulation_result.objects.filter(simulation_id=simulation_id, run_number=run_number, is_new_parameter=True).order_by('parameter_number').values_list('parameter_number', flat=True)
     new_parameter_numbers = list(set(new_parameter_numbers))
     return HttpResponse(json.dumps({'learned_parameter_numbers':learned_parameter_numbers, 'new_parameter_numbers':new_parameter_numbers}))  
+
+
+
+# used in analyse_simulation.html
+@login_required
+def get_missing_objects_dict_attributes(request):
+    if request.method == 'POST':
+        try:
+            request_body = json.loads(request.body)
+            response = {}
+            for object_number in request_body.keys():
+                response[object_number] = {}
+                simulation_data_columns = request_body[object_number]['simulation_data_columns']
+                simulation_data_attribute_ids = [int(re.findall(r'\d+', col)[1]) for col in simulation_data_columns if len(re.findall(r'\d+', col))>1]
+                objects_dict_attribute_ids = [int(attribute_id) for attribute_id in request_body[object_number]['objects_dict_attribute_ids']]
+
+                missing_attribute_ids = list(set(simulation_data_attribute_ids) - set(objects_dict_attribute_ids))
+                for missing_attribute_id in missing_attribute_ids:
+
+                    attribute_record = Attribute.objects.get(id=missing_attribute_id)
+                    response[object_number][missing_attribute_id] =  {  'attribute_value': None, 
+                                                                        'attribute_name':attribute_record.name, 
+                                                                        'attribute_data_type':attribute_record.data_type, 
+                                                                        'attribute_rule': None}
+
+            return HttpResponse(json.dumps(response))
+        except Exception as error:
+            traceback.print_exc()
+            return HttpResponse(str(error))
+    else:
+        return HttpResponse("This must be a POST request.")
 
 
 

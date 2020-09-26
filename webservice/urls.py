@@ -104,6 +104,7 @@ urlpatterns = [
     url(r'^tool/get_single_pdf/$', views.get_single_pdf, name='get_single_pdf'),
     url(r'^tool/get_parameter_info/$', views.get_parameter_info, name='get_parameter_info'),
     url(r'^tool/get_simulated_parameter_numbers/$', views.get_simulated_parameter_numbers, name='get_simulated_parameter_numbers'),
+    url(r'^tool/get_missing_objects_dict_attributes/$', views.get_missing_objects_dict_attributes, name='get_missing_objects_dict_attributes'),
 
     # complex get
     url(r'^tool/get_data_points/$', views.get_data_points, name='get_data_points'),

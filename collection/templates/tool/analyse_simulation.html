@@ -1634,6 +1634,45 @@
 	};
 	xhttp.open('GET', '/tool/get_execution_order?execution_order_id=' + execution_order_id , true);
 	xhttp.send();
+	
+	
+	//get missing object_dict attributes
+	request_body = {}
+	var sim_key0 = Object.keys(simulation_data)[0]
+	var simulation_data_columns = Object.keys(simulation_data[sim_key0])
+	var object_numbers = Object.keys(objects_dict);
+	for (var i = 0; i < object_numbers.length; i++) {
+		var simulated_columns_for_this_object = [];
+		for (var j = 0; j < simulation_data_columns.length; j++) {
+			if (simulation_data_columns[j].includes('obj' + String(object_numbers[i]) + 'attr')) {
+				simulated_columns_for_this_object.push(simulation_data_columns[j])
+			}
+		}
+		request_body[object_numbers[i]] = {'simulation_data_columns':simulated_columns_for_this_object, 'objects_dict_attribute_ids': Object.keys(objects_dict[object_numbers[i]]["object_attributes"])};
+	}
+	
+	var xmlhttp = new XMLHttpRequest();    
+	xmlhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			var response = JSON.parse(this.responseText);
+			var object_numbers = Object.keys(response);
+			for (var i=0; i < object_numbers.length; i++) {
+				var missing_attribute_ids = Object.keys(response[object_numbers[i]]);
+				for (var j=0; j < missing_attribute_ids.length; j++) {
+					objects_dict[object_numbers[i]]['object_attributes'][missing_attribute_ids[j]] = response[object_numbers[i]][missing_attribute_ids[j]];
+				}
+			}
+		}
+	};	
+	xmlhttp.open("POST", "/tool/get_missing_objects_dict_attributes/");
+	xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+	xmlhttp.send(JSON.stringify(request_body));	
+		
+		
+		
+		
+		
 		
 	window.onload = function() {	
 		// make the accordion in the left sidebar collapseable
@@ -1697,8 +1736,8 @@
 </script>
 
 
-<script src="//code.jquery.com/jquery-1.10.2.js"></script>
-<script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+<!--<script src="//code.jquery.com/jquery-1.10.2.js"></script>-->
+<!--<script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>-->
 
 {% include "tool/includes/edit_object_behaviour_modal.html" %} 
 
