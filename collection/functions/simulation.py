@@ -480,7 +480,8 @@ class Simulator:
         columns_to_remove = list(set(all_not_wanted_columns).intersection(set(df.columns)))
         for column_to_remove in columns_to_remove:
             del df[column_to_remove]
-            del y0_values_df[column_to_remove] 
+            if column_to_remove in y0_values_df.columns:
+                del y0_values_df[column_to_remove] 
 
         # manually_set_initial_values
         for object_number in manually_set_initial_values.keys():
