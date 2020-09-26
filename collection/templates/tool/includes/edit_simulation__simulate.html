@@ -1302,21 +1302,21 @@
 			
 		//var execution_order_name = $('#execution-order-name').val();
 		//var execution_order_description = $('#execution-order-description').val();
-		var execution_order_name = 'test_name';
-		var execution_order_description = 'test_description';
+		//var execution_order_name = 'test_name';
+		//var execution_order_description = 'test_description';
 		
-		request_body = {
-			'id': execution_order_id,
-			'name': execution_order_name,
-			'description': execution_order_description,
-			'execution_order': execution_order
-		}
+		//request_body = {
+		//	'id': execution_order_id,
+		//	'name': execution_order_name,
+		//	'description': execution_order_description,
+		//	'execution_order': execution_order
+		//}
 		
-		var xmlhttp = new XMLHttpRequest();       
-		xmlhttp.open("POST", "/tool/save_changed_execution_order/");
-		xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-		xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
-		xmlhttp.send(JSON.stringify(request_body));	
+		//var xmlhttp = new XMLHttpRequest();       
+		//xmlhttp.open("POST", "/tool/save_changed_execution_order/");
+		//xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		//xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+		//xmlhttp.send(JSON.stringify(request_body));	
 		
 		
 		//save Simulation --------------------------
