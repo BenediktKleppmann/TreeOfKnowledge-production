@@ -542,6 +542,7 @@ def get_object_hierachy_tree(request):
 @login_required
 def get_object_rules(request):
     print('----------- get_object_rules -------------')
+    execution_order_id = int(request.GET.get('execution_order_id', ''))
     object_number = request.GET.get('object_number', '')
     object_type_id = request.GET.get('object_type_id', '')
 
@@ -560,7 +561,7 @@ def get_object_rules(request):
             rule['used_parameter_ids'] = json.loads(rule['used_parameter_ids'])
 
             # calculate 'probability' and 'standard_dev'
-            histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(rule['id'], True)
+            histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(execution_order_id, rule['id'], True)
             rule['probability'] = None if mean is None or np.isnan(mean) else mean 
             rule['standard_dev'] = None if standard_dev is None or np.isnan(standard_dev) else standard_dev 
 
@@ -578,6 +579,7 @@ def get_object_rules(request):
 def get_all_pdfs(request):
     print('get_all_pdfs 1')
     from django.db import connection
+    execution_order_id = int(request.GET.get('execution_order_id', ''))
     rule_or_parameter_id = int(request.GET.get('rule_or_parameter_id', ''))
     is_rule = (request.GET.get('is_rule', '').lower() == 'true')
     response = {}
@@ -654,7 +656,7 @@ def get_all_pdfs(request):
                                                 })
         
         print('get_all_pdfs 4')  
-        histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(rule_or_parameter_id, is_rule)
+        histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(execution_order_id, rule_or_parameter_id, is_rule)
         response[execution_order_id]['combined_pdf'] = {'nb_of_tested_parameters': nb_of_tested_parameters,
                                     'nb_of_tested_parameters_in_posterior': nb_of_tested_parameters_in_posterior,
                                     'pdf': [[bucket_value, min(count,10000)] for bucket_value, count in zip(histogram[1], histogram[0])],
@@ -670,10 +672,11 @@ def get_all_pdfs(request):
 @login_required
 def get_rules_pdf(request):
     print('====================   get_rules_pdf   ==================================')
-    rule_or_parameter_id = request.GET.get('rule_or_parameter_id', '')
+    execution_order_id = int(request.GET.get('execution_order_id', ''))
+    rule_or_parameter_id = int(request.GET.get('rule_or_parameter_id', ''))
     is_rule = (request.GET.get('is_rule', '').lower() == 'true')
 
-    histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(rule_or_parameter_id, is_rule)
+    histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(execution_order_id, rule_or_parameter_id, is_rule)
     response = {'nb_of_simulations': nb_of_simulations,
                 'nb_of_sim_in_which_rule_was_used': nb_of_sim_in_which_rule_was_used,
                 'nb_of_tested_parameters': nb_of_tested_parameters,

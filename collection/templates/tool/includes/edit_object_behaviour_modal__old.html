@@ -799,7 +799,7 @@ var new_rule_cursor_position = {};
 					
 				}
 			};
-			xhttp.open('GET', '/tool/get_rules_pdf?rule_id=' + rule_id  + '&is_rule=true', true);
+			xhttp.open('GET', '/tool/get_rules_pdf?execution_order_id=' + String(execution_order_id) + '&rule_id=' + rule_id  + '&is_rule=true', true);
 			xhttp.send();
 			
 		}	

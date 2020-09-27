@@ -1399,7 +1399,7 @@ var parameter_info = {};
 				
 			}
 		};
-		xhttp.open('GET', '/tool/get_rules_pdf?rule_or_parameter_id=' + parameter_id  + '&is_rule=false', true);
+		xhttp.open('GET', '/tool/get_rules_pdf?execution_order_id=' + execution_order_id + '&rule_or_parameter_id=' + parameter_id  + '&is_rule=false', true);
 		xhttp.send();
 	}
 	
@@ -1678,7 +1678,7 @@ var parameter_info = {};
 					
 				}
 			};
-			xhttp.open('GET', '/tool/get_rules_pdf?rule_or_parameter_id=' + rule_id + '&is_rule=true', true);
+			xhttp.open('GET', '/tool/get_rules_pdf?execution_order_id=' + execution_order_id + '&rule_or_parameter_id=' + rule_id + '&is_rule=true', true);
 			xhttp.send();
 		}
 	}

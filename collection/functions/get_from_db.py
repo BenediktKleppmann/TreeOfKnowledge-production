@@ -218,12 +218,12 @@ def get_available_relations():
 
 
 # used in simulation.py
-def get_rules_pdf(rule_or_parameter_id, is_rule):
+def get_rules_pdf(execution_order_id, rule_or_parameter_id, is_rule):
     print('-----------  get_rules_pdf(' + str(rule_or_parameter_id) + ', ' + str(is_rule) + ')  ----------------------')
     if is_rule:
-        likelihoods_df = pd.DataFrame(Likelihood_fuction.objects.filter(rule_id=rule_or_parameter_id, nb_of_tested_parameters_in_posterior__gt=0).values())
+        likelihoods_df = pd.DataFrame(Likelihood_fuction.objects.filter(execution_order_id=execution_order_id, rule_id=rule_or_parameter_id, nb_of_tested_parameters_in_posterior__gt=0).values())
     else:
-        likelihoods_df = pd.DataFrame(Likelihood_fuction.objects.filter(parameter_id=rule_or_parameter_id, nb_of_tested_parameters_in_posterior__gt=0).values())
+        likelihoods_df = pd.DataFrame(Likelihood_fuction.objects.filter(execution_order_id=execution_order_id, parameter_id=rule_or_parameter_id, nb_of_tested_parameters_in_posterior__gt=0).values())
 
     if len(likelihoods_df) > 0:
         # multiply the likelihood functions of all different simulations/evidences to get a combined posterior
