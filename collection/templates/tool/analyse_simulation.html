@@ -411,7 +411,6 @@
 			display: inline-block;
 			text-align: center;
 			width: calc(100% - 118px);
-			overflow-y: scroll;
 		}
 		
 		.triggerd-rules-period {
@@ -829,9 +828,11 @@
 											'<span id="object-box-triangle-' + object_number + '" class="glyphicon glyphicon-triangle-top collapse-triangle" onclick="collapseExpandObjectInnerBox(' + object_number + ');"></span>' +
 											'<div id="object-inner-box' + object_number + '" class="bottom-object-inner-box">';
 				
-				attribute_ids = Object.keys(objects_dict[object_number]['object_attributes']);
-				for (var j = 0; j < attribute_ids.length; j++) {
-					var attribute_id = attribute_ids[j];
+				
+				var object_sorted_attributes = execution_order['attribute_execution_order'][objects_dict[object_number]['object_type_id']]['used_attributes'];
+				//attribute_ids = Object.keys(objects_dict[object_number]['object_attributes']);
+				for (var j = 0; j < object_sorted_attributes.length; j++) {
+					var attribute_id = object_sorted_attributes[j]['id];
 					
 					object_items_html += 		'<div class="bottom-object-data-row" style="width:' + String(175 + 57*(number_of_periods)) + 'px;">' +
 													'<div class="bottom-attribute-name" onclick="drawTopPanel_Attribute(' + object_number + ',' + attribute_id + ')">' + objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'] + '</div>' +
@@ -1416,6 +1417,7 @@
 				});
 				$('#triggerd-rules-title').css('width', y_axis_offset + 'px');
 				$('#triggerd-rule-periods').css('width', 'calc(100% - ' + y_axis_offset + 'px)');
+				$('#triggerd-rule-periods').css('overflow-y', 'scroll');
 			});	
 		});
 		

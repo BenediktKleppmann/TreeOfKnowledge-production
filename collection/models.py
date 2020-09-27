@@ -236,6 +236,7 @@ class Execution_order(models.Model):
 
 class Likelihood_fuction(models.Model):
     simulation_id = models.IntegerField()
+    execution_order_id = models.IntegerField()
     object_number = models.IntegerField()
     rule_id = models.IntegerField(null=True)
     parameter_id = models.IntegerField(null=True)
