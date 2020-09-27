@@ -1442,9 +1442,9 @@ def save_changed_execution_order(request):
             request_body = json.loads(request.body)
             if ('id' in request_body):
                 execution_order_record = Execution_order.objects.get(id=request_body['id'])
-                if ('execution_order' in request_body):
+                if ('name' in request_body):
                     execution_order_record.name = request_body['name']
-                if ('execution_order' in request_body):
+                if ('description' in request_body):
                     execution_order_record.description = request_body['description']
                 if ('execution_order' in request_body):
                     execution_order_record.execution_order = json.dumps(request_body['execution_order'])
