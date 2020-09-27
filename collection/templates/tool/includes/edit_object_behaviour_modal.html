@@ -769,55 +769,57 @@ var parameter_info = {};
 		var rule_ids = execution_order['rule_execution_order'][String(rules_attribute_id)]['used_rule_ids'];
 		for (var i = 0; i < rule_ids.length ; i++) {
 			var rule_id = rule_ids[i];
-			var rule = objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id];
+			if (Object.keys(objects_dict[object_number]['object_rules'][rules_attribute_id]).includes(String(rule_id))) {
 			
-			if (rule['is_conditionless']) {
-				rule_text = "At every timestep: [" + rules_attribute_name + "] = " + rule['effect_text'];
-			} else {
-				rule_text = "IF " +  rule['condition_text'] + " THEN [" + rules_attribute_name + "] = " + rule['effect_text'];
-			}
-			
-			if (rule_text.length > 65) {
-				rule_text = rule_text.substring(0, 62) + '...';
-			}
-			
-			checked_string = '';
-			if (objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id]['learn_posterior'] == true) {checked_string = 'checked';}
-			
-			if (rule['has_probability_1'] && rule['used_parameter_ids'].length ==0) {
-				rule_info =	'<div class="rule-probability"> known fact</div>';
+				var rule = objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id];
 				
-			} else if (rule['has_probability_1'] && rule['used_parameter_ids'].length >0) {
-				rule_info =	'<div class="rule-probability"> known fact</div>' +	
-							'<div class="learn-probabililty-checkbox">' +
-								'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" ' + checked_string + '>' +
-							'</div>';	
-			
-			} else if (!rule['has_probability_1'] && rule['probability'] == null) {
-			
-				rule_info =	'<div class="rule-probability"> unknown</div>' + 
-							'<div class="learn-probabililty-checkbox">' +
-								'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" ' + checked_string + '>' +
-							'</div>';		
-			} else {
-				rule_info =	'<div class="rule-probability"> ' + Math.round(rule['probability'] * 100) + ' ±' + Math.round(rule['standard_dev'] * 100) + ' %</div>' + 
-							'<div class="learn-probabililty-checkbox">' +
-								'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" ' + checked_string + '>' +
-							'</div>';
-			}
-			
+				if (rule['is_conditionless']) {
+					rule_text = "At every timestep: [" + rules_attribute_name + "] = " + rule['effect_text'];
+				} else {
+					rule_text = "IF " +  rule['condition_text'] + " THEN [" + rules_attribute_name + "] = " + rule['effect_text'];
+				}
+				
+				if (rule_text.length > 65) {
+					rule_text = rule_text.substring(0, 62) + '...';
+				}
+				
+				checked_string = '';
+				if (objects_dict[object_number]['object_rules'][rules_attribute_id][rule_id]['learn_posterior'] == true) {checked_string = 'checked';}
+				
+				if (rule['has_probability_1'] && rule['used_parameter_ids'].length ==0) {
+					rule_info =	'<div class="rule-probability"> known fact</div>';
+					
+				} else if (rule['has_probability_1'] && rule['used_parameter_ids'].length >0) {
+					rule_info =	'<div class="rule-probability"> known fact</div>' +	
+								'<div class="learn-probabililty-checkbox">' +
+									'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" ' + checked_string + '>' +
+								'</div>';	
+				
+				} else if (!rule['has_probability_1'] && rule['probability'] == null) {
+				
+					rule_info =	'<div class="rule-probability"> unknown</div>' + 
+								'<div class="learn-probabililty-checkbox">' +
+									'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" ' + checked_string + '>' +
+								'</div>';		
+				} else {
+					rule_info =	'<div class="rule-probability"> ' + Math.round(rule['probability'] * 100) + ' ±' + Math.round(rule['standard_dev'] * 100) + ' %</div>' + 
+								'<div class="learn-probabililty-checkbox">' +
+									'<input type="checkbox" id="learn-probabililty--rule' + rule_id + '" name="learn-probabililty--rule' + rule_id + '" onchange="learnProbabilityChange(' + object_number + ',' + rules_attribute_id + ',' + rule_id + ')" ' + checked_string + '>' +
+								'</div>';
+				}
+				
 
-			
-			
-			rules_list_html_string +=	'<li class="list-group-item new" id="rule' + rule_id + '" data-object-number=' + object_number + ' data-attribute-id=' + rules_attribute_id + ' data-rule-id=' + rule_id + '>' +
-											'<img src="{% static "images/drag-grip1.png" %}">' +
-											'<div class="rule-description">' +
-												'<button class="btn btn-outline-secondary" onclick="inspectRule(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\',' + rule_id +')" >' + rule_text + '</button>' +
-											'</div>' +
-											rule_info +
-											'<button type="button" class="btn btn-secondary remove-rule-button" onclick="removeBehaviourRule(' + object_number + ', ' + rules_attribute_id + ', ' + rule_id + ')"><div class="remove-rule-button-text">&times;</div></button>' +
-										'</li>';
-									
+				
+				
+				rules_list_html_string +=	'<li class="list-group-item new" id="rule' + rule_id + '" data-object-number=' + object_number + ' data-attribute-id=' + rules_attribute_id + ' data-rule-id=' + rule_id + '>' +
+												'<img src="{% static "images/drag-grip1.png" %}">' +
+												'<div class="rule-description">' +
+													'<button class="btn btn-outline-secondary" onclick="inspectRule(' + object_number + ',' + rules_attribute_id + ',\'' + rules_attribute_name + '\',' + rule_id +')" >' + rule_text + '</button>' +
+												'</div>' +
+												rule_info +
+												'<button type="button" class="btn btn-secondary remove-rule-button" onclick="removeBehaviourRule(' + object_number + ', ' + rules_attribute_id + ', ' + rule_id + ')"><div class="remove-rule-button-text">&times;</div></button>' +
+											'</li>';
+			}
 		}
 		
 		rules_list_html_string += 	'<li id="plus-button-list-group-item">' +
