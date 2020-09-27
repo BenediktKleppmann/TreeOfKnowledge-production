@@ -898,7 +898,7 @@ def get_execution_order(request):
         execution_order['rule_execution_order'] = {}
     # CORRECT TO CURRENT objects, attributes and rules
 
-    # PART 1A: extend with missing objects, attributes 
+    # PART 1A: extend with missing attributes 
     all_object_type_ids = [el[0] for el in list(Object_types.objects.all().values_list('id'))]
     for object_type_id in all_object_type_ids:
         list_of_parent_objects = get_from_db.get_list_of_parent_objects(object_type_id)
@@ -917,18 +917,18 @@ def get_execution_order(request):
                 missing_attributes = [attribute for attribute in all_attributes if attribute['id'] in missing_attribute_ids]
                 execution_order['attribute_execution_order'][object_type_id]['used_attributes'] += missing_attributes
 
-    # PART 1B: extend with missing attributes, rules
+    # PART 1B: extend with missing rules
     all_attribute_ids = [el[0] for el in list(Attribute.objects.all().values_list('id'))]
     for attribute_id in all_attribute_ids:
         all_rule_ids = [el[0] for el in list(Rule.objects.all().filter(changed_var_attribute_id=attribute_id).values_list('id'))]
 
         if (str(attribute_id) not in execution_order['rule_execution_order'].keys()):
-            execution_order['rule_execution_order'][str(attribute_id)] = {'used_rule_ids': all_rule_ids, 'not_used_rule_ids': []}
+            execution_order['rule_execution_order'][str(attribute_id)] = {'used_rule_ids': [], 'not_used_rule_ids': all_rule_ids}
         else:
             listed_rule_ids = set(execution_order['rule_execution_order'][str(attribute_id)]['used_rule_ids'] + execution_order['rule_execution_order'][str(attribute_id)]['not_used_rule_ids'])
             if len(listed_rule_ids) < len(all_rule_ids):
                 missing_rule_ids = list(set(all_rule_ids) - listed_rule_ids)
-                execution_order['rule_execution_order'][str(attribute_id)]['used_rule_ids'] += missing_rule_ids
+                execution_order['rule_execution_order'][str(attribute_id)]['not_used_rule_ids'] += missing_rule_ids
 
 
     # PART 2A: remove no-longer-existing objects
@@ -1442,8 +1442,10 @@ def save_changed_execution_order(request):
             request_body = json.loads(request.body)
             if ('id' in request_body):
                 execution_order_record = Execution_order.objects.get(id=request_body['id'])
-                execution_order_record.name = request_body['name']
-                execution_order_record.description = request_body['description']
+                if ('execution_order' in request_body):
+                    execution_order_record.name = request_body['name']
+                if ('execution_order' in request_body):
+                    execution_order_record.description = request_body['description']
                 if ('execution_order' in request_body):
                     execution_order_record.execution_order = json.dumps(request_body['execution_order'])
                 execution_order_record.save()
