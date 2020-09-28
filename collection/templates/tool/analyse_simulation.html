@@ -832,7 +832,7 @@
 				var object_sorted_attributes = execution_order['attribute_execution_order'][objects_dict[object_number]['object_type_id']]['used_attributes'];
 				//attribute_ids = Object.keys(objects_dict[object_number]['object_attributes']);
 				for (var j = 0; j < object_sorted_attributes.length; j++) {
-					var attribute_id = object_sorted_attributes[j]['id];
+					var attribute_id = object_sorted_attributes[j]['id'];
 					
 					object_items_html += 		'<div class="bottom-object-data-row" style="width:' + String(175 + 57*(number_of_periods)) + 'px;">' +
 													'<div class="bottom-attribute-name" onclick="drawTopPanel_Attribute(' + object_number + ',' + attribute_id + ')">' + objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'] + '</div>' +

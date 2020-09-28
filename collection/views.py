@@ -579,7 +579,6 @@ def get_object_rules(request):
 def get_all_pdfs(request):
     print('get_all_pdfs 1')
     from django.db import connection
-    execution_order_id = int(request.GET.get('execution_order_id', ''))
     rule_or_parameter_id = int(request.GET.get('rule_or_parameter_id', ''))
     is_rule = (request.GET.get('is_rule', '').lower() == 'true')
     response = {}
@@ -591,7 +590,7 @@ def get_all_pdfs(request):
 
 
     for execution_order_id in execution_order_ids:
-        response[execution_order_id] = {'rule_or_parameter_id':rule_or_parameter_id, 'is_rule':is_rule, 'individual_pdfs':[]}
+        response[execution_order_id] = {'execution_order_name': Execution_order.objects.get(id=execution_order_id).name,'rule_or_parameter_id':rule_or_parameter_id, 'is_rule':is_rule, 'individual_pdfs':[]}
         print('get_all_pdfs 2')
         if is_rule:
             query = ''' SELECT  DISTINCT simulation_id, object_number, 

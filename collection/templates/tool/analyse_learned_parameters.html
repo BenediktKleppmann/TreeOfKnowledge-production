@@ -381,6 +381,7 @@
 	var execution_order_id = {{ simulation_model.execution_order_id }};
 	var execution_order = {};
 	var parameter_info = {};
+	var currently_running_monte_carlo_simulations = new Set([]);
 	
 
 
@@ -403,13 +404,13 @@
 			
 			var attribute_ids = Object.keys(objects_dict[object_numbers[i]]['object_rules']);
 			for (var j = 0; j < attribute_ids.length; j++) {
-			
 				var rule_ids = Object.keys(objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]]);
 				for (var k = 0; k < rule_ids.length; k++) {
-				
 					var rule = objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]][rule_ids[k]]
 					if (rule['learn_posterior']) {
 						if (!(object_numbers[i] in not_used_rules) || (object_numbers[i] in not_used_rules && !(rule_ids[k] in not_used_rules[object_numbers[i]]))) {
+							console.log(execution_order['rule_execution_order'][attribute_ids[j]]['used_rule_ids']); // these two print statements are needed to avoid a heisenbug
+							console.log(parseInt(rule_ids[k]));
 							if (execution_order['rule_execution_order'][attribute_ids[j]]['used_rule_ids'].includes(parseInt(rule_ids[k]))) {
 								parameter_distribution_buttons_str += '<div class="rule-heading">' + objects_dict[object_numbers[i]]['object_name'] + ', Rule ' + String(rule_ids[k]) + ':</div>';
 								if (!rule['has_probability_1']) {
@@ -736,6 +737,10 @@
 										'</div>';
 										
 		$('#right-main-panel').html(right_main_panel_string);
+		
+		if (currently_running_monte_carlo_simulations.has(parameter_number)) {
+			$('#progress-bar-frame').css('display','block');
+		}
 	}
 	
 	
@@ -745,6 +750,8 @@
 		$('#progress-bar-frame').css('display', 'block');
 		$('#progress-bar').attr('style','width:0%');
 		$('#progress-bar-description').html('');
+		
+		currently_running_monte_carlo_simulations.add(parameter_number);
 		
 		
 		setTimeout('sendSimulationRequest(' + String(parameter_number) + ');', 10);
@@ -796,7 +803,7 @@
 				
 				parameter_number = JSON.parse(this.responseText);
 				showParameterSimulations(parameter_number);
-				
+				currently_running_monte_carlo_simulations.delete(parameter_number);
 				activateSimulatedParameters();
 				
 			}
@@ -1026,7 +1033,7 @@
 				execution_order = JSON.parse(this.responseText);
 			}
 		};
-		xhttp.open('GET', '/tool/get_execution_order?execution_order_id=' + execution_order_id , true);
+		xhttp.open('GET', '/tool/get_execution_order?execution_order_id=' + String(execution_order_id) , true);
 		xhttp.send();
 		
 		
@@ -1116,6 +1123,17 @@
 	#comparePosteriorsModal .container-fluid {
 		padding: 0px 5px;
 	}
+	
+	/* Drop Down -----------------------------------------------*/
+	#execution-order-selection {
+		width: 298px;
+		margin-left: 16px;
+		margin-top: 2px;
+		margin-bottom: 21px;
+	}
+	
+	
+	
 	/* ----------------------------------------------------------*/
 	/* PDFS -----------------------------------------------------*/
 	/* ----------------------------------------------------------*/
@@ -1234,8 +1252,8 @@
 	  </div>
 	  <div class="modal-body">
 		<div class="container-fluid">
-		  <div id="modal-content">
-		  </div>
+			<div id="execution-order-dropdown-box"></div>
+			<div id="posterior-information"></div>
 		</div>
 	  </div>
 	</div>
@@ -1253,10 +1271,12 @@
 	//=================    comparePosteriorsModal      =======================
 	//========================================================================
 	//========================================================================	
-	
+
+	// GLOBAL VARIABLES:	
+	var posterior_information_dict = {}
 	
 	function showComparePosteriorsModal(object_number, attribute_id, rule_id, parameter_id) {
-		$('#comparePosteriorsModal #modal-content').html('');
+		$('#comparePosteriorsModal #posterior-information').html('');
 		$("#comparePosteriorsModal").modal('show');
 		
 		$('#modal-title').html('Posteriors for [' + parameter_info[parameter_id]['parameter_name'] + ']');
@@ -1266,8 +1286,9 @@
 			var xhttp = new XMLHttpRequest();       
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {	
-					var response = JSON.parse(this.responseText);
-					drawComparePosteriorsContent(response)					;
+					posterior_information_dict = JSON.parse(this.responseText);
+					drawExecutionOrderDropDown()
+					drawComparePosteriorsContent(execution_order_id)					;
 				}
 			};
 			xhttp.open("GET", "/tool/get_all_pdfs?rule_or_parameter_id=" + String(parameter_id) + '&is_rule=false', true);
@@ -1278,8 +1299,9 @@
 			var xhttp = new XMLHttpRequest();       
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
-					var response = JSON.parse(this.responseText);
-					drawComparePosteriorsContent(response);
+					posterior_information_dict = JSON.parse(this.responseText);
+					drawExecutionOrderDropDown()
+					drawComparePosteriorsContent(execution_order_id);
 				}
 			};
 			xhttp.open("GET", "/tool/get_all_pdfs?rule_or_parameter_id=" + String(parameter_id) + '&is_rule=true', true);
@@ -1289,12 +1311,28 @@
 	}
 	
 	
-	function drawComparePosteriorsContent(response) {
+	function drawExecutionOrderDropDown() {
+		var dropdown_html_string =  '<select id="execution-order-selection" name="execution-order-selection" class="form-control" onchange="drawComparePosteriorsContent(this.value)">';
+		var execution_order_ids = Object.keys(posterior_information_dict);
+		for (var i = 0; i < execution_order_ids.length; i++) {
+			dropdown_html_string += '<option value="' + execution_order_ids[i] + '">' + posterior_information_dict[execution_order_ids[i]]['execution_order_name'] + '</option>';
+		}
+		dropdown_html_string += '</select>';
+		
+		$('#execution-order-dropdown-box').html(dropdown_html_string);
+	}
 	
-		var parameter_id = response['rule_or_parameter_id'];
+	
+	function drawComparePosteriorsContent(exec_order_id) {
+		if (!exec_order_id){
+			exec_order_id = $('#execution-order-selection').val();
+		}
+		exec_order_id = parseInt(exec_order_id);
+		
+		var parameter_id = posterior_information_dict[exec_order_id]['rule_or_parameter_id'];
 		var pdfs_html_string = '';
-		for (var i = 0; i < response['individual_pdfs'].length; i++) {
-			var individual_pdf = response['individual_pdfs'][i];
+		for (var i = 0; i < posterior_information_dict[exec_order_id]['individual_pdfs'].length; i++) {
+			var individual_pdf = posterior_information_dict[exec_order_id]['individual_pdfs'][i];
 			pdfs_html_string += '<div class="individual-pdf-row">' +
 									'<div class="simulation-name"><a href="/edit_simulation/' + String(individual_pdf['simulation_id']) + '">' + individual_pdf['simulation_name'] + '</a></div>' +
 									'<div class="pdf-box">' +
@@ -1328,18 +1366,18 @@
 										'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
 									'</div>' +
 									'<div class="values-in-posterior-box">' +
-										'<div class="values-in-posterior">' + String(response['combined_pdf']['nb_of_tested_parameters']) + '</div><div class="slash">/</div><div class="values-in-posterior">' + String(response['combined_pdf']['nb_of_tested_parameters_in_posterior']) + '</div>' +
+										'<div class="values-in-posterior">' + String(posterior_information_dict[exec_order_id]['combined_pdf']['nb_of_tested_parameters']) + '</div><div class="slash">/</div><div class="values-in-posterior">' + String(posterior_information_dict[exec_order_id]['combined_pdf']['nb_of_tested_parameters_in_posterior']) + '</div>' +
 									'</div>' +
 								'</div>';
 								
-		$('#comparePosteriorsModal #modal-content').html(pdfs_html_string);
+		$('#comparePosteriorsModal #posterior-information').html(pdfs_html_string);
 		
 		
-		for (var i = 0; i < response['individual_pdfs'].length; i++) {
+		for (var i = 0; i < posterior_information_dict[exec_order_id]['individual_pdfs'].length; i++) {
 		
 			// simulation pdf - normal
 			anychart.onDocumentReady(function () {
-				var dataSet = anychart.data.set(response['individual_pdfs'][i]['pdf']);
+				var dataSet = anychart.data.set(posterior_information_dict[exec_order_id]['individual_pdfs'][i]['pdf']);
 				var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
 				var chart = anychart.area();
 				var series = chart.area(seriesData);
@@ -1356,7 +1394,7 @@
 			
 			// simulation pdf - smooth
 			anychart.onDocumentReady(function () {
-				var dataSet = anychart.data.set(response['individual_pdfs'][i]['smooth_pdf']);
+				var dataSet = anychart.data.set(posterior_information_dict[exec_order_id]['individual_pdfs'][i]['smooth_pdf']);
 				var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
 				var chart = anychart.area();
 				var series = chart.area(seriesData);
@@ -1374,7 +1412,7 @@
 		
 		// combined pdf - normal
 		anychart.onDocumentReady(function () {
-			var dataSet = anychart.data.set(response['combined_pdf']['pdf']);
+			var dataSet = anychart.data.set(posterior_information_dict[exec_order_id]['combined_pdf']['pdf']);
 			var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
 			var chart = anychart.area();
 			var series = chart.area(seriesData);
