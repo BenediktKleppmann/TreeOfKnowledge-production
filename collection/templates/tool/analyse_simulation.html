@@ -540,7 +540,8 @@
 	
 	var number_of_periods;
 	if (is_timeseries_analysis) {
-		var number_of_periods = Math.ceil((simulation_end_time - simulation_start_time)/timestep_size);
+		//var number_of_periods = Math.ceil((simulation_end_time - simulation_start_time)/timestep_size);
+		number_of_periods = simulation_data[Object.keys(simulation_data)[0]]['null'].length
 	} else {
 		var number_of_periods = 1;
 	}
