@@ -1139,8 +1139,8 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                             attribute_id, 
                                             value_as_string, 
                                             valid_time_start, 
-                                            CAST((valid_time_start-%s)/%s AS INT) AS period, 
-                                            ROW_NUMBER() OVER(PARTITION BY object_id, attribute_id, CAST((valid_time_start-%s)/%s AS INT) ORDER BY data_quality DESC,upload_id DESC) AS rank 
+                                            CAST((valid_time_start-(%s))/%s AS INT) AS period, 
+                                            ROW_NUMBER() OVER(PARTITION BY object_id, attribute_id, CAST((valid_time_start-(%s))/%s AS INT) ORDER BY data_quality DESC,upload_id DESC) AS rank 
                                     FROM collection_data_point 
                                     WHERE object_id IN ( 
                                                           SELECT DISTINCT obj%sattrobject_id 
@@ -1164,8 +1164,8 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                             attribute_id, 
                                             value_as_string, 
                                             valid_time_start, 
-                                            FLOOR((valid_time_start-%s)/%s) AS period, 
-                                            ROW_NUMBER() OVER(PARTITION BY object_id, attribute_id, FLOOR((valid_time_start-%s)/%s) ORDER BY data_quality DESC,upload_id DESC) AS rank 
+                                            FLOOR((valid_time_start-(%s))/%s) AS period, 
+                                            ROW_NUMBER() OVER(PARTITION BY object_id, attribute_id, FLOOR((valid_time_start-(%s))/%s) ORDER BY data_quality DESC,upload_id DESC) AS rank 
                                     FROM collection_data_point 
                                     WHERE object_id IN ( 
                                                           SELECT DISTINCT obj%sattrobject_id 
