@@ -303,7 +303,7 @@ class Simulator:
                         # rule probability
                         if (not rule['has_probability_1']):
                             # if a specific posterior for this simulation has been learned, take this, else take the combined posterior of all other simulations
-                            histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(execution_order_id, rule_id, True)
+                            histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(self.execution_order_id, rule_id, True)
                             if histogram_smooth is None:
                                 if histogram is None:
                                     histogram, mean, standard_dev, nb_of_tested_parameters_in_posterior, message = get_from_db.get_single_pdf(simulation_id, object_number, rule_id, True)
@@ -314,7 +314,7 @@ class Simulator:
                         # parameter
                         if not rule['learn_posterior'] or ignore_learn_posteriors:
                             for used_parameter_id in rule['used_parameter_ids']: 
-                                histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(execution_order_id, used_parameter_id, False)
+                                histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(self.execution_order_id, used_parameter_id, False)
                                 
                                 histogram_to_use = None
                                 if histogram_smooth is None:
