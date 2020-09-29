@@ -851,6 +851,9 @@ class Simulator:
         simulation_results = all_simulation_results_df['simulation_results']
         simulation_results = [json.loads(simulation_result) for simulation_result in simulation_results]
         simulation_results_df = pd.DataFrame.from_dict(simulation_results)
+        print('[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
+        print(simulation_results_df)
+        print('[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
 
         all_priors_df = pd.DataFrame()
         all_priors_df['error'] = simulation_results_df['error'] 

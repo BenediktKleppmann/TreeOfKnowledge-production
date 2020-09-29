@@ -1964,9 +1964,7 @@ def salvage_cancelled_simulation_page(request):
 
 @login_required
 def salvage_cancelled_simulation(request, simulation_id):
-    print('[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
-    print(str(simulation_id))
-    print('[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
+    
     if request.method == 'POST':
         simulation_id = int(simulation_id)
         simulation_model = Simulation_model.objects.get(id=simulation_id)
