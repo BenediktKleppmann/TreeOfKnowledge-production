@@ -169,14 +169,10 @@
 		xhttp.send();
 		
 	}
-	
-	function showParameterSimulations(parameter_number) {
-		$('#right-main-panel').html('<iframe id="analyse-simulation-box" src="' + String(parameter_number) + '" title="analyse_simulations_with_this_parameter_combination"></iframe>');
-	}
-	
+
 	
 	function showSimulationResults(simulation_id) {
-		var w = window.open("/tool/analyse_simulation/" + simulation_id + "/0/");
+		var w = window.open("/tool/analyse_simulation/" + simulation_id + "/");
 		$('#simulationProgressModal').modal('hide');
 	}
 	

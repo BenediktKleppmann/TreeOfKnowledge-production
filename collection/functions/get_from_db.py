@@ -219,7 +219,7 @@ def get_available_relations():
 
 # used in simulation.py
 def get_rules_pdf(execution_order_id, rule_or_parameter_id, is_rule):
-    print('-----------  get_rules_pdf(' + str(rule_or_parameter_id) + ', ' + str(is_rule) + ')  ----------------------')
+    print('-----------  get_rules_pdf(' + str(execution_order_id) + ',' + str(rule_or_parameter_id) + ', ' + str(is_rule) + ')  ----------------------')
     if is_rule:
         likelihoods_df = pd.DataFrame(Likelihood_fuction.objects.filter(execution_order_id=execution_order_id, rule_id=rule_or_parameter_id, nb_of_tested_parameters_in_posterior__gt=0).values())
     else:
@@ -276,12 +276,12 @@ def get_rules_pdf(execution_order_id, rule_or_parameter_id, is_rule):
         return None, None, None, 0, 0, 0, 0,None
 
 
-def get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule):
+def get_single_pdf(simulation_id, execution_order_id, object_number, rule_or_parameter_id, is_rule):
     print('----  get_single_pdf  ----')
     if is_rule:
-        likelihood_function = Likelihood_fuction.objects.filter(simulation_id=simulation_id, object_number=object_number, rule_id=rule_or_parameter_id).order_by('-id').first()
+        likelihood_function = Likelihood_fuction.objects.filter(simulation_id=simulation_id, execution_order_id=execution_order_id, object_number=object_number, rule_id=rule_or_parameter_id).order_by('-id').first()
     else:
-        likelihood_function = Likelihood_fuction.objects.filter(simulation_id=simulation_id, object_number=object_number, parameter_id=rule_or_parameter_id).order_by('-id').first()
+        likelihood_function = Likelihood_fuction.objects.filter(simulation_id=simulation_id, execution_order_id=execution_order_id, object_number=object_number, parameter_id=rule_or_parameter_id).order_by('-id').first()
 
     if likelihood_function is not None:
 

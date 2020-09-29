@@ -1357,7 +1357,7 @@ var parameter_info = {};
 				
 			}
 		};
-		xhttp.open('GET', '/tool/get_single_pdf?simulation_id=' + simulation_id + '&object_number=' + object_number + '&rule_or_parameter_id=' + parameter_id + '&is_rule=false' , true);
+		xhttp.open('GET', '/tool/get_single_pdf?simulation_id=' + simulation_id + '&execution_order_id=' + execution_order_id + '&object_number=' + object_number + '&rule_or_parameter_id=' + parameter_id + '&is_rule=false' , true);
 		xhttp.send();
 		
 		
@@ -1419,6 +1419,7 @@ var parameter_info = {};
 			// new record in Rule_parameter		
 			var request_body = {
 				'simulation_id':simulation_id,
+				'execution_order_id':execution_order_id,
 				'object_number':object_number,
 				'rules_attribute_id': rules_attribute_id, 
 				'rules_attribute_name': rules_attribute_name, 
@@ -1482,7 +1483,7 @@ var parameter_info = {};
 					$('#parameter-info-box').css('display','none');						
 				}
 			};			
-			xmlhttp.open("POST", "/tool/save_rule_parmeter/");
+			xmlhttp.open("POST", "/tool/save_rule_parameter/");
 			xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 			xmlhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 			xmlhttp.send(JSON.stringify(request_body));	
@@ -1643,7 +1644,7 @@ var parameter_info = {};
 					$('#this-simulation-warning-message').html(message);
 				}
 			};
-			xhttp.open('GET', '/tool/get_single_pdf?simulation_id=' + simulation_id + '&object_number=' + object_number + '&rule_or_parameter_id=' + rule_id  + '&is_rule=true', true);
+			xhttp.open('GET', '/tool/get_single_pdf?simulation_id=' + simulation_id + '&execution_order_id=' + execution_order_id + '&object_number=' + object_number + '&rule_or_parameter_id=' + rule_id  + '&is_rule=true', true);
 			xhttp.send();
 			
 			

@@ -710,10 +710,11 @@ def get_rules_pdf(request):
 def get_single_pdf(request):
     response = {}
     simulation_id = request.GET.get('simulation_id', '')
+	execution_order_id = request.GET.get('execution_order_id', '')
     object_number = request.GET.get('object_number', '')
     rule_or_parameter_id = request.GET.get('rule_or_parameter_id', '')
     is_rule = (request.GET.get('is_rule', '').lower() == 'true')
-    histogram, mean, standard_dev, nb_of_sim_in_which_rule_was_used, message = get_from_db.get_single_pdf(simulation_id, object_number, rule_or_parameter_id, is_rule)
+    histogram, mean, standard_dev, nb_of_sim_in_which_rule_was_used, message = get_from_db.get_single_pdf(simulation_id, execution_order_id, object_number, rule_or_parameter_id, is_rule)
     print('====================   get_single_pdf   ==================================')
     print(str(rule_or_parameter_id))
     print(str(simulation_id))
@@ -1359,11 +1360,12 @@ def save_changed_object_type_icon(request):
 
 # used in: edit_simulation__simulate (the edit_object_type_modal)
 @login_required
-def save_rule_parmeter(request):
+def save_rule_parameter(request):
     if request.method == 'POST':
         try:
             request_body = json.loads(request.body)
             simulation_id = request_body['simulation_id']
+			execution_order_id = request_body['execution_order_id']
             object_number = request_body['object_number']
             rule_id = request_body['rule_id']
             new_parameter_dict = request_body['new_parameter_dict']
@@ -1379,7 +1381,7 @@ def save_rule_parmeter(request):
                 if request_body['parameter_range_change']:
                     Likelihood_fuction.objects.filter(parameter_id=request_body['id']).delete()
                     list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-                    likelihood_fuction = Likelihood_fuction(simulation_id=simulation_id, object_number=object_number, parameter_id=request_body['id'], list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_tested_parameters=0, nb_of_tested_parameters_in_posterior=0)
+                    likelihood_fuction = Likelihood_fuction(simulation_id=simulation_id, execution_order_id=execution_order_id, object_number=object_number, parameter_id=request_body['id'], list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_tested_parameters=0, nb_of_tested_parameters_in_posterior=0)
                     likelihood_fuction.save()
 
 
@@ -1397,7 +1399,7 @@ def save_rule_parmeter(request):
   
                 # add uniform likelihood_function
                 list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-                likelihood_fuction = Likelihood_fuction(simulation_id=simulation_id, object_number=object_number, parameter_id=new_parameter.id, list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_tested_parameters=0, nb_of_tested_parameters_in_posterior=0)
+                likelihood_fuction = Likelihood_fuction(simulation_id=simulation_id, execution_order_id=execution_order_id, object_number=object_number, parameter_id=new_parameter.id, list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_tested_parameters=0, nb_of_tested_parameters_in_posterior=0)
                 likelihood_fuction.save()
 
                 return_dict = {'parameter_id': new_parameter.id, 'is_new': True, 'request_body':request_body}
@@ -1420,6 +1422,7 @@ def save_likelihood_function(request):
             if ('id' in request_body):
                 likelihood_function = Likelihood_fuction.objects.get(id=request_body['id'])
                 likelihood_function.simulation_id = request_body['simulation_id']
+                likelihood_function.execution_order_id = request_body['execution_order_id']
                 likelihood_function.object_number = request_body['object_number']
                 likelihood_function.parameter_id = request_body['parameter_id']
                 likelihood_function.list_of_probabilities = json.dumps(request_body['list_of_probabilities'])
@@ -1430,7 +1433,7 @@ def save_likelihood_function(request):
                 likelihood_function.save()
                 return HttpResponse(str(likelihood_function.id))
             else:
-                new_likelihood_function = Likelihood_fuction(simulation_id=request_body['simulation_id'], object_number=request_body['object_number'], parameter_id=request_body['parameter_id'], list_of_probabilities=json.dumps(request_body['list_of_probabilities']), nb_of_simulations=request_body['nb_of_simulations'], nb_of_sim_in_which_rule_was_used=request_body['nb_of_sim_in_which_rule_was_used'], nb_of_tested_parameters=request_body['nb_of_tested_parameters'], nb_of_tested_parameters_in_posterior=request_body['nb_of_tested_parameters_in_posterior'])
+                new_likelihood_function = Likelihood_fuction(simulation_id=request_body['simulation_id'], execution_order_id=request_body['execution_order_id'], object_number=request_body['object_number'], parameter_id=request_body['parameter_id'], list_of_probabilities=json.dumps(request_body['list_of_probabilities']), nb_of_simulations=request_body['nb_of_simulations'], nb_of_sim_in_which_rule_was_used=request_body['nb_of_sim_in_which_rule_was_used'], nb_of_tested_parameters=request_body['nb_of_tested_parameters'], nb_of_tested_parameters_in_posterior=request_body['nb_of_tested_parameters_in_posterior'])
                 new_likelihood_function.save()
                 return HttpResponse(str(new_likelihood_function.id))
         except Exception as error:
