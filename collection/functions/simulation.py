@@ -548,6 +548,10 @@ class Simulator:
         # self.__post_process_monte_carlo(simulation_data_df, triggered_rules_df, errors_df, best_performing_prior_dict, 300, 0)
         # success = best_performing_prior_dict!={}
 
+        simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
+        simulation_model_record.not_used_rules = {}
+        simulation_model_record.save()
+
         success = True
         return success
 
