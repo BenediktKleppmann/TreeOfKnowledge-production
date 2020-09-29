@@ -523,9 +523,9 @@ class Simulator:
         # learn parameters
         best_performing_prior_dict = self.__learn_likelihoods()
 
-        # predicting
+        # run monte carlo for best parameters
         (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(nb_of_simulations=300, prior_dict=best_performing_prior_dict)
-        self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df, best_performing_prior_dict, 300, 0)
+        self.__post_process_monte_carlo(simulation_data_df, triggered_rules_df, errors_df, best_performing_prior_dict, 300, 0)
 
         parameters_were_learned = best_performing_prior_dict!={}
         return parameters_were_learned
@@ -534,11 +534,21 @@ class Simulator:
 
     def run_single_monte_carlo(self, number_of_entities_to_simulate, prior_dict, parameter_number):
         (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(nb_of_simulations=number_of_entities_to_simulate, prior_dict=prior_dict)
-        parameter_number = self.__post_process_data(simulation_data_df, triggered_rules_df, errors_df, prior_dict, number_of_entities_to_simulate, parameter_number)
+        parameter_number = self.__post_process_monte_carlo(simulation_data_df, triggered_rules_df, errors_df, prior_dict, number_of_entities_to_simulate, parameter_number)
         return parameter_number
 
 
 
+    def salvage_cancelled_simulation():
+        # salvage
+        best_performing_prior_dict = self.__retrieve_results_from_cancelled_simulation()
+
+        # run monte carlo for best parameters
+        (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(nb_of_simulations=300, prior_dict=best_performing_prior_dict)
+        self.__post_process_monte_carlo(simulation_data_df, triggered_rules_df, errors_df, best_performing_prior_dict, 300, 0)
+
+        success = best_performing_prior_dict!={}
+        return success
 
 
 
@@ -660,101 +670,6 @@ class Simulator:
 
 
             all_priors_df['nb_of_simulations'] = len(self.df)
-            # # PART 2 - Save results as likelihood_fuction
-            # self.currently_running_learn_likelihoods = False
-            # with open(self.progress_tracking_file_name, "w") as progress_tracking_file:
-            #     progress_tracking_file.write(json.dumps({"text": 'Learning parameters - post-processing: ', "current_number": self.nb_of_tested_parameters * len(self.df), "total_number": self.nb_of_tested_parameters * len(self.df)}))
-
-
-            # for rule_number, rule in enumerate(self.rules):
-
-            #     # histogram
-            #     print('rule%s.learn_posterior = %s; rule%s.has_probability_1 = %s;' % (rule['id'], rule['learn_posterior'], rule['id'], rule['has_probability_1']))
-            #     if rule['learn_posterior']:
-            #         all_priors_df = all_priors_df.sort_values('error_rule' + str(rule['id']))
-            #         all_priors_df.index = range(len(all_priors_df))
-            #         priors_to_keep_df = all_priors_df[:self.nb_of_parameters_to_keep]
-            #         print('nb_of_parameters_to_keep: %s ; len(priors_to_keep_df): %s' % (self.nb_of_parameters_to_keep, len(priors_to_keep_df)))
-
-            #         if not rule['has_probability_1']:
-            #             print('==== post-processing rule'+ str(rule['id']) + '  ===================================================')
- 
-            #             histogram  = np.histogram(list(priors_to_keep_df['triggerThresholdForRule'+ str(rule['id'])]), bins=30, range=(0.0,1.0))
-
-            #             # nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior
-            #             nb_of_simulations = self.nb_of_tested_parameters * len(self.df)
-            #             nb_of_sim_in_which_rule_was_used = priors_to_keep_df['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'].sum()
-            #             nb_of_tested_parameters = self.nb_of_tested_parameters
-            #             nb_of_tested_parameters_in_posterior = len(priors_to_keep_df)
-
-            #             # PART 2.1: update the rule's histogram - the next simulation will use the newly learned probabilities
-            #             self.rules[rule_number]['histogram'] = histogram 
-
-            #             # PART 2.2: save the learned likelihood function to the database
-            #             list_of_probabilities_str = json.dumps(list( np.array(histogram[0]) * 30/ np.sum(histogram[0])))
-
-            #             try:
-            #                 likelihood_fuction = Likelihood_fuction.objects.get(simulation_id=self.simulation_id, rule_id=rule['id'])
-            #                 likelihood_fuction.list_of_probabilities = list_of_probabilities_str
-            #                 likelihood_fuction.nb_of_simulations = nb_of_simulations
-            #                 likelihood_fuction.nb_of_sim_in_which_rule_was_used = nb_of_sim_in_which_rule_was_used
-            #                 likelihood_fuction.nb_of_tested_parameters = self.nb_of_tested_parameters
-            #                 likelihood_fuction.nb_of_tested_parameters_in_posterior = nb_of_tested_parameters_in_posterior
-            #                 likelihood_fuction.save()
-
-            #             except:
-            #                 likelihood_fuction = Likelihood_fuction(simulation_id=self.simulation_id, 
-            #                                                         object_number=rule['object_number'],
-            #                                                         rule_id=rule['id'], 
-            #                                                         list_of_probabilities=list_of_probabilities_str,
-            #                                                         nb_of_simulations=nb_of_simulations,
-            #                                                         nb_of_sim_in_which_rule_was_used=nb_of_sim_in_which_rule_was_used,
-            #                                                         nb_of_tested_parameters=nb_of_tested_parameters,
-            #                                                         nb_of_tested_parameters_in_posterior=nb_of_tested_parameters_in_posterior)
-            #                 likelihood_fuction.save()
-
-
-            #         for used_parameter_id in rule['used_parameter_ids']:
-            #             print('==== post-processing parameter ' + str(used_parameter_id) + '  ===================================================')
-
-            #             min_value = rule['parameters'][used_parameter_id]['min_value']
-            #             max_value = rule['parameters'][used_parameter_id]['max_value']
-
-
-            #             histogram  = np.histogram(list(priors_to_keep_df['param' + str(used_parameter_id)]), bins=30, range=(min_value,max_value))
-
-            #             # nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior
-            #             nb_of_simulations = self.nb_of_tested_parameters * len(self.df)
-            #             nb_of_sim_in_which_rule_was_used = priors_to_keep_df['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'].sum()
-            #             nb_of_tested_parameters = self.nb_of_tested_parameters
-            #             nb_of_tested_parameters_in_posterior = len(priors_to_keep_df)
-
-            #             # PART 2.1: update the rule's histogram - the next simulation will use the newly learned probabilities
-            #             self.rules[rule_number]['parameters'][used_parameter_id]['histogram'] = histogram 
-
-            #             # PART 2.2: save the learned likelihood function to the database
-            #             list_of_probabilities_str = json.dumps(list( np.array(histogram[0]) * 30/ np.sum(histogram[0])))
-
-            #             try:
-            #                 likelihood_fuction = Likelihood_fuction.objects.get(simulation_id=self.simulation_id, parameter_id=used_parameter_id)
-            #                 likelihood_fuction.list_of_probabilities = list_of_probabilities_str
-            #                 likelihood_fuction.nb_of_simulations = nb_of_simulations
-            #                 likelihood_fuction.nb_of_sim_in_which_rule_was_used = nb_of_sim_in_which_rule_was_used
-            #                 likelihood_fuction.nb_of_tested_parameters = self.nb_of_tested_parameters
-            #                 likelihood_fuction.nb_of_tested_parameters_in_posterior = nb_of_tested_parameters_in_posterior
-            #                 likelihood_fuction.save()
-
-            #             except:
-            #                 likelihood_fuction = Likelihood_fuction(simulation_id=self.simulation_id, 
-            #                                                         object_number=rule['object_number'],
-            #                                                         parameter_id=used_parameter_id,  
-            #                                                         list_of_probabilities=list_of_probabilities_str,
-            #                                                         nb_of_simulations=nb_of_simulations,
-            #                                                         nb_of_sim_in_which_rule_was_used=nb_of_sim_in_which_rule_was_used,
-            #                                                         nb_of_tested_parameters=nb_of_tested_parameters,
-            #                                                         nb_of_tested_parameters_in_posterior=nb_of_tested_parameters_in_posterior)
-            #                 likelihood_fuction.save()
-
             all_priors_df = all_priors_df.sort_values('error')
             all_priors_df.index = range(len(all_priors_df))
             simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
@@ -889,17 +804,15 @@ class Simulator:
                 if rule['effect_exec'] != 'df.null':
                     new_values[new_values.isna()] = df.loc[new_values.isna(),rule['column_to_change']]
                 df[rule['column_to_change']] = new_values
-                if rule['id'] in [98, 110]:
-                    print('period'+ str(period) +' rule'+ str(rule['id']) +' condition -------------------------------------------')
-                    print('rule[\'condition_exec\'] = ' + rule['condition_exec'])
-                    print(str(list(df['obj1attr226'])))
-                    print(str(list(satisfying_rows)))
-                    print(rule['column_to_change'])
-                    print(str(list(new_values)))
-                    print(str(list(df[rule['column_to_change']])))
-                    print('-------------------------------------------------------------')
-
-
+                # if rule['id'] in [98, 110]:
+                    # print('period'+ str(period) +' rule'+ str(rule['id']) +' condition -------------------------------------------')
+                    # print('rule[\'condition_exec\'] = ' + rule['condition_exec'])
+                    # print(str(list(df['obj1attr226'])))
+                    # print(str(list(satisfying_rows)))
+                    # print(rule['column_to_change'])
+                    # print(str(list(new_values)))
+                    # print(str(list(df[rule['column_to_change']])))
+                    # print('-------------------------------------------------------------')
 
             y0_values_in_this_period = pd.DataFrame(df[self.y0_columns])
             y0_values_in_this_period.columns = [col + 'period' + str(period+1) for col in y0_values_in_this_period.columns] #faster version
@@ -922,7 +835,54 @@ class Simulator:
 
 
 
+    def __retrieve_results_from_cancelled_simulation(self):
+        connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="ebdb")
+        cursor = connection.cursor()
+        cursor.execute('''SELECT simulation_id, run_number, batch_number, priors_dict, simulation_results FROM tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
+        all_simulation_results = cursor.fetchall() 
+        print('checking results - found %s/%s' % (len(all_simulation_results), self.nb_of_tested_parameters))
 
+
+        all_simulation_results_df = pd.DataFrame(all_simulation_results, columns=['simulation_id', 'run_number', 'batch_number', 'priors_dict', 'simulation_results'])
+        priors_dicts = all_simulation_results_df['priors_dict']
+        priors_dicts = [json.loads(priors_dict) for priors_dict in priors_dicts]
+        priors_df = pd.DataFrame.from_dict(priors_dicts)
+
+        simulation_results = all_simulation_results_df['simulation_results']
+        simulation_results = [json.loads(simulation_result) for simulation_result in simulation_results]
+        simulation_results_df = pd.DataFrame.from_dict(simulation_results)
+
+        all_priors_df = pd.DataFrame()
+        all_priors_df['error'] = simulation_results_df['error'] 
+        for rule_nb in range(len(rules)):
+            if rule['learn_posterior']:
+                all_priors_df['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] = simulation_results_df['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] 
+                all_priors_df['error_rule' + str(rule['id'])] = simulation_results_df['error_rule' + str(rule['id'])]
+
+                if not rule['has_probability_1']:
+                    all_priors_df['triggerThresholdForRule' + str(rule['id'])] = priors_df['triggerThresholdForRule' + str(rule['id'])]
+                for used_parameter_id in rule['used_parameter_ids']:
+                    all_priors_df['param' + str(used_parameter_id)] = priors_df['param' + str(used_parameter_id)]
+
+
+
+        all_priors_df['nb_of_simulations'] = len(self.df)
+        all_priors_df = all_priors_df.sort_values('error')
+        all_priors_df.index = range(len(all_priors_df))
+        simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
+        simulation_model_record.all_priors_df = json.dumps(all_priors_df.to_dict(orient='index'))
+        simulation_model_record.save()
+
+        best_performing_prior_dict = {}
+        for rule_number, rule in enumerate(self.rules):
+            if rule['learn_posterior']:
+                best_performing_prior_dict[str(rule['id'])] = {}
+                if not rule['has_probability_1']:
+                    best_performing_prior_dict[str(rule['id'])]['probability'] = all_priors_df.loc[0,'triggerThresholdForRule'+ str(rule['id'])]
+                for used_parameter_id in rule['used_parameter_ids']:
+                    best_performing_prior_dict[str(rule['id'])][str(used_parameter_id)] = all_priors_df.loc[0,'param' + str(used_parameter_id)]
+
+        return best_performing_prior_dict
 
 
 
@@ -934,13 +894,13 @@ class Simulator:
 
         
 # ==========================================================================================
-#      _____              _ _      _   
-#     |  __ \            | (_)    | |  
-#     | |__) | __ ___  __| |_  ___| |_ 
-#     |  ___/ '__/ _ \/ _` | |/ __| __|
-#     | |   | | |  __/ (_| | | (__| |_ 
-#     |_|   |_|  \___|\__,_|_|\___|\__|
-#                                                                      
+#    __  __             _          _____           _       
+#   |  \/  |           | |        / ____|         | |      
+#   | \  / | ___  _ __ | |_ ___  | |     __ _ _ __| | ___  
+#   | |\/| |/ _ \| '_ \| __/ _ \ | |    / _` | '__| |/ _ \ 
+#   | |  | | (_) | | | | ||  __/ | |___| (_| | |  | | (_) |
+#   |_|  |_|\___/|_| |_|\__\___|  \_____\__,_|_|  |_|\___/ 
+#                                                                                                                           
 # ==========================================================================================
 
 
@@ -959,10 +919,10 @@ class Simulator:
         y0_values_df_short = self.y0_values_df[:nb_of_simulations]
         y0_values_short = self.y0_values[:nb_of_simulations]
 
-        print('-----')
-        print('df_short.columns = ' + str(list(df_short.columns)))
-        print('self.y0_columns = ' + str(self.y0_columns))
-        print('-----')
+        # print('-----')
+        # print('df_short.columns = ' + str(list(df_short.columns)))
+        # print('self.y0_columns = ' + str(self.y0_columns))
+        # print('-----')
         y0 = np.asarray(df_short[self.y0_columns].copy())
         batch_size = len(y0)
 
@@ -990,11 +950,11 @@ class Simulator:
                 if str(rule['id']) in prior_dict and str(used_parameter_id) in prior_dict[str(rule['id'])]:
                     df['param' + str(used_parameter_id)] = prior_dict[str(rule['id'])][str(used_parameter_id)]
                 else:
-                    print('using histogram - rule%s, parameter%s' % (rule['id'],used_parameter_id))
-                    print(prior_dict)
-                    print(prior_dict[str(rule['id'])])
-                    print(prior_dict[str(rule['id'])][str(used_parameter_id)])
-                    print(rule['parameters'])
+                    # print('using histogram - rule%s, parameter%s' % (rule['id'],used_parameter_id))
+                    # print(prior_dict)
+                    # print(prior_dict[str(rule['id'])])
+                    # print(prior_dict[str(rule['id'])][str(used_parameter_id)])
+                    # print(rule['parameters'])
                     df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][used_parameter_id]['histogram']).rvs(size=batch_size)
 
 
@@ -1157,7 +1117,7 @@ class Simulator:
 
 
 
-    def __post_process_data(self, simulation_data_df, triggered_rules_df, errors_df, prior_dict, number_of_simulations, parameter_number):
+    def __post_process_monte_carlo(self, simulation_data_df, triggered_rules_df, errors_df, prior_dict, number_of_simulations, parameter_number):
 
         print('process_data_1')
         with open(self.progress_tracking_file_name, "w") as progress_tracking_file:

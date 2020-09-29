@@ -156,6 +156,8 @@ urlpatterns = [
 	# Simulation  -------------------------------------------------------------------------    
     url(r'^tool/edit_simulation/$', views.edit_simulation_new, name='edit_simulation_new'),
     url(r'^tool/edit_simulation/(?P<simulation_id>[-\d]+)/$', views.edit_simulation, name='edit_simulation'),
+    url(r'^tool/salvage_cancelled_simulation/$', views.salvage_cancelled_simulation_page, name='salvage_cancelled_simulation_page'),
+    url(r'^tool/salvage_cancelled_simulation/(?P<simulation_id>[-\d]+)/$', views.salvage_cancelled_simulation, name='salvage_cancelled_simulation'),
     url(r'^tool/copy_simulation/$', views.copy_simulation, name='copy_simulation'),
     url(r'^tool/get_simulation_progress/$', views.get_simulation_progress, name='get_simulation_progress'),
     url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/$', views.analyse_learned_parameters, name='analyse_learned_parameters'),

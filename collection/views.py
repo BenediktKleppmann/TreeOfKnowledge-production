@@ -1958,6 +1958,28 @@ def edit_simulation(request, simulation_id):
 
 
 
+@login_required
+def salvage_cancelled_simulation_page(request):
+    return render(request, 'tool/salvage_cancelled_simulation.html')
+
+@login_required
+def salvage_cancelled_simulation(request, simulation_id):
+    print('[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
+    print(str(simulation_id))
+    print('[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]')
+    if request.method == 'POST':
+        simulation_id = int(simulation_id)
+        simulation_model = Simulation_model.objects.get(id=simulation_id)
+        the_simulator = simulation.Simulator(simulation_id, False)
+        success = the_simulator.salvage_cancelled_simulation()
+        return HttpResponse(json.dumps(success))
+
+    
+
+
+
+
+
 
 @login_required
 def copy_simulation(request):
