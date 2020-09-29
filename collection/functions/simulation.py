@@ -539,7 +539,7 @@ class Simulator:
 
 
 
-    def salvage_cancelled_simulation():
+    def salvage_cancelled_simulation(self):
         # salvage
         best_performing_prior_dict = self.__retrieve_results_from_cancelled_simulation()
 
