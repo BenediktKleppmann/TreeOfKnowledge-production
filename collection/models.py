@@ -234,7 +234,7 @@ class Execution_order(models.Model):
 
 
 
-class Likelihood_fuction(models.Model):
+class Likelihood_function(models.Model):
     simulation_id = models.IntegerField()
     execution_order_id = models.IntegerField()
     object_number = models.IntegerField()

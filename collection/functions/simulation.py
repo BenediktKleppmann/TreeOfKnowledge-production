@@ -8,7 +8,7 @@
 # (at your option) any later version - see http://www.gnu.org/licenses/.
 #####################################################################
 
-from collection.models import Simulation_model, Rule, Likelihood_fuction, Attribute, Execution_order, Rule_parameter, Simulation_result
+from collection.models import Simulation_model, Rule, Likelihood_function, Attribute, Execution_order, Rule_parameter, Simulation_result
 import json
 import pandas as pd
 import numpy as np
