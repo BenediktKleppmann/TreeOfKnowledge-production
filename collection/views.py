@@ -599,7 +599,7 @@ def get_all_pdfs(request):
                                 FIRST_VALUE(nb_of_sim_in_which_rule_was_used) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_sim_in_which_rule_was_used, 
                                 FIRST_VALUE(nb_of_tested_parameters) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_tested_parameters, 
                                 FIRST_VALUE(nb_of_tested_parameters_in_posterior) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_tested_parameters_in_posterior 
-                        FROM collection_likelihood_fuction 
+                        FROM collection_likelihood_function 
                         WHERE rule_id=%s  
                           AND execution_order_id=%s
                           AND nb_of_tested_parameters_in_posterior > 0 
@@ -612,7 +612,7 @@ def get_all_pdfs(request):
                                 FIRST_VALUE(nb_of_sim_in_which_rule_was_used) over (partition by simulation_id, object_number order by id DESC) as nb_of_sim_in_which_rule_was_used, 
                                 FIRST_VALUE(nb_of_tested_parameters) over (partition by simulation_id, object_number order by id DESC) as nb_of_tested_parameters, 
                                 FIRST_VALUE(nb_of_tested_parameters_in_posterior) over (partition by simulation_id, object_number order by id DESC) as nb_of_tested_parameters_in_posterior 
-                        FROM collection_likelihood_fuction 
+                        FROM collection_likelihood_function 
                         WHERE parameter_id=%s  
                           AND execution_order_id=%s
                           AND nb_of_tested_parameters_in_posterior > 0 
@@ -1217,17 +1217,17 @@ def save_rule(request):
                 rule_record.save()
 
                 # reset all likelihood functions associated with this rule
-                likelihood_fuctions = Likelihood_function.objects.filter(rule_id=rule_id)
-                for likelihood_fuction in likelihood_fuctions:
-                    likelihood_fuction.list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-                    likelihood_fuction.save()
+                likelihood_functions = Likelihood_function.objects.filter(rule_id=rule_id)
+                for likelihood_function in likelihood_functions:
+                    likelihood_function.list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                    likelihood_function.save()
 
                 rule_parameters = Rule_parameter.objects.filter(rule_id=rule_id)
                 for rule_parameter in rule_parameters:
-                    likelihood_fuctions = Likelihood_function.objects.filter(parameter_id=rule_parameter.id)
-                    for likelihood_fuction in likelihood_fuctions:
-                        likelihood_fuction.list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-                        likelihood_fuction.save()
+                    likelihood_functions = Likelihood_function.objects.filter(parameter_id=rule_parameter.id)
+                    for likelihood_function in likelihood_functions:
+                        likelihood_function.list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                        likelihood_function.save()
 
 
             else:
@@ -1377,12 +1377,12 @@ def save_rule_parameter(request):
                 parameter.max_value = new_parameter_dict['max_value']
                 parameter.save()
 
-                # if the range was changed: reset the parameter's likelihood_fuctions
+                # if the range was changed: reset the parameter's likelihood_functions
                 if request_body['parameter_range_change']:
                     Likelihood_function.objects.filter(parameter_id=request_body['id']).delete()
                     list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-                    likelihood_fuction = Likelihood_function(simulation_id=simulation_id, execution_order_id=execution_order_id, object_number=object_number, parameter_id=request_body['id'], list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_tested_parameters=0, nb_of_tested_parameters_in_posterior=0)
-                    likelihood_fuction.save()
+                    likelihood_function = Likelihood_function(simulation_id=simulation_id, execution_order_id=execution_order_id, object_number=object_number, parameter_id=request_body['id'], list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_tested_parameters=0, nb_of_tested_parameters_in_posterior=0)
+                    likelihood_function.save()
 
 
                 return_dict = {'parameter_id': parameter.id, 'is_new': False, 'request_body':request_body}
@@ -1399,8 +1399,8 @@ def save_rule_parameter(request):
   
                 # add uniform likelihood_function
                 list_of_probabilities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-                likelihood_fuction = Likelihood_function(simulation_id=simulation_id, execution_order_id=execution_order_id, object_number=object_number, parameter_id=new_parameter.id, list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_tested_parameters=0, nb_of_tested_parameters_in_posterior=0)
-                likelihood_fuction.save()
+                likelihood_function = Likelihood_function(simulation_id=simulation_id, execution_order_id=execution_order_id, object_number=object_number, parameter_id=new_parameter.id, list_of_probabilities=list_of_probabilities, nb_of_simulations=0, nb_of_sim_in_which_rule_was_used=0, nb_of_tested_parameters=0, nb_of_tested_parameters_in_posterior=0)
+                likelihood_function.save()
 
                 return_dict = {'parameter_id': new_parameter.id, 'is_new': True, 'request_body':request_body}
                 return HttpResponse(json.dumps(return_dict))
@@ -1565,8 +1565,8 @@ def delete_rule(request):
             rule = Rule.objects.get(id=rule_id)
             rule.delete()
 
-            likelihood_fuctions = Likelihood_function.objects.filter(rule_id=rule_id)
-            likelihood_fuctions.delete()
+            likelihood_functions = Likelihood_function.objects.filter(rule_id=rule_id)
+            likelihood_functions.delete()
 
             rule_parameters = Rule_parameter.objects.filter(rule_id=rule_id)
             rule_parameters.delete()
@@ -1590,8 +1590,8 @@ def delete_parameter(request):
             parameter = Rule_parameter.objects.get(id=parameter_id)
             parameter.delete()
 
-            likelihood_fuctions = Likelihood_function.objects.filter(parameter_id=parameter_id)
-            likelihood_fuctions.delete()
+            likelihood_functions = Likelihood_function.objects.filter(parameter_id=parameter_id)
+            likelihood_functions.delete()
             return HttpResponse("success")
             
         except Exception as error:
