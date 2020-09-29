@@ -710,7 +710,7 @@ def get_rules_pdf(request):
 def get_single_pdf(request):
     response = {}
     simulation_id = request.GET.get('simulation_id', '')
-	execution_order_id = request.GET.get('execution_order_id', '')
+    execution_order_id = request.GET.get('execution_order_id', '')
     object_number = request.GET.get('object_number', '')
     rule_or_parameter_id = request.GET.get('rule_or_parameter_id', '')
     is_rule = (request.GET.get('is_rule', '').lower() == 'true')
@@ -1365,7 +1365,7 @@ def save_rule_parameter(request):
         try:
             request_body = json.loads(request.body)
             simulation_id = request_body['simulation_id']
-			execution_order_id = request_body['execution_order_id']
+            execution_order_id = request_body['execution_order_id']
             object_number = request_body['object_number']
             rule_id = request_body['rule_id']
             new_parameter_dict = request_body['new_parameter_dict']
