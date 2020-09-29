@@ -544,10 +544,11 @@ class Simulator:
         best_performing_prior_dict = self.__retrieve_results_from_cancelled_simulation(run_number)
 
         # run monte carlo for best parameters
-        (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(nb_of_simulations=300, prior_dict=best_performing_prior_dict)
-        self.__post_process_monte_carlo(simulation_data_df, triggered_rules_df, errors_df, best_performing_prior_dict, 300, 0)
+        # (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(nb_of_simulations=300, prior_dict=best_performing_prior_dict)
+        # self.__post_process_monte_carlo(simulation_data_df, triggered_rules_df, errors_df, best_performing_prior_dict, 300, 0)
+        # success = best_performing_prior_dict!={}
 
-        success = best_performing_prior_dict!={}
+        success = True
         return success
 
 
