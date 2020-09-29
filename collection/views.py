@@ -1417,9 +1417,12 @@ def save_rule_parameter(request):
 @login_required
 def save_likelihood_function(request):
     if request.method == 'POST':
+        print('save_likelihood_function1')
         try:
             request_body = json.loads(request.body)
+            print('save_likelihood_function2 - ' + str(request.body))
             if ('id' in request_body):
+                print('save_likelihood_function3')
                 likelihood_function = Likelihood_function.objects.get(id=request_body['id'])
                 likelihood_function.simulation_id = request_body['simulation_id']
                 likelihood_function.execution_order_id = request_body['execution_order_id']
@@ -1431,10 +1434,13 @@ def save_likelihood_function(request):
                 likelihood_function.nb_of_tested_parameters = request_body['nb_of_tested_parameters']
                 likelihood_function.nb_of_tested_parameters_in_posterior = request_body['nb_of_tested_parameters_in_posterior']
                 likelihood_function.save()
+                print('save_likelihood_function4')
                 return HttpResponse(str(likelihood_function.id))
             else:
+                print('save_likelihood_function5')
                 new_likelihood_function = Likelihood_function(simulation_id=request_body['simulation_id'], execution_order_id=request_body['execution_order_id'], object_number=request_body['object_number'], parameter_id=request_body['parameter_id'], list_of_probabilities=json.dumps(request_body['list_of_probabilities']), nb_of_simulations=request_body['nb_of_simulations'], nb_of_sim_in_which_rule_was_used=request_body['nb_of_sim_in_which_rule_was_used'], nb_of_tested_parameters=request_body['nb_of_tested_parameters'], nb_of_tested_parameters_in_posterior=request_body['nb_of_tested_parameters_in_posterior'])
                 new_likelihood_function.save()
+                print('save_likelihood_function6')
                 return HttpResponse(str(new_likelihood_function.id))
         except Exception as error:
             traceback.print_exc()
