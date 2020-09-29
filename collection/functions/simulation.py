@@ -857,7 +857,7 @@ class Simulator:
 
         all_priors_df = pd.DataFrame()
         all_priors_df['error'] = simulation_results_df['error'] 
-        for rule_nb in range(len(self.rules)):
+        for rule in self.rules:
             if rule['learn_posterior']:
                 all_priors_df['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] = simulation_results_df['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] 
                 all_priors_df['error_rule' + str(rule['id'])] = simulation_results_df['error_rule' + str(rule['id'])]
