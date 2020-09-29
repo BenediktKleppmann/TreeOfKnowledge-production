@@ -74,6 +74,10 @@
 			<label for="simulation_id">Simulation ID:</label>
 			<input type="text" class="form-control" id="simulation_id" name="simulation_id" value="">
 		</div>
+		<div class="simulation-id-input">
+			<label for="run_number">Run Number:</label>
+			<input type="text" class="form-control" id="run_number" name="simulation_id" value="">
+		</div>
 		<button id="salvage-cancelled-sim-button" class="btn btn-success" type="button" onclick="salvageCancelledSimulation()">Salvage Cancelled Simulation</button>
 		<div id="show-results-button-frame"></div>
 	</div>
@@ -110,9 +114,10 @@
 		$('#progress-bar-description').html('');
 		
 		var simulation_id = $('#simulation_id').val();
+		var run_number = $('#run_number').val();
 		
 		
-		setTimeout('sendSimulationRequest(' + String(simulation_id) + ');', 10);
+		setTimeout('sendSimulationRequest(' + String(simulation_id) + ', ' + String(run_number) + ');', 10);
 		setTimeout('update_the_progress_bar();', 2000);
 	}
 	
@@ -120,7 +125,7 @@
 	
 	
 	
-	async function sendSimulationRequest(simulation_id) {
+	async function sendSimulationRequest(simulation_id, run_number) {
 		run_simulation_post_request = new XMLHttpRequest();   // new HttpRequest instance
 		run_simulation_post_request.onreadystatechange = function() {
 		
@@ -131,7 +136,7 @@
 				
 			}
 		};
-		run_simulation_post_request.open("POST", "/tool/salvage_cancelled_simulation/" + String(simulation_id) + "/", true);
+		run_simulation_post_request.open("POST", "/tool/salvage_cancelled_simulation/" + String(simulation_id) + "/" + String(run_number) + "/", true);
 		run_simulation_post_request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		run_simulation_post_request.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
 		run_simulation_post_request.send();

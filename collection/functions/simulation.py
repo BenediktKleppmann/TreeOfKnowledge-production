@@ -539,9 +539,9 @@ class Simulator:
 
 
 
-    def salvage_cancelled_simulation(self):
+    def salvage_cancelled_simulation(self, run_number):
         # salvage
-        best_performing_prior_dict = self.__retrieve_results_from_cancelled_simulation()
+        best_performing_prior_dict = self.__retrieve_results_from_cancelled_simulation(run_number)
 
         # run monte carlo for best parameters
         (simulation_data_df, triggered_rules_df, errors_df) = self.__run_monte_carlo_simulation(nb_of_simulations=300, prior_dict=best_performing_prior_dict)
@@ -835,10 +835,10 @@ class Simulator:
 
 
 
-    def __retrieve_results_from_cancelled_simulation(self):
+    def __retrieve_results_from_cancelled_simulation(self, run_number):
         connection = psycopg2.connect(user="dbadmin", password="rUWFidoMnk0SulVl4u9C", host="aa1pbfgh471h051.cee9izytbdnd.eu-central-1.rds.amazonaws.com", port="5432", database="ebdb")
         cursor = connection.cursor()
-        cursor.execute('''SELECT simulation_id, run_number, batch_number, priors_dict, simulation_results FROM tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, self.run_number))
+        cursor.execute('''SELECT simulation_id, run_number, batch_number, priors_dict, simulation_results FROM tested_simulation_parameters WHERE simulation_id=%s AND run_number=%s;''' % (self.simulation_id, run_number))
         all_simulation_results = cursor.fetchall() 
         print('checking results - found %s/%s' % (len(all_simulation_results), self.nb_of_tested_parameters))
 
