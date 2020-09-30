@@ -525,6 +525,8 @@
 			showDistributionOfTopX(X, object_number, attribute_id, rule_id, parameter_id); 
 		});
 			
+		$('#top-x-value').val(x);
+		$('#top-x-slider-input').slider('setValue', X);
 		showDistributionOfTopX(X, object_number, attribute_id, rule_id, parameter_id);
 	}
 	
