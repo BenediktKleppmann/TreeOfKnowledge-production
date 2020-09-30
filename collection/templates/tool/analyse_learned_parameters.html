@@ -640,7 +640,10 @@
 		// nb_of_sim_in_which_rule_was_used
 		nb_of_sim_in_which_rule_was_used = 0
 		for (var i = 0; i < Object.keys(all_priors_df).length; i++) {
-			nb_of_sim_in_which_rule_was_used += all_priors_df[i]['nb_of_sim_in_which_rule_' + rule_id + '_was_used']
+			nb_of_sim_for_this_prior = all_priors_df[i]['nb_of_sim_in_which_rule_' + rule_id + '_was_used']
+			if (!isNaN(nb_of_sim_for_this_prior)) {
+				nb_of_sim_in_which_rule_was_used += nb_of_sim_for_this_prior
+			}
 		}
 		
 		
