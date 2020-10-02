@@ -988,7 +988,9 @@ class Simulator:
 
             print('period: ' + str(period) + '/' + str(len(self.times[1:])))
             df['randomNumber'] = np.random.random(batch_size)
+             print('period: ' + str(period) + ' - 1')
             for rule in self.rules:
+                print('period: ' + str(period) + ' - 2,' + str(rule['id']))
                 populated_df_rows = pd.Series([True] * len(df))
                 for used_column in rule['used_columns']:
                     populated_df_rows = populated_df_rows & ~df[used_column].isna()
@@ -1027,6 +1029,7 @@ class Simulator:
 
 
                 # --------  THEN  --------
+                print('period: ' + str(period) + ' - 3')
                 if rule['effect_is_calculation']:
                     if 'sums' in rule:
                         for sum_number in rule['sums'].keys():
@@ -1056,6 +1059,7 @@ class Simulator:
 
                 # new_values = [value for value, satisfying in zip(all_new_values,satisfying_rows) if satisfying]
                 # df.loc[satisfying_rows,rule['column_to_change']] = new_values
+                print('period: ' + str(period) + ' - 4')
                 new_values = all_new_values
                 new_values[np.logical_not(satisfying_rows)] = df.loc[np.logical_not(satisfying_rows),rule['column_to_change']]
                 if rule['effect_exec'] != 'df.null':
@@ -1078,6 +1082,7 @@ class Simulator:
                                                         'v': calculated_values,         # v = new_value
                                                         'error':errors})
 
+                print('period: ' + str(period) + ' - 5')
                 triggered_rule_infos = triggered_rule_infos_df.to_dict('records')
                 triggered_rule_infos = [rule_info if rule_info['condition_satisfied'] else None for rule_info in triggered_rule_infos]
                 for i in range(len(triggered_rule_infos)):
@@ -1086,7 +1091,7 @@ class Simulator:
                             if np.isnan(triggered_rule_infos[i]['error']):
                                 del triggered_rule_infos[i]['error']
 
-
+                print('period: ' + str(period) + ' - 6')
                 currently_triggered_rules = pd.DataFrame({  'initial_state_id':df.index,
                                                             'batch_number':[batch_number]*batch_size,
                                                             'attribute_id':[rule['column_to_change']]*batch_size,
@@ -1096,6 +1101,7 @@ class Simulator:
                                                             })
 
                 triggered_rules_df = triggered_rules_df.append(currently_triggered_rules)
+
 
             
             # simulated values
