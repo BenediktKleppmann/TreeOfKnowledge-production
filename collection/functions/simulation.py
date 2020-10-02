@@ -988,7 +988,7 @@ class Simulator:
 
             print('period: ' + str(period) + '/' + str(len(self.times[1:])))
             df['randomNumber'] = np.random.random(batch_size)
-             print('period: ' + str(period) + ' - 1')
+            print('period: ' + str(period) + ' - 1')
             for rule in self.rules:
                 print('period: ' + str(period) + ' - 2,' + str(rule['id']))
                 populated_df_rows = pd.Series([True] * len(df))
