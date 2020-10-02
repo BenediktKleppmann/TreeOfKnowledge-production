@@ -600,10 +600,16 @@ class Simulator:
                 all_priors_df['nb_of_sim_in_which_rule_' + str(rule['id']) + '_was_used'] = [np.nan] * self.nb_of_tested_parameters
                 all_priors_df['error_rule' + str(rule['id'])] = [np.nan] * self.nb_of_tested_parameters
                 if not rule['has_probability_1']:
-                    all_priors_df['triggerThresholdForRule' + str(rule['id'])] = np.random.uniform(0, 1, self.nb_of_tested_parameters)
+                    # all_priors_df['triggerThresholdForRule' + str(rule['id'])] = np.random.uniform(0, 1, self.nb_of_tested_parameters)
+                    random_values = np.linspace(0,1,self.nb_of_tested_parameters)
+                    np.random.shuffle(random_values)
+                    all_priors_df['triggerThresholdForRule' + str(rule['id'])] = random_values
                     to_be_learned_priors_exist = True
                 for used_parameter_id in rule['used_parameter_ids']:
-                    all_priors_df['param' + str(used_parameter_id)] = np.random.uniform(rule['parameters'][used_parameter_id]['min_value'], rule['parameters'][used_parameter_id]['max_value'], self.nb_of_tested_parameters)
+                    # all_priors_df['param' + str(used_parameter_id)] = np.random.uniform(rule['parameters'][used_parameter_id]['min_value'], rule['parameters'][used_parameter_id]['max_value'], self.nb_of_tested_parameters)
+                    random_values = np.linspace(rule['parameters'][used_parameter_id]['min_value'], rule['parameters'][used_parameter_id]['max_value'], self.nb_of_tested_parameters)
+                    np.random.shuffle(random_values)
+                    all_priors_df['param' + str(used_parameter_id)] = random_values
                     to_be_learned_priors_exist = True
         
 
