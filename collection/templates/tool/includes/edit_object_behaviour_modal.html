@@ -1974,6 +1974,8 @@ var parameter_info = {};
 	
 	function saveBehaviourRule(rule_id, attribute_id, attribute_name, object_number) {
 		if (rule_id) {
+			var ok_given = confirm("The rule's probability distributions will be lost");
+			if (ok_given == false){return;}
 			rule_dict = objects_dict[object_number]['object_rules'][attribute_id][rule_id];
 		} else {
 			rule_dict = {};
