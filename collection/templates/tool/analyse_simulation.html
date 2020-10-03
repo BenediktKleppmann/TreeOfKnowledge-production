@@ -834,16 +834,18 @@
 				//attribute_ids = Object.keys(objects_dict[object_number]['object_attributes']);
 				for (var j = 0; j < object_sorted_attributes.length; j++) {
 					var attribute_id = object_sorted_attributes[j]['id'];
+					if (Object.keys(objects_dict[object_number]['object_attributes']).includes(attribute_id)) {
 					
-					object_items_html += 		'<div class="bottom-object-data-row" style="width:' + String(175 + 57*(number_of_periods)) + 'px;">' +
-													'<div class="bottom-attribute-name" onclick="drawTopPanel_Attribute(' + object_number + ',' + attribute_id + ')">' + objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'] + '</div>' +
-													'<div class="bottom-attribute-values">';
-						
-					for (var period_number = 0; period_number < number_of_periods; period_number++) {
-						object_items_html += 			'<div id="' + object_number + '-' + attribute_id + '-' + period_number + '" class="attribute-value" onclick="drawTopPanel_AttributeValue(' + object_number + ',' + attribute_id + ',' + period_number + ')"></div>';
+						object_items_html += 		'<div class="bottom-object-data-row" style="width:' + String(175 + 57*(number_of_periods)) + 'px;">' +
+														'<div class="bottom-attribute-name" onclick="drawTopPanel_Attribute(' + object_number + ',' + attribute_id + ')">' + objects_dict[object_number]['object_attributes'][attribute_id]['attribute_name'] + '</div>' +
+														'<div class="bottom-attribute-values">';
+							
+						for (var period_number = 0; period_number < number_of_periods; period_number++) {
+							object_items_html += 			'<div id="' + object_number + '-' + attribute_id + '-' + period_number + '" class="attribute-value" onclick="drawTopPanel_AttributeValue(' + object_number + ',' + attribute_id + ',' + period_number + ')"></div>';
+						}
+						object_items_html += 			'</div>	' +
+													'</div>';
 					}
-					object_items_html += 			'</div>	' +
-												'</div>';
 				}
 				object_items_html += 		'</div>	' +
 										'</div>' + 						
