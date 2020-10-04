@@ -156,8 +156,6 @@ urlpatterns = [
 	# Simulation  -------------------------------------------------------------------------    
     url(r'^tool/edit_simulation/$', views.edit_simulation_new, name='edit_simulation_new'),
     url(r'^tool/edit_simulation/(?P<simulation_id>[-\d]+)/$', views.edit_simulation, name='edit_simulation'),
-    url(r'^tool/salvage_cancelled_simulation/$', views.salvage_cancelled_simulation_page, name='salvage_cancelled_simulation_page'),
-    url(r'^tool/salvage_cancelled_simulation/(?P<simulation_id>[-\d]+)/(?P<run_number>[-\d]+)/$', views.salvage_cancelled_simulation, name='salvage_cancelled_simulation'),
     url(r'^tool/copy_simulation/$', views.copy_simulation, name='copy_simulation'),
     url(r'^tool/get_simulation_progress/$', views.get_simulation_progress, name='get_simulation_progress'),
     url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/$', views.analyse_learned_parameters, name='analyse_learned_parameters'),
@@ -191,6 +189,9 @@ urlpatterns = [
     url(r'^admin/show_object_types/$', views.show_object_types, name='show_object_types'),
     url(r'^admin/show_newsletter_subscribers/$', views.show_newsletter_subscribers, name='show_newsletter_subscribers'),
     url(r'^admin/show_users/$', views.show_users, name='show_users'),
+    # model fixes
+    url(r'^admin/salvage_cancelled_simulation/$', views.salvage_cancelled_simulation_page, name='salvage_cancelled_simulation_page'),
+    url(r'^admin/salvage_cancelled_simulation/(?P<simulation_id>[-\d]+)/(?P<run_number>[-\d]+)/$', views.salvage_cancelled_simulation, name='salvage_cancelled_simulation'),
     # data cleaning
     url(r'^admin/possibly_duplicate_objects_without_keys/$', views.possibly_duplicate_objects_without_keys, name='possibly_duplicate_objects_without_keys'),
     url(r'^admin/find_possibly_duplicate_objects_without_keys/$', views.find_possibly_duplicate_objects_without_keys, name='find_possibly_duplicate_objects_without_keys'),

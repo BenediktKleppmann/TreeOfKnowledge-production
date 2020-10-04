@@ -1967,22 +1967,6 @@ def edit_simulation(request, simulation_id):
 
 
 
-@login_required
-def salvage_cancelled_simulation_page(request):
-    return render(request, 'tool/salvage_cancelled_simulation.html')
-
-@login_required
-def salvage_cancelled_simulation(request, simulation_id, run_number):
-    
-    if request.method == 'POST':
-        simulation_id = int(simulation_id)
-        run_number = int(run_number)
-        simulation_model = Simulation_model.objects.get(id=simulation_id)
-        the_simulator = simulation.Simulator(simulation_id, False)
-        success = the_simulator.salvage_cancelled_simulation(run_number)
-        return HttpResponse(json.dumps(success))
-
-    
 
 
 
@@ -2328,6 +2312,27 @@ def delete_upload(request):
     Data_point.objects.filter(upload_id=upload_id).delete()
     return HttpResponse('Upload deleted!')
 
+# ==================
+# MODEL FIXES
+# ==================
+
+
+@login_required
+def salvage_cancelled_simulation_page(request):
+    return render(request, 'admin/salvage_cancelled_simulation.html')
+
+@login_required
+def salvage_cancelled_simulation(request, simulation_id, run_number):
+    
+    if request.method == 'POST':
+        simulation_id = int(simulation_id)
+        run_number = int(run_number)
+        simulation_model = Simulation_model.objects.get(id=simulation_id)
+        the_simulator = simulation.Simulator(simulation_id, False)
+        success = the_simulator.salvage_cancelled_simulation(run_number)
+        return HttpResponse(json.dumps(success))
+
+    
 
 # ==================
 # VARIOUS SCRIPTS
