@@ -272,12 +272,7 @@ class Simulation_result(models.Model):
     correct_values = models.TextField()
     errors = models.TextField()
 
-class Execution_order_score(models.Model):
-    execution_order_id = models.IntegerField()
-    simulation_id = models.IntegerField()
-    score = models.FloatField()
-    based_of_n_simulations = models.IntegerField()
-    
+
 # ========================================================================================
 # No Longer Used
 # ========================================================================================

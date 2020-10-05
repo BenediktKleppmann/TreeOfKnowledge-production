@@ -995,6 +995,61 @@ def get_execution_order(request):
 
     return HttpResponse(json.dumps(execution_order))
 
+
+
+
+
+
+@login_required
+def get_execution_orders_scores(request):
+    print('------------------ get_execution_orders_scores --------------------------------')
+    from django.db import connection
+    response = {'simulations': [], 'scores': {}}
+
+    
+    execution_orders = Execution_order.objects.all()
+    for execution_order in execution_orders:
+        Likelihood_function.objects.filter(execution_order_id=execution_order.id)
+        sql_string = '''
+            SELECT inner.simulation_id, 
+                   inner.execution_order_id, 
+                   AVG(inner.nb_of_tested_parameters_in_posterior) as avg_nb_of_tested_parameters_in_posterior
+            FROM ( 
+                    SELECT  simulation_id, 
+                            execution_order_id, 
+                            rule_id,
+                            parameter_id,
+                            nb_of_tested_parameters_in_posterior,
+                            ROW_NUMBER() OVER(PARTITION BY simulation_id, execution_order_id, rule_id, parameter_id  ORDER BY id DESC) AS rank
+                    FROM collection_likelihood_function 
+                ) as inner
+            WHERE inner.rank = 1
+            GROUP BY inner.simulation_id, inner.execution_order_id
+        ''' 
+
+        run_simulations_df = pd.read_sql_query(sql_string, connection)
+
+        # add execution_orders
+        all_execution_order_ids = list(run_simulations_df['execution_order_id'].unique())
+        response['execution_orders'] = list(Execution_order.objects.filter(id__in=all_execution_order_ids).order_by('id').values('id', 'name'))
+
+
+        # add simuations
+        all_simuation_ids = list(run_simulations_df['simulation_id'].unique())
+        simulation_models = Simulation_model.objects.filter(id__in=all_simuation_ids).order_by('id')
+        for simulation_model in simulation_models:
+            response['simulations'].append({'simulation_id': simulation_model.id, 'simulation_name': simulation_model.simulation_name}) 
+            response['scores'][simulation_model.id] = {}
+            all_priors_df = pd.DataFrame.from_dict(json.loads(simulation_model.all_priors_df), orient='index')
+            all_priors_df.index = range(len(all_priors_df))
+            
+            for index, row in run_simulations_df[run_simulations_df['simulation_id']==simulation_model.id].iterrows():
+                if len(all_priors_df) > row['avg_nb_of_tested_parameters_in_posterior']:
+                    response['scores'][simulation_model.id][row['execution_order_id']] = {'score': 1 - all_priors_df.loc[:row['avg_nb_of_tested_parameters_in_posterior'], 'error'].mean(), 'avg_nb_of_tested_parameters_in_posterior': row['avg_nb_of_tested_parameters_in_posterior']}
+
+    return HttpResponse(json.dumps(response))
+
+
 # ==================
 # FIND
 # ==================

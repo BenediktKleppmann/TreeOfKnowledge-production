@@ -112,6 +112,7 @@ urlpatterns = [
     url(r'^tool/get_data_from_random_related_object/$', views.get_data_from_random_related_object, name='get_data_from_random_related_object'),
     url(r'^tool/get_data_from_objects_behind_the_relation/$', views.get_data_from_objects_behind_the_relation, name='get_data_from_objects_behind_the_relation'),
     url(r'^tool/get_execution_order/$', views.get_execution_order, name='get_execution_order'),
+    url(r'^tool/get_execution_orders_scores/$', views.get_execution_orders_scores, name='get_execution_orders_scores'),
 
     # find
     url(r'^tool/find_suggested_attributes/$', views.find_suggested_attributes, name='find_suggested_attributes'),
