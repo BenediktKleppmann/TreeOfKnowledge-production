@@ -1011,9 +1011,9 @@ def get_execution_orders_scores(request):
     for execution_order in execution_orders:
         Likelihood_function.objects.filter(execution_order_id=execution_order.id)
         sql_string = '''
-            SELECT inner.simulation_id, 
-                   inner.execution_order_id, 
-                   AVG(inner.nb_of_tested_parameters_in_posterior) as avg_nb_of_tested_parameters_in_posterior
+            SELECT sub_query.simulation_id, 
+                   sub_query.execution_order_id, 
+                   AVG(sub_query.nb_of_tested_parameters_in_posterior) as avg_nb_of_tested_parameters_in_posterior
             FROM ( 
                     SELECT  simulation_id, 
                             execution_order_id, 
@@ -1022,9 +1022,9 @@ def get_execution_orders_scores(request):
                             nb_of_tested_parameters_in_posterior,
                             ROW_NUMBER() OVER(PARTITION BY simulation_id, execution_order_id, rule_id, parameter_id  ORDER BY id DESC) AS rank
                     FROM collection_likelihood_function 
-                ) as inner
-            WHERE inner.rank = 1
-            GROUP BY inner.simulation_id, inner.execution_order_id
+                ) as sub_query
+            WHERE sub_query.rank = 1
+            GROUP BY sub_query.simulation_id, sub_query.execution_order_id
         ''' 
 
         run_simulations_df = pd.read_sql_query(sql_string, connection)
