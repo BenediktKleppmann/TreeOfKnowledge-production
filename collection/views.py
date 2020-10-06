@@ -1018,6 +1018,8 @@ def get_execution_order_scores(request):
         sql_string = '''
             SELECT sub_query.simulation_id, 
                    sub_query.execution_order_id, 
+                   AVG(nb_of_simulations) as nb_of_simulations,
+                   AVG(nb_of_tested_parameters) as nb_of_tested_parameters,
                    AVG(sub_query.nb_of_tested_parameters_in_posterior) as nb_of_tested_parameters_in_posterior
             FROM ( 
                     SELECT  simulation_id, 
