@@ -155,8 +155,8 @@ def profile_and_settings(request):
 
 
 @login_required
-def execution_orders_scores(request):
-    return render(request, 'tool/execution_orders_scores.html')
+def execution_order_scores(request):
+    return render(request, 'tool/execution_order_scores.html')
 
 
 
@@ -1006,8 +1006,8 @@ def get_execution_order(request):
 
 
 @login_required
-def get_execution_orders_scores(request):
-    print('------------------ get_execution_orders_scores --------------------------------')
+def get_execution_order_scores(request):
+    print('------------------ get_execution_order_scores --------------------------------')
     from django.db import connection
     response = {'simulations': [], 'scores': {}}
 
@@ -1060,7 +1060,7 @@ def get_execution_orders_scores(request):
                 response['execution_orders'][execution_order_id]['overall_score'] = response['execution_orders'][execution_order_id]['sum_of_scores']/response['execution_orders'][execution_order_id]['total_nb_of_simulations']
         
 
-    return HttpResponse(json.dumps(response))
+    return HttpResponse(json.dumps(response).replace(': NaN', ': null'))
 
 
 # ==================
