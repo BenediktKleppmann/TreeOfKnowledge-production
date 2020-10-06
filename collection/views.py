@@ -1057,8 +1057,8 @@ def get_execution_order_scores(request):
                     score = 1 - all_priors_df.loc[:row['nb_of_tested_parameters_in_posterior'], 'error'].mean()
                     nb_of_simulations_in_posterior = row['nb_of_simulations']/row['nb_of_tested_parameters']*row['nb_of_tested_parameters_in_posterior']
                     response['scores'][simulation_model.id][row['execution_order_id']] = {'score': score, 'nb_of_simulations_in_posterior': nb_of_simulations_in_posterior}
-                    response['execution_orders'][str(row['execution_order_id'])]['sum_of_scores'] += score*row['nb_of_tested_parameters_in_posterior']
-                    response['execution_orders'][str(row['execution_order_id'])]['total_nb_of_tested_parameters_in_posterior'] += row['nb_of_tested_parameters_in_posterior']
+                    response['execution_orders'][row['execution_order_id']]['sum_of_scores'] += score*row['nb_of_tested_parameters_in_posterior']
+                    response['execution_orders'][row['execution_order_id']]['total_nb_of_tested_parameters_in_posterior'] += row['nb_of_tested_parameters_in_posterior']
 
         for execution_order_id in response['execution_orders'].keys():
             if response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior'] > 0:
