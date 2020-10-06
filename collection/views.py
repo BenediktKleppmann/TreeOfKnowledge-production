@@ -154,6 +154,11 @@ def profile_and_settings(request):
     return render(request, 'tool/profile_and_settings.html', {'errors': errors})
 
 
+@login_required
+def execution_orders_scores(request):
+    return render(request, 'tool/execution_orders_scores.html')
+
+
 
  # ===============================================================
  #   _    _       _                 _       _       _        
@@ -1013,13 +1018,13 @@ def get_execution_orders_scores(request):
         sql_string = '''
             SELECT sub_query.simulation_id, 
                    sub_query.execution_order_id, 
-                   AVG(sub_query.nb_of_tested_parameters_in_posterior) as avg_nb_of_tested_parameters_in_posterior
+                   AVG(sub_query.nb_of_simulations) as nb_of_simulations
             FROM ( 
                     SELECT  simulation_id, 
                             execution_order_id, 
                             rule_id,
                             parameter_id,
-                            nb_of_tested_parameters_in_posterior,
+                            nb_of_simulations,
                             ROW_NUMBER() OVER(PARTITION BY simulation_id, execution_order_id, rule_id, parameter_id  ORDER BY id DESC) AS rank
                     FROM collection_likelihood_function 
                 ) as sub_query
@@ -1031,7 +1036,7 @@ def get_execution_orders_scores(request):
 
         # add execution_orders
         all_execution_order_ids = list(run_simulations_df['execution_order_id'].unique())
-        response['execution_orders'] = {execution_order.id: {'name':execution_order.name, 'sum_of_scores':0, 'total_nb_of_tested_parameters_in_posterior':0} for execution_order in Execution_order.objects.filter(id__in=all_execution_order_ids).order_by('id')}
+        response['execution_orders'] = {execution_order.id: {'name':execution_order.name, 'sum_of_scores':0, 'total_nb_of_simulations':0} for execution_order in Execution_order.objects.filter(id__in=all_execution_order_ids).order_by('id')}
 
 
         # add simuations
@@ -1044,15 +1049,15 @@ def get_execution_orders_scores(request):
             all_priors_df.index = range(len(all_priors_df))
             
             for index, row in run_simulations_df[run_simulations_df['simulation_id']==simulation_model.id].iterrows():
-                if len(all_priors_df) > row['avg_nb_of_tested_parameters_in_posterior']:
-                    score = 1 - all_priors_df.loc[:row['avg_nb_of_tested_parameters_in_posterior'], 'error'].mean()
-                    response['scores'][simulation_model.id][row['execution_order_id']] = {'score': score, 'avg_nb_of_tested_parameters_in_posterior': row['avg_nb_of_tested_parameters_in_posterior']}
-                    response['execution_orders'][row['execution_order_id']]['sum_of_scores'] += score*row['avg_nb_of_tested_parameters_in_posterior']
-                    response['execution_orders'][row['execution_order_id']]['total_nb_of_tested_parameters_in_posterior'] += row['avg_nb_of_tested_parameters_in_posterior']
+                if len(all_priors_df) > row['nb_of_simulations']:
+                    score = 1 - all_priors_df.loc[:row['nb_of_simulations'], 'error'].mean()
+                    response['scores'][simulation_model.id][row['execution_order_id']] = {'score': score, 'nb_of_simulations': row['nb_of_simulations']}
+                    response['execution_orders'][row['execution_order_id']]['sum_of_scores'] += score*row['nb_of_simulations']
+                    response['execution_orders'][row['execution_order_id']]['total_nb_of_simulations'] += row['nb_of_simulations']
 
         for execution_order_id in response['execution_orders'].keys():
-            if response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior'] > 0:
-                response['execution_orders'][execution_order_id]['overall_score'] = response['execution_orders'][execution_order_id]['sum_of_scores']/response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior']
+            if response['execution_orders'][execution_order_id]['total_nb_of_simulations'] > 0:
+                response['execution_orders'][execution_order_id]['overall_score'] = response['execution_orders'][execution_order_id]['sum_of_scores']/response['execution_orders'][execution_order_id]['total_nb_of_simulations']
         
 
     return HttpResponse(json.dumps(response))

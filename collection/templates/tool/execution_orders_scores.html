@@ -1,0 +1,110 @@
+{% extends 'layouts/base_tool.html' %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+
+<!-- 
+####################################################################
+# This file is part of the Tree of Knowledge project.
+# Copyright (c) 2019-2040 Benedikt Kleppmann
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version - see http://www.gnu.org/licenses/.
+#####################################################################
+-->
+
+{% block title %}
+	Tree of Knowledge - Upload Data 1
+{% endblock %}
+
+{% block additionalcss %}
+
+	<link rel="stylesheet" href="{% static 'css/upload_table_frame.css' %}" />
+
+	<style>
+
+		/* --- Table box ----------------------------------------------------------- */
+		
+
+		/* --- Table format -------------------------------------------------------- */
+
+
+	</style>
+{% endblock %}
+
+
+{% block content %}	
+	<div class="container-fluid">
+		<div id="scores-table"></div>
+	</div>
+	
+
+	<script>
+	function drawScoresTable(execution_order_scores) {
+		var scores_table_html = '<table>' +
+									'<thead>' +
+										'<tr>';
+								
+		var execution_order_ids = Object.keys(execution_order_scores['execution_orders'])
+		for (var i = 0; i < execution_order_ids.length; i++) {
+			scores_table_html += 			'<th class="execution_order_name">' + execution_order_scores['execution_orders'][execution_order_ids[i]]['name'] + '</th>';
+		}
+		scores_table_html +=			'</tr>' + 
+									'</thead>' +
+									'<tbody>';
+		
+		for (var i = 0; i < execution_order_scores['simulations'].length; i++) {
+			var simulation_id = execution_order_scores['simulations'][i]['simulation_id'];
+			scores_table_html +=		'<tr>' +
+											'<td class="simulation-name"><a href="https://www.treeofknowledge.ai/tool/edit_simulation/' + String(simulation_id) + '/">' + execution_order_scores['simulations'][i]['simulation_name'] + '</a></td>';
+			for (var j = 0; j < execution_order_ids.length; j++) {
+				var execution_order_id = execution_order_ids[j];
+				if (execution_order_scores["scores"][simulation_id] && execution_order_scores["scores"][simulation_id][execution_order_id]){
+					var score = execution_order_scores["scores"][simulation_id][execution_order_id];
+					scores_table_html +=	'<td class="score" href="#" data-toggle="tooltip" title="This score was determined from ' + String(score['nb_of_simulations'].toFixed()) + ' simulations">' + String((score['nb_of_simulations'] * 100).toFixed(1)) + '</td>';
+				} else {
+					scores_table_html +=	'<td class="score"></td>';
+				}		
+			}
+			scores_table_html +=		'</tr>';
+		}
+		scores_table_html +=		'<tbody>' +
+								'</table>';
+		
+		
+		$('#scores-table').html(scores_table_html);
+		
+		
+	}
+	
+
+	/*========================================================================*/
+	/*========================================================================*/
+	/*========================================================================*/
+
+	window.onload = function() {
+
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				execution_orders_scores = JSON.parse(this.responseText);
+				drawScoresTable(execution_orders_scores);
+			}
+		};
+		xhttp.open('GET', '/tool/get_execution_orders_scores' , true);
+		xhttp.send();
+	
+	};
+	</script>
+
+	<script src="{% static 'js/jquery.js' %}"></script>
+
+{% endblock %}
+
+
+
+
+
+
+

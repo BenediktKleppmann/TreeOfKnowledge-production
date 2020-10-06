@@ -75,6 +75,8 @@ urlpatterns = [
     url(r'^tool/open_your_simulation/$', views.open_your_simulation, name='open_your_simulation'),
     url(r'^tool/browse_simulations/$', views.browse_simulations, name='browse_simulations'),
     url(r'^tool/profile_and_settings/$', views.profile_and_settings, name='profile_and_settings'),
+    url(r'^tool/execution_orders_scores/$', views.execution_orders_scores, name='execution_orders_scores'),
+    
 
     # Upload data  -------------------------------------------------------------------------
     url(r'^tool/upload_data1/$', views.upload_data1_new, name='upload_data1_new'),
@@ -163,8 +165,6 @@ urlpatterns = [
     url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/new-(?P<parameter_number>[-\d]+)/$', views.analyse_new_simulation, name='analyse_new_simulation'),
     url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/(?P<parameter_number>[-\d]+)/$', views.analyse_simulation, name='analyse_simulation'),
     url(r'^tool/abort_simulation/$', views.abort_simulation, name='abort_simulation'),
-    # url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/setup_rule_learning/$', views.setup_rule_learning, name='setup_rule_learning'),
-    # url(r'^tool/learn_rule/(?P<learned_rule_id>[-\d]+)/$', views.learn_rule, name='learn_rule'),
     url(r'^tool/run_single_monte_carlo/$', views.run_single_monte_carlo, name='run_single_monte_carlo'),
 
 
