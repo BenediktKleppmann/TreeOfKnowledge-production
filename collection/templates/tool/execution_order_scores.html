@@ -1,4 +1,4 @@
-{% extends 'layouts/base_admin.html' %}
+{% extends 'layouts/base_tool.html' %}
 {% load staticfiles %}
 {% load bootstrap3 %}
 
@@ -15,7 +15,7 @@
 -->
 
 {% block title %}
-	Tree of Knowledge - Upload Data 1
+	Tree of Knowledge - Model Scores
 {% endblock %}
 
 {% block additionalcss %}
@@ -62,7 +62,7 @@
 				var execution_order_id = execution_order_ids[j];
 				if (execution_order_scores["scores"][simulation_id] && execution_order_scores["scores"][simulation_id][execution_order_id]){
 					var score = execution_order_scores["scores"][simulation_id][execution_order_id];
-					scores_table_html +=	'<td class="score" href="#" data-toggle="tooltip" title="This score was determined from ' + String(score['nb_of_simulations'].toFixed()) + ' simulations">' + String((score['nb_of_simulations'] * 100).toFixed(1)) + '</td>';
+					scores_table_html +=	'<td class="score" href="#" data-toggle="tooltip" title="This score was determined from ' + String(score['nb_of_simulations_in_posterior'].toFixed()) + ' simulations">' + String((score['nb_of_simulations'] * 100).toFixed(1)) + '</td>';
 				} else {
 					scores_table_html +=	'<td class="score"></td>';
 				}		
