@@ -23,16 +23,48 @@
 	<link rel="stylesheet" href="{% static 'css/upload_table_frame.css' %}" />
 
 	<style>
+	
+	
+		.lds-dual-ring {
+		  margin: auto;
+		  margin-top: 125px;
+		  width: 50px;
+		  height: 50px;
+		  padding-top: 12px;
+		}
+		
+		.lds-dual-ring:after {
+		  content: " ";
+		  display: block;
+		  width: 50px;
+		  height: 50px;
+		  margin: 1px;
+		  border-radius: 50%;
+		  border: 4px solid #fed;
+		  border-color: rgb(80,80,80) transparent rgb(80,80,80) transparent;
+		  animation: lds-dual-ring 3.2s linear infinite;
+		}
+		
+		@keyframes lds-dual-ring {
+		  0% {
+			transform: rotate(0deg);
+		  }
+		  100% {
+			transform: rotate(360deg);
+		  }
+		}
+	
 
-		/* --- Table box ----------------------------------------------------------- */
+		/* --- Score Table ----------------------------------------------------------- */
 		#scores-table {
 			margin-top: 45px;
 			margin-left: 55px;
 		}
 		
 		.execution_order_name {
-			padding: 20px;
+			padding: 15px 65px;
 			border-bottom: 1px solid grey;
+			font-size: 16px;
 		}
 		
 		.execution_order_name .first-column {
@@ -44,20 +76,20 @@
 		}
 		
 		.simulation-name {
-			font-size: 18px;
+			font-size: 17px;
 			padding: 10px 0px;
 			border-right: 1px solid grey;
 		}
 		
 		.score {
 		    text-align: center;
-			font-size: 22px;
+			font-size: 20px;
 			padding: 3px;
 		}
 
 		.overall-score {
 			text-align: center;
-			font-size: 22px;
+			font-size: 24px;
 			padding: 3px;
 			border-top: 1px solid grey;
 		}
@@ -67,7 +99,9 @@
 
 {% block content %}	
 	<div class="container-fluid">
-		<div id="scores-table"></div>
+		<div id="scores-table">
+			<div class="lds-dual-ring"></div>
+		</div>
 	</div>
 	
 
