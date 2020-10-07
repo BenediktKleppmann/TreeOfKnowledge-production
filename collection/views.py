@@ -1053,7 +1053,7 @@ def get_execution_order_scores(request):
             all_priors_df.index = range(len(all_priors_df))
 
             for index, row in run_simulations_df[run_simulations_df['simulation_id']==simulation_model.id].iterrows():
-                if len(all_priors_df) > row['nb_of_tested_parameters_in_posterior']:
+                if len(all_priors_df) > row['nb_of_tested_parameters_in_posterior'] and row['nb_of_simulations'] > 0:
                     execution_order_id = int(row['execution_order_id'])
                     score = 1 - all_priors_df.loc[:row['nb_of_tested_parameters_in_posterior'], 'error'].mean()
                     nb_of_simulations_in_posterior = row['nb_of_simulations']/row['nb_of_tested_parameters']*row['nb_of_tested_parameters_in_posterior']
