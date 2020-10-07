@@ -290,6 +290,12 @@
 								<input id="simulation-name" class="form-control" value="{{ simulation_model.simulation_name }}">
 							</div>
 						</div>
+						<div class="form-group row">
+							<label for="max" class="col-sm-5">Model</label>
+							<div class="col-sm-7">
+								<button id="open-execution-modal-button" class="btn btn-secondary" type="button" onclick="openSelectExecutionOrderModal()"></button>' +
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -361,17 +367,16 @@
 	// GLOBAL VARIABLES:
 	var simulation_id = {{ simulation_model.id|safe }};
 	var run_number = {{ simulation_model.run_number|safe }};
-	
 	var objects_dict = {{ simulation_model.objects_dict|safe }};
 	var y_value_attributes = {{ simulation_model.y_value_attributes|safe }};
-	var all_priors_df = {{ learn_parameters_result.all_priors_df|safe }};
 	var not_used_rules = {{ simulation_model.not_used_rules|safe }};
+	
+	var all_priors_df = {{ learn_parameters_result.all_priors_df|safe }};
+	var available_execution_orders = {{ available_execution_orders|safe }};
 	
 	var X = 10;
 	
-	
-	
-	
+
 	
 	var is_timeseries_analysis = {{ simulation_model.is_timeseries_analysis|yesno:"true,false" }};
 	var simulation_start_time = {{ simulation_model.simulation_start_time }};
@@ -1026,6 +1031,8 @@
 
 	window.onload = function() {	
 
+		$('#open-execution-modal-button').html(available_execution_orders[execution_order_id]['name']);
+		
 		
 		// make the accordion in the left sidebar collapseable
 		$('.accordion-toggle').click(function() {
@@ -1446,14 +1453,14 @@
 			chart.draw();
 		});	
 	}
-	
-	
-	
-	
-	
-	
-	
+
 </script>
+
+
+
+{% include "tool/includes/select_execution_order_modal.html" %}
+
+
 
 {% endblock %}
 

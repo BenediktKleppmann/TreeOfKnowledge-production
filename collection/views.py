@@ -2078,7 +2078,8 @@ def analyse_learned_parameters(request, simulation_id):
         progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
     simulation_model = Simulation_model.objects.get(id=simulation_id)
     learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id).order_by('-id').first()
-    return render(request, 'tool/analyse_learned_parameters.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result})
+    available_execution_orders = get_from_db.get_available_execution_orders()
+    return render(request, 'tool/analyse_learned_parameters.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'available_execution_orders':available_execution_orders})
 
 
 
