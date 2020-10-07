@@ -1011,60 +1011,56 @@ def get_execution_order_scores(request):
     from django.db import connection
     response = {'simulations': [], 'scores': {}}
 
+    sql_string = '''
+        SELECT sub_query.simulation_id, 
+               sub_query.execution_order_id, 
+               AVG(nb_of_simulations) as nb_of_simulations,
+               AVG(nb_of_tested_parameters) as nb_of_tested_parameters,
+               AVG(sub_query.nb_of_tested_parameters_in_posterior) as nb_of_tested_parameters_in_posterior
+        FROM ( 
+                SELECT  simulation_id, 
+                        execution_order_id, 
+                        rule_id,
+                        parameter_id,
+                        nb_of_simulations,
+                        nb_of_tested_parameters,
+                        nb_of_tested_parameters_in_posterior,
+                        ROW_NUMBER() OVER(PARTITION BY simulation_id, execution_order_id, rule_id, parameter_id  ORDER BY id DESC) AS rank
+                FROM collection_likelihood_function 
+            ) as sub_query
+        WHERE sub_query.rank = 1
+        GROUP BY sub_query.simulation_id, sub_query.execution_order_id
+    ''' 
+
+    run_simulations_df = pd.read_sql_query(sql_string, connection)
+
+    # add execution_orders
+    all_execution_order_ids = list(run_simulations_df['execution_order_id'].unique())
+    response['execution_orders'] = {execution_order.id: {'name':execution_order.name, 'sum_of_scores':0, 'total_nb_of_tested_parameters_in_posterior':0} for execution_order in Execution_order.objects.filter(id__in=all_execution_order_ids).order_by('id')}
+
+
+    # add simuations
+    all_simuation_ids = list(run_simulations_df['simulation_id'].unique())
+    simulation_models = Simulation_model.objects.filter(id__in=all_simuation_ids).order_by('id')
+    for simulation_model in simulation_models:
+        response['simulations'].append({'simulation_id': simulation_model.id, 'simulation_name': simulation_model.simulation_name}) 
+        response['scores'][simulation_model.id] = {}
+        all_priors_df = pd.DataFrame.from_dict(json.loads(simulation_model.all_priors_df), orient='index')
+        all_priors_df.index = range(len(all_priors_df))
+
+        for index, row in run_simulations_df[run_simulations_df['simulation_id']==simulation_model.id].iterrows():
+            if len(all_priors_df) > row['nb_of_tested_parameters_in_posterior'] and row['nb_of_simulations'] > 0:
+                execution_order_id = int(row['execution_order_id'])
+                score = 1 - all_priors_df.loc[:row['nb_of_tested_parameters_in_posterior'], 'error'].mean()
+                nb_of_simulations_in_posterior = row['nb_of_simulations']/row['nb_of_tested_parameters']*row['nb_of_tested_parameters_in_posterior']
+                response['scores'][simulation_model.id][execution_order_id] = {'score': score, 'nb_of_simulations_in_posterior': nb_of_simulations_in_posterior}
+                response['execution_orders'][execution_order_id]['sum_of_scores'] += score*row['nb_of_tested_parameters_in_posterior']
+                response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior'] += row['nb_of_tested_parameters_in_posterior']
+
+    for execution_order_id in response['execution_orders'].keys():
+        if response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior'] > 0:
+            response['execution_orders'][execution_order_id]['overall_score'] = response['execution_orders'][execution_order_id]['sum_of_scores']/response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior']
     
-    execution_orders = Execution_order.objects.all()
-    for execution_order in execution_orders:
-        Likelihood_function.objects.filter(execution_order_id=execution_order.id)
-        sql_string = '''
-            SELECT sub_query.simulation_id, 
-                   sub_query.execution_order_id, 
-                   AVG(nb_of_simulations) as nb_of_simulations,
-                   AVG(nb_of_tested_parameters) as nb_of_tested_parameters,
-                   AVG(sub_query.nb_of_tested_parameters_in_posterior) as nb_of_tested_parameters_in_posterior
-            FROM ( 
-                    SELECT  simulation_id, 
-                            execution_order_id, 
-                            rule_id,
-                            parameter_id,
-                            nb_of_simulations,
-                            nb_of_tested_parameters,
-                            nb_of_tested_parameters_in_posterior,
-                            ROW_NUMBER() OVER(PARTITION BY simulation_id, execution_order_id, rule_id, parameter_id  ORDER BY id DESC) AS rank
-                    FROM collection_likelihood_function 
-                ) as sub_query
-            WHERE sub_query.rank = 1
-            GROUP BY sub_query.simulation_id, sub_query.execution_order_id
-        ''' 
-
-        run_simulations_df = pd.read_sql_query(sql_string, connection)
-
-        # add execution_orders
-        all_execution_order_ids = list(run_simulations_df['execution_order_id'].unique())
-        response['execution_orders'] = {execution_order.id: {'name':execution_order.name, 'sum_of_scores':0, 'total_nb_of_tested_parameters_in_posterior':0} for execution_order in Execution_order.objects.filter(id__in=all_execution_order_ids).order_by('id')}
-
-
-        # add simuations
-        all_simuation_ids = list(run_simulations_df['simulation_id'].unique())
-        simulation_models = Simulation_model.objects.filter(id__in=all_simuation_ids).order_by('id')
-        for simulation_model in simulation_models:
-            response['simulations'].append({'simulation_id': simulation_model.id, 'simulation_name': simulation_model.simulation_name}) 
-            response['scores'][simulation_model.id] = {}
-            all_priors_df = pd.DataFrame.from_dict(json.loads(simulation_model.all_priors_df), orient='index')
-            all_priors_df.index = range(len(all_priors_df))
-
-            for index, row in run_simulations_df[run_simulations_df['simulation_id']==simulation_model.id].iterrows():
-                if len(all_priors_df) > row['nb_of_tested_parameters_in_posterior'] and row['nb_of_simulations'] > 0:
-                    execution_order_id = int(row['execution_order_id'])
-                    score = 1 - all_priors_df.loc[:row['nb_of_tested_parameters_in_posterior'], 'error'].mean()
-                    nb_of_simulations_in_posterior = row['nb_of_simulations']/row['nb_of_tested_parameters']*row['nb_of_tested_parameters_in_posterior']
-                    response['scores'][simulation_model.id][execution_order_id] = {'score': score, 'nb_of_simulations_in_posterior': nb_of_simulations_in_posterior}
-                    response['execution_orders'][execution_order_id]['sum_of_scores'] += score*row['nb_of_tested_parameters_in_posterior']
-                    response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior'] += row['nb_of_tested_parameters_in_posterior']
-
-        for execution_order_id in response['execution_orders'].keys():
-            if response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior'] > 0:
-                response['execution_orders'][execution_order_id]['overall_score'] = response['execution_orders'][execution_order_id]['sum_of_scores']/response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior']
-        
 
     return HttpResponse(json.dumps(response).replace(': NaN', ': null'))
 
