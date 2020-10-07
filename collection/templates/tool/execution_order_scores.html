@@ -44,7 +44,8 @@
 	function drawScoresTable(execution_order_scores) {
 		var scores_table_html = '<table>' +
 									'<thead>' +
-										'<tr>';
+										'<tr>' +
+											'<th class="execution_order_name first-column"></th>';
 								
 		var execution_order_ids = Object.keys(execution_order_scores['execution_orders'])
 		for (var i = 0; i < execution_order_ids.length; i++) {
@@ -69,7 +70,13 @@
 			}
 			scores_table_html +=		'</tr>';
 		}
-		scores_table_html +=		'<tbody>' +
+		scores_table_html +=			'<tr>' +
+											'<td class="overall-score first-column"></th>';
+		for (var i = 0; i < execution_order_ids.length; i++) {
+			scores_table_html += 			'<td class="overall-score">' + String((execution_order_scores['execution_orders'][execution_order_ids[i]]['overall_score']*100).toFixed(1)) + '</th>';
+		}
+		scores_table_html +=			'</tr>' +
+									'<tbody>' +
 								'</table>';
 		
 		
