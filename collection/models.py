@@ -165,6 +165,44 @@ class Attribute(models.Model):
 
 
 
+
+
+class Rule(models.Model):
+    changed_var_attribute_id = models.IntegerField()
+    changed_var_data_type = models.TextField()
+    aggregation_condition = models.TextField()
+    condition_text = models.TextField()
+    condition_exec = models.TextField()
+    aggregation_text = models.TextField()
+    aggregation_exec = models.TextField()
+    effect_text = models.TextField()
+    effect_exec = models.TextField()
+    effect_is_calculation = models.NullBooleanField() # if False, then the effect is just a value and if the rule is triggered, then the column_to_change will be set to this value
+    used_attribute_ids = models.TextField()
+    used_parameter_ids = models.TextField()
+    is_conditionless = models.NullBooleanField()   #if true then this is a calculation rule i.e. the condition is 'True' and the effect is automatically triggered at every timestep
+    has_probability_1 = models.NullBooleanField()  #if true, then the rule is a certain fact and there will be no beta-distribution coefficients in Posterior_distributions
+    probability = models.FloatField(null=True)
+    standard_dev = models.FloatField(null=True)
+
+
+
+class Rule_parameter(models.Model):
+    rule_id = models.IntegerField()
+    parameter_name = models.TextField()
+    min_value = models.FloatField()
+    max_value = models.FloatField()
+
+
+
+class Execution_order(models.Model):
+    name = models.TextField()
+    description = models.TextField()
+    execution_order = models.TextField()
+
+
+
+
 class Simulation_model(models.Model):
     aborted = models.BooleanField()
     run_number = models.IntegerField()
@@ -207,30 +245,30 @@ class Simulation_model(models.Model):
         super(Simulation_model, self).save()
 
 
-
-class Rule(models.Model):
-    changed_var_attribute_id = models.IntegerField()
-    changed_var_data_type = models.TextField()
-    aggregation_condition = models.TextField()
-    condition_text = models.TextField()
-    condition_exec = models.TextField()
-    aggregation_text = models.TextField()
-    aggregation_exec = models.TextField()
-    effect_text = models.TextField()
-    effect_exec = models.TextField()
-    effect_is_calculation = models.NullBooleanField() # if False, then the effect is just a value and if the rule is triggered, then the column_to_change will be set to this value
-    used_attribute_ids = models.TextField()
-    used_parameter_ids = models.TextField()
-    is_conditionless = models.NullBooleanField()   #if true then this is a calculation rule i.e. the condition is 'True' and the effect is automatically triggered at every timestep
-    has_probability_1 = models.NullBooleanField()  #if true, then the rule is a certain fact and there will be no beta-distribution coefficients in Posterior_distributions
-    probability = models.FloatField(null=True)
-    standard_dev = models.FloatField(null=True)
+class Logged_variable(models.Model):
+    logged_time = models.IntegerField()
+    variable_name = models.TextField()
+    variable_value = models.TextField()
 
 
-class Execution_order(models.Model):
-    name = models.TextField()
-    description = models.TextField()
-    execution_order = models.TextField()
+class Learn_parameters_result(models.Model):
+    simulation_id = models.IntegerField()
+    execution_order_id = models.IntegerField()
+    all_priors_df = models.TextField()
+
+    
+
+class Monte_carlo_result(models.Model):
+    simulation_id = models.IntegerField()
+    run_number = models.IntegerField()
+    parameter_number = models.IntegerField()
+    is_new_parameter = models.BooleanField()
+    prior_dict = models.TextField()
+    not_used_rules = models.TextField()
+    triggered_rules = models.TextField()
+    simulation_data = models.TextField()
+    correct_values = models.TextField()
+    errors = models.TextField()
 
 
 
@@ -247,30 +285,13 @@ class Likelihood_function(models.Model):
     nb_of_tested_parameters_in_posterior = models.IntegerField()
 
 
-class Rule_parameter(models.Model):
-    rule_id = models.IntegerField()
-    parameter_name = models.TextField()
-    min_value = models.FloatField()
-    max_value = models.FloatField()
+
     
 
-class Logged_variable(models.Model):
-    logged_time = models.IntegerField()
-    variable_name = models.TextField()
-    variable_value = models.TextField()
 
 
-class Simulation_result(models.Model):
-    simulation_id = models.IntegerField()
-    run_number = models.IntegerField()
-    parameter_number = models.IntegerField()
-    is_new_parameter = models.BooleanField()
-    prior_dict = models.TextField()
-    not_used_rules = models.TextField()
-    triggered_rules = models.TextField()
-    simulation_data = models.TextField()
-    correct_values = models.TextField()
-    errors = models.TextField()
+
+
 
 
 # ========================================================================================

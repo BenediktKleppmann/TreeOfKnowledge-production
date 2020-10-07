@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404
 from django.shortcuts import render, redirect
-from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule, Execution_order, Likelihood_function, Rule_parameter, Logged_variable, Simulation_result
+from collection.models import Newsletter_subscriber, Simulation_model, Uploaded_dataset, Object_hierachy_tree_history, Attribute, Object_types, Data_point, Object, Calculation_rule, Learned_rule, Rule, Execution_order, Likelihood_function, Rule_parameter, Logged_variable, Monte_carlo_result, Learn_parameters_result
 from django.contrib.auth.models import User
 from django.db.models import Count
 from collection.forms import UserForm, ProfileForm, Subscriber_preferencesForm, Subscriber_registrationForm, UploadFileForm, Uploaded_datasetForm2, Uploaded_datasetForm3, Uploaded_datasetForm4, Uploaded_datasetForm5, Uploaded_datasetForm6, Uploaded_datasetForm7
@@ -784,10 +784,10 @@ def get_parameter_info(request):
 def get_simulated_parameter_numbers(request):
     simulation_id = request.GET.get('simulation_id', '')
     run_number = request.GET.get('run_number', '')
-    learned_parameter_numbers = Simulation_result.objects.filter(simulation_id=simulation_id, run_number=run_number, is_new_parameter=False).order_by('parameter_number').values_list('parameter_number', flat=True)
+    learned_parameter_numbers = Monte_carlo_result.objects.filter(simulation_id=simulation_id, run_number=run_number, is_new_parameter=False).order_by('parameter_number').values_list('parameter_number', flat=True)
     learned_parameter_numbers = list(set(learned_parameter_numbers))
 
-    new_parameter_numbers = Simulation_result.objects.filter(simulation_id=simulation_id, run_number=run_number, is_new_parameter=True).order_by('parameter_number').values_list('parameter_number', flat=True)
+    new_parameter_numbers = Monte_carlo_result.objects.filter(simulation_id=simulation_id, run_number=run_number, is_new_parameter=True).order_by('parameter_number').values_list('parameter_number', flat=True)
     new_parameter_numbers = list(set(new_parameter_numbers))
     return HttpResponse(json.dumps({'learned_parameter_numbers':learned_parameter_numbers, 'new_parameter_numbers':new_parameter_numbers}))  
 
@@ -1045,14 +1045,17 @@ def get_execution_order_scores(request):
     for simulation_model in simulation_models:
         response['simulations'].append({'simulation_id': simulation_model.id, 'simulation_name': simulation_model.simulation_name}) 
         response['scores'][simulation_model.id] = {}
-        all_priors_df = pd.DataFrame.from_dict(json.loads(simulation_model.all_priors_df), orient='index')
-        all_priors_df.index = range(len(all_priors_df))
 
         for index, row in run_simulations_df[run_simulations_df['simulation_id']==simulation_model.id].iterrows():
             if len(all_priors_df) > row['nb_of_tested_parameters_in_posterior'] and row['nb_of_simulations'] > 0:
+
                 execution_order_id = int(row['execution_order_id'])
+                learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id).order('-id').first()
+                all_priors_df = pd.DataFrame.from_dict(json.loads(learn_parameters_result.all_priors_df), orient='index')
+                all_priors_df.index = range(len(all_priors_df))
                 score = 1 - all_priors_df.loc[:row['nb_of_tested_parameters_in_posterior'], 'error'].mean()
                 nb_of_simulations_in_posterior = row['nb_of_simulations']/row['nb_of_tested_parameters']*row['nb_of_tested_parameters_in_posterior']
+
                 response['scores'][simulation_model.id][execution_order_id] = {'score': score, 'nb_of_simulations_in_posterior': nb_of_simulations_in_posterior}
                 response['execution_orders'][execution_order_id]['sum_of_scores'] += score*row['nb_of_tested_parameters_in_posterior']
                 response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior'] += row['nb_of_tested_parameters_in_posterior']
@@ -2074,7 +2077,8 @@ def analyse_learned_parameters(request, simulation_id):
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
         progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
     simulation_model = Simulation_model.objects.get(id=simulation_id)
-    return render(request, 'tool/analyse_learned_parameters.html', {'simulation_model':simulation_model})
+    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id).order('-id').first()
+    return render(request, 'tool/analyse_learned_parameters.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result})
 
 
 
@@ -2086,8 +2090,9 @@ def analyse_new_simulation(request, simulation_id, parameter_number):
         progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
     simulation_model = Simulation_model.objects.get(id=simulation_id)
     print('simulation_id=%s, parameter_number=%s'  % (simulation_id, parameter_number))
-    simulation_result = Simulation_result.objects.filter(simulation_id=simulation_id, parameter_number=parameter_number, is_new_parameter=True).order_by('-id').first()
-    return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'simulation_result':simulation_result})
+    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id).order('-id').first()
+    monte_carlo_result = Monte_carlo_result.objects.filter(simulation_id=simulation_id, parameter_number=parameter_number, is_new_parameter=True).order_by('-id').first()
+    return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'monte_carlo_result':monte_carlo_result})
 
 
 
@@ -2099,8 +2104,9 @@ def analyse_simulation(request, simulation_id, parameter_number):
         progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
     simulation_model = Simulation_model.objects.get(id=simulation_id)
     print('simulation_id=%s, parameter_number=%s'  % (simulation_id, parameter_number))
-    simulation_result = Simulation_result.objects.filter(simulation_id=simulation_id, parameter_number=parameter_number, is_new_parameter=False).order_by('-id').first()
-    return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'simulation_result':simulation_result})
+    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id).order('-id').first()
+    monte_carlo_result = Monte_carlo_result.objects.filter(simulation_id=simulation_id, parameter_number=parameter_number, is_new_parameter=False).order_by('-id').first()
+    return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'monte_carlo_result':monte_carlo_result})
 
 
 @login_required
@@ -2485,20 +2491,14 @@ def upload_file(request):
 # TEST PAGES
 # ==================
 def test_page1(request):
-    import boto3
-    simulation_id = request.GET.get('simulation_id', '')
-
-    session = boto3.session.Session()
-    s3 = session.resource('s3')
-    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(simulation_id) + '_validation_data.json')
-    s3_document = obj.get()
-    document_body = s3_document['Body'].read()
-    document_body_str = document_body.decode('utf-8')
-    validation_data = json.loads(document_body_str)
+    simulation_models = Simulation_model.objects.all().order_by('id') 
+    for simulation_model in simulation_models:
+        learn_parameters_result = Learn_parameters_result(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id, all_priors_df=simulation_model.all_priors_df)
+        learn_parameters_result.save()
 
 
 
-    return HttpResponse(json.dumps(validation_data['y0_values']))
+    return HttpResponse('success')
 
 
 

@@ -58,7 +58,7 @@
 		/* --- Score Table ----------------------------------------------------------- */
 		#scores-table {
 			margin-top: 45px;
-			margin-left: 55px;
+			margin-left: 65px;
 		}
 		
 		.execution_order_name {
@@ -138,7 +138,9 @@
 		scores_table_html +=			'<tr>' +
 											'<td class="overall-score first-column"></th>';
 		for (var i = 0; i < execution_order_ids.length; i++) {
-			scores_table_html += 			'<td class="overall-score">' + String((execution_order_scores['execution_orders'][execution_order_ids[i]]['overall_score']*100).toFixed(1)) + '</th>';
+			if (execution_order_scores['execution_orders'][execution_order_ids[i]]['overall_score']) {
+				scores_table_html += 			'<td class="overall-score">' + String((execution_order_scores['execution_orders'][execution_order_ids[i]]['overall_score']*100).toFixed(1)) + '</th>';
+			}
 		}
 		scores_table_html +=			'</tr>' +
 									'<tbody>' +

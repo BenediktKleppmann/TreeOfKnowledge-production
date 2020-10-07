@@ -520,15 +520,15 @@
 	// GLOBAL VARIABLES:
 	var objects_dict = {{ simulation_model.objects_dict|safe }};
 	var y_value_attributes = {{ simulation_model.y_value_attributes|safe }};
-	var all_priors_df = {{ simulation_model.all_priors_df|safe }};
+	var all_priors_df = {{ learn_parameters_result.all_priors_df|safe }};
 	
 	
-	var not_used_rules = {{ simulation_result.not_used_rules|safe }};
-	var prior_dict = {{ simulation_result.prior_dict|safe }};
-	var triggered_rules = {{ simulation_result.triggered_rules|safe }};
-	var simulation_data = {{ simulation_result.simulation_data|safe }};
-	var correct_values = {{ simulation_result.correct_values|safe }};
-	var errors = {{ simulation_result.errors|safe }};
+	var not_used_rules = {{ monte_carlo_result.not_used_rules|safe }};
+	var prior_dict = {{ monte_carlo_result.prior_dict|safe }};
+	var triggered_rules = {{ monte_carlo_result.triggered_rules|safe }};
+	var simulation_data = {{ monte_carlo_result.simulation_data|safe }};
+	var correct_values = {{ monte_carlo_result.correct_values|safe }};
+	var errors = {{ monte_carlo_result.errors|safe }};
 	
 	var is_timeseries_analysis = {{ simulation_model.is_timeseries_analysis|yesno:"true,false" }};
 	var simulation_start_time = {{ simulation_model.simulation_start_time }};

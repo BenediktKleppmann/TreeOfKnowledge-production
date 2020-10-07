@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # import the models
-from collection.models import (Profile, Newsletter_subscriber, Uploaded_dataset, Data_point, Object_hierachy_tree_history, Object_types, Object, Attribute, Simulation_model, Rule, Execution_order, Likelihood_function, Rule_parameter, Logged_variable, Simulation_result)
+from collection.models import (Profile, Newsletter_subscriber, Uploaded_dataset, Data_point, Object_hierachy_tree_history, Object_types, Object, Attribute, Simulation_model, Rule, Execution_order, Likelihood_function, Rule_parameter, Logged_variable, Monte_carlo_result)
 
 
 # automated email_hash creation for Newsletter subscribers
@@ -39,5 +39,5 @@ admin.site.register(Execution_order)
 admin.site.register(Likelihood_function)
 admin.site.register(Rule_parameter)
 admin.site.register(Logged_variable)
-admin.site.register(Simulation_result)
+admin.site.register(Monte_carlo_result)
 

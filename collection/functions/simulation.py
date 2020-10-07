@@ -8,7 +8,7 @@
 # (at your option) any later version - see http://www.gnu.org/licenses/.
 #####################################################################
 
-from collection.models import Simulation_model, Rule, Likelihood_function, Attribute, Execution_order, Rule_parameter, Simulation_result
+from collection.models import Simulation_model, Rule, Likelihood_function, Attribute, Execution_order, Rule_parameter, Monte_carlo_result, Learn_parameters_result
 import json
 import pandas as pd
 import numpy as np
@@ -683,9 +683,11 @@ class Simulator:
             all_priors_df['nb_of_simulations'] = len(self.df)
             all_priors_df = all_priors_df.sort_values('error')
             all_priors_df.index = range(len(all_priors_df))
-            simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
-            simulation_model_record.all_priors_df = json.dumps(all_priors_df.to_dict(orient='index'))
-            simulation_model_record.save()
+            learn_parameters_result = Learn_parameters_result(simulation_id=self.simulation_id, execution_order_id=self.execution_order_id, all_priors_df=json.dumps(all_priors_df.to_dict(orient='index')))
+            learn_parameters_result.save()
+            # simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
+            # simulation_model_record.all_priors_df = json.dumps(all_priors_df.to_dict(orient='index'))
+            # simulation_model_record.save()
 
             best_performing_prior_dict = {}
             for rule_number, rule in enumerate(self.rules):

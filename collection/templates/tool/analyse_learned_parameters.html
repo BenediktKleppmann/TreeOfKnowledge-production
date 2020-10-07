@@ -364,7 +364,7 @@
 	
 	var objects_dict = {{ simulation_model.objects_dict|safe }};
 	var y_value_attributes = {{ simulation_model.y_value_attributes|safe }};
-	var all_priors_df = {{ simulation_model.all_priors_df|safe }};
+	var all_priors_df = {{ learn_parameters_result.all_priors_df|safe }};
 	var not_used_rules = {{ simulation_model.not_used_rules|safe }};
 	
 	var X = 10;
