@@ -545,10 +545,11 @@
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				all_priors_df = JSON.parse(this.responseText);
-				if (all_priors_df == "doesn't exist") {
+				var all_priors_json = JSON.parse(this.responseText);
+				if (all_priors_json == "doesn't exist") {
 					$('#right-main-panel').html('<div id="results-dont-exist-message">The simulation wasn\'t yet run for this model.</div>');
 				} else {
+					all_priors_df = JSON.parse(all_priors_json);
 					drawInspectSimulations();
 					activateSimulatedParameters();
 				}
