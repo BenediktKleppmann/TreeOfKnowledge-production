@@ -107,6 +107,8 @@ urlpatterns = [
     url(r'^tool/get_parameter_info/$', views.get_parameter_info, name='get_parameter_info'),
     url(r'^tool/get_simulated_parameter_numbers/$', views.get_simulated_parameter_numbers, name='get_simulated_parameter_numbers'),
     url(r'^tool/get_missing_objects_dict_attributes/$', views.get_missing_objects_dict_attributes, name='get_missing_objects_dict_attributes'),
+    url(r'^tool/get_all_priors_df/$', views.get_all_priors_df, name='get_all_priors_df'),
+    
 
     # complex get
     url(r'^tool/get_data_points/$', views.get_data_points, name='get_data_points'),

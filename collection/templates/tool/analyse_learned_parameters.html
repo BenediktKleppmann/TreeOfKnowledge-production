@@ -74,6 +74,14 @@
 	#bottom-from-group {
 		margin-bottom: 0px;
 	}
+	
+	#open-execution-modal-button {
+		border: 1px solid #ccc;
+		background: white;
+		width: 154px;
+		text-align: left;
+	}
+	
 
 	/* Parameter Distributions ------------------------------------------------------- */
 	
@@ -108,7 +116,41 @@
 	}
 	
 	/* --------------------------------------------------------------------------*/
-	/* Right Panel - Parameter Distributions  ----------------------------*/
+	/* Right Panel - Dual Ring  -------------------------------------------------*/
+	/* --------------------------------------------------------------------------*/
+	
+		.lds-dual-ring {
+		  margin: auto;
+		  margin-top: 125px;
+		  width: 50px;
+		  height: 50px;
+		  padding-top: 12px;
+		}
+		
+		.lds-dual-ring:after {
+		  content: " ";
+		  display: block;
+		  width: 50px;
+		  height: 50px;
+		  margin: 1px;
+		  border-radius: 50%;
+		  border: 4px solid #fed;
+		  border-color: rgb(80,80,80) transparent rgb(80,80,80) transparent;
+		  animation: lds-dual-ring 3.2s linear infinite;
+		}
+		
+		@keyframes lds-dual-ring {
+		  0% {
+			transform: rotate(0deg);
+		  }
+		  100% {
+			transform: rotate(360deg);
+		  }
+		}
+	
+	
+	/* --------------------------------------------------------------------------*/
+	/* Right Panel - Parameter Distributions  -----------------------------------*/
 	/* --------------------------------------------------------------------------*/
 	
 	#graph-panel {
@@ -293,7 +335,7 @@
 						<div class="form-group row">
 							<label for="max" class="col-sm-5">Model</label>
 							<div class="col-sm-7">
-								<button id="open-execution-modal-button" class="btn btn-secondary" type="button" onclick="openSelectExecutionOrderModal()"></button>' +
+								<button id="open-execution-modal-button" class="btn btn-secondary" type="button" onclick="openSelectExecutionOrderModal()"></button>
 							</div>
 						</div>
 					</div>
@@ -338,6 +380,7 @@
 	</div>
 </div>
 <div id="right-main-panel">
+	<div class="lds-dual-ring"></div>
 </div>
 
 
@@ -447,6 +490,7 @@
 			parameter_selection_buttons_str += '<button id="param-selection-button-' +  parameter_number + '" class="btn btn-light selection-button run-toggle" type="button" onclick="showParameterSimulations(' +  parameter_number + ')">Param ' +  parameter_number + ' - Score: ' + String(Math.round((1 - all_priors_df[parameter_number]["error"])*100)) + '% </button>';
 		}
 		$('#learned-parameter-selection-buttons').html(parameter_selection_buttons_str);
+		$('#right-main-panel').html();
 	} 
 	
 
@@ -489,6 +533,24 @@
 		xhttp.send();
 	}
 
+
+	function updateThePageAfterChangingExecutionOrder(){
+		$('#right-main-panel').html('<div class="lds-dual-ring"></div>');
+
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				all_priors_df = JSON.parse(this.responseText);
+				drawInspectSimulations();
+				activateSimulatedParameters();
+			}
+		};
+		xhttp.open('GET', '/tool/get_all_priors_df?simulation_id=' + String(simulation_id) + '&execution_order_id=' + String(execution_order_id), true);
+		xhttp.send();
+		
+	
+	
+	}
 
 	//========================================================================
 	//========================================================================

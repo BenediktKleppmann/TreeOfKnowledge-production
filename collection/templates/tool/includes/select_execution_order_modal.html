@@ -310,6 +310,7 @@ var selected_execution_order_id = execution_order_id;
 		$('#open-execution-modal-button').html(available_execution_orders[selected_execution_order_id]['name']);
 		$('#execution-order-info-panel').html('');
 		$("#selectExecutionOrderModal").modal('hide');
+		updateThePageAfterChangingExecutionOrder();
 	}
 	
 	

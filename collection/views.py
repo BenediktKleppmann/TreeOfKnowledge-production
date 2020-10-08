@@ -824,6 +824,15 @@ def get_missing_objects_dict_attributes(request):
 
 
 
+# used in analyse_learned_parameters.html
+@login_required
+def get_all_priors_df(request):
+    simulation_id = int(request.GET.get('simulation_id', ''))
+    execution_order_id = int(request.GET.get('execution_order_id', ''))
+
+    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_id, execution_order_id=execution_order_id).order_by('-id').first()           
+    return HttpResponse(learn_parameters_result.all_priors_df)  
+
 
 # ==================
 # complex GET
