@@ -327,14 +327,14 @@
 				<div class="card-body">
 					<div class="form left-panel-body">
 						<div class="form-group row">
-							<label for="simulation-name" class="col-sm-5">Simulation Name</label>
-							<div class="col-sm-7">
+							<label for="simulation-name" class="col-sm-4">Simulation Name</label>
+							<div class="col-sm-8">
 								<input id="simulation-name" class="form-control" value="{{ simulation_model.simulation_name }}">
 							</div>
 						</div>
 						<div class="form-group row">
-							<label for="max" class="col-sm-5">Model</label>
-							<div class="col-sm-7">
+							<label for="max" class="col-sm-4">Model</label>
+							<div class="col-sm-8">
 								<button id="open-execution-modal-button" class="btn btn-secondary" type="button" onclick="openSelectExecutionOrderModal()"></button>
 							</div>
 						</div>
@@ -490,7 +490,7 @@
 			parameter_selection_buttons_str += '<button id="param-selection-button-' +  parameter_number + '" class="btn btn-light selection-button run-toggle" type="button" onclick="showParameterSimulations(' +  parameter_number + ')">Param ' +  parameter_number + ' - Score: ' + String(Math.round((1 - all_priors_df[parameter_number]["error"])*100)) + '% </button>';
 		}
 		$('#learned-parameter-selection-buttons').html(parameter_selection_buttons_str);
-		$('#right-main-panel').html();
+		$('#right-main-panel').html('');
 	} 
 	
 

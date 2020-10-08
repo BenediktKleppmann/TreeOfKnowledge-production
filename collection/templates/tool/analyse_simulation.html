@@ -312,6 +312,38 @@
 		/* Top Panel ----------------------------------------------------------------*/
 		/* --------------------------------------------------------------------------*/
 		
+		/* Dual Ring ----------------------------------------------------------------*/
+		.lds-dual-ring {
+		  margin: auto;
+		  margin-top: 125px;
+		  width: 50px;
+		  height: 50px;
+		  padding-top: 12px;
+		}
+		
+		.lds-dual-ring:after {
+		  content: " ";
+		  display: block;
+		  width: 50px;
+		  height: 50px;
+		  margin: 1px;
+		  border-radius: 50%;
+		  border: 4px solid #fed;
+		  border-color: rgb(80,80,80) transparent rgb(80,80,80) transparent;
+		  animation: lds-dual-ring 3.2s linear infinite;
+		}
+		
+		@keyframes lds-dual-ring {
+		  0% {
+			transform: rotate(0deg);
+		  }
+		  100% {
+			transform: rotate(360deg);
+		  }
+		}
+		
+		/* Graphs ----------------------------------------------------------------*/
+		
 		#graph-panel {
 			height: calc(100% - 45px);
 			width: 100%;
@@ -493,7 +525,7 @@
 	</div>
 </div>
 <div class="right-panel-container">
-	<div id="top-panel"></div>
+	<div id="top-panel"><div class="lds-dual-ring"></div></div>
 	<div id="splitter"></div>
 	<div id="bottom-panel">	
 		<ul id="bottom-object-items"></ul>
@@ -635,6 +667,8 @@
 			individual_selection_buttons += '<button id="selection-button-' + all_run_numbers[i] + '" class="btn btn-light run-selection-button run-toggle" type="button" onclick="selectRun(\'' + all_run_numbers[i] + '\')">Entity ' + i + '</button>'
 		}	
 		$('#individual-run-selection-buttons').html(individual_selection_buttons);
+		
+		$('#top-panel').html('<div class="lds-dual-ring"></div>');
 	} 
 
 
