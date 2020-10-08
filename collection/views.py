@@ -783,11 +783,12 @@ def get_parameter_info(request):
 @login_required
 def get_simulated_parameter_numbers(request):
     simulation_id = request.GET.get('simulation_id', '')
+    execution_order_id = request.GET.get('execution_order_id', '')
     run_number = request.GET.get('run_number', '')
-    learned_parameter_numbers = Monte_carlo_result.objects.filter(simulation_id=simulation_id, run_number=run_number, is_new_parameter=False).order_by('parameter_number').values_list('parameter_number', flat=True)
+    learned_parameter_numbers = Monte_carlo_result.objects.filter(simulation_id=simulation_id, execution_order_id=execution_order_id, run_number=run_number, is_new_parameter=False).order_by('parameter_number').values_list('parameter_number', flat=True)
     learned_parameter_numbers = list(set(learned_parameter_numbers))
 
-    new_parameter_numbers = Monte_carlo_result.objects.filter(simulation_id=simulation_id, run_number=run_number, is_new_parameter=True).order_by('parameter_number').values_list('parameter_number', flat=True)
+    new_parameter_numbers = Monte_carlo_result.objects.filter(simulation_id=simulation_id, execution_order_id=execution_order_id, run_number=run_number, is_new_parameter=True).order_by('parameter_number').values_list('parameter_number', flat=True)
     new_parameter_numbers = list(set(new_parameter_numbers))
     return HttpResponse(json.dumps({'learned_parameter_numbers':learned_parameter_numbers, 'new_parameter_numbers':new_parameter_numbers}))  
 
@@ -2120,7 +2121,7 @@ def analyse_new_simulation(request, simulation_id, parameter_number):
     simulation_model = Simulation_model.objects.get(id=simulation_id)
     print('simulation_id=%s, parameter_number=%s'  % (simulation_id, parameter_number))
     learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id).order_by('-id').first()
-    monte_carlo_result = Monte_carlo_result.objects.filter(simulation_id=simulation_id, parameter_number=parameter_number, is_new_parameter=True).order_by('-id').first()
+    monte_carlo_result = Monte_carlo_result.objects.filter(simulation_id=simulation_id, execution_order_id=simulation_model.execution_order_id, parameter_number=parameter_number, is_new_parameter=True).order_by('-id').first()
     return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'monte_carlo_result':monte_carlo_result})
 
 
@@ -2134,7 +2135,7 @@ def analyse_simulation(request, simulation_id, parameter_number):
     simulation_model = Simulation_model.objects.get(id=simulation_id)
     print('simulation_id=%s, parameter_number=%s'  % (simulation_id, parameter_number))
     learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id).order_by('-id').first()
-    monte_carlo_result = Monte_carlo_result.objects.filter(simulation_id=simulation_id, parameter_number=parameter_number, is_new_parameter=False).order_by('-id').first()
+    monte_carlo_result = Monte_carlo_result.objects.filter(simulation_id=simulation_id, execution_order_id=simulation_model.execution_order_id, parameter_number=parameter_number, is_new_parameter=False).order_by('-id').first()
     return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'monte_carlo_result':monte_carlo_result})
 
 
@@ -2539,18 +2540,13 @@ def test_page1(request):
 
 
 def test_page2(request):
-    import boto3
-    simulation_id = request.GET.get('simulation_id', '')
+    simulation_models = Simulation_model.objects.all()
+    for simulation_model in simulation_models:
+        monte_carlo_results = Monte_carlo_result.objects.filter(simulation_id=simulation_model.id)
+        for monte_carlo_result in monte_carlo_results:
+            monte_carlo_result.execution_order_id = simulation_model.execution_order_id
+            monte_carlo_result.save()
 
-    session = boto3.session.Session()
-    s3 = session.resource('s3')
-    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(simulation_id) + '_validation_data.json')
-    s3_document = obj.get()
-    document_body = s3_document['Body'].read()
-    document_body_str = document_body.decode('utf-8')
-    validation_data = json.loads(document_body_str)
-
-    return HttpResponse(json.dumps(validation_data['df']))
 
 
 

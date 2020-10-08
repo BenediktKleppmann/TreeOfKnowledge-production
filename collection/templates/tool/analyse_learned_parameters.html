@@ -119,6 +119,12 @@
 	/* Right Panel - Dual Ring  -------------------------------------------------*/
 	/* --------------------------------------------------------------------------*/
 	
+		#results-dont-exist-message {
+		    text-align: center;
+			margin-top: 100px;
+			font-size: 16px;
+		}
+		
 		.lds-dual-ring {
 		  margin: auto;
 		  margin-top: 125px;
@@ -529,7 +535,7 @@
 				
 			}
 		};
-		xhttp.open('GET', '/tool/get_simulated_parameter_numbers?simulation_id=' + String(simulation_id) + '&run_number=' + String(run_number), true);
+		xhttp.open('GET', '/tool/get_simulated_parameter_numbers?simulation_id=' + String(simulation_id) + '&execution_order_id=' + String(execution_order_id) + '&run_number=' + String(run_number), true);
 		xhttp.send();
 	}
 

@@ -260,6 +260,7 @@ class Learn_parameters_result(models.Model):
 
 class Monte_carlo_result(models.Model):
     simulation_id = models.IntegerField()
+    execution_order_id = models.IntegerField()
     run_number = models.IntegerField()
     parameter_number = models.IntegerField()
     is_new_parameter = models.BooleanField()
