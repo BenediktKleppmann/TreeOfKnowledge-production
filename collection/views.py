@@ -830,7 +830,7 @@ def get_all_priors_df(request):
     if learn_parameters_result is None:
         return HttpResponse("doesn't exist")  
     else:    
-        return HttpResponse(learn_parameters_result.all_priors_df)  
+        return HttpResponse(learn_parameters_result.all_priors_df.replace('": NaN', '": null'))  
 
 
 
@@ -2559,7 +2559,7 @@ def test_page2(request):
         monte_carlo_result.id = None
         monte_carlo_result.simulation_id = 490
         monte_carlo_result.save()
-        
+
     return HttpResponse('success')
 
 
