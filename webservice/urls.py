@@ -75,7 +75,6 @@ urlpatterns = [
     url(r'^tool/open_your_simulation/$', views.open_your_simulation, name='open_your_simulation'),
     url(r'^tool/browse_simulations/$', views.browse_simulations, name='browse_simulations'),
     url(r'^tool/profile_and_settings/$', views.profile_and_settings, name='profile_and_settings'),
-    url(r'^tool/execution_order_scores/$', views.execution_order_scores, name='execution_order_scores'),
     
 
     # Upload data  -------------------------------------------------------------------------
@@ -119,7 +118,6 @@ urlpatterns = [
     url(r'^tool/get_data_from_random_related_object/$', views.get_data_from_random_related_object, name='get_data_from_random_related_object'),
     url(r'^tool/get_data_from_objects_behind_the_relation/$', views.get_data_from_objects_behind_the_relation, name='get_data_from_objects_behind_the_relation'),
     url(r'^tool/get_execution_order/$', views.get_execution_order, name='get_execution_order'),
-    url(r'^tool/get_execution_order_scores/$', views.get_execution_order_scores, name='get_execution_order_scores'),
 
     # find
     url(r'^tool/find_suggested_attributes/$', views.find_suggested_attributes, name='find_suggested_attributes'),
@@ -155,6 +153,11 @@ urlpatterns = [
     url(r'^tool/check_single_fact_format/$', views.check_single_fact_format, name='check_single_fact_format'),    
     
    
+    # Models  -------------------------------------------------------------------------
+    url(r'^tool/execution_order_scores/$', views.execution_order_scores, name='execution_order_scores'),
+    url(r'^tool/get_execution_order_scores/$', views.get_execution_order_scores, name='get_execution_order_scores'),
+
+
     # Query Data  -------------------------------------------------------------------------
     url(r'^tool/query_data/$', views.query_data, name='query_data'),
     url(r'^tool/download_file1/$', views.download_file1, name='download_file1'),
