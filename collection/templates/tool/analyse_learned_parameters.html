@@ -78,7 +78,7 @@
 	#open-execution-modal-button {
 		border: 1px solid #ccc;
 		background: white;
-		width: 154px;
+		width: 100%;
 		text-align: left;
 	}
 	
@@ -536,13 +536,22 @@
 
 	function updateThePageAfterChangingExecutionOrder(){
 		$('#right-main-panel').html('<div class="lds-dual-ring"></div>');
+		$('#parameter-distributions-box').html('');
+		$('#learned-parameter-selection-buttons').html('');
+		$('#new-parameter-selection-buttons').html('');
+		
+		
 
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				all_priors_df = JSON.parse(this.responseText);
-				drawInspectSimulations();
-				activateSimulatedParameters();
+				if (all_priors_df == "doesn't exist") {
+					$('#right-main-panel').html('<div id="results-dont-exist-message">The simulation wasn\'t yet run for this model.</div>');
+				} else {
+					drawInspectSimulations();
+					activateSimulatedParameters();
+				}
 			}
 		};
 		xhttp.open('GET', '/tool/get_all_priors_df?simulation_id=' + String(simulation_id) + '&execution_order_id=' + String(execution_order_id), true);

@@ -831,7 +831,10 @@ def get_all_priors_df(request):
     execution_order_id = int(request.GET.get('execution_order_id', ''))
 
     learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_id, execution_order_id=execution_order_id).order_by('-id').first()           
-    return HttpResponse(learn_parameters_result.all_priors_df)  
+    if learn_parameters_result is None:
+        return HttpResponse("doesn't exist")  
+    else:    
+        return HttpResponse(learn_parameters_result.all_priors_df)  
 
 
 
