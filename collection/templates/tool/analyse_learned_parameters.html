@@ -545,7 +545,7 @@
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				var all_priors_json = JSON.parse(this.responseText);
+				var all_priors_json = this.responseText;
 				if (all_priors_json == "doesn't exist") {
 					$('#right-main-panel').html('<div id="results-dont-exist-message">The simulation wasn\'t yet run for this model.</div>');
 				} else {
