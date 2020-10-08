@@ -2560,7 +2560,7 @@ def test_page2(request):
         monte_carlo_result.simulation_id = 490
         monte_carlo_result.save()
         
-return HttpResponse('success')
+    return HttpResponse('success')
 
 
 
