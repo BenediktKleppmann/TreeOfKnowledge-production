@@ -834,6 +834,22 @@ def get_all_priors_df(request):
     return HttpResponse(learn_parameters_result.all_priors_df)  
 
 
+
+# ==================
+# check
+# ==================
+
+# used in edit_simulation.html
+@login_required
+def check_if_simulation_results_exist(request):
+    simulation_id = int(request.GET.get('simulation_id', ''))
+    execution_order_id = int(request.GET.get('execution_order_id', ''))
+
+    simulation_results_exist = Learn_parameters_result.objects.filter(simulation_id=simulation_id, execution_order_id=execution_order_id).count() > 0           
+    return HttpResponse(json.dumps(simulation_results_exist))  
+
+
+
 # ==================
 # complex GET
 # ==================
@@ -2040,12 +2056,12 @@ def edit_simulation(request, simulation_id):
         #     return redirect('analyse_simulation', simulation_id=simulation_id)
 
 
-    
+    simulation_results_exist = Learn_parameters_result.objects.filter(simulation_id=simulation_id, execution_order_id=simulation_model.execution_order_id).count() > 0
     available_object_types = get_from_db.get_most_commonly_used_object_types()
     object_icons = [icon_name[:-4] for icon_name in os.listdir("collection/static/images/object_icons/")]
     available_relations = get_from_db.get_available_relations()
     available_execution_orders = get_from_db.get_available_execution_orders()
-    return render(request, 'tool/edit_simulation.html', {'simulation_model':simulation_model, 'available_object_types': available_object_types, 'object_icons': object_icons, 'available_relations':available_relations, 'available_execution_orders':available_execution_orders})
+    return render(request, 'tool/edit_simulation.html', {'simulation_model':simulation_model, 'available_object_types': available_object_types, 'object_icons': object_icons, 'available_relations':available_relations, 'available_execution_orders':available_execution_orders, 'simulation_results_exist': simulation_results_exist})
 
 
 
