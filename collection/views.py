@@ -2548,12 +2548,19 @@ def test_page1(request):
 
 
 def test_page2(request):
-    simulation_models = Simulation_model.objects.all()
-    for simulation_model in simulation_models:
-        monte_carlo_results = Monte_carlo_result.objects.filter(simulation_id=simulation_model.id)
-        for monte_carlo_result in monte_carlo_results:
-            monte_carlo_result.execution_order_id = simulation_model.execution_order_id
-            monte_carlo_result.save()
+    monte_carlo_results = Monte_carlo_result.objects.filter(simulation_id__in=[492,499])
+    for monte_carlo_result in monte_carlo_results:
+        monte_carlo_result.id = None
+        monte_carlo_result.simulation_id = 473
+        monte_carlo_result.save()
+
+    monte_carlo_results = Monte_carlo_result.objects.filter(simulation_id=491)
+    for monte_carlo_result in monte_carlo_results:
+        monte_carlo_result.id = None
+        monte_carlo_result.simulation_id = 490
+        monte_carlo_result.save()
+        
+return HttpResponse('success')
 
 
 
