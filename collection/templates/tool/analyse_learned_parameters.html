@@ -458,14 +458,14 @@
 		var object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length; i++) {
 			
-			var attribute_ids = []
+			var attribute_ids = [];
 			used_attributes = execution_order["attribute_execution_order"][objects_dict[object_numbers[i]]["object_type_id"]]["used_attributes"];
 			for (var j = 0; j < used_attributes.length; j++) {
-				attribute_ids.push(used_attributes[j]['id'])
+				attribute_ids.push(used_attributes[j]['id']);
 			}
 			for (var j = 0; j < attribute_ids.length; j++) {
 			
-				var rule_ids = execution_order['rule_execution_order'][attribute_ids[j]]['used_rule_ids']
+				var rule_ids = execution_order['rule_execution_order'][attribute_ids[j]]['used_rule_ids'];
 				for (var k = 0; k < rule_ids.length; k++) {
 				
 					var rule = objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]][rule_ids[k]]
@@ -817,35 +817,39 @@
 		var object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length; i++) {
 			
-			var attribute_ids = []
+			var attribute_ids = [];
 			used_attributes = execution_order["attribute_execution_order"][objects_dict[object_numbers[i]]["object_type_id"]]["used_attributes"];
 			for (var j = 0; j < used_attributes.length; j++) {
-				attribute_ids.push(used_attributes[j]['id'])
+				attribute_ids.push(used_attributes[j]['id']);
 			}
 			for (var j = 0; j < attribute_ids.length; j++) {
 			
-				var rule_ids = execution_order['rule_execution_order'][attribute_ids[j]]['used_rule_ids']
+				var rule_ids = execution_order['rule_execution_order'][attribute_ids[j]]['used_rule_ids'];
 				for (var k = 0; k < rule_ids.length; k++) {
 				
-					var rule = objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]][rule_ids[k]]
+					var rule = objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]][rule_ids[k]];
 					if (learned_rules[object_numbers[i]][attribute_ids[j]][rule_ids[k]]) {
 						if (!(object_numbers[i] in not_used_rules) || (object_numbers[i] in not_used_rules && !(rule_ids[k] in not_used_rules[object_numbers[i]]))) {
-							parameter_distribution_buttons_str += '<div class="rule-heading">' + objects_dict[object_numbers[i]]['object_name'] + ', Rule ' + String(rule_ids[k]) + ':</div>';
-							if (!rule['has_probability_1']) {
-								parameter_distribution_buttons_str += '<button class="btn btn-light selection-button" type="button" onclick="showParameterDistribution(' +  object_numbers[i] + ', ' +  attribute_ids[j] + ',' +  rule_ids[k] + ', null)">Rule probaility</button>';
+							right_main_panel_string += '<div class="rule-heading">' + objects_dict[object_numbers[i]]['object_name'] + ', Rule ' + String(rule_ids[k]) + ':</div>';
+							if (!rule['has_probability_1'] && 'triggerThresholdForRule' + String(rule_ids[k]) in all_priors_df[parameter_number]) {
+								right_main_panel_string += '<div class="parameter-value">Rule probaility = ' + all_priors_df[parameter_number]['triggerThresholdForRule' + String(rule_ids[k])].toFixed(3) + '</div>';
 							}
 							var used_parameter_ids = rule['used_parameter_ids'];
 							for (var l = 0; l < used_parameter_ids.length; l++) {
-								parameter_distribution_buttons_str += '<button class="btn btn-light selection-button" type="button" onclick="showParameterDistribution(' +  object_numbers[i] + ', ' +  attribute_ids[j] + ',' +  rule_ids[k] + ',' +  used_parameter_ids[l] + ')">' + parameter_info[used_parameter_ids[l]]["parameter_name"] + '</button>';
+								if ('param' + String(used_parameter_ids[l]) in all_priors_df[parameter_number]) {
+									right_main_panel_string += '<div class="parameter-value">' + parameter_info[used_parameter_ids[l]]["parameter_name"] + ' = ' + all_priors_df[parameter_number]['param' + String(used_parameter_ids[l])].toFixed(3) + '</div>';
+								}
 							}
-						}
+						}	
 					}
 					
 				}
 			}
 		}
+		
 
 		//old
+		/*
 		var object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length; i++) {
 			
@@ -877,7 +881,7 @@
 					
 				}
 			}
-		}
+		}*/
 		
 		right_main_panel_string +=			'</div>' +
 										'</div>' +
@@ -930,8 +934,41 @@
 		//add number_of_entities_to_simulate
 		request_body['number_of_entities_to_simulate'] =  parseInt($('#number_of_entities_to_simulate').val());
 		
+		
 		//add posted_prior_dict
 		posted_prior_dict = {}
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			
+			var attribute_ids = [];
+			used_attributes = execution_order["attribute_execution_order"][objects_dict[object_numbers[i]]["object_type_id"]]["used_attributes"];
+			for (var j = 0; j < used_attributes.length; j++) {
+				attribute_ids.push(used_attributes[j]['id'])
+			}
+			for (var j = 0; j < attribute_ids.length; j++) {
+			
+				var rule_ids = execution_order['rule_execution_order'][attribute_ids[j]]['used_rule_ids'];
+				for (var k = 0; k < rule_ids.length; k++) {
+				
+					var rule = objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]][rule_ids[k]];
+					if (learned_rules[object_numbers[i]][attribute_ids[j]][rule_ids[k]]) {
+						posted_prior_dict[rule_ids[k]] = {}
+					
+						if (!rule['has_probability_1']) {
+							posted_prior_dict[rule_ids[k]]['probability'] = all_priors_df[parameter_number]['triggerThresholdForRule' + String(rule_ids[k])]
+						}
+						var used_parameter_ids = rule['used_parameter_ids'];
+						for (var l = 0; l < used_parameter_ids.length; l++) {
+							posted_prior_dict[rule_ids[k]][used_parameter_ids[l]] = all_priors_df[parameter_number]['param' + String(used_parameter_ids[l])]
+						}
+					}
+				}
+			}
+		}
+		
+		//old
+		//add posted_prior_dict
+		/*posted_prior_dict = {}
 		var object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length; i++) {
 			
@@ -955,7 +992,7 @@
 					}
 				}
 			}
-		}
+		}*/
 		request_body['prior_dict'] =  posted_prior_dict;
 		
 		
@@ -1022,7 +1059,55 @@
 											'<div id="test-new-parameters">' +
 												'<div id="parameter-values-title" class="left-panel-header">Parameter Values</div>' +
 												'<div id="simulation-parameter-box">';
-											
+				
+
+
+
+
+		//new
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			
+			var attribute_ids = [];
+			used_attributes = execution_order["attribute_execution_order"][objects_dict[object_numbers[i]]["object_type_id"]]["used_attributes"];
+			for (var j = 0; j < used_attributes.length; j++) {
+				attribute_ids.push(used_attributes[j]['id']);
+			}
+			for (var j = 0; j < attribute_ids.length; j++) {
+			
+				var rule_ids = execution_order['rule_execution_order'][attribute_ids[j]]['used_rule_ids'];
+				for (var k = 0; k < rule_ids.length; k++) {
+				
+					var rule = objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]][rule_ids[k]]
+					if (learned_rules[object_numbers[i]][attribute_ids[j]][rule_ids[k]]) {
+						if (!(object_numbers[i] in not_used_rules) || (object_numbers[i] in not_used_rules && !(rule_ids[k] in not_used_rules[object_numbers[i]]))) {
+							right_main_panel_string += 		'<div class="rule-heading">' + objects_dict[object_numbers[i]]['object_name'] + ', Rule ' + String(rule_ids[k]) + ':</div>';
+							if (!rule['has_probability_1']) {
+								right_main_panel_string += 	'<div class="form-group row">' +
+																'<label class="col-sm-8 parameter-label" for="probability-of-rule-' + String(rule_ids[k]) + '">Rule Probability = </label>' +
+																'<div class="col-sm-4">' +
+																	'<input type="text" id="probability-of-rule-' + String(rule_ids[k]) + '" class="form-control" value="">' +
+																'</div>' +
+															'</div>';
+							}
+							var used_parameter_ids = rule['used_parameter_ids'];
+							for (var l = 0; l < used_parameter_ids.length; l++) {
+								right_main_panel_string += '<div class="form-group row">' +
+																'<label class="col-sm-8 parameter-label" for="value-of-parameter-' + String(used_parameter_ids[l]) + '">' + parameter_info[used_parameter_ids[l]]["parameter_name"] + ' = </label>' +
+																'<div class="col-sm-4">' +
+																	'<input type="text" id="value-of-parameter-' + String(used_parameter_ids[l]) + '" class="form-control" value="">' +
+																'</div>' +
+															'</div>';
+							}																
+						}
+					}
+					
+				}
+			}
+		}
+		
+		//old 
+		/*
 		var object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length; i++) {
 			
@@ -1064,7 +1149,7 @@
 					
 				}
 			}
-		}
+		}*/
 		
 		right_main_panel_string +=				'</div>' +
 												'<div id="right-main-lower-box">' +
@@ -1113,7 +1198,43 @@
 		//add number_of_entities_to_simulate
 		request_body['number_of_entities_to_simulate'] =  parseInt($('#number_of_entities_to_simulate').val());
 		
+		
+		//new
 		//add posted_prior_dict
+		posted_prior_dict = {}
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			
+			var attribute_ids = [];
+			used_attributes = execution_order["attribute_execution_order"][objects_dict[object_numbers[i]]["object_type_id"]]["used_attributes"];
+			for (var j = 0; j < used_attributes.length; j++) {
+				attribute_ids.push(used_attributes[j]['id']);
+			}
+			for (var j = 0; j < attribute_ids.length; j++) {
+			
+				var rule_ids = execution_order['rule_execution_order'][attribute_ids[j]]['used_rule_ids'];
+				for (var k = 0; k < rule_ids.length; k++) {
+				
+					var rule = objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]][rule_ids[k]];
+					if (learned_rules[object_numbers[i]][attribute_ids[j]][rule_ids[k]]) {
+						posted_prior_dict[rule_ids[k]] = {}
+					
+						if (!rule['has_probability_1']) {
+							posted_prior_dict[rule_ids[k]]['probability'] = parseFloat($('#probability-of-rule-' + String(rule_ids[k])).val());
+						}
+						var used_parameter_ids = rule['used_parameter_ids'];
+						for (var l = 0; l < used_parameter_ids.length; l++) {
+							posted_prior_dict[rule_ids[k]][used_parameter_ids[l]] = parseFloat($('#value-of-parameter-' + String(used_parameter_ids[l])).val());
+						}
+					}
+				}
+			}
+		}
+		
+		
+		//old
+		//add posted_prior_dict
+		/*
 		posted_prior_dict = {}
 		var object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length; i++) {
@@ -1138,7 +1259,7 @@
 					}
 				}
 			}
-		}
+		}*/
 		request_body['prior_dict'] =  posted_prior_dict;
 		
 		
@@ -1208,9 +1329,17 @@
 		xhttp.open('GET', '/tool/get_execution_order?execution_order_id=' + String(execution_order_id) , true);
 		xhttp.send();
 		
-		
-		
+
 		// load parameter_info
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				parameter_info = JSON.parse(this.responseText);
+			}
+		};
+		xhttp.open('GET', '/tool/get_parameter_info', true);
+		xhttp.send();
+
+		/*				
 		var object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length; i++) {
 			
@@ -1240,7 +1369,7 @@
 					
 				}
 			}
-		}
+		}*/
 		
 		
 		drawInspectSimulations();

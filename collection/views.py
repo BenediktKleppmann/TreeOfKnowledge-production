@@ -758,19 +758,16 @@ def get_single_pdf(request):
 # used in edit_object_type_behaviour.html
 @login_required
 def get_parameter_info(request):
-    parameter_id = request.GET.get('parameter_id', '')
-    is_last_parameter = (request.GET.get('is_last_parameter', '').lower() == 'true')
-    parameter_id = int(parameter_id)
-    parameter_record = Rule_parameter.objects.get(id=parameter_id)
-    parameter_info = {  'id': parameter_id,
-                        'rule_id':parameter_record.rule_id, 
-                        'parameter_name':parameter_record.parameter_name,
-                        'min_value':parameter_record.min_value,
-                        'max_value':parameter_record.max_value,
-                        'is_last_parameter':is_last_parameter}
+    response = {}
+    rule_parameters = Rule_parameter.objects.filter().all()
+    for rule_parameter in rule_parameters:
+        response[rule_parameter.id] =  {'id': rule_parameter.id,
+                                        'rule_id':rule_parameter.rule_id, 
+                                        'parameter_name':rule_parameter.parameter_name,
+                                        'min_value':rule_parameter.min_value,
+                                        'max_value':rule_parameter.max_value}
 
-
-    return HttpResponse(json.dumps(parameter_info))   
+    return HttpResponse(json.dumps(response))   
 
 
 
