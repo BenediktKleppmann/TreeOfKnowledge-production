@@ -680,15 +680,25 @@ class Simulator:
                             all_priors_df.loc[row['batch_number'],'error_rule' + str(rule['id'])] = simulation_results['error_rule' + str(rule['id'])]
 
 
+            # ---------------  Save Learn_parameters_result  ----------------------
             all_priors_df['nb_of_simulations'] = len(self.df)
             all_priors_df = all_priors_df.sort_values('error')
             all_priors_df.index = range(len(all_priors_df))
-            learn_parameters_result = Learn_parameters_result(simulation_id=self.simulation_id, execution_order_id=self.execution_order_id, all_priors_df=json.dumps(all_priors_df.to_dict(orient='index')))
-            learn_parameters_result.save()
-            # simulation_model_record = Simulation_model.objects.get(id=self.simulation_id)
-            # simulation_model_record.all_priors_df = json.dumps(all_priors_df.to_dict(orient='index'))
-            # simulation_model_record.save()
 
+            learned_rules = {}
+            for object_number in self.objects_dict.keys():
+                learned_rules[object_number] = {}
+                for attribute_id in self.objects_dict[object_number]['object_rules'].keys():
+                    learned_rules[object_number][attribute_id] = []
+                    for rule_id in self.objects_dict[object_number]['object_rules'][attribute_id].keys():
+                        if self.objects_dict[object_number]['object_rules'][attribute_id][rule_id]['learn_posterior']:
+                            learned_rules[object_number][attribute_id].append(rule_id)
+
+            learn_parameters_result = Learn_parameters_result(simulation_id=self.simulation_id, execution_order_id=self.execution_order_id, all_priors_df=json.dumps(all_priors_df.to_dict(orient='index')), learned_rules=json.dumps(learned_rules))
+            learn_parameters_result.save()
+
+
+            # -----------------  best_performing_prior_dict  -------------------------
             best_performing_prior_dict = {}
             for rule_number, rule in enumerate(self.rules):
                 if rule['learn_posterior']:

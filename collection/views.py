@@ -538,7 +538,7 @@ def get_object_hierachy_tree(request):
     
 
 
-# used in edit_model.html
+# used in edit_simulation__simulate.html
 @login_required
 def get_object_rules(request):
     print('----------- get_object_rules -------------')
@@ -573,6 +573,7 @@ def get_object_rules(request):
 
             response['object_rules'][attribute['id']][rule['id']] = rule
     return HttpResponse(json.dumps(response)) 
+
 
 
 @login_required

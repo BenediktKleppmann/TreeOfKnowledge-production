@@ -1587,7 +1587,7 @@
 				}
 			}
 		};
-		xhttp.open('GET', '/tool/get_object_rules?execution_order_id=' + String(execution_order_id) + '&object_number=' + String(object_number) + '&object_type_id=' + object_type_id , true);
+		xhttp.open('GET', '/tool/get_object_rules?object_number=' + String(object_number) + '&object_type_id=' + object_type_id , true);
 		xhttp.send();
 	}
 	

@@ -255,6 +255,7 @@ class Learn_parameters_result(models.Model):
     simulation_id = models.IntegerField()
     execution_order_id = models.IntegerField()
     all_priors_df = models.TextField()
+    learned_rules = models.TextField()
 
     
 
