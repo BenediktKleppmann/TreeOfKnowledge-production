@@ -106,7 +106,7 @@ urlpatterns = [
     url(r'^tool/get_parameter_info/$', views.get_parameter_info, name='get_parameter_info'),
     url(r'^tool/get_simulated_parameter_numbers/$', views.get_simulated_parameter_numbers, name='get_simulated_parameter_numbers'),
     url(r'^tool/get_missing_objects_dict_attributes/$', views.get_missing_objects_dict_attributes, name='get_missing_objects_dict_attributes'),
-    url(r'^tool/get_all_priors_df/$', views.get_all_priors_df, name='get_all_priors_df'),
+    url(r'^tool/get_all_priors_df_and_learned_rules/$', views.get_all_priors_df_and_learned_rules, name='get_all_priors_df_and_learned_rules'),
 
     # check
     url(r'^tool/check_if_simulation_results_exist/$', views.check_if_simulation_results_exist, name='check_if_simulation_results_exist'),

@@ -823,7 +823,7 @@ def get_missing_objects_dict_attributes(request):
 
 # used in analyse_learned_parameters.html
 @login_required
-def get_all_priors_df(request):
+def get_all_priors_df_and_learned_rules(request):
     simulation_id = int(request.GET.get('simulation_id', ''))
     execution_order_id = int(request.GET.get('execution_order_id', ''))
 
@@ -831,7 +831,8 @@ def get_all_priors_df(request):
     if learn_parameters_result is None:
         return HttpResponse("doesn't exist")  
     else:    
-        return HttpResponse(learn_parameters_result.all_priors_df.replace('": NaN', '": null'))  
+        response = {'all_priors_df': json.loads(learn_parameters_result.all_priors_df), 'learned_rules': json.loads(learn_parameters_result.learned_rules)}
+        return HttpResponse(json.dumps(response).replace('": NaN', '": null'))  
 
 
 

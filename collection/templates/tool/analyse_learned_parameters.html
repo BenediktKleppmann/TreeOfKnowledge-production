@@ -586,17 +586,19 @@
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				var all_priors_json = this.responseText;
-				if (all_priors_json == "doesn't exist") {
+				var response = this.responseText;
+				if (response == "doesn't exist") {
 					$('#right-main-panel').html('<div id="results-dont-exist-message">The simulation wasn\'t yet run for this model.</div>');
 				} else {
-					all_priors_df = JSON.parse(all_priors_json);
+					response_dict = JSON.parse(response);
+					all_priors_df = response_dict['all_priors_df'];
+					learned_rules = response_dict['learned_rules'];
 					drawInspectSimulations();
 					activateSimulatedParameters();
 				}
 			}
 		};
-		xhttp.open('GET', '/tool/get_all_priors_df?simulation_id=' + String(simulation_id) + '&execution_order_id=' + String(execution_order_id), true);
+		xhttp.open('GET', '/tool/get_all_priors_df_and_learned_rules?simulation_id=' + String(simulation_id) + '&execution_order_id=' + String(execution_order_id), true);
 		xhttp.send();
 		
 	
