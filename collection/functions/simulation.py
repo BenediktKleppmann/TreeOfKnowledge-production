@@ -689,10 +689,12 @@ class Simulator:
             for object_number in self.objects_dict.keys():
                 learned_rules[object_number] = {}
                 for attribute_id in self.objects_dict[object_number]['object_rules'].keys():
-                    learned_rules[object_number][attribute_id] = []
+                    learned_rules[object_number][attribute_id] = {}
                     for rule_id in self.objects_dict[object_number]['object_rules'][attribute_id].keys():
                         if self.objects_dict[object_number]['object_rules'][attribute_id][rule_id]['learn_posterior']:
-                            learned_rules[object_number][attribute_id].append(rule_id)
+                            learned_rules[object_number][attribute_id][rule_id] = True
+                        else:
+                            learned_rules[object_number][attribute_id][rule_id] = False
 
             learn_parameters_result = Learn_parameters_result(simulation_id=self.simulation_id, execution_order_id=self.execution_order_id, all_priors_df=json.dumps(all_priors_df.to_dict(orient='index')), learned_rules=json.dumps(learned_rules))
             learn_parameters_result.save()

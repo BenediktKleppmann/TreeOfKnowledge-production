@@ -2568,33 +2568,27 @@ def test_page2(request):
 
 
 def test_page3(request):
-    import boto3
-    
-    simulation_id = request.GET.get('simulation_id', '')
-    simulation_model_record = Simulation_model.objects.get(id=int(simulation_id))
+    simulation_models = Simulation_model.objects.all()
+    for simulation_model in simulation_models:
+        objects_dict = json.loads(simulation_model.objects_dict)
+        learned_rules = {}
+        for object_number in objects_dict.keys():
+            learned_rules[object_number] = {}
+            for attribute_id in objects_dict[object_number]['object_rules'].keys():
+                learned_rules[object_number][attribute_id] = {}
+                for rule_id in objects_dict[object_number]['object_rules'][attribute_id].keys():
+                    if objects_dict[object_number]['object_rules'][attribute_id][rule_id]['learn_posterior']:
+                        learned_rules[object_number][attribute_id][rule_id] = True
+                    else:
+                        learned_rules[object_number][attribute_id][rule_id] = False
 
-    y0_columns = []
-    y_value_attributes = json.loads(simulation_model_record.y_value_attributes)
-    for y_value_attribute in generally_useful_functions.deduplicate_list_of_dicts(y_value_attributes):
-        column_name = 'obj' + str(y_value_attribute['object_number']) + 'attr' + str(y_value_attribute['attribute_id'])
-        y0_columns.append(column_name)
-    y0_columns = sorted(set(y0_columns))
-
-
-
-    session = boto3.session.Session()
-    s3 = session.resource('s3')
-    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(simulation_id) + '_validation_data.json')
-    s3_document = obj.get()
-    document_body = s3_document['Body'].read()
-    document_body_str = document_body.decode('utf-8')
-    validation_data = json.loads(document_body_str)
-    simulation_state_code_s3 = validation_data['simulation_state_code']
-
+        learn_parameters_result = Learn_parameters_result.get(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id)
+        learn_parameters_result.learned_rules = json.dumps(learned_rules)
+        learn_parameters_result.save()
 
 
     # return HttpResponse(json.dumps(bla, sort_keys=True, cls=generally_useful_functions.SortedListEncoder))
-    return HttpResponse(json.dumps({'y0_columns': y0_columns, 'simulation_state_code_s3': simulation_state_code_s3}))
+    return HttpResponse('success')
 
     # return render(request, 'tool/test_page3.html')
 

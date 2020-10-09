@@ -469,7 +469,7 @@
 				for (var k = 0; k < rule_ids.length; k++) {
 				
 					var rule = objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]][rule_ids[k]]
-					if (learned_rules[object_numbers[i]][attribute_ids[j]].includes(rule_ids[k])) {
+					if (learned_rules[object_numbers[i]][attribute_ids[j]][rule_ids[k]]) {
 						if (!(object_numbers[i] in not_used_rules) || (object_numbers[i] in not_used_rules && !(rule_ids[k] in not_used_rules[object_numbers[i]]))) {
 							parameter_distribution_buttons_str += '<div class="rule-heading">' + objects_dict[object_numbers[i]]['object_name'] + ', Rule ' + String(rule_ids[k]) + ':</div>';
 							if (!rule['has_probability_1']) {
