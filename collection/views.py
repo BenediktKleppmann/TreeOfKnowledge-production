@@ -2582,9 +2582,10 @@ def test_page3(request):
                     else:
                         learned_rules[object_number][attribute_id][rule_id] = False
 
-        learn_parameters_result = Learn_parameters_result.get(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id)
-        learn_parameters_result.learned_rules = json.dumps(learned_rules)
-        learn_parameters_result.save()
+        learn_parameters_results = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id)
+        for learn_parameters_result in learn_parameters_results:
+            learn_parameters_result.learned_rules = json.dumps(learned_rules)
+            learn_parameters_result.save()
 
 
     # return HttpResponse(json.dumps(bla, sort_keys=True, cls=generally_useful_functions.SortedListEncoder))
