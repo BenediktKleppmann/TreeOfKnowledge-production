@@ -2107,7 +2107,7 @@ def get_simulation_progress(request):
 
 
 @login_required
-def analyse_learned_parameters(request, simulation_id):
+def analyse_learned_parameters(request, simulation_id, execution_order_id):
     print('analyse_learned_parameters')
    
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
@@ -2115,12 +2115,13 @@ def analyse_learned_parameters(request, simulation_id):
     simulation_model = Simulation_model.objects.get(id=simulation_id)
     learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id).order_by('-id').first()
     available_execution_orders = get_from_db.get_available_execution_orders()
-    return render(request, 'tool/analyse_learned_parameters.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'available_execution_orders':available_execution_orders})
+    execution_order = Execution_order.objects.get(id=execution_order_id)
+    return render(request, 'tool/analyse_learned_parameters.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'available_execution_orders':available_execution_orders, 'execution_order':execution_order})
 
 
 
 @login_required
-def analyse_new_simulation(request, simulation_id, parameter_number):
+def analyse_new_simulation(request, simulation_id, execution_order_id, parameter_number):
     print('analyse_simulation')
 
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
@@ -2129,12 +2130,13 @@ def analyse_new_simulation(request, simulation_id, parameter_number):
     print('simulation_id=%s, parameter_number=%s'  % (simulation_id, parameter_number))
     learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id).order_by('-id').first()
     monte_carlo_result = Monte_carlo_result.objects.filter(simulation_id=simulation_id, execution_order_id=simulation_model.execution_order_id, parameter_number=parameter_number, is_new_parameter=True).order_by('-id').first()
-    return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'monte_carlo_result':monte_carlo_result})
+    execution_order = Execution_order.objects.get(id=execution_order_id)
+    return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'monte_carlo_result':monte_carlo_result, 'execution_order':execution_order})
 
 
 
 @login_required
-def analyse_simulation(request, simulation_id, parameter_number):
+def analyse_simulation(request, simulation_id, execution_order_id, parameter_number):
     print('analyse_simulation')
 
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
@@ -2143,7 +2145,8 @@ def analyse_simulation(request, simulation_id, parameter_number):
     print('simulation_id=%s, parameter_number=%s'  % (simulation_id, parameter_number))
     learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id).order_by('-id').first()
     monte_carlo_result = Monte_carlo_result.objects.filter(simulation_id=simulation_id, execution_order_id=simulation_model.execution_order_id, parameter_number=parameter_number, is_new_parameter=False).order_by('-id').first()
-    return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'monte_carlo_result':monte_carlo_result})
+    execution_order = Execution_order.objects.get(id=execution_order_id)
+    return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'monte_carlo_result':monte_carlo_result, 'execution_order':execution_order})
 
 
 @login_required

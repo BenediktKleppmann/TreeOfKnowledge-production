@@ -433,8 +433,8 @@
     var simulation_end_time = {{ simulation_model.simulation_end_time }};
     var timestep_size = {{ simulation_model.timestep_size }};
 	var simulation_name = '{{ simulation_model.simulation_name }}';
-	var execution_order_id = {{ simulation_model.execution_order_id }};
-	var execution_order = {};
+	var execution_order_id = {{ execution_order.id }};
+	var execution_order = {{ execution_order.execution_order|safe }};
 	var parameter_info = {};
 	var currently_running_monte_carlo_simulations = new Set([]);
 	
@@ -1320,6 +1320,7 @@
 		
 		
 		//load execution order
+		/*
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -1327,7 +1328,7 @@
 			}
 		};
 		xhttp.open('GET', '/tool/get_execution_order?execution_order_id=' + String(execution_order_id) , true);
-		xhttp.send();
+		xhttp.send(); */
 		
 
 		// load parameter_info
