@@ -810,7 +810,40 @@
 		var right_main_panel_string = 	'<div id="right-main-upper-box">' +
 											'<div id="parameter-values-title" class="left-panel-header">Parameter Values</div>' +
 											'<div id="simulation-parameter-box">';
-											
+						
+		//new
+		var object_numbers = Object.keys(objects_dict);
+		for (var i = 0; i < object_numbers.length; i++) {
+			
+			var attribute_ids = []
+			used_attributes = execution_order["attribute_execution_order"][objects_dict[object_numbers[i]]["object_type_id"]]["used_attributes"];
+			for (var j = 0; j < used_attributes.length; j++) {
+				attribute_ids.push(used_attributes[j]['id'])
+			}
+			for (var j = 0; j < attribute_ids.length; j++) {
+			
+				var rule_ids = execution_order['rule_execution_order'][attribute_ids[j]]['used_rule_ids']
+				for (var k = 0; k < rule_ids.length; k++) {
+				
+					var rule = objects_dict[object_numbers[i]]['object_rules'][attribute_ids[j]][rule_ids[k]]
+					if (learned_rules[object_numbers[i]][attribute_ids[j]][rule_ids[k]]) {
+						if (!(object_numbers[i] in not_used_rules) || (object_numbers[i] in not_used_rules && !(rule_ids[k] in not_used_rules[object_numbers[i]]))) {
+							parameter_distribution_buttons_str += '<div class="rule-heading">' + objects_dict[object_numbers[i]]['object_name'] + ', Rule ' + String(rule_ids[k]) + ':</div>';
+							if (!rule['has_probability_1']) {
+								parameter_distribution_buttons_str += '<button class="btn btn-light selection-button" type="button" onclick="showParameterDistribution(' +  object_numbers[i] + ', ' +  attribute_ids[j] + ',' +  rule_ids[k] + ', null)">Rule probaility</button>';
+							}
+							var used_parameter_ids = rule['used_parameter_ids'];
+							for (var l = 0; l < used_parameter_ids.length; l++) {
+								parameter_distribution_buttons_str += '<button class="btn btn-light selection-button" type="button" onclick="showParameterDistribution(' +  object_numbers[i] + ', ' +  attribute_ids[j] + ',' +  rule_ids[k] + ',' +  used_parameter_ids[l] + ')">' + parameter_info[used_parameter_ids[l]]["parameter_name"] + '</button>';
+							}
+						}
+					}
+					
+				}
+			}
+		}
+
+		//old
 		var object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length; i++) {
 			
