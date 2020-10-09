@@ -2113,7 +2113,7 @@ def analyse_learned_parameters(request, simulation_id, execution_order_id):
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
         progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
     simulation_model = Simulation_model.objects.get(id=simulation_id)
-    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id).order_by('-id').first()
+    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id).order_by('-id').first()
     available_execution_orders = get_from_db.get_available_execution_orders()
     execution_order = Execution_order.objects.get(id=execution_order_id)
     return render(request, 'tool/analyse_learned_parameters.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'available_execution_orders':available_execution_orders, 'execution_order':execution_order})
@@ -2128,8 +2128,8 @@ def analyse_new_simulation(request, simulation_id, execution_order_id, parameter
         progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
     simulation_model = Simulation_model.objects.get(id=simulation_id)
     print('simulation_id=%s, parameter_number=%s'  % (simulation_id, parameter_number))
-    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id).order_by('-id').first()
-    monte_carlo_result = Monte_carlo_result.objects.filter(simulation_id=simulation_id, execution_order_id=simulation_model.execution_order_id, parameter_number=parameter_number, is_new_parameter=True).order_by('-id').first()
+    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id).order_by('-id').first()
+    monte_carlo_result = Monte_carlo_result.objects.filter(simulation_id=simulation_id, execution_order_id=execution_order_id, parameter_number=parameter_number, is_new_parameter=True).order_by('-id').first()
     execution_order = Execution_order.objects.get(id=execution_order_id)
     return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'monte_carlo_result':monte_carlo_result, 'execution_order':execution_order})
 
@@ -2143,8 +2143,8 @@ def analyse_simulation(request, simulation_id, execution_order_id, parameter_num
         progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
     simulation_model = Simulation_model.objects.get(id=simulation_id)
     print('simulation_id=%s, parameter_number=%s'  % (simulation_id, parameter_number))
-    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id).order_by('-id').first()
-    monte_carlo_result = Monte_carlo_result.objects.filter(simulation_id=simulation_id, execution_order_id=simulation_model.execution_order_id, parameter_number=parameter_number, is_new_parameter=False).order_by('-id').first()
+    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id).order_by('-id').first()
+    monte_carlo_result = Monte_carlo_result.objects.filter(simulation_id=simulation_id, execution_order_id=execution_order_id, parameter_number=parameter_number, is_new_parameter=False).order_by('-id').first()
     execution_order = Execution_order.objects.get(id=execution_order_id)
     return render(request, 'tool/analyse_simulation.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'monte_carlo_result':monte_carlo_result, 'execution_order':execution_order})
 
