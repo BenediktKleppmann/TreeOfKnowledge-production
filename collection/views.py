@@ -818,7 +818,7 @@ def get_missing_objects_dict_attributes(request):
 def get_all_priors_df_and_learned_rules(request):
     simulation_id = int(request.GET.get('simulation_id', ''))
     execution_order_id = int(request.GET.get('execution_order_id', ''))
-	run_number = int(request.GET.get('run_number', ''))
+    run_number = int(request.GET.get('run_number', ''))
 
     learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_id, execution_order_id=execution_order_id, run_number=run_number).order_by('-id').first()           
     if learn_parameters_result is None:
@@ -2021,7 +2021,7 @@ def edit_simulation_new(request):
                                         is_timeseries_analysis=True,
                                         objects_dict='{}', 
                                         y_value_attributes='[]', 
-										manually_set_initial_values = '{}',
+                                        manually_set_initial_values = '{}',
                                         sorted_attribute_ids='[]', 
                                         object_type_counts='{}',
                                         total_object_count=0,
@@ -2553,8 +2553,10 @@ def test_page1(request):
 
     simulation_models = Simulation_model.objects.all().order_by('id') 
     for simulation_model in simulation_models:
-        learn_parameters_result = Learn_parameters_result(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id, all_priors_df=simulation_model.all_priors_df)
-        learn_parameters_result.save()
+        learn_parameters_results = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id)
+        for learn_parameters_result in learn_parameters_results:
+            learn_parameters_result.run_number = simulation_model.run_number
+            learn_parameters_result.save()
 
 
 
