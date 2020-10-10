@@ -696,7 +696,7 @@ class Simulator:
                         else:
                             learned_rules[object_number][attribute_id][rule_id] = False
 
-            learn_parameters_result = Learn_parameters_result(simulation_id=self.simulation_id, execution_order_id=self.execution_order_id, all_priors_df=json.dumps(all_priors_df.to_dict(orient='index')), learned_rules=json.dumps(learned_rules))
+            learn_parameters_result = Learn_parameters_result(simulation_id=self.simulation_id, execution_order_id=self.execution_order_id, run_number=self.run_number, all_priors_df=json.dumps(all_priors_df.to_dict(orient='index')), learned_rules=json.dumps(learned_rules))
             learn_parameters_result.save()
 
 

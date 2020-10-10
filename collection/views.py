@@ -818,8 +818,9 @@ def get_missing_objects_dict_attributes(request):
 def get_all_priors_df_and_learned_rules(request):
     simulation_id = int(request.GET.get('simulation_id', ''))
     execution_order_id = int(request.GET.get('execution_order_id', ''))
+	run_number = int(request.GET.get('run_number', ''))
 
-    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_id, execution_order_id=execution_order_id).order_by('-id').first()           
+    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_id, execution_order_id=execution_order_id, run_number=run_number).order_by('-id').first()           
     if learn_parameters_result is None:
         return HttpResponse("doesn't exist")  
     else:    
@@ -2102,21 +2103,22 @@ def get_simulation_progress(request):
 
 
 @login_required
-def analyse_learned_parameters(request, simulation_id, execution_order_id):
+def analyse_learned_parameters(request, simulation_id, execution_order_id, run_number):
     print('analyse_learned_parameters')
    
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
         progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
     simulation_model = Simulation_model.objects.get(id=simulation_id)
-    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id).order_by('-id').first()
+    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id, run_number=run_number).order_by('-id').first()
     available_execution_orders = get_from_db.get_available_execution_orders()
     execution_order = Execution_order.objects.get(id=execution_order_id)
-    return render(request, 'tool/analyse_learned_parameters.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'available_execution_orders':available_execution_orders, 'execution_order':execution_order})
+    results_from_all_runs = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id)
+    return render(request, 'tool/analyse_learned_parameters.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'available_execution_orders':available_execution_orders, 'execution_order':execution_order, 'results_from_all_runs':results_from_all_runs})
 
 
 
 @login_required
-def analyse_new_simulation(request, simulation_id, execution_order_id, parameter_number):
+def analyse_new_simulation(request, simulation_id, execution_order_id, run_number, parameter_number):
     print('analyse_simulation')
 
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
@@ -2131,7 +2133,7 @@ def analyse_new_simulation(request, simulation_id, execution_order_id, parameter
 
 
 @login_required
-def analyse_simulation(request, simulation_id, execution_order_id, parameter_number):
+def analyse_simulation(request, simulation_id, execution_order_id, run_number, parameter_number):
     print('analyse_simulation')
 
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:

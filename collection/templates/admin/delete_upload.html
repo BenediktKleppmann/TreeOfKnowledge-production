@@ -116,10 +116,9 @@
 
 		upload_id = parseInt($('#upload_id').val());
 		
-
+		$('#server-response').html('');
 		var ok_given = confirm("Are you sure you want to permanently delete this upload?");
 		if (ok_given == false){return;}
-			
 
 		var xhttp = new XMLHttpRequest();       
 		xhttp.onreadystatechange = function() {

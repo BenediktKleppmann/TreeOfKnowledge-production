@@ -1276,7 +1276,7 @@
 		simulation_running = false;
 		var url_components = window.location.href.split("/");
 		var simulation_id = url_components[url_components.length - 2];
-		var w = window.open("/tool/analyse_simulation/" + simulation_id + "/" + execution_order_id + "/");
+		var w = window.open("/tool/analyse_simulation/" + simulation_id + "/" + execution_order_id + "/" + run_number + "/");
 		//w.document.open();
 		//w.document.write(this.response);
 		//w.document.close();
@@ -1289,7 +1289,7 @@
 		simulation_running = false;
 		var url_components = window.location.href.split("/");
 		var simulation_id = url_components[url_components.length - 2];
-		var w = window.open("/tool/analyse_simulation/" + simulation_id + "/" + execution_order_id + "/0/");
+		var w = window.open("/tool/analyse_simulation/" + simulation_id + "/" + execution_order_id + "/" + run_number + "/0/");
 		$('#simulationProgressModal').modal('hide');
 	}
 	

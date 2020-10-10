@@ -338,10 +338,20 @@
 								<input id="simulation-name" class="form-control" value="{{ simulation_model.simulation_name }}">
 							</div>
 						</div>
-						<div class="form-group row" style="margin-bottom: 0px;">
+						<div class="form-group row">
 							<label for="max" class="col-sm-4">Model</label>
 							<div class="col-sm-8">
 								<button id="open-execution-modal-button" class="btn btn-secondary" type="button" onclick="openSelectExecutionOrderModal()"></button>
+							</div>
+						</div>
+						<div class="form-group row" style="margin-bottom: 0px;">
+							<label for="max" class="col-sm-4">Run Number</label>
+							<div class="col-sm-8">
+								<select class="form-control form-control-lg" id="operator1" name="operator1">
+								{% for result in results_from_all_runs %}
+									<option value="{{ result.run_number }}" selected>{{ result.run_number }}</option>
+								{% endfor %}
+								</select>
 							</div>
 						</div>
 					</div>
