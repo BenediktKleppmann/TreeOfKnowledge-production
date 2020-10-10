@@ -580,89 +580,84 @@ def get_object_rules(request):
 def get_all_pdfs(request):
     print('get_all_pdfs 1')
     from django.db import connection
+    execution_order_id = int(request.GET.get('execution_order_id', ''))
     rule_or_parameter_id = int(request.GET.get('rule_or_parameter_id', ''))
     is_rule = (request.GET.get('is_rule', '').lower() == 'true')
     response = {}
 
+
+    response = {'execution_order_name': Execution_order.objects.get(id=execution_order_id).name,'rule_or_parameter_id':rule_or_parameter_id, 'is_rule':is_rule, 'individual_pdfs':[]}
+    print('get_all_pdfs 2')
     if is_rule:
-        execution_order_ids = Likelihood_function.objects.filter(rule_id=rule_or_parameter_id).values_list('execution_order_id', flat=True).distinct()
-    else:
-        execution_order_ids = Likelihood_function.objects.filter(parameter_id=rule_or_parameter_id).values_list('execution_order_id', flat=True).distinct()
+        query = ''' SELECT  DISTINCT simulation_id, object_number, 
+                            FIRST_VALUE(list_of_probabilities) over (partition by simulation_id, object_number ORDER BY id DESC) as list_of_probabilities, 
+                            FIRST_VALUE(nb_of_simulations) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_simulations, 
+                            FIRST_VALUE(nb_of_sim_in_which_rule_was_used) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_sim_in_which_rule_was_used, 
+                            FIRST_VALUE(nb_of_tested_parameters) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_tested_parameters, 
+                            FIRST_VALUE(nb_of_tested_parameters_in_posterior) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_tested_parameters_in_posterior 
+                    FROM collection_likelihood_function 
+                    WHERE rule_id=%s  
+                      AND execution_order_id=%s
+                      AND nb_of_tested_parameters_in_posterior > 0 
+                    ORDER BY simulation_id; ''' % (rule_or_parameter_id, execution_order_id)
 
+    else: 
+        query = ''' SELECT  distinct simulation_id, object_number, 
+                            FIRST_VALUE(list_of_probabilities) over (partition by simulation_id, object_number order by id DESC) as list_of_probabilities, 
+                            FIRST_VALUE(nb_of_simulations) over (partition by simulation_id, object_number order by id DESC) as nb_of_simulations, 
+                            FIRST_VALUE(nb_of_sim_in_which_rule_was_used) over (partition by simulation_id, object_number order by id DESC) as nb_of_sim_in_which_rule_was_used, 
+                            FIRST_VALUE(nb_of_tested_parameters) over (partition by simulation_id, object_number order by id DESC) as nb_of_tested_parameters, 
+                            FIRST_VALUE(nb_of_tested_parameters_in_posterior) over (partition by simulation_id, object_number order by id DESC) as nb_of_tested_parameters_in_posterior 
+                    FROM collection_likelihood_function 
+                    WHERE parameter_id=%s  
+                      AND execution_order_id=%s
+                      AND nb_of_tested_parameters_in_posterior > 0 
+                    ORDER BY simulation_id; ''' % (rule_or_parameter_id, execution_order_id)
 
-    for execution_order_id in execution_order_ids:
-        response[execution_order_id] = {'execution_order_name': Execution_order.objects.get(id=execution_order_id).name,'rule_or_parameter_id':rule_or_parameter_id, 'is_rule':is_rule, 'individual_pdfs':[]}
-        print('get_all_pdfs 2')
-        if is_rule:
-            query = ''' SELECT  DISTINCT simulation_id, object_number, 
-                                FIRST_VALUE(list_of_probabilities) over (partition by simulation_id, object_number ORDER BY id DESC) as list_of_probabilities, 
-                                FIRST_VALUE(nb_of_simulations) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_simulations, 
-                                FIRST_VALUE(nb_of_sim_in_which_rule_was_used) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_sim_in_which_rule_was_used, 
-                                FIRST_VALUE(nb_of_tested_parameters) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_tested_parameters, 
-                                FIRST_VALUE(nb_of_tested_parameters_in_posterior) over (partition by simulation_id, object_number ORDER BY id DESC) as nb_of_tested_parameters_in_posterior 
-                        FROM collection_likelihood_function 
-                        WHERE rule_id=%s  
-                          AND execution_order_id=%s
-                          AND nb_of_tested_parameters_in_posterior > 0 
-                        ORDER BY simulation_id; ''' % (rule_or_parameter_id, execution_order_id)
-
-        else: 
-            query = ''' SELECT  distinct simulation_id, object_number, 
-                                FIRST_VALUE(list_of_probabilities) over (partition by simulation_id, object_number order by id DESC) as list_of_probabilities, 
-                                FIRST_VALUE(nb_of_simulations) over (partition by simulation_id, object_number order by id DESC) as nb_of_simulations, 
-                                FIRST_VALUE(nb_of_sim_in_which_rule_was_used) over (partition by simulation_id, object_number order by id DESC) as nb_of_sim_in_which_rule_was_used, 
-                                FIRST_VALUE(nb_of_tested_parameters) over (partition by simulation_id, object_number order by id DESC) as nb_of_tested_parameters, 
-                                FIRST_VALUE(nb_of_tested_parameters_in_posterior) over (partition by simulation_id, object_number order by id DESC) as nb_of_tested_parameters_in_posterior 
-                        FROM collection_likelihood_function 
-                        WHERE parameter_id=%s  
-                          AND execution_order_id=%s
-                          AND nb_of_tested_parameters_in_posterior > 0 
-                        ORDER BY simulation_id; ''' % (rule_or_parameter_id, execution_order_id)
-
-        individual_pdfs_df = pd.read_sql_query(query, connection)
+    individual_pdfs_df = pd.read_sql_query(query, connection)
 
 
 
-        print('get_all_pdfs 3')
-        for index, row in individual_pdfs_df.iterrows():
-            print('get_all_pdfs 3.1')
-            list_of_probabilities = np.asarray(json.loads(row['list_of_probabilities']))
-            list_of_probabilities = [np.float64(el) for el in list_of_probabilities]
-            list_of_probabilities_smooth = np.zeros(30)
-            nb_of_tested_parameters_in_posterior = row['nb_of_tested_parameters_in_posterior']
+    print('get_all_pdfs 3')
+    for index, row in individual_pdfs_df.iterrows():
+        print('get_all_pdfs 3.1')
+        list_of_probabilities = np.asarray(json.loads(row['list_of_probabilities']))
+        list_of_probabilities = [np.float64(el) for el in list_of_probabilities]
+        list_of_probabilities_smooth = np.zeros(30)
+        nb_of_tested_parameters_in_posterior = row['nb_of_tested_parameters_in_posterior']
 
-            # kernel smoothing for list_of_probabilities_smooth
-            print('get_all_pdfs 3.2')
-            x = np.linspace(-1, 1, 59)
-            sigma = 0.03 + 1/(nb_of_tested_parameters_in_posterior)
-            weights = stats.norm.pdf(x, 0, sigma)
-            for position in range(30):
-                list_of_probabilities_smooth[position] = np.sum(list_of_probabilities * weights[29-position:59-position])
-            list_of_probabilities_smooth = list_of_probabilities_smooth * 30/ np.sum(list_of_probabilities_smooth) 
-            
-
-
-            print('get_all_pdfs 3.3')
-            try:
-                simulation_name = Simulation_model.objects.get(id=row['simulation_id']).simulation_name
-            except:
-                simulation_name = "This simulation has already been deleted."
-            response[execution_order_id]['individual_pdfs'].append({'simulation_id': row['simulation_id'], 
-                                                'simulation_name':simulation_name, 
-                                                'nb_of_tested_parameters': row['nb_of_tested_parameters'],
-                                                'nb_of_tested_parameters_in_posterior': row['nb_of_tested_parameters_in_posterior'],
-                                                'pdf': [[bucket_value, count] for bucket_value, count in zip(list(np.linspace(0,1,31)), list_of_probabilities)],
-                                                'smooth_pdf': [[bucket_value, count] for bucket_value, count in zip(list(np.linspace(0,1,31)), list_of_probabilities_smooth)],
-                                                })
+        # kernel smoothing for list_of_probabilities_smooth
+        print('get_all_pdfs 3.2')
+        x = np.linspace(-1, 1, 59)
+        sigma = 0.03 + 1/(nb_of_tested_parameters_in_posterior)
+        weights = stats.norm.pdf(x, 0, sigma)
+        for position in range(30):
+            list_of_probabilities_smooth[position] = np.sum(list_of_probabilities * weights[29-position:59-position])
+        list_of_probabilities_smooth = list_of_probabilities_smooth * 30/ np.sum(list_of_probabilities_smooth) 
         
-        print('get_all_pdfs 4')  
-        histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(execution_order_id, rule_or_parameter_id, is_rule)
-        response[execution_order_id]['combined_pdf'] = {'nb_of_tested_parameters': nb_of_tested_parameters,
-                                    'nb_of_tested_parameters_in_posterior': nb_of_tested_parameters_in_posterior,
-                                    'pdf': [[bucket_value, min(count,10000)] for bucket_value, count in zip(histogram[1], histogram[0])],
-                                    'smooth_pdf': [[bucket_value, min(count,10000)] for bucket_value, count in zip(histogram_smooth[1], histogram_smooth[0])]
-                                    }
-        print('get_all_pdfs 5')
+
+
+        print('get_all_pdfs 3.3')
+        try:
+            simulation_name = Simulation_model.objects.get(id=row['simulation_id']).simulation_name
+        except:
+            simulation_name = "This simulation has already been deleted."
+        response['individual_pdfs'].append({'simulation_id': row['simulation_id'], 
+                                            'simulation_name':simulation_name, 
+                                            'nb_of_tested_parameters': row['nb_of_tested_parameters'],
+                                            'nb_of_tested_parameters_in_posterior': row['nb_of_tested_parameters_in_posterior'],
+                                            'pdf': [[bucket_value, count] for bucket_value, count in zip(list(np.linspace(0,1,31)), list_of_probabilities)],
+                                            'smooth_pdf': [[bucket_value, count] for bucket_value, count in zip(list(np.linspace(0,1,31)), list_of_probabilities_smooth)],
+                                            })
+    
+    print('get_all_pdfs 4')  
+    histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(execution_order_id, rule_or_parameter_id, is_rule)
+    response['combined_pdf'] = {'nb_of_tested_parameters': nb_of_tested_parameters,
+                                'nb_of_tested_parameters_in_posterior': nb_of_tested_parameters_in_posterior,
+                                'pdf': [[bucket_value, min(count,10000)] for bucket_value, count in zip(histogram[1], histogram[0])],
+                                'smooth_pdf': [[bucket_value, min(count,10000)] for bucket_value, count in zip(histogram_smooth[1], histogram_smooth[0])]
+                                }
+    print('get_all_pdfs 5')
     return HttpResponse(json.dumps(response))
 
 
@@ -2531,6 +2526,11 @@ def upload_file(request):
 # TEST PAGES
 # ==================
 def test_page1(request):
+                s3 = boto3.resource('s3')
+            obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(self.simulation_id) + '_validation_data.json')
+            validation_data = json.loads(obj.get()['Body'].read().decode('utf-8'))
+
+
     simulation_models = Simulation_model.objects.all().order_by('id') 
     for simulation_model in simulation_models:
         learn_parameters_result = Learn_parameters_result(simulation_id=simulation_model.id, execution_order_id=simulation_model.execution_order_id, all_priors_df=simulation_model.all_priors_df)
