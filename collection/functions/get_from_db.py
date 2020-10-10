@@ -225,6 +225,10 @@ def get_rules_pdf(execution_order_id, rule_or_parameter_id, is_rule):
     else:
         likelihoods_df = pd.DataFrame(Likelihood_function.objects.filter(execution_order_id=execution_order_id, parameter_id=rule_or_parameter_id, nb_of_tested_parameters_in_posterior__gt=0).values())
 
+    print('===================================================')
+    print(len(likelihoods_df))
+    print(str(likelihoods_df))
+    print('===================================================')
     if len(likelihoods_df) > 0:
         # multiply the likelihood functions of all different simulations/evidences to get a combined posterior
         likelihoods_df = likelihoods_df.sort_values(['simulation_id','id'], ascending=[False, False])
