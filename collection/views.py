@@ -2423,6 +2423,24 @@ def delete_upload(request):
     Data_point.objects.filter(upload_id=upload_id).delete()
     return HttpResponse('Upload deleted!')
 
+# ----
+@staff_member_required
+def delete_simulation_page(request):
+    return render(request, 'admin/delete_simulation.html')
+
+
+@staff_member_required
+def delete_simulation(request):
+    simulation_id = int(request.GET.get('simulation_id', ''))
+    print('+++++++++++++++++++++++')
+    print(str(simulation_id))
+    Simulation_model.objects.get(id=simulation_id).delete()
+    Learn_parameters_result.objects.filter(simulation_id=simulation_id).delete()
+    Monte_carlo_result.objects.filter(simulation_id=simulation_id).delete()
+    Likelihood_function.objects.filter(simulation_id=simulation_id).delete()
+    return HttpResponse('Simulation deleted!')
+
+
 # ==================
 # MODEL FIXES
 # ==================
