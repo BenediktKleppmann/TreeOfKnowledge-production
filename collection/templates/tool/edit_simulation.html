@@ -236,13 +236,13 @@
 		width:100%
 	}
 	
-	#design-simulate-button-group {
+	#scenario-behaviour-button-group {
 		position:absolute;
 		top: 58px;
 		left:40%;
 	}
 	
-	.design-simulate-button {
+	.scenario-behaviour-button {
 		border: 1px solid gray;
 		border-top-left-radius: 0px;
 		border-top-right-radius: 0px;
@@ -253,7 +253,7 @@
 		z-index: 1;
 	}
 	
-	.design-simulate-button.active {
+	.scenario-behaviour-button.active {
 		background: linear-gradient(180deg,rgb(161, 161, 161) 0%,rgb(170, 170, 170) 96.48217237937519%);
 		box-shadow: inset 1px 1px 02px 01px rgba(0%,0%,0%,0.082);
 	}
@@ -424,9 +424,9 @@
 	</div>
 
 	<div id="right-panel">	
-		<div id="design-simulate-button-group" class="btn-group" data-toggle="buttons">		
-			<label id="design-button" class="btn design-simulate-button active" onclick="changeWindowState('design')">Scenario</label>
-			<label id="simulate-button" class="btn design-simulate-button" onclick="changeWindowState('simulate')">Behaviour</label>
+		<div id="scenario-behaviour-button-group" class="btn-group" data-toggle="buttons">		
+			<label id="scenario-button" class="btn scenario-behaviour-button active" onclick="changeWindowState('scenario')">Scenario</label>
+			<label id="behaviour-button" class="btn scenario-behaviour-button" onclick="changeWindowState('behaviour')">Behaviour</label>
 		</div>
 		
 		<div id="paper" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
@@ -474,7 +474,7 @@
 <script>
 	// GLOBAL VARIABLES:
 	
-	var window_state = 'design';  // 'design' or 'simulate'
+	var window_state = 'scenario';  // 'scenario' or 'behaviour'
 	
 	var available_object_types = {{ available_object_types|safe }};
 	var object_icons = {{ object_icons|safe }};
@@ -522,11 +522,11 @@
 	
 
 	 
-	 // Draw the Left Panel (For the Design/Scenario-State)    =============================================================================
-	function drawLeftPanel__design() {
+	 // Draw the Left Panel (For the Scenario-State)    =============================================================================
+	function drawLeftPanel__scenario() {
 		
 	
-		left_panel__design = '<div class="accordion md-accordion" id="accordion-left" role="tablist" aria-multiselectable="true">' +	
+		left_panel__scenario = '<div class="accordion md-accordion" id="accordion-left" role="tablist" aria-multiselectable="true">' +	
 								'<div class="card">' +
 									'<div class="card-header" role="tab" id="accordion-left-header-0">' +
 										'<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-0" aria-expanded="false" aria-controls="accordion-left-content-0">Main</button>' +
@@ -594,7 +594,7 @@
 							
 		object_type_ids = Object.keys(available_object_types);
 		for (var i = 0; i < Math.ceil(object_type_ids.length/3) ; i++) {
-			left_panel__design += 				"<tr>";
+			left_panel__scenario += 				"<tr>";
 			
 			for (var j = 0; j < 3 ; j++) {
 				entry_number = i*3 + j
@@ -602,7 +602,7 @@
 					object_type_id = object_type_ids[entry_number];
 					object_name = available_object_types[object_type_id]['name']
 					object_icon = available_object_types[object_type_id]['object_type_icon']
-					left_panel__design += 			'<td>' +
+					left_panel__scenario += 			'<td>' +
 														'<div class="object-icon" draggable="true" ondragstart="drag(event, \'' + object_type_id + '\')" onclick="createObject(\'' + object_type_id + '\', 100, 100)" data-object-type-id="' + object_type_id + '"> ' +
 															'<img src="{% static "images/object_icons/" %}' + object_icon + '.svg">' +
 														'</div>' +
@@ -610,10 +610,10 @@
 													'</td>';
 				}
 			}
-			left_panel__design += 				"</tr>";
+			left_panel__scenario += 				"</tr>";
 		}
 			
-		left_panel__design +=				'</table> ' +
+		left_panel__scenario +=				'</table> ' +
 										'</div>' +
 									'</div>' +
 								'</div>' +
@@ -628,7 +628,7 @@
 								'</div>' +
 							'</div>';
 	
-		$("#left-panel").html(left_panel__design);	
+		$("#left-panel").html(left_panel__scenario);	
 		
 		// initialize simulation-name
 		$("#simulation-name").val(simulation_name);
@@ -806,18 +806,18 @@
 	//========================================================================
 	
 	function drawScenarioBehaviourButtons(){
-		if (window_state == 'design'){
-			buttons_html_string = 	'<label id="design-button" class="btn design-simulate-button active" onclick="changeWindowState(\'design\')">Scenario</label>' +
-									'<label id="simulate-button" class="btn design-simulate-button" onclick="changeWindowState(\'simulate\')">Behaviour</label>';
+		if (window_state == 'scenario'){
+			buttons_html_string = 	'<label id="scenario-button" class="btn scenario-behaviour-button active" onclick="changeWindowState(\'scenario\')">Scenario</label>' +
+									'<label id="behaviour-button" class="btn scenario-behaviour-button" onclick="changeWindowState(\'behaviour\')">Behaviour</label>';
 		} else {
-			buttons_html_string = 	'<label id="design-button" class="btn design-simulate-button" onclick="changeWindowState(\'design\')">Scenario</label>' +
-									'<label id="simulate-button" class="btn design-simulate-button active" onclick="changeWindowState(\'simulate\')">Behaviour</label>';
+			buttons_html_string = 	'<label id="scenario-button" class="btn scenario-behaviour-button" onclick="changeWindowState(\'scenario\')">Scenario</label>' +
+									'<label id="behaviour-button" class="btn scenario-behaviour-button active" onclick="changeWindowState(\'behaviour\')">Behaviour</label>';
 		}
 	
 		if (simulation_results_exist){
-			buttons_html_string += 	'<label id="results-button" class="btn design-simulate-button" onclick="openResultsInNewWindow()">Results</label>';
+			buttons_html_string += 	'<label id="results-button" class="btn scenario-behaviour-button" onclick="openResultsInNewWindow()">Results</label>';
 		}
-		$('#design-simulate-button-group').html(buttons_html_string)
+		$('#scenario-behaviour-button-group').html(buttons_html_string)
 	}
 
 
@@ -826,15 +826,15 @@
 		if (window_state != new_state) {
 			window_state = new_state;
 			
-			if (new_state == 'design') {
-				$('#design-button').attr('class','btn design-simulate-button active');
-				$('#simulate-button').attr('class','btn design-simulate-button');
-				drawLeftPanel__design();
+			if (new_state == 'scenario') {
+				$('#scenario-button').attr('class','btn scenario-behaviour-button active');
+				$('#behaviour-button').attr('class','btn scenario-behaviour-button');
+				drawLeftPanel__scenario();
 			} else {
 				getObjectData();
-				$('#design-button').attr('class','btn design-simulate-button');
-				$('#simulate-button').attr('class','btn design-simulate-button active');
-				drawLeftPanel__simulate();
+				$('#scenario-button').attr('class','btn scenario-behaviour-button');
+				$('#behaviour-button').attr('class','btn scenario-behaviour-button active');
+				drawLeftPanel__behaviour();
 				
 				
 				
@@ -907,7 +907,7 @@
 	});
 
 	paper.on('link:mouseenter', function(linkView) {
-		if (window_state == 'design'){
+		if (window_state == 'scenario'){
 			linkView.showTools();
 		}
 	});
@@ -918,7 +918,7 @@
 	
 	
 	paper.on('element:mouseenter', function(elementView) {
-		if (window_state == 'design'){
+		if (window_state == 'scenario'){
 			var object_number = elementView.model.get('object_number');
 			$('[model-id="' + object_number + '"] .element-tool-remove').css('display','inline-block');  //show the objects x-button
 		}
@@ -972,7 +972,7 @@
 			$("#object-name-field").attr('onchange', 'changeObjectName(' + object_number + ')');
 		
 			//draw the Right Sidebar Body  ================================
-			if (window_state=='design') {
+			if (window_state=='scenario') {
 				drawObjectFilters(object_number);
 			} else {
 				drawObjectAttributeTable(object_number);
@@ -1294,7 +1294,7 @@
 					hide_right_sidebar();
 					$('#object-icon-button').popover('hide');
 					
-					if (window_state=="design") {
+					if (window_state=="scenario") {
 						saveFilterFactChanges(object_number);
 					} 
 				}
@@ -1305,7 +1305,7 @@
 					hide_right_sidebar();
 					$('#object-icon-button').popover('hide');
 					
-					if (window_state=="design") {
+					if (window_state=="scenario") {
 						saveFilterFactChanges(object_number);
 					} 
 				}
@@ -1631,7 +1631,7 @@
 		$.getScript( "{% static 'js/jquery.highlight-within-textarea.js' %}", function( data, textStatus, jqxhr ) {});
 		//$.getScript( "http://www.treeofknowledge.ai/static/js/jquery.highlight-within-textarea.js", function( data, textStatus, jqxhr ) {});
 
-		drawLeftPanel__design();
+		drawLeftPanel__scenario();
 		
 		//load execution order
 		var xhttp = new XMLHttpRequest();       

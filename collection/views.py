@@ -2526,9 +2526,9 @@ def upload_file(request):
 # TEST PAGES
 # ==================
 def test_page1(request):
-                s3 = boto3.resource('s3')
-            obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(self.simulation_id) + '_validation_data.json')
-            validation_data = json.loads(obj.get()['Body'].read().decode('utf-8'))
+    # s3 = boto3.resource('s3')
+    # obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(self.simulation_id) + '_validation_data.json')
+    # validation_data = json.loads(obj.get()['Body'].read().decode('utf-8'))
 
 
     simulation_models = Simulation_model.objects.all().order_by('id') 
