@@ -481,7 +481,6 @@
 	var available_relations = {{ available_relations|safe }};
 	var available_execution_orders = {{ available_execution_orders|safe }};
 	
-	var run_number = {{ simulation_model.run_number }};
 	var is_timeseries_analysis = {{ simulation_model.is_timeseries_analysis|yesno:"true,false"  }};
 	var objects_dict = {{ simulation_model.objects_dict|safe }};
 	var manually_set_initial_values = {{ simulation_model.manually_set_initial_values|safe }};
@@ -850,7 +849,7 @@
 	function openResultsInNewWindow(){
 		var url_components = window.location.href.split("/");
 		var simulation_id = url_components[url_components.length - 2];
-		var w = window.open("/tool/analyse_simulation/" + simulation_id + "/" + execution_order_id + "/" + run_number + "/");
+		var w = window.open("/tool/analyse_simulation/" + simulation_id + "/" + execution_order_id + "/");
 	}
 	
 	//========================================================================

@@ -169,9 +169,9 @@ urlpatterns = [
     url(r'^tool/edit_simulation/(?P<simulation_id>[-\d]+)/$', views.edit_simulation, name='edit_simulation'),
     url(r'^tool/copy_simulation/$', views.copy_simulation, name='copy_simulation'),
     url(r'^tool/get_simulation_progress/$', views.get_simulation_progress, name='get_simulation_progress'),
-    url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/(?P<execution_order_id>[-\d]+)/(?P<run_number>[-\d]+)/$', views.analyse_learned_parameters, name='analyse_learned_parameters'),
-    url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/(?P<execution_order_id>[-\d]+)/(?P<run_number>[-\d]+)/new-(?P<parameter_number>[-\d]+)/$', views.analyse_new_simulation, name='analyse_new_simulation'),
-    url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/(?P<execution_order_id>[-\d]+)/(?P<run_number>[-\d]+)/(?P<parameter_number>[-\d]+)/$', views.analyse_simulation, name='analyse_simulation'),
+    url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/(?P<execution_order_id>[-\d]+)/$', views.analyse_learned_parameters, name='analyse_learned_parameters'),
+    url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/(?P<execution_order_id>[-\d]+)/new-(?P<parameter_number>[-\d]+)/$', views.analyse_new_simulation, name='analyse_new_simulation'),
+    url(r'^tool/analyse_simulation/(?P<simulation_id>[-\d]+)/(?P<execution_order_id>[-\d]+)/(?P<parameter_number>[-\d]+)/$', views.analyse_simulation, name='analyse_simulation'),
     url(r'^tool/abort_simulation/$', views.abort_simulation, name='abort_simulation'),
     url(r'^tool/run_single_monte_carlo/$', views.run_single_monte_carlo, name='run_single_monte_carlo'),
 

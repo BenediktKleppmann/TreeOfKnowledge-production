@@ -425,11 +425,11 @@
 <script type="text/javascript">
 	// GLOBAL VARIABLES:
 	var simulation_id = {{ simulation_model.id|safe }};
-	var run_number = {{ simulation_model.run_number|safe }};
 	var objects_dict = {{ simulation_model.objects_dict|safe }};
 	var y_value_attributes = {{ simulation_model.y_value_attributes|safe }};
 	var not_used_rules = {{ simulation_model.not_used_rules|safe }};
 	
+	var run_number = {{ learn_parameters_result.run_number|safe }};
 	var all_priors_df = {{ learn_parameters_result.all_priors_df|safe }};
 	var learned_rules = {{ learn_parameters_result.learned_rules|safe }};
 	var available_execution_orders = {{ available_execution_orders|safe }};

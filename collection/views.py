@@ -2103,13 +2103,13 @@ def get_simulation_progress(request):
 
 
 @login_required
-def analyse_learned_parameters(request, simulation_id, execution_order_id, run_number):
+def analyse_learned_parameters(request, simulation_id, execution_order_id):
     print('analyse_learned_parameters')
    
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
         progress_tracking_file.write(json.dumps({"learning_likelihoods": False, "nb_of_accepted_simulations_total": "", "nb_of_accepted_simulations_current": "" , "running_monte_carlo": False, "monte_carlo__simulation_number": "", "monte_carlo__number_of_simulations":  "",}))
     simulation_model = Simulation_model.objects.get(id=simulation_id)
-    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id, run_number=run_number).order_by('-id').first()
+    learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id).order_by('-id').first()
     available_execution_orders = get_from_db.get_available_execution_orders()
     execution_order = Execution_order.objects.get(id=execution_order_id)
     results_from_all_runs = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id)
@@ -2118,7 +2118,7 @@ def analyse_learned_parameters(request, simulation_id, execution_order_id, run_n
 
 
 @login_required
-def analyse_new_simulation(request, simulation_id, execution_order_id, run_number, parameter_number):
+def analyse_new_simulation(request, simulation_id, execution_order_id, parameter_number):
     print('analyse_simulation')
 
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
@@ -2133,7 +2133,7 @@ def analyse_new_simulation(request, simulation_id, execution_order_id, run_numbe
 
 
 @login_required
-def analyse_simulation(request, simulation_id, execution_order_id, run_number, parameter_number):
+def analyse_simulation(request, simulation_id, execution_order_id, parameter_number):
     print('analyse_simulation')
 
     with open('collection/static/webservice files/runtime_data/simulation_progress_' + str(simulation_id) + '.txt', "w") as progress_tracking_file:
