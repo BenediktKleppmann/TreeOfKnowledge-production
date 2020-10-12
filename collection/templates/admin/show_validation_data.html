@@ -89,7 +89,12 @@
 		<button id="get-simulation-data-button" class="btn btn-success" type="button" onclick="getSimulationData()">Get Simulation Data</button>
 		<div id="show-results-button-frame"></div>
 	</div>
-	<div id="results">
+	<div id="download-buttons" style="display:none;">
+		<button class="btn btn-primary" type="button" onclick="download_simulation_state_code();">Download simulation_state_code</button>
+		<button class="btn btn-primary" type="button" onclick="download_df();">Download df</button>
+		<button class="btn btn-primary" type="button" onclick="download_y0_values();">Download y0_values</button>
+	</div>
+	<div id="results" style="display:none;">
 		<div class="result">
 			<div class="result-title">simulation_state_code</div>
 			<div class="result-value" id="simulation_state_code"></div>
@@ -120,6 +125,10 @@
 	//========================================================================
 	//========================================================================
 
+	// GLOBAL VARAIBLES
+	var simulation_state_code = '';
+	var df = '';
+	var y0_values = '';
 
 	
 	function getSimulationData() {
@@ -130,16 +139,37 @@
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 			
+				$('#download-buttons').css('display','block');
+				$('#results').css('display','block');
 				validation_data = JSON.parse(this.responseText);
-				$('#simulation_state_code').html(JSON.stringify(validation_data['simulation_state_code']));
-				$('#df').html(JSON.stringify(validation_data['df']));
-				$('#y0_values').html(JSON.stringify(validation_data['y0_values']));
+				simulation_state_code = JSON.stringify(validation_data['simulation_state_code'])
+				df = JSON.stringify(validation_data['df'])
+				y0_values = JSON.stringify(validation_data['y0_values'])
+					
+				$('#simulation_state_code').html(simulation_state_code);
+				$('#df').html(df);
+				$('#y0_values').html(y0_values);
 			}
 		};
 		xhttp.open('GET', '/admin/get_validation_data?simulation_id=' + simulation_id, true);
 		xhttp.send();
-		
-
+	}
+	
+	
+	
+	function download_simulation_state_code() {
+		var uriContent = "data:application/octet-stream," + encodeURIComponent(simulation_state_code);
+		newWindow = window.open(uriContent, 'simulation_state_code.json');
+	}
+	
+	function download_df() {
+		var uriContent = "data:application/octet-stream," + encodeURIComponent(df);
+		newWindow = window.open(uriContent, 'df.json');
+	}
+	
+	function download_y0_values() {
+		var uriContent = "data:application/octet-stream," + encodeURIComponent(y0_values);
+		newWindow = window.open(uriContent, 'y0_values.json');
 	}
 	
 	
