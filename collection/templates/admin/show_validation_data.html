@@ -1,4 +1,4 @@
-{% extends 'layouts/base_tool.html' %}'
+{% extends 'layouts/base_admin.html' %}'
 {% load staticfiles %}
 
 <!-- 
@@ -14,7 +14,7 @@
 -->
 
 {% block title %}
-	Show Simulation Data
+	Show Validation Data
 {% endblock %}
 
 
@@ -128,7 +128,7 @@
 				$('#y0_values').html(JSON.stringify(validation_data['y0_values']));
 			}
 		};
-		xhttp.open('GET', '/tool/get_simulation_data?simulation_id=' + simulation_id, true);
+		xhttp.open('GET', '/admin/get_validation_data?simulation_id=' + simulation_id, true);
 		xhttp.send();
 		
 

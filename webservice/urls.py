@@ -202,8 +202,8 @@ urlpatterns = [
     # model fixes
     url(r'^admin/salvage_cancelled_simulation/$', views.salvage_cancelled_simulation_page, name='salvage_cancelled_simulation_page'),
     url(r'^admin/salvage_cancelled_simulation/(?P<simulation_id>[-\d]+)/(?P<run_number>[-\d]+)/$', views.salvage_cancelled_simulation, name='salvage_cancelled_simulation'),
-    url(r'^admin/show_simulation_data/$', views.show_simulation_data, name='show_simulation_data'),
-    url(r'^admin/get_simulation_data/$', views.get_simulation_data, name='get_simulation_data'),
+    url(r'^admin/show_validation_data/$', views.show_validation_data, name='show_validation_data'),
+    url(r'^admin/get_validation_data/$', views.get_validation_data, name='get_validation_data'),
     # data cleaning
     url(r'^admin/possibly_duplicate_objects_without_keys/$', views.possibly_duplicate_objects_without_keys, name='possibly_duplicate_objects_without_keys'),
     url(r'^admin/find_possibly_duplicate_objects_without_keys/$', views.find_possibly_duplicate_objects_without_keys, name='find_possibly_duplicate_objects_without_keys'),
