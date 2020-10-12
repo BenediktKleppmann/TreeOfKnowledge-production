@@ -1889,18 +1889,19 @@ def get_execution_order_scores(request):
         response['scores'][simulation_model.id] = {}
 
         for index, row in run_simulations_df[run_simulations_df['simulation_id']==simulation_model.id].iterrows():
-            if len(all_priors_df) > row['nb_of_tested_parameters_in_posterior'] and row['nb_of_simulations'] > 0:
+            if row['nb_of_simulations'] > 0:
 
                 execution_order_id = int(row['execution_order_id'])
                 learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id).order_by('-id').first()
                 all_priors_df = pd.DataFrame.from_dict(json.loads(learn_parameters_result.all_priors_df), orient='index')
-                all_priors_df.index = range(len(all_priors_df))
-                score = 1 - all_priors_df.loc[:row['nb_of_tested_parameters_in_posterior'], 'error'].mean()
-                nb_of_simulations_in_posterior = row['nb_of_simulations']/row['nb_of_tested_parameters']*row['nb_of_tested_parameters_in_posterior']
+                if len(all_priors_df) > row['nb_of_tested_parameters_in_posterior']:
+                    all_priors_df.index = range(len(all_priors_df))
+                    score = 1 - all_priors_df.loc[:row['nb_of_tested_parameters_in_posterior'], 'error'].mean()
+                    nb_of_simulations_in_posterior = row['nb_of_simulations']/row['nb_of_tested_parameters']*row['nb_of_tested_parameters_in_posterior']
 
-                response['scores'][simulation_model.id][execution_order_id] = {'score': score, 'nb_of_simulations_in_posterior': nb_of_simulations_in_posterior}
-                response['execution_orders'][execution_order_id]['sum_of_scores'] += score*row['nb_of_tested_parameters_in_posterior']
-                response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior'] += row['nb_of_tested_parameters_in_posterior']
+                    response['scores'][simulation_model.id][execution_order_id] = {'score': score, 'nb_of_simulations_in_posterior': nb_of_simulations_in_posterior}
+                    response['execution_orders'][execution_order_id]['sum_of_scores'] += score*row['nb_of_tested_parameters_in_posterior']
+                    response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior'] += row['nb_of_tested_parameters_in_posterior']
 
     for execution_order_id in response['execution_orders'].keys():
         if response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior'] > 0:
