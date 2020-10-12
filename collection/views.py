@@ -2476,7 +2476,7 @@ def get_validation_data(request):
     s3 = boto3.resource('s3')
     obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(simulation_id) + '_validation_data.json')
     validation_data = obj.get()['Body'].read().decode('utf-8')
-    return HttpResponse(validation_data)
+    return HttpResponse(validation_data.replace('": NaN', '": null'))
     
 
 # ==================
