@@ -158,18 +158,31 @@
 	
 	
 	function download_simulation_state_code() {
-		var uriContent = "data:application/octet-stream," + encodeURIComponent(simulation_state_code);
-		newWindow = window.open(uriContent, 'simulation_state_code.json');
+		var a = document.createElement("a");
+		a.href="data:application/json;charset=utf-8," + simulation_state_code
+		a.download = "simulation_state_code.txt"
+		document.body.appendChild(a)
+		a.click()
+		document.body.removeChild(a)
 	}
 	
 	function download_df() {
-		var uriContent = "data:application/octet-stream," + encodeURIComponent(df);
-		newWindow = window.open(uriContent, 'df.json');
+		var a = document.createElement("a");
+		a.href="data:application/json;charset=utf-8," + df
+		a.download = "df.json"
+		document.body.appendChild(a)
+		a.click()
+		document.body.removeChild(a)
 	}
 	
 	function download_y0_values() {
-		var uriContent = "data:application/octet-stream," + encodeURIComponent(y0_values);
-		newWindow = window.open(uriContent, 'y0_values.json');
+		var a = document.createElement("a");
+		a.href="data:application/json;charset=utf-8," + y0_values
+		a.download = "y0_values.json"
+		document.body.appendChild(a)
+		a.click()
+		document.body.removeChild(a)
+
 	}
 	
 	
