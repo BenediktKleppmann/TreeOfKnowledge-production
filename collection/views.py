@@ -2113,7 +2113,7 @@ def analyse_learned_parameters(request, simulation_id, execution_order_id):
     learn_parameters_result = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id).order_by('-id').first()
     available_execution_orders = get_from_db.get_available_execution_orders()
     execution_order = Execution_order.objects.get(id=execution_order_id)
-    results_from_all_runs = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id)
+    results_from_all_runs = Learn_parameters_result.objects.filter(simulation_id=simulation_model.id, execution_order_id=execution_order_id).order_by('-run_number')
     return render(request, 'tool/analyse_learned_parameters.html', {'simulation_model':simulation_model, 'learn_parameters_result': learn_parameters_result, 'available_execution_orders':available_execution_orders, 'execution_order':execution_order, 'results_from_all_runs':results_from_all_runs})
 
 
@@ -2464,6 +2464,19 @@ def salvage_cancelled_simulation(request, simulation_id, run_number):
         success = the_simulator.salvage_cancelled_simulation(run_number)
         return HttpResponse(json.dumps(success))
 
+
+@login_required
+def show_simulation_data(request):
+    return render(request, 'admin/show_simulation_data.html')
+
+@login_required
+def get_simulation_data(request):
+    import boto3
+    simulation_id = int(request.GET.get('simulation_id', ''))
+    s3 = boto3.resource('s3')
+    obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(self.simulation_id) + '_validation_data.json')
+    model_data = obj.get()['Body'].read().decode('utf-8')
+    return HttpResponse(model_data)
     
 
 # ==================
@@ -2573,17 +2586,11 @@ def test_page1(request):
 
 
 def test_page2(request):
-    monte_carlo_results = Monte_carlo_result.objects.filter(simulation_id__in=[492,499])
-    for monte_carlo_result in monte_carlo_results:
-        monte_carlo_result.id = None
-        monte_carlo_result.simulation_id = 473
-        monte_carlo_result.save()
-
-    monte_carlo_results = Monte_carlo_result.objects.filter(simulation_id=491)
-    for monte_carlo_result in monte_carlo_results:
-        monte_carlo_result.id = None
-        monte_carlo_result.simulation_id = 490
-        monte_carlo_result.save()
+    new_run_numbers_dict = {8:54, 9:55, 2:9, 10:10}
+    for result_id in new_run_numbers_dict.keys():
+        learn_parameters_result = Learn_parameters_result.objects.get(id=result_id)
+        learn_parameters_result.run_number = new_run_numbers_dict[result_id]
+        learn_parameters_result.save()
 
     return HttpResponse('success')
 

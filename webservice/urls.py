@@ -158,6 +158,7 @@ urlpatterns = [
     url(r'^tool/get_execution_order_scores/$', views.get_execution_order_scores, name='get_execution_order_scores'),
 
 
+
     # Query Data  -------------------------------------------------------------------------
     url(r'^tool/query_data/$', views.query_data, name='query_data'),
     url(r'^tool/download_file1/$', views.download_file1, name='download_file1'),
@@ -201,6 +202,8 @@ urlpatterns = [
     # model fixes
     url(r'^admin/salvage_cancelled_simulation/$', views.salvage_cancelled_simulation_page, name='salvage_cancelled_simulation_page'),
     url(r'^admin/salvage_cancelled_simulation/(?P<simulation_id>[-\d]+)/(?P<run_number>[-\d]+)/$', views.salvage_cancelled_simulation, name='salvage_cancelled_simulation'),
+    url(r'^admin/show_simulation_data/$', views.show_simulation_data, name='show_simulation_data'),
+    url(r'^admin/get_simulation_data/$', views.get_simulation_data, name='get_simulation_data'),
     # data cleaning
     url(r'^admin/possibly_duplicate_objects_without_keys/$', views.possibly_duplicate_objects_without_keys, name='possibly_duplicate_objects_without_keys'),
     url(r'^admin/find_possibly_duplicate_objects_without_keys/$', views.find_possibly_duplicate_objects_without_keys, name='find_possibly_duplicate_objects_without_keys'),
