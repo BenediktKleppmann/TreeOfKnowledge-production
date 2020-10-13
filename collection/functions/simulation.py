@@ -742,20 +742,7 @@ class Simulator:
                 if not rule['has_probability_1']:
                     df['triggerThresholdForRule' + str(rule['id'])] =  rv_histogram(rule['histogram']).rvs(size=batch_size)
                 for used_parameter_id in rule['used_parameter_ids']:
-                    print('v^v^v^v^v^v^')
-                    print(rule['id'])
-                    print('---')
-                    print(used_parameter_id)
-                    print('---')
-                    print(rule['parameters'])
-                    print('---')
-                    print(rule['parameters'][used_parameter_id])
-                    print('---')
-                    print(rule['parameters'][str(used_parameter_id)])
-                    print('---')
-                    print(rule['parameters'][str(used_parameter_id)]['histogram'])
-                    print('v^v^v^v^v^v^')
-                    df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][str(used_parameter_id)]['histogram']).rvs(size=batch_size)
+                    df['param' + str(used_parameter_id)] = rv_histogram(rule['parameters'][used_parameter_id]['histogram']).rvs(size=batch_size)
 
 
 
