@@ -1249,7 +1249,7 @@ class Simulator:
 
         print('process_data_7')
         if parameter_number is not None:
-            simulation_result_record = Monte_carlo_result(simulation_id=self.simulation_id,
+            monte_carlo_result_record = Monte_carlo_result(simulation_id=self.simulation_id,
                                                         execution_order_id=self.execution_order_id,
                                                         run_number=self.run_number,
                                                         parameter_number=parameter_number,
@@ -1260,15 +1260,15 @@ class Simulator:
                                                         simulation_data=json.dumps(simulation_data), 
                                                         correct_values=json.dumps(correct_values), 
                                                         errors=json.dumps(errors))
-            simulation_result_record.save()
+            monte_carlo_result_record.save()
 
 
 
         else:
-            simulation_result_record = Simulation_result.objects.filter(simulation_id=self.simulation_id, run_number=self.run_number, is_new_parameter=True).order_by('-parameter_number').first()
-            highest_new_parameter_number = 0 if simulation_result_record is None else simulation_result_record.parameter_number
+            monte_carlo_result_record = Monte_carlo_result.objects.filter(simulation_id=self.simulation_id, run_number=self.run_number, is_new_parameter=True).order_by('-parameter_number').first()
+            highest_new_parameter_number = 0 if monte_carlo_result_record is None else monte_carlo_result_record.parameter_number
             parameter_number = highest_new_parameter_number + 1
-            simulation_result_record = Monte_carlo_result(simulation_id=self.simulation_id,
+            monte_carlo_result_record = Monte_carlo_result(simulation_id=self.simulation_id,
                                                         execution_order_id=self.execution_order_id,
                                                         run_number=self.run_number,
                                                         parameter_number=parameter_number,
@@ -1279,7 +1279,7 @@ class Simulator:
                                                         simulation_data=json.dumps(simulation_data), 
                                                         correct_values=json.dumps(correct_values), 
                                                         errors=json.dumps(errors))
-            simulation_result_record.save()
+            monte_carlo_result_record.save()
 
         return parameter_number
         
