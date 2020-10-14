@@ -1851,6 +1851,7 @@ def execution_order_scores(request):
 def get_execution_order_scores(request):
     print('------------------ get_execution_order_scores --------------------------------')
     from django.db import connection
+    import boto3
     response = {'simulations': [], 'scores': {}}
 
     sql_string = '''
@@ -1878,14 +1879,28 @@ def get_execution_order_scores(request):
 
     # add execution_orders
     all_execution_order_ids = list(run_simulations_df['execution_order_id'].unique())
-    response['execution_orders'] = {execution_order.id: {'name':execution_order.name, 'sum_of_scores':0, 'total_nb_of_tested_parameters_in_posterior':0} for execution_order in Execution_order.objects.filter(id__in=all_execution_order_ids).order_by('id')}
+    response['execution_orders'] = {execution_order.id: {'name':execution_order.name, 'sum_of_scores':0, 'total_nb_of_validation_datapoints':0} for execution_order in Execution_order.objects.filter(id__in=all_execution_order_ids).order_by('id')}
 
 
     # add simuations
     all_simuation_ids = list(run_simulations_df['simulation_id'].unique())
     simulation_models = Simulation_model.objects.filter(id__in=all_simuation_ids).order_by('id')
     for simulation_model in simulation_models:
-        response['simulations'].append({'simulation_id': simulation_model.id, 'simulation_name': simulation_model.simulation_name}) 
+
+            
+        s3 = boto3.resource('s3')
+        obj = s3.Object('elasticbeanstalk-eu-central-1-662304246363', 'SimulationModels/simulation_' + str(simulation_model.id) + '_validation_data.json')
+        y0_values = json.loads(obj.get()['Body'].read().decode('utf-8'))['y0_values']
+        y0_values = np.asarray(y0_values, dtype=object, order='c').squeeze()
+        y0_values = np.atleast_1d(y0_values)
+        y0_values_df = pd.DataFrame(list(y0_values))
+        y0_values_df = y0_values_df.fillna(np.nan)
+        validation_columns = [col for col in y0_values_df.columns if 'period' in col and 'period0' not in col]
+        y0_values_df = y0_values_df[validation_columns]
+        number_of_validation_datapoints = np.sum(y0_values_df.count())
+
+
+        response['simulations'].append({'simulation_id': simulation_model.id, 'simulation_name': simulation_model.simulation_name, 'number_of_validation_datapoints': number_of_validation_datapoints}) 
         response['scores'][simulation_model.id] = {}
 
         for index, row in run_simulations_df[run_simulations_df['simulation_id']==simulation_model.id].iterrows():
@@ -1900,12 +1915,12 @@ def get_execution_order_scores(request):
                     nb_of_simulations_in_posterior = row['nb_of_simulations']/row['nb_of_tested_parameters']*row['nb_of_tested_parameters_in_posterior']
 
                     response['scores'][simulation_model.id][execution_order_id] = {'score': score, 'nb_of_simulations_in_posterior': nb_of_simulations_in_posterior}
-                    response['execution_orders'][execution_order_id]['sum_of_scores'] += score*row['nb_of_tested_parameters_in_posterior']
-                    response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior'] += row['nb_of_tested_parameters_in_posterior']
+                    response['execution_orders'][execution_order_id]['sum_of_scores'] += score*number_of_validation_datapoints
+                    response['execution_orders'][execution_order_id]['total_nb_of_validation_datapoints'] += number_of_validation_datapoints
 
     for execution_order_id in response['execution_orders'].keys():
-        if response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior'] > 0:
-            response['execution_orders'][execution_order_id]['overall_score'] = response['execution_orders'][execution_order_id]['sum_of_scores']/response['execution_orders'][execution_order_id]['total_nb_of_tested_parameters_in_posterior']
+        if response['execution_orders'][execution_order_id]['total_nb_of_validation_datapoints'] > 0:
+            response['execution_orders'][execution_order_id]['overall_score'] = response['execution_orders'][execution_order_id]['sum_of_scores']/response['execution_orders'][execution_order_id]['total_nb_of_validation_datapoints']
     
 
     return HttpResponse(json.dumps(response).replace(': NaN', ': null'))
