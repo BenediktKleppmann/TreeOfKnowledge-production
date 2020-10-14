@@ -603,6 +603,7 @@
 					response_dict = JSON.parse(response);
 					all_priors_df = response_dict['all_priors_df'];
 					learned_rules = response_dict['learned_rules'];
+					drawParameterDistributions();
 					drawInspectSimulations();
 					activateSimulatedParameters();
 				}
