@@ -1713,7 +1713,7 @@
 		
 		// combined pdf - normal
 		anychart.onDocumentReady(function () {
-			var dataSet = anychart.data.set(posterior_information_dict['combined_pdf']['pdf']);
+			var dataSet = anychart.data.set(posterior_information_dict['combined_pdf']['smooth_pdf']);
 			var seriesData = dataSet.mapAs({'x': 0, 'value': 1});
 			var chart = anychart.area();
 			var series = chart.area(seriesData);
