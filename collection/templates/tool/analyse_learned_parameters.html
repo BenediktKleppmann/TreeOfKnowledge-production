@@ -347,7 +347,7 @@
 						<div class="form-group row" style="margin-bottom: 0px;">
 							<label for="max" class="col-sm-4">Run Number</label>
 							<div class="col-sm-8">
-								<select class="form-control form-control-lg" id="operator1" name="operator1" onchange="updateThePageAfterChangingExecutionOrder()">
+								<select class="form-control form-control-lg" id="run_number" name="run_number" onchange="updateThePageAfterChangingExecutionOrder()">
 								{% for result in results_from_all_runs %}
 									<option value="{{ result.run_number }}" selected>{{ result.run_number }}</option>
 								{% endfor %}
@@ -590,6 +590,8 @@
 		$('#parameter-distributions-box').html('');
 		$('#learned-parameter-selection-buttons').html('');
 		$('#new-parameter-selection-buttons').html('');
+		
+		run_number = parseInt($('#run_number').val());
 		
 		
 
