@@ -680,24 +680,8 @@ def get_rules_pdf(request):
     if histogram is None:
         return HttpResponse('null')
     
-    # only smoothen out the function if the y-values vary significantly
-    smooth_pdf = False
-    # smooth_pdf = (np.std(histogram[0]) >= 0.15)
-    if smooth_pdf:
-        hist_dist = scipy.stats.rv_histogram(histogram)
-        hist_sample = hist_dist.rvs(size=50000)
-        a, b, min_value, value_range = beta.fit(hist_sample) 
-        x_values = list(histogram[1])[:-1]
-        pdf_values = [beta.pdf(x,a,b) for x in x_values]
-        # the beta distributions sometimes goes to infinity for x=0 or x-1, the following things are to stop that...
-        if pdf_values[0] > 100:
-            pdf_values[0] = pdf_values[1]
-        if pdf_values[29] > 100:
-            pdf_values[29] = pdf_values[28]
-        pdf_values = np.minimum(pdf_values, 100)
-        response['pdf'] = [[x, min(prob,100)] for x, prob in zip(x_values, pdf_values)]
-    else:
-        response['pdf'] = [[bucket_value, min(count,10000)] for bucket_value, count in zip(histogram[1], histogram[0])]
+
+    response['pdf'] = [[bucket_value, min(count,10000)] for bucket_value, count in zip(histogram_smooth[1], histogram_smooth[0])]
     return HttpResponse(json.dumps(response))
 
 
@@ -727,25 +711,8 @@ def get_single_pdf(request):
     if histogram is None:
         return HttpResponse('null')
 
-    # only smoothen out the function if the y-values vary significantly
-    smooth_pdf = False
-    # smooth_pdf = (np.std(histogram[0]) >= 0.15)
-    if smooth_pdf:
-        print(histogram)
-        hist_dist = scipy.stats.rv_histogram(histogram)
-        hist_sample = hist_dist.rvs(size=50000)
-        a, b, min_value, value_range = beta.fit(hist_sample) 
-        x_values = list(histogram[1])[:-1]
-        pdf_values = [beta.pdf(x,a,b) for x in x_values]
-        # the beta distributions sometimes goes to infinity for x=0 or x-1, the following things are to stop that...
-        if pdf_values[0] > 100:
-            pdf_values[0] = pdf_values[1]
-        if pdf_values[29] > 100:
-            pdf_values[29] = pdf_values[28]
-        pdf_values = np.minimum(pdf_values, 100)
-        response['pdf'] = [[x, prob] for x, prob in zip(x_values, pdf_values)]
-    else:
-        response['pdf'] = [[bucket_value, count] for bucket_value, count in zip(histogram[1], histogram[0])]
+
+    response['pdf'] = [[bucket_value, count] for bucket_value, count in zip(histogram[1], histogram[0])]
     return HttpResponse(json.dumps(response))
     
 

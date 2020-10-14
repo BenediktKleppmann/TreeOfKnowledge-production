@@ -280,7 +280,7 @@ def get_rules_pdf(execution_order_id, rule_or_parameter_id, is_rule):
         return None, None, None, 0, 0, 0, 0,None
 
 
-def get_single_pdf(simulation_id, execution_order_id, object_number, rule_or_parameter_id, is_rule):
+def get_single_pdf(simulation_id, execution_order_id, object_number, rule_or_parameter_id, is_rule, smooth):
     print('----  get_single_pdf  ----')
     if is_rule:
         likelihood_function = Likelihood_function.objects.filter(simulation_id=simulation_id, execution_order_id=execution_order_id, object_number=object_number, rule_id=rule_or_parameter_id).order_by('-id').first()
@@ -291,7 +291,19 @@ def get_single_pdf(simulation_id, execution_order_id, object_number, rule_or_par
 
         nb_of_tested_parameters_in_posterior = likelihood_function.nb_of_tested_parameters_in_posterior
         list_of_probabilities = json.loads(likelihood_function.list_of_probabilities)
-        histogram = (list(list_of_probabilities), list(np.linspace(0,1,31)))
+
+        # list_of_probabilities_smooth (kernel smoothing)
+        if smooth:
+            list_of_probabilities_smooth = np.zeros(30)
+            x = np.linspace(-1, 1, 59)
+            sigma = 0.03 + 1/(row['nb_of_tested_parameters'] + 1)
+            weights = stats.norm.pdf(x, 0, sigma)
+            for position in range(30):
+                list_of_probabilities_smooth[position] = np.sum(list_of_probabilities * weights[29-position:59-position])
+            list_of_probabilities_smooth = list_of_probabilities_smooth * 30/ np.sum(list_of_probabilities_smooth) 
+            histogram = (posterior_probabilities_smooth.tolist(), np.linspace(0,1,31).tolist())
+        else:
+            histogram = (list(list_of_probabilities), list(np.linspace(0,1,31)))
 
         x_values = np.linspace(0,0.966666666666667,30) + 1/60
         mean = np.average(x_values, weights=list_of_probabilities)

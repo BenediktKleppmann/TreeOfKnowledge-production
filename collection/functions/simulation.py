@@ -306,7 +306,7 @@ class Simulator:
                             histogram, mean, standard_dev, nb_of_simulations, nb_of_sim_in_which_rule_was_used, nb_of_tested_parameters, nb_of_tested_parameters_in_posterior, histogram_smooth = get_from_db.get_rules_pdf(self.execution_order_id, rule_id, True)
                             if histogram_smooth is None:
                                 if histogram is None:
-                                    histogram, mean, standard_dev, nb_of_tested_parameters_in_posterior, message = get_from_db.get_single_pdf(simulation_id, self.execution_order_id, object_number, rule_id, True)
+                                    histogram, mean, standard_dev, nb_of_tested_parameters_in_posterior, message = get_from_db.get_single_pdf(simulation_id, self.execution_order_id, object_number, rule_id, True, True)
                                 rule['histogram'] = (list(histogram[0]), list(histogram[1]))
                             else:    
                                 rule['histogram'] = (list(histogram_smooth[0]), list(histogram_smooth[1]))
@@ -319,7 +319,7 @@ class Simulator:
                                 histogram_to_use = None
                                 if histogram_smooth is None:
                                     if histogram is None:
-                                        histogram, mean, standard_dev, nb_of_sim_in_which_rule_was_used, message= get_from_db.get_single_pdf(simulation_id, self.execution_order_id, object_number, used_parameter_id, False)
+                                        histogram, mean, standard_dev, nb_of_sim_in_which_rule_was_used, message= get_from_db.get_single_pdf(simulation_id, self.execution_order_id, object_number, used_parameter_id, False, True)
                                         print('used_parameter_id:' + str(used_parameter_id) + ' - get_single_pdf:' + str(histogram))
                                     histogram_to_use = histogram
                                 else:
