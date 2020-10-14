@@ -1922,10 +1922,10 @@ def get_execution_order_scores(request):
         if response['execution_orders'][execution_order_id]['total_nb_of_validation_datapoints'] > 0:
             response['execution_orders'][execution_order_id]['overall_score'] = response['execution_orders'][execution_order_id]['sum_of_scores']/response['execution_orders'][execution_order_id]['total_nb_of_validation_datapoints']
     
-    
-    print(json.dumps('simulations'))
-    print(json.dumps('scores'))
-    print(json.dumps('execution_orders'))
+
+    print(json.dumps(response['simulations']))
+    print(json.dumps(response['scores']))
+    print(json.dumps(response['execution_orders']))
     return HttpResponse(json.dumps(response).replace(': NaN', ': null'))
 
 
