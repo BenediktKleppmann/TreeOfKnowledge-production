@@ -1897,7 +1897,7 @@ def get_execution_order_scores(request):
         y0_values_df = y0_values_df.fillna(np.nan)
         validation_columns = [col for col in y0_values_df.columns if 'period' in col and 'period0' not in col]
         y0_values_df = y0_values_df[validation_columns]
-        number_of_validation_datapoints = np.sum(y0_values_df.count())
+        number_of_validation_datapoints = int(np.sum(y0_values_df.count()))
 
 
         response['simulations'].append({'simulation_id': simulation_model.id, 'simulation_name': simulation_model.simulation_name, 'number_of_validation_datapoints': number_of_validation_datapoints}) 
