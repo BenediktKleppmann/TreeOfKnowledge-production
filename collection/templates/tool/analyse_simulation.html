@@ -1731,9 +1731,20 @@
 		$('#accordion-left-content-2').addClass('in');
 		
 		
+				
+		// load parameter_info
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				parameter_info = JSON.parse(this.responseText);
+			}
+		};
+		xhttp.open('GET', '/tool/get_parameter_info', true);
+		xhttp.send();
 		
 		
 		// load parameter_info
+		/*
 		var object_numbers = Object.keys(objects_dict);
 		for (var i = 0; i < object_numbers.length; i++) {
 			
@@ -1763,7 +1774,7 @@
 					
 				}
 			}
-		}
+		}*/
 		
 		
 		// add parameter number

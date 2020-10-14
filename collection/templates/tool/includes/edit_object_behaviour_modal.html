@@ -727,7 +727,20 @@ var parameter_info = {};
 	
 		populateTheRulePanels(object_number, rules_attribute_id, rules_attribute_name);
 		
+		
 		// load parameter_info
+		var xhttp = new XMLHttpRequest();       
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				parameter_info = JSON.parse(this.responseText);
+			}
+		};
+		xhttp.open('GET', '/tool/get_parameter_info', true);
+		xhttp.send();
+		
+		
+		// load parameter_info
+		/*
 		var rule_ids = execution_order['rule_execution_order'][String(rules_attribute_id)]['used_rule_ids'].concat(execution_order['rule_execution_order'][String(rules_attribute_id)]['not_used_rule_ids']);
 		for (var i = 0; i < rule_ids.length ; i++) {
 			var parameter_ids = objects_dict[object_number]['object_rules'][rules_attribute_id][rule_ids[i]]['used_parameter_ids'];	
@@ -750,7 +763,7 @@ var parameter_info = {};
 					xhttp.send();
 				}			
 			}	
-		}
+		}*/
 		
 	
 	}
