@@ -1912,9 +1912,8 @@ def get_execution_order_scores(request):
                 if len(all_priors_df) > row['nb_of_tested_parameters_in_posterior']:
                     all_priors_df.index = range(len(all_priors_df))
                     score = 1 - all_priors_df.loc[:row['nb_of_tested_parameters_in_posterior'], 'error'].mean()
-                    nb_of_simulations_in_posterior = row['nb_of_simulations']/row['nb_of_tested_parameters']*row['nb_of_tested_parameters_in_posterior']
 
-                    response['scores'][simulation_model.id][execution_order_id] = {'score': score, 'nb_of_simulations_in_posterior': nb_of_simulations_in_posterior}
+                    response['scores'][simulation_model.id][execution_order_id] = {'score': score, 'number_of_validation_datapoints': number_of_validation_datapoints}
                     response['execution_orders'][execution_order_id]['sum_of_scores'] += score*number_of_validation_datapoints
                     response['execution_orders'][execution_order_id]['total_nb_of_validation_datapoints'] += number_of_validation_datapoints
 

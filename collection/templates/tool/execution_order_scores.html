@@ -123,7 +123,12 @@
 		for (var i = 0; i < execution_order_scores['simulations'].length; i++) {
 			var simulation_id = execution_order_scores['simulations'][i]['simulation_id'];
 			scores_table_html +=		'<tr>' +
-											'<td class="simulation-name"><a href="https://www.treeofknowledge.ai/tool/edit_simulation/' + String(simulation_id) + '/">' + execution_order_scores['simulations'][i]['simulation_name'] + '</a></td>';
+											'<td>' +
+												'<div class="simulation-name">' + 
+													'<a href="https://www.treeofknowledge.ai/tool/edit_simulation/' + String(simulation_id) + '/">' + execution_order_scores['simulations'][i]['simulation_name'] + '</a>' +
+												'</div>' +
+												'<div class="nb-of-validation-datapoints">(' + String(execution_order_scores['simulations'][i]['number_of_validation_datapoints']) + ' datapoints used in validation)</div>' +
+											'</td>';
 			for (var j = 0; j < execution_order_ids.length; j++) {
 				var execution_order_id = execution_order_ids[j];
 				if (execution_order_scores["scores"][simulation_id] && execution_order_scores["scores"][simulation_id][execution_order_id]){
