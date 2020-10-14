@@ -75,10 +75,20 @@
 		
 		}
 		
+		.simulation-name-box {
+			border-right: 1px solid grey;
+		}
+		
 		.simulation-name {
 			font-size: 17px;
-			padding: 10px 0px;
-			border-right: 1px solid grey;
+			padding-top: 13px;
+			padding-right: 3px;
+		}
+		
+		.nb-of-validation-datapoints {
+		    text-align: center;
+			font-size: 12px;
+			padding-bottom: 3px;
 		}
 		
 		.score {
@@ -123,11 +133,11 @@
 		for (var i = 0; i < execution_order_scores['simulations'].length; i++) {
 			var simulation_id = execution_order_scores['simulations'][i]['simulation_id'];
 			scores_table_html +=		'<tr>' +
-											'<td>' +
+											'<td class="simulation-name-box">' +
 												'<div class="simulation-name">' + 
 													'<a href="https://www.treeofknowledge.ai/tool/edit_simulation/' + String(simulation_id) + '/">' + execution_order_scores['simulations'][i]['simulation_name'] + '</a>' +
 												'</div>' +
-												'<div class="nb-of-validation-datapoints">(' + String(execution_order_scores['simulations'][i]['number_of_validation_datapoints']) + ' datapoints used in validation)</div>' +
+												'<div class="nb-of-validation-datapoints">(' + String(execution_order_scores['simulations'][i]['number_of_validation_datapoints']) + ' datapoints used for validating)</div>' +
 											'</td>';
 			for (var j = 0; j < execution_order_ids.length; j++) {
 				var execution_order_id = execution_order_ids[j];
