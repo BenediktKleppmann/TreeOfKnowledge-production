@@ -215,7 +215,7 @@
 	#right-main-panel {
 		display: inline-block;
 		height: calc(100vh - 59px);
-		width: calc(100vw - 273px);
+		width: calc(100vw - 282px);
 	}
 	
 	#analyse-simulation-box {
@@ -1402,7 +1402,7 @@
 <style type='text/css'>
 	#comparePosteriorsModal .modal-dialog{
 		position: absolute;
-		left: 25%;
+		left: 16%;
 	}
 
 	#comparePosteriorsModal .modal-content{
@@ -1630,29 +1630,30 @@
 	function drawComparePosteriorsContent() {
 
 		var parameter_id = posterior_information_dict['rule_or_parameter_id'];
-		var pdfs_html_string = '';
+		var pdfs_html_string = '<div id="pdf-rows">';
 		for (var i = 0; i < posterior_information_dict['individual_pdfs'].length; i++) {
 			var individual_pdf = posterior_information_dict['individual_pdfs'][i];
-			pdfs_html_string += '<div class="individual-pdf-row">' +
-									'<div class="simulation-name"><a href="/edit_simulation/' + String(individual_pdf['simulation_id']) + '">' + individual_pdf['simulation_name'] + '</a></div>' +
-									'<div class="pdf-box">' +
-										'<div class="outer-pdf-graph-container">' +
-											'<div id="parameter-pdf-graph-this-simulation-' + String(i) + '" class="inner-pdf-graph-container"></div>' +
+			pdfs_html_string += 	'<div class="individual-pdf-row">' +
+										'<div class="simulation-name"><a href="/edit_simulation/' + String(individual_pdf['simulation_id']) + '">' + individual_pdf['simulation_name'] + '</a></div>' +
+										'<div class="pdf-box">' +
+											'<div class="outer-pdf-graph-container">' +
+												'<div id="parameter-pdf-graph-this-simulation-' + String(i) + '" class="inner-pdf-graph-container"></div>' +
+											'</div>' +
+											'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
 										'</div>' +
-										'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
-									'</div>' +
-									'<div class="pdf-box">' +
-										'<div class="outer-pdf-graph-container">' +
-											'<div id="parameter-pdf-graph-this-simulation-' + String(i) + '-smooth" class="inner-pdf-graph-container"></div>' +
+										'<div class="pdf-box">' +
+											'<div class="outer-pdf-graph-container">' +
+												'<div id="parameter-pdf-graph-this-simulation-' + String(i) + '-smooth" class="inner-pdf-graph-container"></div>' +
+											'</div>' +
+											'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
 										'</div>' +
-										'<div class="pdf-x-axis"><div class="left">' + parameter_info[parameter_id]['min_value'] + '</div><div class="right">' + parameter_info[parameter_id]['max_value'] + '</div></div>' +
-									'</div>' +
-									'<div class="values-in-posterior-box">' +
-										'<div class="values-in-posterior">' + String(individual_pdf['nb_of_tested_parameters']) + '</div><div class="slash">/</div><div class="values-in-posterior">' + String(individual_pdf['nb_of_tested_parameters_in_posterior']) + '</div>' +
-									'</div>' +
-								'</div>';
+										'<div class="values-in-posterior-box">' +
+											'<div class="values-in-posterior">' + String(individual_pdf['nb_of_tested_parameters']) + '</div><div class="slash">/</div><div class="values-in-posterior">' + String(individual_pdf['nb_of_tested_parameters_in_posterior']) + '</div>' +
+										'</div>' +
+									'</div>';
 		}
-		pdfs_html_string += 	'<div id="separation-line"></div>' +
+		pdfs_html_string += 	'</div>' +
+								'<div id="separation-line"></div>' +
 								'<div id="total-text">Total</div>' +
 								'<div class="individual-pdf-row">' +
 									'<div class="simulation-name"></div>' +
