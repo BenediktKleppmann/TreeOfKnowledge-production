@@ -575,7 +575,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                                               AND valid_time_end <= %s
                                               AND object_id IN (SELECT DISTINCT object_id FROM object_%s__with_missing_relations)
                                     ) AS relation_table_%s
-                                    ON original_table.object_id = relation_%s.object_id 
+                                    ON original_table.object_id = relation_table_%s.object_id 
                                 """ % (str(object_number), str(missing_relation), str(missing_relation), str(valid_time_start), str(valid_time_end), str(object_number), str(missing_relation), str(missing_relation))
                 print(sql_string2)
                 cursor.execute(sql_string2)
