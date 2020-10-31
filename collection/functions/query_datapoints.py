@@ -474,7 +474,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
 
             else: 
                 cursor.execute('DROP TABLE IF EXISTS object_%s__with_missing_relations' % str(object_number))
-                sql_string1 = """CREATE TEMPORARY TABLE object_%s_object_ids__with_missing_relations AS
+                sql_string1 = """CREATE TEMPORARY TABLE object_%s__with_missing_relations AS
                                     SELECT inner_query.* 
                                     FROM (
                                         SELECT related_objects.object_id, related_objects.numeric_value AS object_%s_relation_%s
@@ -573,7 +573,7 @@ def get_data_from_related_objects__single_timestep(objects_dict, valid_time_star
                                             WHERE attribute_id = '%s'
                                               AND valid_time_start >= %s
                                               AND valid_time_end <= %s
-                                              AND object_id IN (SELECT DISTINCT object_id FROM object_%s_object_ids__with_missing_relations)
+                                              AND object_id IN (SELECT DISTINCT object_id FROM object_%s__with_missing_relations)
                                     ) AS relation_table_%s
                                     ON original_table.object_id = relation_%s.object_id 
                                 """ % (str(object_number), str(missing_relation), str(missing_relation), str(valid_time_start), str(valid_time_end), str(object_number), str(missing_relation), str(missing_relation))
@@ -893,7 +893,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
 
             else: 
                 cursor.execute('DROP TABLE IF EXISTS object_%s__with_missing_relations' % str(object_number))
-                sql_string1 = """CREATE TEMPORARY TABLE object_%s_object_ids__with_missing_relations AS 
+                sql_string1 = """CREATE TEMPORARY TABLE object_%s__with_missing_relations AS 
                                     SELECT inner_query.* 
                                     FROM ( 
                                         SELECT related_objects.object_id, related_objects.numeric_value AS object_%s_relation_%s 
@@ -989,7 +989,7 @@ def get_data_from_related_objects__multiple_timesteps(objects_dict, valid_time_s
                                             WHERE attribute_id = '%s' 
                                               AND valid_time_start >= %s 
                                               AND valid_time_end <= %s 
-                                              AND object_id IN (SELECT DISTINCT object_id FROM object_%s_object_ids__with_missing_relations) 
+                                              AND object_id IN (SELECT DISTINCT object_id FROM object_%s__with_missing_relations) 
                                     ) AS relation_table_%s 
                                     ON original_table.object_id = relation_%s.object_id  
                                 """ % (str(object_number), str(missing_relation), str(missing_relation), str(condition_holding_period_start), str(condition_holding_period_end), str(object_number), str(missing_relation), str(missing_relation))
