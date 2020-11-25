@@ -118,7 +118,7 @@
 	}
 	
 	.card-body {
-		padding-left: 12px;
+		padding-left: 5px;
 		padding-right: 5px;
 		background-color: rgb(244, 244, 244);
 	}
@@ -129,7 +129,7 @@
 	}
 	
 	#accordion-left-content-0 .left-panel-body {
-		padding: 23px 12px 9px 5px;
+		padding: 23px 12px 9px 17px;
 	}
 	
 	#open-execution-modal-button {
@@ -158,6 +158,12 @@
 	}
 
 	/* Accorion2: Objects */
+	
+	.objects-table-entry {
+		float: left;
+		width: 94px;
+	}
+	
 	.object-icon {
 		height: 55px;
 		width: 55px;
@@ -166,14 +172,14 @@
 		border-radius: 4px;
 		box-shadow: -1px 1px 2px 1px rgba(0, 0, 0, 0.075);
 		margin-top: 6px;
+		margin-left: 19px;
 		padding-top: 5px;
 		padding-left: 4px;
 		padding-right: 5px;
 	}
 	
 	.object-name {
-		width: 55px;
-		height: 34px;
+		width: 93px;
 		text-align: center;
 		font-size: 12px;
 		font-weight: 300;
@@ -183,6 +189,7 @@
 	/* Relations -----*/
 	#relations-card {
 		padding-bottom: 10px;
+		padding-left: 17px;
 	}
 	
 	.relation-button-box-header {
@@ -606,7 +613,7 @@
 					object_type_id = object_type_ids[entry_number];
 					object_name = available_object_types[object_type_id]['name']
 					object_icon = available_object_types[object_type_id]['object_type_icon']
-					left_panel__scenario += 			'<td>' +
+					left_panel__scenario += 			'<td class="objects-table-entry">' +
 														'<div class="object-icon" draggable="true" ondragstart="drag(event, \'' + object_type_id + '\')" onclick="createObject(\'' + object_type_id + '\', 100, 100)" data-object-type-id="' + object_type_id + '"> ' +
 															'<img src="{% static "images/object_icons/" %}' + object_icon + '.svg">' +
 														'</div>' +
