@@ -162,7 +162,7 @@
 		}
 	
 	
-		/* Entities/Entity Combinations ------------------------------------------*/
+		/* Systems ------------------------------------------*/
 		.run-selection-area {
 			padding-top: 19px;
 			margin-left: 15px;
@@ -500,20 +500,20 @@
 		</div>
 		<div class="card">
 			<div class="card-header" role="tab" id="accordion-left-header-2">
-				<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-2" aria-expanded="false" aria-controls="accordion-left-content-2">Entities/Entity Combinations</button>
+				<button class="btn left-panel-header collapsed accordion-toggle" data-parent="#accordion-left" href="#accordion-left-content-2" aria-expanded="false" aria-controls="accordion-left-content-2">Systems</button>
 			</div>
 			<div id="accordion-left-content-2" class="collapse" role="tabpanel" aria-labelledby="accordion-left-header-2" data-parent="#accordion-left">
 				<div class="card-body">
 					<div class="run-selection-area">
 						<div class="run-selection-box">
-							<button id="all-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectAllRuns()">All Entities</button>
+							<button id="all-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectAllRuns()">All Systems</button>
 							<div id="threshold_box">
 								<div id="threshold-label">Error Threshold:</div>	
 								<input type="text" id="error_threshold" class="form-control" value="0.5">							
 							</div>
 							<div id="correct_and_false_runs">
-								<button id="correct-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectCorrectRuns()">Correct Entities</button>
-								<button id="false-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectFalseRuns()">False Entities</button>
+								<button id="correct-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectCorrectRuns()">Accurately Simulated Systems</button>
+								<button id="false-runs-button" class="btn btn-light run-selection-button" type="button" onclick="selectFalseRuns()">Badly Simulated Systems</button>
 							</div>
 						</div>
 						<div id="initial-state-run-selection-buttons" class="run-selection-box"></div>
@@ -639,7 +639,7 @@
 
 	//========================================================================
 	//========================================================================
-	//=========   LEFT PANEL - Entities/Entity Combinations    ===============
+	//=========   LEFT PANEL - Systems    ===============
 	//========================================================================
 	//========================================================================	
 										
@@ -664,7 +664,7 @@
 		
 		var individual_selection_buttons = '';
 		for (var i = 0; i < all_run_numbers.length; i++) {
-			individual_selection_buttons += '<button id="selection-button-' + all_run_numbers[i] + '" class="btn btn-light run-selection-button run-toggle" type="button" onclick="selectRun(\'' + all_run_numbers[i] + '\')">Entity ' + i + '</button>'
+			individual_selection_buttons += '<button id="selection-button-' + all_run_numbers[i] + '" class="btn btn-light run-selection-button run-toggle" type="button" onclick="selectRun(\'' + all_run_numbers[i] + '\')">System ' + i + '</button>'
 		}	
 		$('#individual-run-selection-buttons').html(individual_selection_buttons);
 		
