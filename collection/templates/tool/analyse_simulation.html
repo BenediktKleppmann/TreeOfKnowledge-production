@@ -619,13 +619,15 @@
 					if (rule['learn_posterior']) {
 					
 						simulation_parameters_string += '<div class="rule-heading">' + objects_dict[object_numbers[i]]['object_name'] + '.[' + objects_dict[object_numbers[i]]['object_attributes'][attribute_ids[j]]['attribute_name'] + '], Rule ' + String(rule_ids[k]) + ':</div>';
-						if (!rule['has_probability_1']) {
+						if (!rule['has_probability_1'] && Object.keys(prior_dict).includes(rule_ids[k])) {
 							simulation_parameters_string += '<div class="parameter-value">Rule probaility = ' + prior_dict[rule_ids[k]]['probability'].toFixed(3) + '</div>';
 							simulation_parameters_string += '<div class="parameter-value">Rule probaility = ' + prior_dict[rule_ids[k]]['probability'].toFixed(3) + '</div>';
 						}
 						var used_parameter_ids = rule['used_parameter_ids'];
 						for (var l = 0; l < used_parameter_ids.length; l++) {
-							simulation_parameters_string += '<div class="parameter-value">' + parameter_info[used_parameter_ids[l]]["parameter_name"] + ' = ' + prior_dict[rule_ids[k]][used_parameter_ids[l]].toFixed(3) + '</div>';
+							if (Object.keys(prior_dict).includes(rule_ids[k])) {
+								simulation_parameters_string += '<div class="parameter-value">' + parameter_info[used_parameter_ids[l]]["parameter_name"] + ' = ' + prior_dict[rule_ids[k]][used_parameter_ids[l]].toFixed(3) + '</div>';
+							}
 						}
 					}
 					
