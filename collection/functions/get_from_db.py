@@ -1,11 +1,10 @@
 ####################################################################
 # This file is part of the Tree of Knowledge project.
-# Copyright (c) 2019-2040 Benedikt Kleppmann
-
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version - see http://www.gnu.org/licenses/.
+# Copyright (C) Benedikt Kleppmann - All Rights Reserved
+#
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+# Written by Benedikt Kleppmann <benedikt@kleppmann.de>, February 2021
 #####################################################################
 
 from collection.models import Uploaded_dataset, Object_types, Attribute, Object, Likelihood_function, Execution_order
